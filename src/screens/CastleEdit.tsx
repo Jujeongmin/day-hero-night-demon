@@ -3,21 +3,22 @@ import { MONSTERS, TRAPS, type MonsterId, type TrapId } from '../../server/src/c
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
 
-export default function CastleEdit(props: { api: Api; home: HomeData; floor: number; onDone: () => void; onError: (m: string) => void }) {
-  const { api, home, floor, onDone, onError } = props;
+/** 칸을 누르고 몬스터를 누르면 바로 저장된다. 키보드 없이 클릭만으로 끝난다. */
+export default function CastleEdit(props: { api: Api; home: HomeData; floor: number; onSaved: () => Promise<void>; onError: (m: string) => void }) {
+  const { api, home, floor, onSaved, onError } = props;
   const s = home.state;
-  const [slots, setSlots] = useState<(MonsterId | null)[]>([...s.castle.floors[floor].monsters]);
-  const [trap, setTrap] = useState<TrapId | null>(s.castle.floors[floor].trap);
+  const current = s.castle.floors[floor];
+  const [slot, setSlot] = useState(0);
   const [busy, setBusy] = useState(false);
   const owned = Object.keys(s.roster) as MonsterId[];
   const ownedTraps = Object.keys(s.traps) as TrapId[];
 
-  async function saveFloor() {
+  async function save(monsters: (MonsterId | null)[], trap: TrapId | null) {
     if (busy) return;
     setBusy(true);
     try {
-      await api.setFloor(floor, slots, trap);
-      onDone();
+      await api.setFloor(floor, monsters, trap);
+      await onSaved();
     } catch (e) {
       onError(errorText(e));
     } finally {
@@ -25,29 +26,37 @@ export default function CastleEdit(props: { api: Api; home: HomeData; floor: num
     }
   }
 
+  function place(m: MonsterId | null) {
+    const next = [...current.monsters];
+    next[slot] = m;
+    void save(next, current.trap);
+    setSlot((slot + 1) % next.length);
+  }
+
   return (
-    <div className="screen castle-edit">
-      <h3>{T.floor(floor + 1)} {T.editFloor}</h3>
-      {slots.map((m, i) => (
-        <select key={i} value={m ?? ''} onChange={(e) => {
-          const next = [...slots];
-          next[i] = (e.target.value || null) as MonsterId | null;
-          setSlots(next);
-        }}>
-          <option value="">{T.emptySlot}</option>
-          {owned.map((id) => <option key={id} value={id}>{MONSTERS[id].name} {T.level(s.roster[id]!.level)}</option>)}
-        </select>
-      ))}
-      <label>{T.trapLabel}
-        <select value={trap ?? ''} onChange={(e) => setTrap((e.target.value || null) as TrapId | null)}>
-          <option value="">{T.none}</option>
-          {ownedTraps.map((id) => <option key={id} value={id}>{TRAPS[id].name} {T.level(s.traps[id]!.level)}</option>)}
-        </select>
-      </label>
+    <>
       <div className="row">
-        <button className="btn" onClick={onDone}>{T.cancel}</button>
-        <button className="btn" disabled={busy} onClick={saveFloor}>{T.save}</button>
+        {current.monsters.map((m, i) => (
+          <button key={i} className={`btn slot ${slot === i ? 'on' : ''}`} onClick={() => setSlot(i)}>
+            {m ? MONSTERS[m].name : T.emptySlot}
+          </button>
+        ))}
       </div>
-    </div>
+      <div className="chips">
+        {owned.map((id) => (
+          <button key={id} className="btn small" disabled={busy} onClick={() => place(id)}>{MONSTERS[id].name}</button>
+        ))}
+        <button className="btn small ghost" disabled={busy} onClick={() => place(null)}>{T.emptySlot}</button>
+      </div>
+      <div className="chips">
+        <span className="muted">{T.trapLabel}</span>
+        {ownedTraps.map((id) => (
+          <button key={id} className={`btn small ${current.trap === id ? 'on' : ''}`} disabled={busy} onClick={() => save(current.monsters, id)}>
+            {TRAPS[id].name}
+          </button>
+        ))}
+        <button className={`btn small ghost ${current.trap === null ? 'on' : ''}`} disabled={busy} onClick={() => save(current.monsters, null)}>{T.none}</button>
+      </div>
+    </>
   );
 }

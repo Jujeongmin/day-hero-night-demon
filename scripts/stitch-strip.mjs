@@ -17,7 +17,7 @@ const out = new PNG({ width: w * imgs.length, height: h });
 imgs.forEach((im, i) => PNG.bitblt(im, out, 0, 0, w, h, i * w, 0));
 fs.mkdirSync('public/sprites', { recursive: true });
 fs.writeFileSync(path.join('public/sprites', `${name}.png`), PNG.sync.write(out));
-const manifestPath = 'public/sprites/manifest.json';
+const manifestPath = 'src/render/sprites.json';
 const manifest = fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')) : {};
 manifest[name] = { frames: imgs.length, w, h };
 fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));

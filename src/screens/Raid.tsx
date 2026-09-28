@@ -77,23 +77,37 @@ export default function Raid(props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, playing, tick]);
 
-  if (!run || !status) return <div className="center">{T.loading}</div>;
+  if (!run || !status) return <div className="scene center">{T.loading}</div>;
 
   const b = run.battle;
   const ultReady = !!b && b.outcome === 'ongoing' && !b.ultUsed && b.ultCharge >= 100;
   const heroAlive = (h: string) => !!b?.fighters.some((f) => f.key === `h:${h}` && f.hp > 0);
-  const floorLabel = run.floor >= run.snapshot.floors.length ? T.throneFloor : T.floor(run.floor + 1);
+  const stages = [...run.snapshot.floors.map((_, i) => T.floor(i + 1)), T.throne];
   const revives = home.state.credits.revive;
 
   return (
-    <div className="screen raid">
+    <>
+    <div className="scene raid-scene">
       <header className="hud">
-        <span>{run.snapshot.nickname} · {floorLabel}</span>
-        <button className="btn small" onClick={() => setSpeed(speed === 1 ? 2 : 1)}>{T.speed(speed)}</button>
+        <span className="pill">{run.snapshot.nickname}</span>
+        <button className="pill" onClick={() => setSpeed(speed === 1 ? 2 : 1)}>{T.speed(speed)}</button>
       </header>
 
       <BattleCanvas battle={b} events={events} speed={speed} onDone={() => setPlaying(false)} />
 
+      <div className="scene-foot progress">
+        {stages.map((label, i) => (
+          <span key={i} className={i < run.floor ? 'done' : i === run.floor ? 'now' : ''}>{label}</span>
+        ))}
+      </div>
+    </div>
+
+    <section className="sheet raid-sheet">
+      <header className="sheet-head">
+        <span>{status === 'choose_tactic' ? T.tacticTitle : status === 'fighting' ? T.ultTitle : T.defeat}</span>
+        <button className="link" onClick={() => { if (window.confirm(T.confirmGiveUp)) void finish(true); }}>{T.giveUp}</button>
+      </header>
+      <div className="sheet-body">
       {status === 'choose_tactic' && (
         <div className="row">
           {TACTICS.map((t) => (
@@ -110,7 +124,7 @@ export default function Raid(props: {
           {HERO_ORDER.map((h) => (
             <button
               key={h}
-              className="btn"
+              className="btn gold"
               disabled={!ultReady || !heroAlive(h) || pendingUlt !== null}
               onClick={() => setPendingUlt(h)}
             >
@@ -136,13 +150,11 @@ export default function Raid(props: {
           {revives < 1 && !run.reviveUsed && (
             <button className="btn" onClick={() => buy('revive')}>{T.buyRevive}</button>
           )}
-          <button className="btn" onClick={() => finish(false)}>{T.defeat} · {T.toHome}</button>
+          <button className="btn" onClick={() => finish(false)}>{T.toHome}</button>
         </div>
       )}
-
-      <button className="btn small" onClick={() => { if (window.confirm(T.confirmGiveUp)) void finish(true); }}>
-        {T.giveUp}
-      </button>
-    </div>
+      </div>
+    </section>
+    </>
   );
 }

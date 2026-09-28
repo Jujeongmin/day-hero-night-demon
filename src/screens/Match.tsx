@@ -4,8 +4,8 @@ import { errorText, type Api, type HomeData } from '../services/api';
 import { buy } from '../services/shop';
 import { T } from '../strings/ko';
 
-export default function Match(props: { api: Api; home: HomeData; onStart: () => void; onBack: () => void; onError: (m: string) => void }) {
-  const { api, home, onStart, onBack, onError } = props;
+export default function Match(props: { api: Api; home: HomeData; onStart: () => void; onError: (m: string) => void }) {
+  const { api, home, onStart, onError } = props;
   const [targets, setTargets] = useState<Target[] | null>(null);
   const [useShadow, setUseShadow] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -29,23 +29,25 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
 
   const shadows = home.state.credits.shadow;
   return (
-    <div className="screen match">
-      <button className="btn small" onClick={onBack}>{T.toHome}</button>
-      {!targets && <div className="center">{T.loading}</div>}
+    <>
+      {!targets && <p className="muted">{T.loading}</p>}
       {targets?.map((t) => (
-        <div className="card" key={t.id}>
-          <b>{t.nickname} {t.npc && <span className="badge">{T.npcTag}</span>} {t.throneEmpty && <span className="badge">{T.throneEmptyBadge}</span>}</b>
-          <span>{T.power} {t.power} · {T.estLoot} {t.estLoot}</span>
-          <button className="btn" disabled={busy} onClick={() => start(t.id)}>{T.sortie}</button>
+        <div className="line" key={t.id}>
+          <span>
+            <b>{t.nickname}</b> {t.npc && <span className="badge">{T.npcTag}</span>} {t.throneEmpty && <span className="badge">{T.throneEmptyBadge}</span>}
+            <br />
+            <small>{T.power} {t.power} · {T.estLoot} {t.estLoot}</small>
+          </span>
+          <button className="btn small" disabled={busy} onClick={() => start(t.id)}>{T.sortie}</button>
         </div>
       ))}
       {shadows === 0 && <button className="btn small" onClick={() => buy('shadow_double')}>{T.products.shadow_double[0]}</button>}
       {shadows > 0 && (
-        <label className="row">
+        <label className="line">
+          <span>{T.shadowUse(shadows)}</span>
           <input type="checkbox" checked={useShadow} onChange={(e) => setUseShadow(e.target.checked)} />
-          {T.shadowUse(shadows)}
         </label>
       )}
-    </div>
+    </>
   );
 }

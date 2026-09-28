@@ -1,25 +1,108 @@
-:root { color-scheme: dark; font-family: system-ui, sans-serif; }
+/* C 레트로 RPG 창: 검은 바탕, 흰 테두리 파란 창, Do Hyeon */
+:root {
+  color-scheme: dark;
+  --sky: #14123a;
+  --win: #1b2a86;
+  --win-hi: #2a3cb0;
+  --edge: #ffffff;
+  --text: #ffffff;
+  --muted: #c8d2ff;
+  --gold: #ffe14d;
+  --hp: #3cf07a;
+  --red: #ff5a5a;
+  --font: 'Do Hyeon', 'Malgun Gothic', sans-serif;
+}
 * { box-sizing: border-box; }
-html, body, #root { height: 100%; margin: 0; background: #1a1a1a; color: #ddd; }
-.app { max-width: 480px; height: 100%; margin: 0 auto; display: flex; flex-direction: column; background: #222; }
-.screen { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+html, body, #root { height: 100%; margin: 0; background: #000; color: var(--text); font-family: var(--font); }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:disabled { cursor: default; }
+select { font: inherit; }
+
+.app { position: relative; max-width: 480px; height: 100%; margin: 0 auto; display: flex; flex-direction: column; overflow: hidden; background: var(--sky); }
 .center { height: 100%; display: grid; place-items: center; }
-.hud { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
-.banner { padding: 8px; background: #333; display: flex; justify-content: space-between; align-items: center; }
-.castle { display: flex; flex-direction: column; gap: 4px; }
-.floor { padding: 8px; background: #2c2c2c; border: 1px solid #444; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.slot, .trap { padding: 2px 6px; background: #3a3a3a; font-size: 13px; }
-.log-row { font-size: 13px; padding: 4px 0; border-bottom: 1px solid #333; display: flex; justify-content: space-between; gap: 8px; }
+.muted { color: var(--muted); margin: 0; }
+
+/* 메인 화면 */
+.scene {
+  position: relative; flex: 1; min-height: 0; overflow: hidden;
+  background: linear-gradient(#0d0b2a, var(--sky) 60%, #1d1850);
+}
+.hud { position: absolute; left: 8px; right: 8px; top: 8px; z-index: 3; display: flex; justify-content: space-between; gap: 6px; pointer-events: none; }
+.hud > * { pointer-events: auto; }
+.pill { background: var(--win); border: 2px solid var(--edge); border-radius: 6px; padding: 1px 10px; font-size: 15px; box-shadow: inset 0 0 0 1px #000; }
+.pill b { color: var(--gold); font-weight: 400; }
+.chip { display: inline-block; background: #000c; border: 2px solid var(--edge); border-radius: 5px; padding: 0 6px; font-size: 12px; white-space: nowrap; }
+.chip.hint { border-color: var(--gold); color: var(--gold); animation: bob 1.2s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-3px); } }
+
+.tower { position: absolute; left: 50%; top: 0; bottom: 0; aspect-ratio: 224 / 400; max-width: 100%; transform: translateX(-50%); }
+.tower img { width: 100%; height: 100%; image-rendering: pixelated; display: block; user-select: none; }
+.unit-at { position: absolute; transform: translate(-50%, -100%); pointer-events: none; }
+.tier {
+  position: absolute; left: 16%; right: 16%; border: 2px solid transparent; border-radius: 6px; background: transparent;
+  display: flex; align-items: center; justify-content: center;
+}
+.tier:hover:not(:disabled), .tier.on { border-color: var(--gold); background: #ffe14d14; }
+.tier.locked { background: #0008; }
+.tier.locked:hover { border-color: var(--edge); }
+
+.float-idle { position: absolute; right: 8px; top: 44px; z-index: 3; animation: bob 1.4s ease-in-out infinite; }
+.scene-foot { position: absolute; left: 0; right: 0; bottom: 10px; z-index: 3; display: flex; justify-content: center; padding-inline: 12px; }
+.scene-foot .btn.big { min-width: 60%; }
+
+/* 버튼 */
+.btn {
+  background: var(--win); color: var(--text); border: 3px solid var(--edge); border-radius: 6px; box-shadow: inset 0 0 0 2px #000;
+  padding: 6px 10px; font-size: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+}
+.btn:hover:not(:disabled) { background: var(--win-hi); }
+.btn:disabled { opacity: .45; }
+.btn.big { font-size: 22px; padding: 8px 16px; }
+.btn.small { font-size: 13px; padding: 2px 8px; border-width: 2px; }
+.btn.gold { color: var(--gold); }
+.btn.ghost { background: transparent; }
+.btn.on { border-color: var(--gold); color: var(--gold); }
+.btn small { font-size: 11px; opacity: .85; }
+.link { background: none; border: 0; padding: 0 4px; font-size: 16px; }
 .row { display: flex; gap: 6px; }
 .row > .btn { flex: 1; }
-.btn { padding: 10px; background: #444; color: #eee; border: 1px solid #666; font: inherit; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.btn:disabled { opacity: .4; }
-.btn.big { padding: 16px; font-size: 18px; }
-.btn.small { padding: 4px 8px; font-size: 12px; }
-.card { padding: 10px; background: #2c2c2c; border: 1px solid #444; display: flex; flex-direction: column; gap: 4px; }
-.badge { display: inline-block; padding: 1px 6px; background: #5a4a1a; font-size: 12px; }
-.tabs { display: flex; border-top: 1px solid #444; }
-.tabs button { flex: 1; padding: 12px; background: #222; color: #aaa; border: 0; font: inherit; }
-.tabs button.on { color: #fff; background: #2c2c2c; }
-.toast { position: fixed; left: 50%; bottom: 72px; transform: translateX(-50%); background: #000c; padding: 8px 14px; font-size: 14px; }
-canvas.battle { width: 100%; image-rendering: pixelated; background: #111; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.badge { display: inline-block; padding: 0 5px; border: 1px solid var(--gold); color: var(--gold); font-size: 11px; border-radius: 4px; }
+
+/* 아래 창: 화면의 약 1/3 */
+.sheet {
+  position: relative; z-index: 5; flex: none; height: 34%; display: flex; flex-direction: column;
+  background: var(--win); border: 3px solid var(--edge); border-bottom: 0; border-radius: 10px 10px 0 0; box-shadow: inset 0 0 0 2px #000;
+}
+.sheet-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px 2px; font-size: 17px; }
+.sheet-body { flex: 1; overflow-y: auto; padding: 4px 12px 10px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.sheet-body h4 { margin: 4px 0 0; font-weight: 400; color: var(--muted); font-size: 13px; }
+.line { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-bottom: 4px; border-bottom: 1px dashed #ffffff44; }
+.line small { color: var(--muted); }
+
+.tabs { flex: none; display: flex; background: #000; border-top: 3px solid var(--edge); z-index: 6; }
+.tabs button { flex: 1; padding: 10px 0; background: #000; color: var(--muted); border: 0; border-right: 1px solid #222; font-size: 16px; }
+.tabs button:hover { color: var(--text); }
+.tabs button.on { color: var(--gold); background: var(--win); }
+
+.toast {
+  position: absolute; left: 8%; right: 8%; top: 44px; z-index: 10; text-align: center;
+  background: #000d; border: 2px solid var(--red); border-radius: 6px; padding: 4px 8px; font-size: 14px;
+}
+
+/* 스프라이트 */
+.sprite { display: block; image-rendering: pixelated; background-repeat: no-repeat; animation: strip calc(var(--frames) * 140ms) steps(var(--frames)) infinite; }
+@keyframes strip { to { background-position: calc(-1 * var(--strip)) 0; } }
+.sprite-missing { display: grid; place-items: center; background: #7a1b2f; border: 2px solid #000; border-radius: 4px; font-size: 11px; }
+
+/* 공략 */
+.raid-scene { display: flex; flex-direction: column; padding: 40px 8px 44px; }
+canvas.battle { flex: 1; min-height: 0; width: 100%; object-fit: contain; image-rendering: pixelated; border: 3px solid var(--edge); border-radius: 6px; background: #111; }
+.progress { gap: 4px; }
+.progress span { flex: 1; text-align: center; border: 2px solid var(--edge); border-radius: 4px; font-size: 13px; background: #0008; }
+.progress span.done { background: var(--edge); color: var(--win); }
+.progress span.now { border-color: var(--gold); color: var(--gold); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sprite, .chip.hint, .float-idle { animation: none; }
+}
