@@ -10,8 +10,9 @@ export default function Home(props: {
   onRaid: () => void;
   onMatch: () => void;
   onError: (msg: string) => void;
+  onEditFloor: (index: number) => void;
 }) {
-  const { api, home, onRefresh, onRaid, onMatch, onError } = props;
+  const { api, home, onRefresh, onRaid, onMatch, onError, onEditFloor } = props;
   const s = home.state;
   const [busy, setBusy] = useState(false);
 
@@ -51,7 +52,7 @@ export default function Home(props: {
           <span className="slot">{s.awayUntil > Date.now() ? T.throneEmptyBadge : LORD.name}</span>
         </div>
         {floors.map(({ f, i }) => (
-          <div className="floor" key={i}>
+          <div className="floor" key={i} role="button" onClick={() => !s.run && onEditFloor(i)}>
             <b>{T.floor(i + 1)}</b>
             {f.monsters.map((m, j) => (
               <span className="slot" key={j}>{m ? MONSTERS[m].name : T.emptySlot}</span>
@@ -67,11 +68,17 @@ export default function Home(props: {
 
       <section className="log">
         <h3>{T.logTitle}</h3>
-        {s.raidLog.slice(0, 5).map((e) => (
-          <div className="log-row" key={e.id}>
-            <span>{e.attackerWon ? T.logRobbed(e.attackerName, e.goldLost) : T.logDefended(e.attackerName)}</span>
-          </div>
-        ))}
+        {s.raidLog.slice(0, 5).map((e) => {
+          const canRevenge = !e.npc && e.attackerWon && !e.revenged && Date.now() - e.at < 24 * 3_600_000 && !s.run;
+          return (
+            <div className="log-row" key={e.id}>
+              <span>{e.attackerWon ? T.logRobbed(e.attackerName, e.goldLost) : T.logDefended(e.attackerName)}</span>
+              {canRevenge && (
+                <button className="btn small" disabled={busy} onClick={() => act(() => api.revenge(e.id), onRaid)}>{T.revengeBtn}</button>
+              )}
+            </div>
+          );
+        })}
       </section>
 
       <button
