@@ -15,7 +15,7 @@
 | `shadow_double` | Shadow Double | 50 | 999999 | — | — | — | `art/products/shadow_double.png` | A shadow guards your throne at 50% power during your next raid. Stacks. |
 | `revenge_ticket` | Revenge Ticket | 50 | 999999 | — | — | — | `art/products/revenge_ticket.png` | One extra revenge after today's 3 free revenges. Stacks. |
 | `daily_supply` | Daily Supply | 50 | 999999 | — | 1 / day (일별) | — | `art/products/daily_supply.png` | 3,000 gold + 10 soul stones. Once per day. |
-| `season_pass` | Season Pass | 400 | 999999 | — | — | — (아래 참고) | `art/products/season_pass.png` | Double season rewards for the current season. Resets every season (2 weeks). |
+| `season_pass` | Season Pass | 400 | 999999 | — | — | — (아래 참고) | `art/products/season_pass.png` | Double season rewards + the Skull Lord look for your demon lord, for the current season. Resets every season (2 weeks). |
 
 - Product ID는 `server/src/purchases.ts`의 `PRODUCTS`와 **글자까지 같아야** 한다. 서버는 모르는 ID를 받으면 `{ success: false }`를 돌려준다.
 - Stock Quantity는 문서대로 "무제한이면 높은 숫자".
@@ -28,8 +28,8 @@
 
 - 시즌 경계: `BALANCE.seasonEpoch` = 2026-10-12 00:00 UTC부터 14일 단위.
 
-### 한정 마왕 외형 (미구현)
-설계서의 시즌 패스 설명에는 "한정 마왕 외형"이 있었다. v1에는 외형 교체 기능이 없어서 **대시보드 설명에서 뺐다**(위 표의 Description에는 없음). 넣으려면 `art/lord/`의 보관 후보(해골 머리 군주 등)를 패스 보유자의 마왕 스프라이트로 바꾸는 작업이 필요하다(생성 약 3회 + 클라이언트 분기).
+### 한정 마왕 외형 (구현됨, 2026-09-28)
+패스 보유자는 마왕이 **해골 머리 군주**(`lord_skull_*` 시트)로 보인다. 탑 꼭대기(내 화면)와 다른 플레이어가 내 성을 칠 때의 전투 화면 둘 다 바뀐다. 서버가 `CastleSnapshot.lordSkin = 'skull'`을 넣어 주고(`buildSnapshot`), 클라이언트는 `src/render/skins.ts`로 시트 이름을 고른다. 전투 수치는 그대로다. 시즌이 바뀌면 패스와 함께 사라진다.
 
 ## 서버 지급 흐름
 - 결제가 끝나면 Verse8가 서버의 `$onItemPurchased({ account, purchaseId, productId, quantity, metadata })`를 부른다. 서버는 `processedPurchases`로 같은 `purchaseId`를 두 번 지급하지 않고 `{ success: true }`를 돌려준다.

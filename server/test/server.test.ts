@@ -196,6 +196,24 @@ describe('purchases', () => {
   });
 });
 
+describe('season pass look', () => {
+  test('a pass holder shows the skull lord to attackers', async (server) => {
+    const D = `t15-pass-${Date.now()}`;
+    const A = `t15-look-${Date.now()}`;
+    server.connect({ account: D });
+    await server.getHome();
+    await server.$onItemPurchased({ account: D, purchaseId: `p-${D}`, productId: 'season_pass', quantity: 1 });
+    expect((await server.getHome()).state.season.pass).toBe(true);
+
+    server.connect({ account: A });
+    await server.getHome();
+    expect(!!(await findTarget(server, D))).toBe(true);
+    const res = await server.startRaid(D, false);
+    expect(res.run.snapshot.lordSkin).toBe('skull');
+    await server.endRaid(true);
+  });
+});
+
 describe('league', () => {
   test('winning adds honor and places you in a 30-player bracket', async (server) => {
     server.connect({ account: `t17-${Date.now()}` });

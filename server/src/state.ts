@@ -8,6 +8,9 @@ export interface ResolvedFloor {
   trap: { id: TrapId; level: number } | null;
 }
 
+/** 시즌 패스 보유자의 한정 마왕 외형. 표시용이며 전투 수치에는 영향이 없다. */
+export type LordSkin = 'skull';
+
 export interface CastleSnapshot {
   owner: string;
   nickname: string;
@@ -15,6 +18,7 @@ export interface CastleSnapshot {
   floors: ResolvedFloor[];
   throneEmpty: boolean;
   shadow: boolean;
+  lordSkin?: LordSkin;
 }
 
 export interface Run {

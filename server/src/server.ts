@@ -84,6 +84,7 @@ async function buildSnapshot(target: string, now: number): Promise<CastleSnapsho
     floors: resolveFloors(d),
     throneEmpty: d.awayUntil > now,
     shadow: d.shadowUntil > now,
+    ...(d.season.pass ? { lordSkin: 'skull' as const } : {}),
   };
 }
 

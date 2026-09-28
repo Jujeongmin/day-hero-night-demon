@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { BALANCE, LORD, MONSTERS } from '../../server/src/catalog';
 import { floorsUnlocked } from '../../server/src/economy';
 import Sprite from '../render/Sprite';
+import { lordSpriteId } from '../render/skins';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
 
@@ -82,7 +83,9 @@ export default function CastleScene(props: {
         <img src="sprites/tower.png" alt="" draggable={false} />
 
         <div className="unit-at" style={at(50, THRONE.stand)}>
-          {away ? <span className="chip">{T.throneEmptyBadge}</span> : <Sprite id="lord" label={LORD.name} scale={unitScale} />}
+          {away
+            ? <span className="chip">{T.throneEmptyBadge}</span>
+            : <Sprite id={lordSpriteId(s.season.pass ? 'skull' : undefined)} label={LORD.name} scale={unitScale} />}
         </div>
 
         {TIERS.map((tier, i) => {

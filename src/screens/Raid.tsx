@@ -98,7 +98,7 @@ export default function Raid(props: {
         <button className="pill" onClick={() => setSpeed(speed === 1 ? 2 : 1)}>{T.speed(speed)}</button>
       </header>
 
-      <BattleCanvas battle={b} events={events} speed={speed} onDone={() => setPlaying(false)} />
+      <BattleCanvas battle={b} events={events} speed={speed} lordSkin={run.snapshot.lordSkin} onDone={() => setPlaying(false)} />
 
       <div className="scene-foot progress">
         {stages.map((label, i) => (

@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import type { BattleEvent, Fighter, FloorBattle } from '../../server/src/battle';
 import { HEROES, LORD, MONSTERS } from '../../server/src/catalog';
+import type { LordSkin } from '../../server/src/state';
+import { lordSpriteId } from './skins';
 import SPRITES from './sprites.json';
 import { buildFrames, preHp, type Fx } from './timeline';
 
@@ -40,9 +42,14 @@ function positions(b: FloorBattle): Record<string, { x: number; y: number }> {
   return out;
 }
 
+/** 시트 이름의 앞부분. 마왕은 상대의 시즌 패스 외형을 따른다 */
+function spriteOf(f: Fighter, lordSkin: LordSkin | undefined): string {
+  return f.kind === 'lord' ? lordSpriteId(lordSkin) : f.kind;
+}
+
 /** 한 칸 그리기. 시트가 없으면 이름표 상자 */
-function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, anim: 'idle' | 'attack' | 'death', frame: number, x: number, y: number) {
-  const name = `${f.kind}_${anim}`;
+function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, sprite: string, anim: 'idle' | 'attack' | 'death', frame: number, x: number, y: number) {
+  const name = `${sprite}_${anim}`;
   const img = image(name);
   const flip = f.side === 'enemy';
   if (!img) {
@@ -65,7 +72,7 @@ function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, anim: 'idle' | 'att
   ctx.restore();
 }
 
-interface View { hp: Record<string, number>; fx: Fx | null; fxAt: number; downAt: Record<string, number>; step: number }
+interface View { hp: Record<string, number>; fx: Fx | null; fxAt: number; downAt: Record<string, number>; step: number; lordSkin?: LordSkin }
 
 function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: number) {
   ctx.clearRect(0, 0, W, H);
@@ -96,9 +103,10 @@ function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: numbe
       anim = 'attack';
       frame = Math.floor((now - v.fxAt) / (v.step / 7));
     }
-    const s = strips[`${f.kind}_${anim}`];
+    const sprite = spriteOf(f, v.lordSkin);
+    const s = strips[`${sprite}_${anim}`];
     if (anim === 'idle' && s) frame %= s.frames;
-    drawUnit(ctx, f, anim, frame, p.x, p.y);
+    drawUnit(ctx, f, sprite, anim, frame, p.x, p.y);
 
     if (hp > 0) {
       ctx.fillStyle = '#000a';
@@ -129,6 +137,7 @@ export default function BattleCanvas(props: {
   battle: FloorBattle | null;
   events: BattleEvent[];
   speed: 1 | 2;
+  lordSkin?: LordSkin;
   onDone: () => void;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -152,7 +161,7 @@ export default function BattleCanvas(props: {
     // 이미 쓰러져 있던 캐릭터는 쓰러진 마지막 프레임으로 둔다
     const downAt: Record<string, number> = Object.fromEntries(b.fighters.map((f) => [f.key, start - 10_000]));
     const step = STEP_MS / props.speed;
-    const view: View = { hp: hp0, fx: null, fxAt: start, downAt, step };
+    const view: View = { hp: hp0, fx: null, fxAt: start, downAt, step, lordSkin: props.lordSkin };
 
     let i = 0;
     if (frames.length === 0) done.current();
@@ -180,7 +189,7 @@ export default function BattleCanvas(props: {
       window.clearInterval(timer);
       cancelAnimationFrame(raf);
     };
-  }, [props.battle, props.events, props.speed]);
+  }, [props.battle, props.events, props.speed, props.lordSkin]);
 
   return <canvas ref={ref} className="battle" width={W} height={H} />;
 }
