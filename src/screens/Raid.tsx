@@ -91,6 +91,7 @@ export default function Raid(props: {
   return (
     <>
     <div className="scene raid-scene">
+      <img className="backdrop" src="sprites/bg_night.png" alt="" draggable={false} />
       <img className="raid-backdrop" src="sprites/tower.png" alt="" draggable={false} />
       <header className="hud">
         <span className="pill">{run.snapshot.nickname}</span>

@@ -41,8 +41,8 @@
   },
   "imp_attack": {
     "frames": 7,
-    "w": 76,
-    "h": 76
+    "w": 68,
+    "h": 68
   },
   "imp_death": {
     "frames": 7,
@@ -111,18 +111,18 @@
   },
   "lord_idle": {
     "frames": 4,
-    "w": 68,
-    "h": 68
+    "w": 96,
+    "h": 96
   },
   "lord_attack": {
     "frames": 7,
-    "w": 76,
-    "h": 76
+    "w": 96,
+    "h": 96
   },
   "lord_death": {
     "frames": 7,
-    "w": 68,
-    "h": 68
+    "w": 96,
+    "h": 96
   },
   "dragon_idle": {
     "frames": 4,

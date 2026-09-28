@@ -72,6 +72,7 @@ export default function CastleScene(props: {
 
   return (
     <div className="scene">
+      <img className="backdrop" src="sprites/bg_night.png" alt="" draggable={false} />
       <header className="hud">
         <span className="pill"><b>{home.gold}</b> {T.gold}</span>
         <span className="pill"><b>{home.soul}</b> {T.soul}</span>
