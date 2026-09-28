@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MONSTERS, TRAPS, type MonsterId, type TrapId } from '../../server/src/catalog';
+import { Portrait } from '../render/Sprite';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
 
@@ -38,21 +39,26 @@ export default function CastleEdit(props: { api: Api; home: HomeData; floor: num
       <div className="row">
         {current.monsters.map((m, i) => (
           <button key={i} className={`btn slot ${slot === i ? 'on' : ''}`} onClick={() => setSlot(i)}>
-            {m ? MONSTERS[m].name : T.emptySlot}
+            {m ? <Portrait id={m} label={MONSTERS[m].name} /> : <span className="portrait" />}
+            <small>{m ? MONSTERS[m].name : T.emptySlot}</small>
           </button>
         ))}
       </div>
       <div className="chips">
         {owned.map((id) => (
-          <button key={id} className="btn small" disabled={busy} onClick={() => place(id)}>{MONSTERS[id].name}</button>
+          <button key={id} className="btn small pick" disabled={busy} onClick={() => place(id)}>
+            <Portrait id={id} label={MONSTERS[id].name} />
+            <small>{MONSTERS[id].name}</small>
+          </button>
         ))}
         <button className="btn small ghost" disabled={busy} onClick={() => place(null)}>{T.emptySlot}</button>
       </div>
       <div className="chips">
         <span className="muted">{T.trapLabel}</span>
         {ownedTraps.map((id) => (
-          <button key={id} className={`btn small ${current.trap === id ? 'on' : ''}`} disabled={busy} onClick={() => save(current.monsters, id)}>
-            {TRAPS[id].name}
+          <button key={id} className={`btn small pick ${current.trap === id ? 'on' : ''}`} disabled={busy} onClick={() => save(current.monsters, id)}>
+            <Portrait id={`trap_${id}`} label={TRAPS[id].name} />
+            <small>{TRAPS[id].name}</small>
           </button>
         ))}
         <button className={`btn small ghost ${current.trap === null ? 'on' : ''}`} disabled={busy} onClick={() => save(current.monsters, null)}>{T.none}</button>

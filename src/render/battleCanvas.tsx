@@ -1,55 +1,127 @@
 import { useEffect, useRef } from 'react';
 import type { BattleEvent, Fighter, FloorBattle } from '../../server/src/battle';
 import { HEROES, LORD, MONSTERS } from '../../server/src/catalog';
+import SPRITES from './sprites.json';
 import { buildFrames, preHp, type Fx } from './timeline';
 
 const W = 240;
 const H = 200;
+const UNIT_SCALE = 0.8;
+const IDLE_MS = 140;
+const STEP_MS = 350;
+
+type Strip = { frames: number; w: number; h: number };
+const strips = SPRITES as Record<string, Strip>;
+const images = new Map<string, HTMLImageElement>();
+
+function image(name: string): HTMLImageElement | null {
+  if (!strips[name]) return null;
+  let img = images.get(name);
+  if (!img) {
+    img = new Image();
+    img.src = `sprites/${name}.png`;
+    images.set(name, img);
+  }
+  return img.complete && img.naturalWidth > 0 ? img : null;
+}
 
 function nameOf(f: Fighter): string {
   if (f.kind === 'lord') return LORD.name;
   return f.side === 'hero' ? HEROES[f.kind as keyof typeof HEROES].name : MONSTERS[f.kind as keyof typeof MONSTERS].name;
 }
 
+/** 발 위치(아래 가운데) */
 function positions(b: FloorBattle): Record<string, { x: number; y: number }> {
   const out: Record<string, { x: number; y: number }> = {};
   const heroes = b.fighters.filter((f) => f.side === 'hero');
   const enemies = b.fighters.filter((f) => f.side === 'enemy');
-  heroes.forEach((f, i) => { out[f.key] = { x: f.row === 'front' ? 80 : 36, y: 40 + i * 55 }; });
-  enemies.forEach((f, i) => { out[f.key] = { x: i === 0 ? 140 : 188, y: 40 + i * 55 }; });
+  heroes.forEach((f, i) => { out[f.key] = { x: f.row === 'front' ? 88 : 44, y: 86 + i * 50 }; });
+  enemies.forEach((f, i) => { out[f.key] = { x: i % 2 === 0 ? 156 : 200, y: 86 + i * 50 }; });
   return out;
 }
 
-function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, hp: Record<string, number>, fx: Fx | null) {
+/** 한 칸 그리기. 시트가 없으면 이름표 상자 */
+function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, anim: 'idle' | 'attack' | 'death', frame: number, x: number, y: number) {
+  const name = `${f.kind}_${anim}`;
+  const img = image(name);
+  const flip = f.side === 'enemy';
+  if (!img) {
+    ctx.fillStyle = f.side === 'hero' ? '#3a5a9a' : '#7a1b2f';
+    ctx.fillRect(x - 16, y - 32, 32, 32);
+    ctx.fillStyle = '#fff';
+    ctx.fillText(nameOf(f), x, y - 12);
+    return;
+  }
+  const s = strips[name];
+  const fi = Math.min(frame, s.frames - 1);
+  const dw = s.w * UNIT_SCALE;
+  const dh = s.h * UNIT_SCALE;
+  ctx.save();
+  ctx.translate(x, y);
+  if (flip) ctx.scale(-1, 1);
+  if (f.ghost) ctx.globalAlpha *= 0.6;
+  // 캔버스는 여백 포함 정사각형이고 캐릭터 발은 대략 아래에서 1/6 지점이다
+  ctx.drawImage(img, fi * s.w, 0, s.w, s.h, -dw / 2, -dh * 0.84, dw, dh);
+  ctx.restore();
+}
+
+interface View { hp: Record<string, number>; fx: Fx | null; fxAt: number; downAt: Record<string, number>; step: number }
+
+function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: number) {
   ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = '#1b1b1b';
-  ctx.fillRect(0, 0, W, H);
+  const bg = image('bg_floor1');
+  if (bg) {
+    const sc = H / bg.naturalHeight;
+    const bw = bg.naturalWidth * sc;
+    ctx.drawImage(bg, (W - bw) / 2, 0, bw, H);
+  } else {
+    ctx.fillStyle = '#1b1b1b';
+    ctx.fillRect(0, 0, W, H);
+  }
   const pos = positions(b);
-  ctx.font = '9px sans-serif';
+  ctx.font = '10px "Do Hyeon", sans-serif';
   ctx.textAlign = 'center';
-  for (const f of b.fighters) {
+  const idleFrame = Math.floor(now / IDLE_MS);
+  const order = [...b.fighters].sort((a, c) => pos[a.key].y - pos[c.key].y);
+  for (const f of order) {
     const p = pos[f.key];
-    const alive = (hp[f.key] ?? 0) > 0;
-    ctx.globalAlpha = alive ? 1 : 0.25;
-    ctx.fillStyle = f.side === 'hero' ? '#5a7a9a' : f.ghost ? '#7a5a9a' : '#9a5a5a';
-    if (fx?.key === f.key) ctx.fillStyle = fx.kind === 'heal' ? '#6c6' : '#fff';
-    ctx.fillRect(p.x - 12, p.y - 12, 24, 24);
-    ctx.fillStyle = '#ccc';
-    ctx.fillText(nameOf(f), p.x, p.y + 22);
-    ctx.fillStyle = '#400';
-    ctx.fillRect(p.x - 14, p.y - 20, 28, 4);
-    ctx.fillStyle = '#c33';
-    ctx.fillRect(p.x - 14, p.y - 20, 28 * Math.max(0, (hp[f.key] ?? 0) / f.maxHp), 4);
-    ctx.globalAlpha = 1;
-    if (fx?.key === f.key) {
-      ctx.fillStyle = fx.kind === 'heal' ? '#8f8' : '#ff8';
-      ctx.fillText(fx.text, p.x, p.y - 26);
+    const hp = v.hp[f.key] ?? 0;
+    let anim: 'idle' | 'attack' | 'death' = 'idle';
+    let frame = idleFrame;
+    if (hp <= 0) {
+      anim = 'death';
+      const since = now - (v.downAt[f.key] ?? 0);
+      frame = Math.floor(since / 50);
+    } else if (v.fx?.from === f.key) {
+      anim = 'attack';
+      frame = Math.floor((now - v.fxAt) / (v.step / 7));
+    }
+    const s = strips[`${f.kind}_${anim}`];
+    if (anim === 'idle' && s) frame %= s.frames;
+    drawUnit(ctx, f, anim, frame, p.x, p.y);
+
+    if (hp > 0) {
+      ctx.fillStyle = '#000a';
+      ctx.fillRect(p.x - 15, p.y - 50, 30, 4);
+      ctx.fillStyle = f.side === 'hero' ? '#3cf07a' : '#ff5a5a';
+      ctx.fillRect(p.x - 15, p.y - 50, 30 * Math.max(0, hp / f.maxHp), 4);
+    }
+    if (v.fx?.key === f.key && v.fx.text) {
+      const rise = Math.min(1, (now - v.fxAt) / v.step) * 8;
+      ctx.fillStyle = v.fx.kind === 'heal' ? '#8f8' : '#ffe14d';
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 3;
+      ctx.strokeText(v.fx.text, p.x, p.y - 56 - rise);
+      ctx.fillText(v.fx.text, p.x, p.y - 56 - rise);
     }
   }
-  if (fx && fx.key === null) {
+  if (v.fx && v.fx.key === null && v.fx.text) {
+    ctx.font = '18px "Do Hyeon", sans-serif';
     ctx.fillStyle = '#fff';
-    ctx.font = '14px sans-serif';
-    ctx.fillText(fx.text, W / 2, 20);
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 4;
+    ctx.strokeText(v.fx.text, W / 2, 28);
+    ctx.fillText(v.fx.text, W / 2, 28);
   }
 }
 
@@ -66,6 +138,7 @@ export default function BattleCanvas(props: {
   useEffect(() => {
     const ctx = ref.current?.getContext('2d');
     if (!ctx) return;
+    ctx.imageSmoothingEnabled = false;
     const b = props.battle;
     if (!b) {
       ctx.fillStyle = '#1b1b1b';
@@ -74,22 +147,39 @@ export default function BattleCanvas(props: {
       return;
     }
     const frames = buildFrames(b, props.events);
-    draw(ctx, b, preHp(b, props.events), null);
-    if (frames.length === 0) {
-      done.current();
-      return;
-    }
+    const start = performance.now();
+    const hp0 = preHp(b, props.events);
+    // 이미 쓰러져 있던 캐릭터는 쓰러진 마지막 프레임으로 둔다
+    const downAt: Record<string, number> = Object.fromEntries(b.fighters.map((f) => [f.key, start - 10_000]));
+    const step = STEP_MS / props.speed;
+    const view: View = { hp: hp0, fx: null, fxAt: start, downAt, step };
+
     let i = 0;
-    const id = window.setInterval(() => {
+    if (frames.length === 0) done.current();
+    const timer = frames.length === 0 ? 0 : window.setInterval(() => {
       const f = frames[i];
-      draw(ctx, b, f.hp, f.fx);
+      const now = performance.now();
+      for (const k of Object.keys(f.hp)) if (view.hp[k] > 0 && f.hp[k] <= 0) view.downAt[k] = now;
+      view.hp = f.hp;
+      view.fx = f.fx;
+      view.fxAt = now;
       i += 1;
       if (i >= frames.length) {
-        window.clearInterval(id);
+        window.clearInterval(timer);
         window.setTimeout(() => done.current(), 300 / props.speed);
       }
-    }, 350 / props.speed);
-    return () => window.clearInterval(id);
+    }, step);
+
+    let raf = 0;
+    const loop = (now: number) => {
+      draw(ctx, b, view, now);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => {
+      window.clearInterval(timer);
+      cancelAnimationFrame(raf);
+    };
   }, [props.battle, props.events, props.speed]);
 
   return <canvas ref={ref} className="battle" width={W} height={H} />;

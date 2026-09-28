@@ -9,6 +9,10 @@ export default defineConfig({
     exclude: ["lucide-react"],
   },
   base: "./",
+  // 프로젝트가 OneDrive 폴더에 있어 파일 변경 알림이 빠진다. 로컬 dev 서버만 폴링으로 감시한다.
+  server: {
+    watch: { usePolling: true, interval: 300 },
+  },
   build: {
     outDir: "dist",
     // Skip gzip-size reporting: our users don't optimize by bundle size,

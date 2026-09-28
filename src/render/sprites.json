@@ -33,5 +33,125 @@
     "frames": 1,
     "w": 240,
     "h": 112
+  },
+  "imp_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68
+  },
+  "imp_attack": {
+    "frames": 7,
+    "w": 76,
+    "h": 76
+  },
+  "imp_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68
+  },
+  "necro_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68
+  },
+  "necro_attack": {
+    "frames": 7,
+    "w": 72,
+    "h": 72
+  },
+  "necro_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68
+  },
+  "priest_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68
+  },
+  "priest_attack": {
+    "frames": 7,
+    "w": 76,
+    "h": 76
+  },
+  "priest_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68
+  },
+  "archer_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68
+  },
+  "archer_attack": {
+    "frames": 7,
+    "w": 76,
+    "h": 76
+  },
+  "archer_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68
+  },
+  "slime_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68
+  },
+  "slime_attack": {
+    "frames": 7,
+    "w": 68,
+    "h": 68
+  },
+  "slime_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68
+  },
+  "lord_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68
+  },
+  "lord_attack": {
+    "frames": 7,
+    "w": 76,
+    "h": 76
+  },
+  "lord_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68
+  },
+  "dragon_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68
+  },
+  "dragon_attack": {
+    "frames": 7,
+    "w": 68,
+    "h": 68
+  },
+  "dragon_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68
+  },
+  "spider_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68
+  },
+  "spider_attack": {
+    "frames": 7,
+    "w": 68,
+    "h": 68
+  },
+  "spider_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68
   }
 }

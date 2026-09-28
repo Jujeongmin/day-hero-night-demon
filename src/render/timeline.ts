@@ -5,6 +5,8 @@ export interface Fx {
   kind: 'hit' | 'heal' | 'trap' | 'down' | 'raise' | 'ult' | 'status' | 'end';
   key: string | null;
   text: string;
+  /** 공격·회복을 한 쪽. 이 캐릭터가 공격 동작을 한다 */
+  from?: string;
 }
 
 export interface Frame { hp: Record<string, number>; fx: Fx }
@@ -37,7 +39,7 @@ export function buildFrames(battle: FloorBattle, events: BattleEvent[]): Frame[]
     switch (e.t) {
       case 'attack':
         hp[e.to] = Math.max(0, hp[e.to] - e.dmg);
-        fx = { kind: 'hit', key: e.to, text: `−${e.dmg}` };
+        fx = { kind: 'hit', key: e.to, text: `−${e.dmg}`, from: e.from };
         break;
       case 'trap':
         hp[e.to] = Math.max(0, hp[e.to] - e.dmg);
@@ -45,7 +47,7 @@ export function buildFrames(battle: FloorBattle, events: BattleEvent[]): Frame[]
         break;
       case 'heal':
         hp[e.to] = Math.min(max[e.to], hp[e.to] + e.amount);
-        fx = { kind: 'heal', key: e.to, text: `+${e.amount}` };
+        fx = { kind: 'heal', key: e.to, text: `+${e.amount}`, from: e.from };
         break;
       case 'down':
         fx = { kind: 'down', key: e.key, text: '쓰러짐' };

@@ -5,13 +5,9 @@ import Sprite from '../render/Sprite';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
 
-/** tower.png(224×400) 안에서 각 단의 위치(%). stand = 몬스터가 딛는 선, top/bottom = 누를 수 있는 영역. */
-const THRONE = { stand: 10.5, top: 0, bottom: 28 };
-const TIERS = [
-  { stand: 76, top: 73, bottom: 86 }, // 1층
-  { stand: 53.5, top: 50.5, bottom: 73 }, // 2층
-  { stand: 31, top: 28, bottom: 50.5 }, // 3층
-];
+/** tower.png(224×400) 안에서 몬스터가 딛는 선(%). 누르는 영역은 그 선 위 몬스터 키만큼. */
+const THRONE = { stand: 10.5 };
+const TIERS = [76, 53.5, 31].map((stand) => ({ stand, top: stand - 13, bottom: stand + 4 })); // 1층, 2층, 3층
 const SLOT_X = [36, 50, 64];
 const TOWER_H = 400;
 

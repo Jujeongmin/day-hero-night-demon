@@ -91,6 +91,7 @@ export default function Raid(props: {
   return (
     <>
     <div className="scene raid-scene">
+      <img className="raid-backdrop" src="sprites/tower.png" alt="" draggable={false} />
       <header className="hud">
         <span className="pill">{run.snapshot.nickname}</span>
         <button className="pill" onClick={() => setSpeed(speed === 1 ? 2 : 1)}>{T.speed(speed)}</button>

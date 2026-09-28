@@ -34,4 +34,13 @@ describe('timeline', () => {
     expect(frames).toHaveLength(3);
     expect(frames[0].fx).toEqual({ kind: 'trap', key: 'h:knight', text: '−15' });
   });
+
+  it('attack frames name the attacker so it can play its attack animation', () => {
+    const { battle } = createFloorBattle({ heroes, enemies: [{ id: 'slime', level: 1 }], trap: null, tactic: 'charge', seed: 24 });
+    const r = playRound(battle, null);
+    const attacks = r.events.filter((e) => e.t === 'attack');
+    const frames = buildFrames(r.battle, r.events).filter((f) => f.fx.kind === 'hit');
+    expect(frames.length).toBe(attacks.length);
+    frames.forEach((f, i) => expect(f.fx.from).toBe((attacks[i] as { from: string }).from));
+  });
 });
