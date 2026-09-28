@@ -26,6 +26,16 @@ function samePanel(a: Panel, b: Panel): boolean {
   return a.name === b.name;
 }
 
+/** 대시보드 제한으로 못 막는 "다시 사도 소용없는" 상품. 시즌 패스는 시즌마다 풀리므로 여기서 막는다 */
+function ownedProducts(s: UserState): Set<string> {
+  const owned = new Set<string>();
+  if (s.season.pass) owned.add('season_pass');
+  if (s.idle.mult >= 2) owned.add('idle_x2');
+  if (s.roster.dragon) owned.add('recruit_dragon');
+  if (s.roster.necro) owned.add('starter_pack');
+  return owned;
+}
+
 function readHint(): boolean {
   try {
     return localStorage.getItem(HINT_KEY) !== '1';
@@ -153,7 +163,7 @@ export default function App() {
         break;
       case 'shop':
         title = T.panels.shop;
-        body = <Shop items={shopItems} />;
+        body = <Shop items={shopItems} owned={ownedProducts(home.state)} />;
         break;
     }
   }
