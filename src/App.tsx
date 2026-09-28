@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react
 import { useGameServer } from '@agent8/gameserver';
 import { createApi, errorText, type EndResult, type HomeData } from './services/api';
 import { T } from './strings/ko';
+import Match from './screens/Match';
+import Raid from './screens/Raid';
+import Result from './screens/Result';
 import Home from './screens/Home';
 
 export type Screen =
@@ -45,6 +48,23 @@ export default function App() {
 
   let body: ReactNode;
   switch (screen.name) {
+    case 'match':
+      body = <Match api={api} home={home} onStart={() => setScreen({ name: 'raid' })} onBack={toHome} onError={onError} />;
+      break;
+    case 'raid':
+      body = (
+        <Raid
+          api={api}
+          home={home}
+          onEnd={(result) => { setScreen({ name: 'result', result }); void refresh(); }}
+          onRefresh={refresh}
+          onError={onError}
+        />
+      );
+      break;
+    case 'result':
+      body = <Result result={screen.result} onHome={toHome} />;
+      break;
     default:
       body = (
         <Home
