@@ -12,7 +12,7 @@ export type Screen =
   | { name: 'castle' } | { name: 'upgrade' } | { name: 'league' } | { name: 'shop' };
 
 export default function App() {
-  const { connected, server } = useGameServer({ verse: import.meta.env.VITE_AGENT8_VERSE });
+  const { connected, server } = useGameServer();
   const api = useMemo(() => (server ? createApi(server) : null), [server]);
   const [home, setHome] = useState<HomeData | null>(null);
   const [screen, setScreen] = useState<Screen>({ name: 'home' });
