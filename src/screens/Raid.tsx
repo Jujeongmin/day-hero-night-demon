@@ -4,6 +4,7 @@ import { HERO_ORDER } from '../../server/src/catalog';
 import { autoTactic, runStatus, type RunStatus } from '../../server/src/raid';
 import type { Run } from '../../server/src/state';
 import BattleCanvas from '../render/battleCanvas';
+import { playBgm, sfx } from '../services/audio';
 import { buy } from '../services/shop';
 import { errorText, type Api, type EndResult, type HomeData, type RunResult } from '../services/api';
 import { T } from '../strings/ko';
@@ -64,6 +65,20 @@ export default function Raid(props: {
       busy.current = false;
     }
   }
+
+  // 전투 음악, 옥좌층에 들어설 때 마왕 포효 (한 판에 한 번)
+  const roared = useRef(false);
+  useEffect(() => {
+    playBgm('bgm_battle');
+    return () => playBgm('bgm_home');
+  }, []);
+  useEffect(() => {
+    if (!run || status !== 'fighting' || roared.current) return;
+    if (run.floor === run.snapshot.floors.length) {
+      roared.current = true;
+      sfx('sfx_lord');
+    }
+  }, [run, status]);
 
   useEffect(() => {
     if (playing) return;

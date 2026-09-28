@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import type { BattleEvent, Fighter, FloorBattle } from '../../server/src/battle';
 import { HEROES, LORD, MONSTERS } from '../../server/src/catalog';
 import type { LordSkin } from '../../server/src/state';
+import { sfx } from '../services/audio';
+import { sfxForFx } from './sfxMap';
 import { lordSpriteId } from './skins';
 import SPRITES from './sprites.json';
 import { buildFrames, preHp, type Fx } from './timeline';
@@ -172,6 +174,8 @@ export default function BattleCanvas(props: {
       view.hp = f.hp;
       view.fx = f.fx;
       view.fxAt = now;
+      const sound = sfxForFx(f.fx);
+      if (sound) sfx(sound);
       i += 1;
       if (i >= frames.length) {
         window.clearInterval(timer);

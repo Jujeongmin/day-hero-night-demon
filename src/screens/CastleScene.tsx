@@ -39,6 +39,8 @@ export default function CastleScene(props: {
   hint: boolean;
   /** 아래 창이 열리면 출정 버튼을 숨겨 탑을 가리지 않는다 */
   panelOpen: boolean;
+  muted: boolean;
+  onToggleMute: () => void;
   onRefresh: () => Promise<void>;
   onRaid: () => void;
   onMatch: () => void;
@@ -46,7 +48,7 @@ export default function CastleScene(props: {
   onLocked: () => void;
   onError: (msg: string) => void;
 }) {
-  const { api, home, selected, hint, panelOpen, onRefresh, onRaid, onMatch, onFloor, onLocked, onError } = props;
+  const { api, home, selected, hint, panelOpen, muted, onToggleMute, onRefresh, onRaid, onMatch, onFloor, onLocked, onError } = props;
   const s = home.state;
   const [busy, setBusy] = useState(false);
   const towerRef = useRef<HTMLDivElement>(null);
@@ -76,6 +78,7 @@ export default function CastleScene(props: {
       <img className="backdrop" src="sprites/bg_night.png" alt="" draggable={false} />
       <header className="hud">
         <span className="pill"><b>{home.gold}</b> {T.gold}</span>
+        <button className="pill" onClick={onToggleMute}>{muted ? T.soundOff : T.soundOn}</button>
         <span className="pill"><b>{home.soul}</b> {T.soul}</span>
       </header>
 

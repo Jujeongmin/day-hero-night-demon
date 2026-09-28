@@ -36,6 +36,8 @@ export const T = {
   logEmpty: '아직 아무도 오지 않았다',
   ultTitle: '궁극기',
   ok: '확인',
+  soundOn: '소리',
+  soundOff: '무음',
   close: '닫기',
   tapFloorHint: '층을 눌러 몬스터 배치',
   editFloor: '편성',

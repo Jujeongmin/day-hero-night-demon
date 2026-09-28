@@ -13,6 +13,7 @@ import Log from './screens/Log';
 import Shop from './screens/Shop';
 import League from './screens/League';
 import { startShop, type ShopItem } from './services/shop';
+import { isMuted, playBgm, setMuted, sfx, unlockAudio } from './services/audio';
 
 type Tab = 'upgrade' | 'log' | 'league' | 'shop';
 export type Panel =
@@ -36,6 +37,14 @@ function ownedProducts(s: UserState): Set<string> {
   return owned;
 }
 
+function purchasedSomething(a: HomeData, b: HomeData): boolean {
+  const c = (h: HomeData) => h.state.credits;
+  return b.gold > a.gold || b.soul > a.soul
+    || c(b).revive > c(a).revive || c(b).shadow > c(a).shadow || c(b).revenge > c(a).revenge
+    || (b.state.season.pass && !a.state.season.pass) || b.state.idle.mult > a.state.idle.mult
+    || Object.keys(b.state.roster).length > Object.keys(a.state.roster).length;
+}
+
 function readHint(): boolean {
   try {
     return localStorage.getItem(HINT_KEY) !== '1';
@@ -52,6 +61,31 @@ export default function App() {
   const [panel, setPanel] = useState<Panel | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [hint, setHint] = useState(readHint);
+  const [muted, setMutedState] = useState(isMuted);
+
+  // 첫 입력에서 오디오를 풀고, 버튼을 누를 때마다 탭 소리
+  useEffect(() => {
+    const unlock = () => unlockAudio();
+    const tap = (e: MouseEvent) => {
+      if ((e.target as Element | null)?.closest('button')) sfx('sfx_tap');
+    };
+    document.addEventListener('pointerdown', unlock, { capture: true });
+    document.addEventListener('click', tap, { capture: true });
+    return () => {
+      document.removeEventListener('pointerdown', unlock, { capture: true });
+      document.removeEventListener('click', tap, { capture: true });
+    };
+  }, []);
+
+  useEffect(() => {
+    if (connected) playBgm('bgm_home');
+  }, [connected]);
+
+  const toggleMute = () => {
+    const next = !isMuted();
+    setMuted(next);
+    setMutedState(next);
+  };
 
   const onError = useCallback((msg: string) => {
     setToast(msg);
@@ -76,14 +110,26 @@ export default function App() {
     }
     if (top.id === lastSeenLog.current) return;
     lastSeenLog.current = top.id;
-    if (!top.npc) onError(top.attackerWon ? T.raidedLive(top.attackerName, top.goldLost) : T.defendedLive(top.attackerName));
+    if (!top.npc) {
+      onError(top.attackerWon ? T.raidedLive(top.attackerName, top.goldLost) : T.defendedLive(top.attackerName));
+      if (top.attackerWon) sfx('sfx_raided');
+    }
     void refresh();
   }, [live?.raidLog, onError, refresh]);
 
+  // 결제 창이 닫힌 뒤 재화나 보유 아이템이 늘었으면 구매 소리
+  const homeRef = useRef<HomeData | null>(null);
+  homeRef.current = home;
   useEffect(() => {
-    if (!connected) return;
-    return startShop(setShopItems, () => { void refresh(); });
-  }, [connected, refresh]);
+    if (!connected || !api) return;
+    return startShop(setShopItems, () => {
+      const before = homeRef.current;
+      api.getHome().then((h) => {
+        setHome(h);
+        if (before && purchasedSomething(before, h)) sfx('sfx_purchase');
+      }).catch(() => {});
+    });
+  }, [connected, api]);
 
   useEffect(() => {
     if (!connected || !api) return;
@@ -176,6 +222,8 @@ export default function App() {
         selected={panel?.name === 'floor' ? panel.floor : null}
         hint={hint && !panel}
         panelOpen={!!panel}
+        muted={muted}
+        onToggleMute={toggleMute}
         onRefresh={refresh}
         onRaid={startRaid}
         onMatch={() => toggle({ name: 'match' })}
