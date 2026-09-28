@@ -1,4 +1,5 @@
 import type { EndResult } from '../services/api';
+import { buy } from '../services/shop';
 import { T } from '../strings/ko';
 
 export default function Result(props: { result: EndResult; onHome: () => void }) {
@@ -11,6 +12,7 @@ export default function Result(props: { result: EndResult; onHome: () => void })
         {r.honor !== undefined && <span>{T.honor} +{r.honor}</span>}
         {r.soul > 0 && <span>{T.soul} +{r.soul}</span>}
       </div>
+      {r.offerStarter && <button className="btn" onClick={() => buy('starter_pack')}>{T.buyStarter}</button>}
       <button className="btn big" onClick={props.onHome}>{T.toHome}</button>
     </div>
   );

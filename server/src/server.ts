@@ -4,6 +4,7 @@ import { castlePower, idleIncome, lootAmount, npcLoot } from './economy';
 import { seasonEndsAt, seasonIdAt } from './league';
 import { npcCastle, npcRaids, npcTierForPower } from './npc';
 import { advanceRound, beginFloor, extendAway, lordDefeated, reviveRun, runStatus, startRun } from './raid';
+import { grantFor } from './purchases';
 import { rngNext, seedFrom } from './rng';
 import {
   dayKey, defaultState, isNew, resolveFloors,
@@ -417,6 +418,24 @@ export class Server {
       }
       const snapshot = await buildSnapshot(entry.attacker, now);
       return beginRun(me, s, snapshot, { isRevenge: true, revengeLogId: logId, useShadow: false, extra }, now);
+    });
+  }
+
+  async $onItemPurchased(p: { account: string; purchaseId: string; productId: string; quantity: number; metadata?: unknown }) {
+    return withLocks([p.account], async () => {
+      const now = Date.now();
+      const s = await loadState(p.account, now);
+      if (s.processedPurchases.includes(p.purchaseId)) return { success: true };
+      let g;
+      try {
+        g = grantFor(p.productId, p.quantity, s);
+      } catch {
+        return { success: false };
+      }
+      if (g.gold) await $asset.mint('gold', g.gold, p.account);
+      if (g.soul) await $asset.mint('soul', g.soul, p.account);
+      await save(p.account, { ...g.patch, processedPurchases: [...s.processedPurchases, p.purchaseId].slice(-200) });
+      return { success: true };
     });
   }
 }

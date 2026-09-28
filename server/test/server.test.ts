@@ -185,3 +185,13 @@ describe('pvp', () => {
     await server.endRaid(true);
   });
 });
+
+describe('purchases', () => {
+  test('the same purchaseId is granted once', async (server) => {
+    const acct = `t14-buyer-${Date.now()}`;
+    await server.$onItemPurchased({ account: acct, purchaseId: 'p-1', productId: 'revive', quantity: 1 });
+    await server.$onItemPurchased({ account: acct, purchaseId: 'p-1', productId: 'revive', quantity: 1 });
+    server.connect({ account: acct });
+    expect((await server.getHome()).state.credits.revive).toBe(1);
+  });
+});

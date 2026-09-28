@@ -9,6 +9,8 @@ import Result from './screens/Result';
 import Home from './screens/Home';
 import CastleEdit from './screens/CastleEdit';
 import Upgrade from './screens/Upgrade';
+import Shop from './screens/Shop';
+import { startShop, type ShopItem } from './services/shop';
 
 export type Screen =
   | { name: 'home' } | { name: 'match' } | { name: 'raid' } | { name: 'result'; result: EndResult }
@@ -26,6 +28,7 @@ export default function App() {
     window.setTimeout(() => setToast(null), 2500);
   }, []);
 
+  const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const live = useGlobalMyState() as Partial<UserState> | undefined;
   const lastSeenLog = useRef<string | null>(null);
 
@@ -46,6 +49,11 @@ export default function App() {
     if (!top.npc) onError(top.attackerWon ? T.raidedLive(top.attackerName, top.goldLost) : T.defendedLive(top.attackerName));
     void refresh();
   }, [live?.raidLog, onError, refresh]);
+
+  useEffect(() => {
+    if (!connected) return;
+    return startShop(setShopItems, () => { void refresh(); });
+  }, [connected, refresh]);
 
   useEffect(() => {
     if (!connected || !api) return;
@@ -90,6 +98,9 @@ export default function App() {
     case 'upgrade':
       body = <Upgrade api={api} home={home} onRefresh={refresh} onError={onError} />;
       break;
+    case 'shop':
+      body = <Shop items={shopItems} />;
+      break;
     default:
       body = (
         <Home
@@ -110,6 +121,7 @@ export default function App() {
       <nav className="tabs">
         <button className={screen.name === 'home' ? 'on' : ''} onClick={toHome}>{T.tabs.home}</button>
         <button className={screen.name === 'upgrade' ? 'on' : ''} onClick={() => setScreen({ name: 'upgrade' })}>{T.tabs.upgrade}</button>
+        <button className={screen.name === 'shop' ? 'on' : ''} onClick={() => setScreen({ name: 'shop' })}>{T.tabs.shop}</button>
       </nav>
       {toast && <div className="toast">{toast}</div>}
     </div>

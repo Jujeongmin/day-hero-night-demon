@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Target } from '../../server/src/state';
 import { errorText, type Api, type HomeData } from '../services/api';
+import { buy } from '../services/shop';
 import { T } from '../strings/ko';
 
 export default function Match(props: { api: Api; home: HomeData; onStart: () => void; onBack: () => void; onError: (m: string) => void }) {
@@ -38,6 +39,7 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
           <button className="btn" disabled={busy} onClick={() => start(t.id)}>{T.sortie}</button>
         </div>
       ))}
+      {shadows === 0 && <button className="btn small" onClick={() => buy('shadow_double')}>{T.products.shadow_double[0]}</button>}
       {shadows > 0 && (
         <label className="row">
           <input type="checkbox" checked={useShadow} onChange={(e) => setUseShadow(e.target.checked)} />

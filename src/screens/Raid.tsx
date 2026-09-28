@@ -4,6 +4,7 @@ import { HERO_ORDER, TACTICS } from '../../server/src/catalog';
 import { runStatus, type RunStatus } from '../../server/src/raid';
 import type { Run } from '../../server/src/state';
 import BattleCanvas from '../render/battleCanvas';
+import { buy } from '../services/shop';
 import { errorText, type Api, type EndResult, type HomeData, type RunResult } from '../services/api';
 import { T } from '../strings/ko';
 
@@ -132,6 +133,9 @@ export default function Raid(props: {
           >
             {T.revive(revives)}
           </button>
+          {revives < 1 && !run.reviveUsed && (
+            <button className="btn" onClick={() => buy('revive')}>{T.buyRevive}</button>
+          )}
           <button className="btn" onClick={() => finish(false)}>{T.defeat} · {T.toHome}</button>
         </div>
       )}
