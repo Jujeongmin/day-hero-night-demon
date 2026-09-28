@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { BattleEvent } from '../../server/src/battle';
-import { HERO_ORDER, TACTICS } from '../../server/src/catalog';
-import { runStatus, type RunStatus } from '../../server/src/raid';
+import { HERO_ORDER } from '../../server/src/catalog';
+import { autoTactic, runStatus, type RunStatus } from '../../server/src/raid';
 import type { Run } from '../../server/src/state';
 import BattleCanvas from '../render/battleCanvas';
 import { buy } from '../services/shop';
@@ -67,7 +67,10 @@ export default function Raid(props: {
 
   useEffect(() => {
     if (playing) return;
-    if (status === 'fighting') {
+    if (status === 'choose_tactic' && run) {
+      // 전술은 자동: 플레이어가 고를 것을 줄인다
+      void call(() => api.setTactic(autoTactic(run)));
+    } else if (status === 'fighting') {
       const ult = pendingUlt;
       setPendingUlt(null);
       void call(() => api.playRound(ult));
@@ -104,22 +107,11 @@ export default function Raid(props: {
 
     <section className="sheet raid-sheet">
       <header className="sheet-head">
-        <span>{status === 'choose_tactic' ? T.tacticTitle : status === 'fighting' ? T.ultTitle : T.defeat}</span>
+        <span>{status === 'wiped' ? T.defeat : T.ultTitle}</span>
         <button className="link" onClick={() => { if (window.confirm(T.confirmGiveUp)) void finish(true); }}>{T.giveUp}</button>
       </header>
       <div className="sheet-body">
-      {status === 'choose_tactic' && (
-        <div className="row">
-          {TACTICS.map((t) => (
-            <button key={t} className="btn" onClick={() => call(() => api.setTactic(t))}>
-              <b>{T.tactics[t]}</b>
-              <small>{T.tacticHelp[t]}</small>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {status === 'fighting' && (
+      {status !== 'wiped' && (
         <div className="row">
           {HERO_ORDER.map((h) => (
             <button

@@ -42,6 +42,11 @@ export function startRun(p: {
   };
 }
 
+/** 자동 전투용 전술: 적이 여럿이면 약한 적부터, 하나면 돌격 */
+export function autoTactic(run: Run): Tactic {
+  return floorEnemies(run.snapshot, run.floor).length >= 2 ? 'focus' : 'charge';
+}
+
 export function runStatus(run: Run): RunStatus {
   if (run.floor > throneIndex(run.snapshot)) return 'victory';
   if (!run.battle) return 'choose_tactic';

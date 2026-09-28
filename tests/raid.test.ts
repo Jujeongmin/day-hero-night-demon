@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { HeroId } from '../server/src/catalog';
 import {
-  advanceRound, beginFloor, extendAway, floorEnemies, lordDefeated, reviveRun, runStatus, startRun,
+  advanceRound, autoTactic, beginFloor, extendAway, floorEnemies, lordDefeated, reviveRun, runStatus, startRun,
 } from '../server/src/raid';
 import type { CastleSnapshot, Run } from '../server/src/state';
 import { BALANCE } from '../server/src/catalog';
@@ -21,6 +21,23 @@ function clearFloor(run: Run, level: number): Run {
   while (runStatus(r) === 'fighting') r = advanceRound(r, null).run;
   return r;
 }
+
+describe('autoTactic', () => {
+  const at = (floors: CastleSnapshot['floors']) =>
+    autoTactic(startRun({ account: 'a', snapshot: snap({ floors }), isRevenge: false, revengeLogId: null, now: 0 }));
+
+  it('charges a lone enemy', () => {
+    expect(at([{ monsters: [{ id: 'slime', level: 1 }], trap: null }])).toBe('charge');
+  });
+
+  it('focuses the weakest when there are several enemies', () => {
+    expect(at([{ monsters: [{ id: 'slime', level: 1 }, { id: 'skeleton', level: 1 }], trap: null }])).toBe('focus');
+  });
+
+  it('charges the lone lord on the throne floor', () => {
+    expect(at([{ monsters: [], trap: null }])).toBe('charge');
+  });
+});
 
 describe('raid', () => {
   it('skips empty floors at the start', () => {
