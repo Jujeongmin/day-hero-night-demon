@@ -12,6 +12,8 @@ let unlocked = false;
 let muted = readMuted();
 let bgmName: Bgm | null = null;
 let bgmEl: HTMLAudioElement | null = null;
+/** BGM 재생이 거부되면(입력 전 자동 재생) 다음 입력 때 다시 시도한다 */
+let bgmRetry = false;
 const sfxCache = new Map<Sfx, HTMLAudioElement>();
 
 function readMuted(): boolean {
@@ -28,22 +30,22 @@ function src(name: string): string {
 
 /** 첫 사용자 입력에서 부른다. 브라우저는 입력 전 자동 재생을 막는다. */
 export function unlockAudio(): void {
-  if (unlocked) return;
+  const first = !unlocked;
   unlocked = true;
-  if (bgmName) startBgm(bgmName);
+  if (bgmName && (first || bgmRetry)) startBgm(bgmName);
 }
 
 function startBgm(name: Bgm): void {
   if (!unlocked || muted) return;
-  if (bgmEl && bgmEl.dataset.name === name) return;
+  if (bgmEl && bgmEl.dataset.name === name && !bgmRetry) return;
   bgmEl?.pause();
+  bgmRetry = false;
   const el = new Audio(src(name));
   el.loop = true;
   el.volume = BGM_VOLUME;
   el.dataset.name = name;
   el.play().catch(() => {
-    // 자동 재생이 막히면 다음 입력 때 다시 시도한다
-    unlocked = false;
+    bgmRetry = true;
   });
   bgmEl = el;
 }
