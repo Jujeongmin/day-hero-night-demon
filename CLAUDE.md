@@ -309,3 +309,27 @@ Verse8 공식 기능이 존재하는 영역을 불필요하게 자체 구현하�
 - git 원격 주소에 접근 토큰이 들어 있다. 토큰을 커밋되는 파일이나 출력에 절대 쓰지 않는다.
 - 단일 파일/IIFE 빌드 금지(import.meta.env 소실 → verse "default").
 - PROJECT/*.md 는 Agent8 웹 에이전트가 읽는 문서다. 지우지 말고 큰 단계가 끝나면 현재 상태로 갱신한다.
+
+## 다른 PC에서 이어 하기 (2026-09-28 기준)
+
+새 세션에는 이전 대화 기억이 없다. 아래 순서로 시작한다.
+
+1. 현재 상태: `PROJECT/Status.md` (된 것·남은 것), 결정 기록: `docs/ui-style.md`, `docs/art-style.md`, `docs/vxshop-products.md`. 계획서의 Task 15(사용자 작업)·19·20이 남았다.
+2. 준비: `npm install`, `cd server && npm install` (서버 타입 검사용). `.env`(VITE_AGENT8_VERSE/ACCOUNT)는 저장소에 들어 있다.
+3. 확인: `npm test`(vitest 80개), `npm run test:server`(하네스 16개), `npx tsc --noEmit -p tsconfig.app.json`, `npx tsc -p server/tsconfig.json --noEmit`.
+4. 미리보기: `npx vite --port 5199 --strictPort` (5173은 다른 것이 쓸 때가 있다). 서버는 Agent8 편집기가 `<verse>-preview`에 배포하고, `git push origin develop`이 빌드·배포다.
+
+사용자가 정한 작업 규칙 (대화에서 나온 것, 코드에 없음):
+- 화면 정보는 적게, 마우스(클릭)만으로 조작, 한눈에 이해되게. 유저가 이탈하지 않게.
+- UI 요소(창·버튼·배경)는 CSS 색 박스로 만들지 않는다. PixelLab으로 생성하거나 외부 에셋을 쓴다. **Kenney·itch.io·OpenGameArt 에셋은 쓰지 않는다**(이미 너무 많이 써서). 소리는 Mixkit을 쓰고 있다.
+- 목록·창에는 유닛 초상화·아이콘을 적극 넣는다.
+- 마왕은 사람형이 아니라 위엄 있는 괴물형. `art/lord/`의 보관 후보 4종은 사용자가 마음에 들어 하니 쓸 곳이 생기면 쓴다(하나는 시즌 패스 외형으로 이미 사용).
+- 화면이 잘리면 안 된다(탑 꼭대기·마왕이 항상 보이게).
+- 공개 출시 전까지 develop push는 매번 묻지 않아도 된다. 공개 뒤에는 매번 묻는다.
+- 비공개 출시·VX Shop 상품 등록·테스트 결제는 사용자가 직접 한다. 완료 알림을 받으면 `docs/vxshop-products.md`의 기록란을 채운다.
+- 서브에이전트는 토큰을 많이 써서 쓰지 않는다. 이 세션 안에서 직접 한다.
+
+도구 메모:
+- PixelLab MCP: 한 달 2,000회, 2026-10-28 갱신. 2026-09-28 시점 약 1,650회 남음. 캐릭터 규격은 `docs/art-style.md`.
+- 프로젝트가 OneDrive 폴더면 Vite 파일 감시가 빠져서 `vite.config.ts`에 폴링을 켜 두었다. 다른 PC에서 일반 폴더면 그대로 둬도 된다.
+- 로컬 하네스의 `$asset`은 계정 인자를 무시한다. 계정 간 골드 이동은 preview 서버에서 확인한다. 원격 함수는 함수당 초당 10회 제한.
