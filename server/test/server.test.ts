@@ -111,3 +111,77 @@ describe('raid vs npc', () => {
     await server.endRaid(true);
   });
 });
+
+async function playAll(server: any) {
+  let res = await server.setTactic('charge');
+  for (let guard = 0; guard < 500; guard++) {
+    if (res.status === 'fighting') res = await server.playRound(null);
+    else if (res.status === 'choose_tactic') res = await server.setTactic('charge');
+    else break;
+  }
+  return res;
+}
+
+async function findTarget(server: any, id: string) {
+  for (let i = 0; i < 40; i++) {
+    const t = (await server.findTargets()).find((x: any) => x.id === id);
+    if (t) return t;
+  }
+  return null;
+}
+
+describe('pvp', () => {
+  test('raiding a real player moves gold, logs it for the defender, and shields on loss', async (server) => {
+    const A = `t12-att-${Date.now()}`;
+    const D = `t12-def-${Date.now()}`;
+    server.connect({ account: D });
+    await server.getHome();
+    server.connect({ account: A });
+    await server.getHome();
+    expect(!!(await findTarget(server, D))).toBe(true);
+    await server.startRaid(D, false);
+    await playAll(server);
+    const end = await server.endRaid(false);
+
+    server.connect({ account: D });
+    const home = await server.getHome();
+    expect(home.state.raidLog[0].attacker).toBe(A);
+    // 로컬 하네스의 $asset은 계정 인자를 무시하고 현재 접속 계정에만 적용한다.
+    // 그래서 방어자 골드 증감은 여기서 검사하지 않고, 배포 서버에서 두 계정으로 확인한다(Task 13).
+    if (end.won) {
+      expect(end.loot).toBe(30);
+      expect(home.state.raidLog[0].goldLost).toBe(30);
+      expect(home.state.shieldUntil > Date.now()).toBe(true);
+    } else {
+      expect(end.loot).toBe(0);
+      expect(home.state.shieldUntil).toBe(0);
+    }
+
+    const entry = home.state.raidLog[0];
+    if (entry.attackerWon) {
+      await server.revenge(entry.id);
+      await server.endRaid(true);
+      expect(await fails(server.revenge(entry.id))).toBe(true);
+    } else {
+      expect(await fails(server.revenge(entry.id))).toBe(true);
+    }
+  });
+
+  test('a player out raiding shows up with an empty throne', async (server) => {
+    const A = `t12-away-${Date.now()}`;
+    const B = `t12-look-${Date.now()}`;
+    server.connect({ account: A });
+    await server.getHome();
+    const targets = await server.findTargets();
+    const npc = targets.find((t: any) => t.npc);
+    await server.startRaid(npc.id, false);
+
+    server.connect({ account: B });
+    await server.getHome();
+    const seen = await findTarget(server, A);
+    expect(!!seen && seen.throneEmpty).toBe(true);
+
+    server.connect({ account: A });
+    await server.endRaid(true);
+  });
+});

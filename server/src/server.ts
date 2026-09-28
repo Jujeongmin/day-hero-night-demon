@@ -1,12 +1,13 @@
 import { BALANCE, HERO_ORDER, TACTICS, type HeroId, type Tactic } from './catalog';
 import { planRecruit, planUpgrade, validateFloor } from './castle';
-import { castlePower, idleIncome, npcLoot } from './economy';
+import { castlePower, idleIncome, lootAmount, npcLoot } from './economy';
 import { seasonEndsAt, seasonIdAt } from './league';
-import { npcCastle, npcTierForPower } from './npc';
+import { npcCastle, npcRaids, npcTierForPower } from './npc';
 import { advanceRound, beginFloor, extendAway, lordDefeated, reviveRun, runStatus, startRun } from './raid';
+import { rngNext, seedFrom } from './rng';
 import {
   dayKey, defaultState, isNew, resolveFloors,
-  type CastleSnapshot, type Run, type Target, type UserState,
+  type CastleSnapshot, type RaidLogEntry, type Run, type Target, type UserState,
 } from './state';
 
 // ---- 모듈 헬퍼: Server 클래스 밖이라 원격 함수로 노출되지 않는다 ----
@@ -132,12 +133,108 @@ function resumeAway(s: UserState, now: number): number {
   return s.awayUntil < now ? now + BALANCE.awayPerFloorMs : s.awayUntil;
 }
 
+async function realTargets(me: string, s: UserState, now: number): Promise<Target[]> {
+  const power = castlePower(s.castle.level, resolveFloors(s));
+  const rows = await $global.getCollectionItems('castles', {
+    filters: [
+      { field: 'power', operator: '>=', value: Math.floor(power * 0.8) },
+      { field: 'power', operator: '<=', value: Math.ceil(power * 1.2) },
+    ],
+    limit: 50,
+  });
+  const pool = rows.filter((r: any) => r.account !== me && (r.shieldUntil ?? 0) <= now);
+  let st = seedFrom(me, now);
+  const picked: any[] = [];
+  while (picked.length < 3 && pool.length > 0) {
+    const r = rngNext(st);
+    st = r.state;
+    picked.push(pool.splice(Math.floor(r.value * pool.length), 1)[0]);
+  }
+  const out: Target[] = [];
+  for (const r of picked) {
+    const throneEmpty = (r.awayUntil ?? 0) > now;
+    const gold = await $asset.get('gold', r.account);
+    out.push({
+      id: r.account, nickname: r.nickname, power: r.power, castleLevel: r.castleLevel,
+      throneEmpty, estLoot: lootAmount(gold, r.castleLevel, throneEmpty), npc: false,
+    });
+  }
+  return out;
+}
+
+/** 방어자 계정 락을 잡은 상태에서만 부른다. 약탈량을 돌려준다. */
+async function settleDefender(me: string, s: UserState, run: Run, won: boolean, now: number): Promise<number> {
+  const def = run.target;
+  const raw = await $global.getUserState(def);
+  if (isNew(raw)) return 0;
+  const d = raw as UserState;
+  let loot = 0;
+  if (won) {
+    const defGold = await $asset.get('gold', def);
+    loot = lootAmount(defGold, run.snapshot.castleLevel, run.snapshot.throneEmpty && !run.snapshot.shadow);
+    if (run.isRevenge) {
+      const mine = s.raidLog.find((e) => e.id === run.revengeLogId);
+      if (mine) loot = Math.min(defGold, Math.max(loot, mine.goldLost));
+    }
+    if (loot > 0) {
+      await $asset.burn('gold', loot, def);
+      await $asset.mint('gold', loot);
+    }
+  } else {
+    await $asset.mint('gold', BALANCE.defenseRewardPerCastleLevel * d.castle.level, def);
+  }
+  const entry: RaidLogEntry = {
+    id: `${me}-${now}`, at: now, attacker: me, attackerName: s.profile.nickname,
+    attackerWon: won, goldLost: loot, throneEmpty: run.snapshot.throneEmpty, npc: false, revenged: false,
+  };
+  const patch: Partial<UserState> = { raidLog: [entry, ...d.raidLog].slice(0, 20) };
+  if (won) patch.shieldUntil = now + BALANCE.shieldMs;
+  await save(def, patch);
+  await syncCastle(def, { ...d, ...patch });
+  return loot;
+}
+
+/** 자리를 비운 동안 밀린 NPC 습격(2시간당 1회, 최대 4회)을 적용한다. 락 안에서만 부른다. */
+async function applyNpcRaids(me: string, s: UserState, now: number): Promise<UserState> {
+  const { raids, lastRaidAt } = npcRaids({
+    lastRaidAt: s.idle.lastRaidAt, now, account: me, castleLevel: s.castle.level,
+    floors: resolveFloors(s), awayUntil: s.awayUntil,
+  });
+  if (raids.length === 0 && lastRaidAt === s.idle.lastRaidAt) return s;
+  let gold = await $asset.get('gold');
+  let delta = 0;
+  const log: RaidLogEntry[] = [];
+  for (const r of raids) {
+    const empty = s.awayUntil > r.at;
+    const base = { id: `npc-${r.at}`, at: r.at, attacker: 'npc', attackerName: '침입자 길드', throneEmpty: empty, npc: true, revenged: true };
+    if (r.attackerWon) {
+      const lost = lootAmount(gold, s.castle.level, empty);
+      gold -= lost;
+      delta -= lost;
+      log.push({ ...base, attackerWon: true, goldLost: lost });
+    } else {
+      const reward = BALANCE.defenseRewardPerCastleLevel * s.castle.level;
+      gold += reward;
+      delta += reward;
+      log.push({ ...base, attackerWon: false, goldLost: 0 });
+    }
+  }
+  if (delta > 0) await $asset.mint('gold', delta);
+  if (delta < 0) await $asset.burn('gold', -delta);
+  const patch: Partial<UserState> = {
+    idle: { ...s.idle, lastRaidAt },
+    raidLog: [...log.reverse(), ...s.raidLog].slice(0, 20),
+  };
+  await save(me, patch);
+  return { ...s, ...patch };
+}
+
 export class Server {
   async getHome() {
     const me = $sender.account;
     return withLocks([me], async () => {
       const now = Date.now();
-      const s = await loadState(me, now);
+      const s = await applyNpcRaids(me, await loadState(me, now), now);
       return {
         state: s,
         ...(await balances(me)),
@@ -207,7 +304,7 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await loadState(me, now);
-      const targets = npcTargets(s, now);
+      const targets = [...(await realTargets(me, s, now)), ...npcTargets(s, now)].slice(0, 3);
       await save(me, { lastTargets: targets });
       return targets;
     });
@@ -279,18 +376,47 @@ export class Server {
 
   async endRaid(abandon: boolean) {
     const me = $sender.account;
-    return withLocks([me], async () => {
+    // 락 밖에서 대상만 알아낸 뒤, 두 계정 락을 오름차순으로 잡는다.
+    const peek = (await $global.getUserState(me)) as Partial<UserState>;
+    const target = peek?.run?.target ?? null;
+    const accounts = target && !target.startsWith('npc:') ? [me, target] : [me];
+    return withLocks(accounts, async () => {
       const now = Date.now();
       const s = await loadState(me, now);
       const run = s.run;
       if (!run) throw new Error('공략 중이 아니다');
+      if (run.target !== target) throw new Error('다시 시도해줘');
       const status = runStatus(run);
       if (abandon !== true && status !== 'victory' && status !== 'wiped') throw new Error('공략이 끝나지 않았다');
-      if (!run.target.startsWith('npc:')) throw new Error('PvP 정산은 아직 없다');
       const won = status === 'victory';
-      const loot = won ? npcLoot(run.snapshot.castleLevel) : 0;
-      if (loot) await $asset.mint('gold', loot);
+      let loot = 0;
+      if (run.target.startsWith('npc:')) {
+        loot = won ? npcLoot(run.snapshot.castleLevel) : 0;
+        if (loot) await $asset.mint('gold', loot);
+      } else {
+        loot = await settleDefender(me, s, run, won, now);
+      }
       return finishRun(me, s, run, won, loot, now);
+    });
+  }
+
+  async revenge(logId: string) {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      const entry = s.raidLog.find((e) => e.id === logId);
+      if (!entry || entry.npc || entry.revenged || !entry.attackerWon) throw new Error('복수할 수 없는 기록이다');
+      if (now - entry.at > BALANCE.revengeWindowMs) throw new Error('복수 기한(24시간)이 지났다');
+      const today = dayKey(now);
+      const used = s.revengeUsed.day === today ? s.revengeUsed.count : 0;
+      const extra: Partial<UserState> = { revengeUsed: { day: today, count: used + 1 } };
+      if (used >= BALANCE.freeRevengesPerDay) {
+        if (s.credits.revenge < 1) throw new Error('NO_REVENGE_CREDIT');
+        extra.credits = { ...s.credits, revenge: s.credits.revenge - 1 };
+      }
+      const snapshot = await buildSnapshot(entry.attacker, now);
+      return beginRun(me, s, snapshot, { isRevenge: true, revengeLogId: logId, useShadow: false, extra }, now);
     });
   }
 }
