@@ -1,0 +1,37 @@
+{
+  "skeleton_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68
+  },
+  "skeleton_attack": {
+    "frames": 7,
+    "w": 76,
+    "h": 76
+  },
+  "skeleton_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68
+  },
+  "knight_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68
+  },
+  "knight_attack": {
+    "frames": 7,
+    "w": 76,
+    "h": 76
+  },
+  "knight_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68
+  },
+  "bg_floor1": {
+    "frames": 1,
+    "w": 240,
+    "h": 112
+  }
+}
