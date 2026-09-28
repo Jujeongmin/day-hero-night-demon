@@ -10,6 +10,7 @@ import Home from './screens/Home';
 import CastleEdit from './screens/CastleEdit';
 import Upgrade from './screens/Upgrade';
 import Shop from './screens/Shop';
+import League from './screens/League';
 import { startShop, type ShopItem } from './services/shop';
 
 export type Screen =
@@ -98,6 +99,9 @@ export default function App() {
     case 'upgrade':
       body = <Upgrade api={api} home={home} onRefresh={refresh} onError={onError} />;
       break;
+    case 'league':
+      body = <League api={api} onError={onError} />;
+      break;
     case 'shop':
       body = <Shop items={shopItems} />;
       break;
@@ -121,6 +125,7 @@ export default function App() {
       <nav className="tabs">
         <button className={screen.name === 'home' ? 'on' : ''} onClick={toHome}>{T.tabs.home}</button>
         <button className={screen.name === 'upgrade' ? 'on' : ''} onClick={() => setScreen({ name: 'upgrade' })}>{T.tabs.upgrade}</button>
+        <button className={screen.name === 'league' ? 'on' : ''} onClick={() => setScreen({ name: 'league' })}>{T.tabs.league}</button>
         <button className={screen.name === 'shop' ? 'on' : ''} onClick={() => setScreen({ name: 'shop' })}>{T.tabs.shop}</button>
       </nav>
       {toast && <div className="toast">{toast}</div>}

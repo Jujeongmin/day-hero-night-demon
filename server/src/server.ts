@@ -1,7 +1,9 @@
 import { BALANCE, HERO_ORDER, TACTICS, type HeroId, type Tactic } from './catalog';
 import { planRecruit, planUpgrade, validateFloor } from './castle';
 import { castlePower, idleIncome, lootAmount, npcLoot } from './economy';
-import { seasonEndsAt, seasonIdAt } from './league';
+import {
+  DEFENSE_HONOR, honorForRaid, leagueCollection, rankBracket, seasonEndsAt, seasonIdAt, seasonRewardSoul, seasonStartOf,
+} from './league';
 import { npcCastle, npcRaids, npcTierForPower } from './npc';
 import { advanceRound, beginFloor, extendAway, lordDefeated, reviveRun, runStatus, startRun } from './raid';
 import { grantFor } from './purchases';
@@ -125,8 +127,10 @@ async function finishRun(me: string, s: UserState, run: Run, won: boolean, loot:
       : s.raidLog,
   };
   await save(me, patch);
+  const honor = honorForRaid({ won, throneEmpty: run.snapshot.throneEmpty, lordDefeated: lord, isRevenge: run.isRevenge });
+  if (honor) await addHonor(me, { ...s, ...patch }, honor, now);
   await syncCastle(me, { ...s, ...patch });
-  return { won, loot, soul, lordDefeated: lord, offerStarter };
+  return { won, loot, soul, lordDefeated: lord, offerStarter, honor };
 }
 
 /** 공략 중 행동을 하면 옥좌는 다시 빈다(탭을 닫았다가 돌아와 이어하는 경우). */
@@ -183,6 +187,7 @@ async function settleDefender(me: string, s: UserState, run: Run, won: boolean, 
     }
   } else {
     await $asset.mint('gold', BALANCE.defenseRewardPerCastleLevel * d.castle.level, def);
+    await addHonor(def, d, DEFENSE_HONOR, now);
   }
   const entry: RaidLogEntry = {
     id: `${me}-${now}`, at: now, attacker: me, attackerName: s.profile.nickname,
@@ -193,6 +198,56 @@ async function settleDefender(me: string, s: UserState, run: Run, won: boolean, 
   await save(def, patch);
   await syncCastle(def, { ...d, ...patch });
   return loot;
+}
+
+/** 시즌이 바뀌었으면 지난 시즌 순위 보상(영혼석)을 한 번 주고 명예를 0으로. 그 계정 락 안에서만 부른다. */
+async function rollSeason(account: string, s: UserState, now: number): Promise<UserState> {
+  const current = seasonIdAt(now);
+  if (s.season.id === current) return s;
+  let soul = 0;
+  if (s.season.bracketId && s.season.rewardedFor !== s.season.id) {
+    const rows = await $global.getCollectionItems(leagueCollection(s.season.id), {
+      filters: [{ field: 'bracketId', operator: '==', value: s.season.bracketId }],
+      limit: 100,
+    });
+    const end = seasonStartOf(s.season.id) + BALANCE.seasonMs;
+    const ranked = rankBracket(
+      rows.map((r: any) => ({ id: r.account, nickname: r.nickname, honor: r.honor })),
+      s.season.bracketId, seasonStartOf(s.season.id), end,
+    );
+    const me = ranked.find((r) => r.id === account);
+    if (me) soul = seasonRewardSoul(me.rank, s.season.pass);
+  }
+  if (soul) await $asset.mint('soul', soul, account);
+  const season = { id: current, bracketId: null, honor: 0, pass: false, rewardedFor: s.season.id };
+  await save(account, { season });
+  return { ...s, season };
+}
+
+async function assignBracket(seasonId: string): Promise<string> {
+  return $lock(`bracket:${seasonId}`, async () => {
+    const g = await $global.getGlobalState(['brackets']);
+    const all = (g.brackets ?? {}) as Record<string, { n: number; count: number }>;
+    const cur = all[seasonId] ?? { n: 1, count: 0 };
+    const next = cur.count >= BALANCE.bracketSize ? { n: cur.n + 1, count: 1 } : { n: cur.n, count: cur.count + 1 };
+    await $global.updateGlobalState({ brackets: { ...all, [seasonId]: next } });
+    return `${seasonId}-b${next.n}`;
+  });
+}
+
+/** 그 계정 락 안에서만 부른다. 명예의 원본은 사용자 상태, 컬렉션은 순위 표시용 사본이다. */
+async function addHonor(account: string, s: UserState, amount: number, now: number): Promise<UserState> {
+  const rolled = await rollSeason(account, s, now);
+  let season = rolled.season;
+  if (!season.bracketId) season = { ...season, bracketId: await assignBracket(season.id) };
+  season = { ...season, honor: season.honor + amount };
+  await save(account, { season });
+  await $global.addCollectionItem(
+    leagueCollection(season.id),
+    { account, nickname: s.profile.nickname, bracketId: season.bracketId, honor: season.honor },
+    { id: account },
+  );
+  return { ...rolled, season };
 }
 
 /** 자리를 비운 동안 밀린 NPC 습격(2시간당 1회, 최대 4회)을 적용한다. 락 안에서만 부른다. */
@@ -227,7 +282,9 @@ async function applyNpcRaids(me: string, s: UserState, now: number): Promise<Use
     raidLog: [...log.reverse(), ...s.raidLog].slice(0, 20),
   };
   await save(me, patch);
-  return { ...s, ...patch };
+  const defended = log.filter((e) => !e.attackerWon).length;
+  const next = { ...s, ...patch };
+  return defended ? addHonor(me, next, DEFENSE_HONOR * defended, now) : next;
 }
 
 export class Server {
@@ -235,7 +292,7 @@ export class Server {
     const me = $sender.account;
     return withLocks([me], async () => {
       const now = Date.now();
-      const s = await applyNpcRaids(me, await loadState(me, now), now);
+      const s = await applyNpcRaids(me, await rollSeason(me, await loadState(me, now), now), now);
       return {
         state: s,
         ...(await balances(me)),
@@ -436,6 +493,30 @@ export class Server {
       if (g.soul) await $asset.mint('soul', g.soul, p.account);
       await save(p.account, { ...g.patch, processedPurchases: [...s.processedPurchases, p.purchaseId].slice(-200) });
       return { success: true };
+    });
+  }
+
+  async getLeague() {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await rollSeason(me, await loadState(me, now), now);
+      const col = leagueCollection(s.season.id);
+      const start = seasonStartOf(s.season.id);
+      const rows = s.season.bracketId
+        ? await $global.getCollectionItems(col, { filters: [{ field: 'bracketId', operator: '==', value: s.season.bracketId }], limit: 100 })
+        : [];
+      const bracket = s.season.bracketId
+        ? rankBracket(rows.map((r: any) => ({ id: r.account, nickname: r.nickname, honor: r.honor })), s.season.bracketId, start, now)
+        : [];
+      const top = await $global.getCollectionItems(col, { orderBy: [{ field: 'honor', direction: 'desc' }], limit: 20 });
+      return {
+        seasonId: s.season.id,
+        endsAt: seasonEndsAt(now),
+        myHonor: s.season.honor,
+        bracket: bracket.map((r) => ({ rank: r.rank, nickname: r.nickname, honor: r.honor, ghost: r.ghost, me: r.id === me })),
+        top: top.map((r: any) => ({ nickname: r.nickname, honor: r.honor, me: r.account === me })),
+      };
     });
   }
 }

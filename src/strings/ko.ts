@@ -65,6 +65,12 @@ export const T = {
   } as Record<string, [string, string]>,
   buyRevive: '부활 구매',
   buyStarter: '스타터팩 보기',
+  leagueTitle: (id: string) => `시즌 ${id.slice(1)}`,
+  endsIn: (ms: number) => `종료까지 ${Math.max(0, Math.floor(ms / 86_400_000))}일 ${Math.max(0, Math.floor((ms % 86_400_000) / 3_600_000))}시간`,
+  myHonor: (h: number) => `내 명예 ${h}`,
+  bracketTitle: '내 브래킷 (30명)',
+  topTitle: '전체 상위 20',
+  noBracket: '첫 공략에서 이기면 브래킷에 들어간다',
   errors: {
     NO_REVIVE_CREDIT: '부활 아이템이 없다',
     NO_REVENGE_CREDIT: '오늘 무료 복수 3회를 다 썼다. 복수권이 필요하다',

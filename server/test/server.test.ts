@@ -195,3 +195,18 @@ describe('purchases', () => {
     expect((await server.getHome()).state.credits.revive).toBe(1);
   });
 });
+
+describe('league', () => {
+  test('winning adds honor and places you in a 30-player bracket', async (server) => {
+    server.connect({ account: `t17-${Date.now()}` });
+    await server.getHome();
+    await server.startIntroRaid();
+    await playAll(server);
+    const end = await server.endRaid(false);
+    expect(end.honor).toBe(15);
+    const lg = await server.getLeague();
+    expect(lg.myHonor).toBe(15);
+    expect(lg.bracket.length).toBe(30);
+    expect(lg.bracket.some((r: any) => r.me)).toBe(true);
+  });
+});
