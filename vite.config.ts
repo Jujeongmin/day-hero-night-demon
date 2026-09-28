@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -17,5 +18,9 @@ export default defineConfig({
     // the default 500 kB advisory fires on every build as noise. Keep the
     // warning only for genuinely pathological (5MB+) chunks.
     chunkSizeWarningLimit: 5000,
+  },
+  test: {
+    include: ["tests/**/*.test.ts"],
+    environment: "node",
   },
 });

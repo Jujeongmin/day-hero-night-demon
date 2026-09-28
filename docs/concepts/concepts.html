@@ -1,0 +1,660 @@
+<title>Verse8 신규작 후보</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Silkscreen:wght@400;700&display=swap">
+<style>
+  :root {
+    --bg: #EEF0F2;
+    --surface: #FFFFFF;
+    --surface-2: #E4E7EB;
+    --text: #1B1D22;
+    --muted: #5C6068;
+    --line: #D5D8DD;
+    --ore: #B07E1E;
+    --ore-soft: #F1E3C2;
+    --moss: #4C7A45;
+    --rust: #A8412E;
+    --bar: #C9CDD3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121417;
+      --surface: #1A1D22;
+      --surface-2: #22262D;
+      --text: #E6E1D6;
+      --muted: #9A948A;
+      --line: #2A2E35;
+      --ore: #E0A83C;
+      --ore-soft: #3A2E14;
+      --moss: #7FA870;
+      --rust: #C25B45;
+      --bar: #2E333B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121417;
+    --surface: #1A1D22;
+    --surface-2: #22262D;
+    --text: #E6E1D6;
+    --muted: #9A948A;
+    --line: #2A2E35;
+    --ore: #E0A83C;
+    --ore-soft: #3A2E14;
+    --moss: #7FA870;
+    --rust: #C25B45;
+    --bar: #2E333B;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding-inline: 20px; padding-block: 0 80px; }
+
+  .px { font-family: "Silkscreen", "Courier New", monospace; letter-spacing: .04em; }
+  .display { font-family: "Black Han Sans", "IBM Plex Sans KR", sans-serif; font-weight: 400; letter-spacing: -.01em; text-wrap: balance; }
+
+  nav.top {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    background: var(--bg); border-bottom: 1px solid var(--line);
+    padding-block: 10px; margin-bottom: 36px;
+  }
+  nav.top .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  nav.top a {
+    text-decoration: none; color: var(--muted); font-size: 12px;
+    padding: 4px 9px; border: 1px solid var(--line); border-radius: 3px;
+  }
+  nav.top a:hover, nav.top a:focus-visible { color: var(--text); border-color: var(--ore); outline: none; }
+  nav.top .brand { color: var(--ore); font-size: 11px; margin-right: 8px; }
+
+  header.hero { margin-bottom: 44px; }
+  header.hero .eyebrow { color: var(--ore); font-size: 11px; margin-bottom: 10px; }
+  header.hero h1 { font-size: clamp(32px, 6vw, 52px); line-height: 1.05; margin: 0 0 14px; }
+  header.hero p.lede { max-width: 62ch; color: var(--muted); margin: 0; font-size: 16px; }
+
+  .constraints { margin-bottom: 52px; }
+  .constraints h2 { font-size: 12px; color: var(--muted); font-weight: 500; margin: 0 0 12px; text-transform: uppercase; letter-spacing: .08em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font-size: 13px; padding: 6px 11px; background: var(--surface); border: 1px solid var(--line); border-radius: 3px;
+  }
+  .chip b { color: var(--ore); font-weight: 700; margin-right: 6px; }
+
+  section.concept {
+    border-top: 2px solid var(--line); padding-top: 28px; margin-bottom: 56px;
+    scroll-margin-top: 70px;
+  }
+  section.concept.pick { border-top-color: var(--ore); }
+  .c-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+  .c-head .tag { font-size: 12px; color: var(--ore); }
+  .c-head h2 { font-size: clamp(26px, 4.5vw, 38px); line-height: 1.1; margin: 0; }
+  .c-head .pill { font-size: 11px; padding: 3px 8px; border-radius: 3px; background: var(--ore); color: #121417; font-weight: 700; }
+  .hook { font-size: 18px; color: var(--text); margin: 0 0 22px; max-width: 60ch; font-weight: 500; }
+  .hook::before { content: "“"; color: var(--ore); } .hook::after { content: "”"; color: var(--ore); }
+
+  .c-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 28px; }
+  @media (max-width: 720px) { .c-grid { grid-template-columns: 1fr; } }
+
+  .block { margin-bottom: 18px; }
+  .block h3 { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 6px; }
+  .block p { margin: 0; max-width: 60ch; }
+  .block ul { margin: 0; padding-left: 18px; }
+  .block li { margin-bottom: 3px; }
+
+  aside.meta { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 16px 18px; align-self: start; }
+  aside.meta h3 { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 8px; }
+  .iap { list-style: none; padding: 0; margin: 0 0 16px; }
+  .iap li { display: flex; justify-content: space-between; gap: 10px; padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: 13.5px; }
+  .iap li:last-child { border-bottom: 0; }
+  .iap .vx { color: var(--ore); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13.5px; margin-bottom: 14px; }
+  .kv dt { color: var(--muted); } .kv dd { margin: 0; }
+
+  .scores { display: grid; gap: 6px; }
+  .score { display: grid; grid-template-columns: 76px 1fr 18px; align-items: center; gap: 8px; font-size: 12px; }
+  .score .lbl { color: var(--muted); }
+  .score .bar { height: 7px; background: var(--bar); border-radius: 2px; overflow: hidden; }
+  .score .bar i { display: block; height: 100%; background: var(--ore); }
+  .score .n { text-align: right; font-variant-numeric: tabular-nums; }
+  .total { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font-size: 13px; }
+  .total b { color: var(--ore); font-size: 15px; }
+
+  .risk { border-left: 3px solid var(--rust); padding-left: 12px; }
+  .risk h3 { color: var(--rust); }
+  .strength { border-left: 3px solid var(--moss); padding-left: 12px; }
+  .strength h3 { color: var(--moss); }
+
+  .matrix { margin: 8px 0 56px; }
+  .matrix h2 { font-size: 22px; margin: 0 0 6px; }
+  .matrix p.note { color: var(--muted); margin: 0 0 16px; font-size: 13.5px; }
+  .tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 13.5px; }
+  th, td { padding: 10px 12px; text-align: center; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  th { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; background: var(--surface-2); }
+  td:first-child, th:first-child { text-align: left; }
+  td:first-child { font-weight: 700; }
+  tr.pick td { background: var(--ore-soft); }
+  td.hi { color: var(--moss); font-weight: 700; }
+  td.lo { color: var(--rust); font-weight: 700; }
+  td.sum { font-weight: 700; color: var(--ore); }
+
+  .verdict { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--ore); border-radius: 4px; padding: 22px 24px; }
+  .verdict h2 { font-size: 22px; margin: 0 0 12px; }
+  .verdict p { margin: 0 0 12px; max-width: 64ch; }
+  .verdict p:last-child { margin-bottom: 0; }
+  .verdict strong { color: var(--ore); }
+
+  .sketch-tag {
+    display: inline-block; font-size: 11px; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 3px; padding: 3px 8px;
+  }
+  .mock { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 20px; }
+  .phone {
+    width: 152px; flex-shrink: 0; border-radius: 14px; border: 3px solid var(--line);
+    overflow: hidden; background: #000; box-shadow: 0 8px 22px rgba(0,0,0,.3);
+  }
+  .phone svg { display: block; width: 100%; height: auto; shape-rendering: crispEdges; }
+  .mock-cap { font-size: 10px; color: var(--muted); text-align: center; margin-top: 5px; }
+  .mock-legend { list-style: none; margin: 2px 0 0; padding: 0; font-size: 13px; color: var(--muted); display: grid; gap: 6px; max-width: 40ch; align-self: center; }
+  .mock-legend li::before { content: "· "; color: var(--ore); }
+
+  .levers { margin-bottom: 52px; }
+  .levers h2 { font-size: 22px; margin: 0 0 6px; }
+  .levers p.note { color: var(--muted); margin: 0 0 16px; font-size: 13.5px; max-width: 64ch; }
+  .lever-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: stretch; }
+  @media (max-width: 640px) { .lever-row { grid-template-columns: 1fr; } .lever-link { transform: rotate(90deg); justify-self: center; } }
+  .lever { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 16px 18px; }
+  .lever h3 { margin: 0 0 6px; font-size: 16px; }
+  .lever .px { color: var(--ore); font-size: 11px; display: block; margin-bottom: 4px; }
+  .lever p { margin: 0; font-size: 13.5px; }
+  .lever-link { align-self: center; color: var(--ore); font-size: 22px; font-weight: 700; }
+  .lever-core { margin-top: 12px; border-left: 3px solid var(--ore); padding-left: 12px; font-size: 14px; max-width: 70ch; }
+  .lever-core b { color: var(--ore); }
+
+  .phone img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+  .phone { width: 190px; }
+  .lever-row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 720px) { .lever-row3 { grid-template-columns: 1fr; } }
+  .c-head .pill + .pill { background: var(--moss); }
+</style>
+
+<div class="wrap">
+  <nav class="top" aria-label="후보 이동">
+    <div class="row">
+      <span class="px brand">VERSE8 · 신규작 후보 v4</span>
+      <a href="#a">A 시체 광산</a>
+      <a href="#b">B 낮엔 용사 밤엔 마왕</a>
+      <a href="#c">C 꿈수선공</a>
+      <a href="#d">D 화석이 되는 법</a>
+      <a href="#e">E 소문 양조장</a>
+      <a href="#matrix">비교표</a>
+      <a href="#verdict">결론</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="px eyebrow">2026-09-28 · v4 긴 세션 · PixelLab 컨셉아트</div>
+    <h1 class="display">30초 루프에서<br>30분 원정으로</h1>
+    <p class="lede">한 판 15~40분짜리로 다시 짰다. 바뀐 것 세 가지: 방치는 핵심에서 "세션 사이" 보조로 내려갔다. 한 판 안의 선택 밀도와 빌드가 핵심이 됐다. 결제 레버에 손실 회피(부활)가 더해졌다. PixelLab을 쓸 수 있게 되면서 품질 높은 방치형 RPG(B)도 후보에 넣었다.</p>
+    <p class="sketch-tag" style="margin-top:14px;">컨셉 이미지 = PixelLab 실제 생성, 후보당 1장. 게임 UI 없이 분위기·구도만 확인하는 용도</p>
+  </header>
+
+  <div class="constraints">
+    <h2>공통 조건</h2>
+    <div class="chips">
+      <div class="chip"><b>세션</b>한 판 15~40분, 층·장면 단위 서버 자동 저장 → 이어하기</div>
+      <div class="chip"><b>입구</b>첫 10초는 버튼 하나. 깊이는 진행하며 열림</div>
+      <div class="chip"><b>서버</b>런 상태·자산 전부 서버 (<code>$global</code>, <code>$asset</code>)</div>
+      <div class="chip"><b>결제</b>확정 지급만, 가챠 없음</div>
+      <div class="chip"><b>순위</b>시즌 리그 2주, 초기엔 고스트로 채움</div>
+      <div class="chip"><b>아트</b>PixelLab Tier 1 월 2,000회 — v1 물량 50~90회</div>
+      <div class="chip"><b>로딩</b>3초 이내, 이후 층 단위 지연 로딩</div>
+    </div>
+  </div>
+
+  <div class="levers">
+    <h2 class="display">결제 레버 세 개</h2>
+    <p class="note">판이 길어지면 잃을 것도 커진다. 25분 원정 끝에 죽는 순간이 가장 쉬운 결제 지점이다.</p>
+    <div class="lever-row3">
+      <div class="lever">
+        <span class="px">COMPETE</span>
+        <h3>경쟁 — 시즌 리그</h3>
+        <p>2주 시즌, 30인 브래킷. 매 시즌 새 판이라 신규도 1등을 노린다. 유저가 적을 땐 과거 기록 고스트로 채운다.</p>
+      </div>
+      <div class="lever">
+        <span class="px">TIME</span>
+        <h3>시간 — 배속</h3>
+        <p>영구 배속 ×2(가장 큰 상품) + 시간 스킵. 세션 사이 성장·준비 시간을 산다.</p>
+      </div>
+      <div class="lever">
+        <span class="px">LOSS</span>
+        <h3>손실 회피 — 부활</h3>
+        <p>판당 1회 부활 100 VX. 무제한이면 돈으로 이기는 게임이 되니 1회로 묶는다. 긴 판일수록 전환율이 올라간다.</p>
+      </div>
+    </div>
+    <p class="lever-core"><b>연결:</b> 리그 점수 = 한 판의 결과. 부활은 기록을 늘리고 배속은 다음 판을 강하게 만든다. 둘 다 순위로 이어진다. 선은 하나 — 파는 건 시간과 두 번째 기회이고, 이기는 건 판단이다.</p>
+  </div>
+
+  <!-- A -->
+  <section class="concept pick" id="a">
+    <div class="c-head">
+      <span class="px tag">A</span>
+      <h2 class="display">시체 광산</h2>
+      <span class="pill">신박함 1순위</span>
+    </div>
+    <p class="hook">죽어라. 네 시체가 다음 원정의 발판이 된다.</p>
+    <div class="mock">
+      <div>
+        <div class="phone"><img src="a-mine.png" width="224" height="400" alt="어두운 수직 갱도, 등불 든 광부가 선반 위에 서 있고 아래 선반에 해골과 횃불이 있다"></div>
+        <div class="mock-cap">PixelLab 생성 · 로그라이트 원정</div>
+      </div>
+      <ul class="mock-legend">
+        <li>장르: 로그라이트 원정, 한 판 20~30분</li>
+        <li>등불 든 광부가 층을 내려간다. 아래 선반의 해골 = 지난 원정에서 죽은 내 광부</li>
+        <li>횃불 옆 시체 = 보급소이자 체크포인트</li>
+      </ul>
+    </div>
+    <div class="c-grid">
+      <div>
+        <div class="block">
+          <h3>한 판 구조</h3>
+          <p>원정 1회 = 20~30분, 10층 단위 구간. 층마다 다음 방 카드 3장 중 하나를 고른다 — 광맥방(자원), 유물방(빌드), 위험방(고위험·고보상), 가끔 쉼터. 방 안에서는 탭 이동, 캐기, 함정 판단. 유물이 쌓이며 빌드가 생긴다("시체 근처 채굴 ×3", "함정을 밟으면 광석"). HP가 0이 되면 원정이 끝나고 그 층에 시체가 남는다.</p>
+        </div>
+        <div class="block">
+          <h3>첫 10초</h3>
+          <p>버튼 하나. 첫 방에서 광맥을 탭하면 광석이 나온다. 두 번째 방에서 선택 카드 셋이 처음 뜬다. 유물·빌드는 3층부터 열린다 — 첫 화면에 선택지를 늘어놓지 않는다.</p>
+        </div>
+        <div class="block">
+          <h3>깊이</h3>
+          <p>유물 조합(v1 20종) + 광부 클래스(기본/폭파공/점술사) + 구간마다 보스 방. 원정마다 빌드가 달라진다.</p>
+        </div>
+        <div class="block">
+          <h3>세션 사이</h3>
+          <p>지난 원정의 시체들이 제 층에서 계속 캔다(오프라인 한도 8h). 다음 원정에서 시체 옆을 지나가면 보급 상자가 있다 — <b>죽음이 체크포인트가 된다.</b></p>
+        </div>
+        <div class="block">
+          <h3>경쟁 · 공유</h3>
+          <p>시즌 리그 = 원정 한 번에 도달한 최대 층. 결과 카드에 빌드, 도달 층, 쌓인 시체 수가 담긴다.</p>
+        </div>
+        <div class="block strength">
+          <h3>강점</h3>
+          <p>로그라이트는 오래 붙잡고 반복하게 만드는 힘이 검증된 장르다. "내 시체가 다음 판 발판"은 로그라이트 메타 진행을 새롭게 보여준다. 부활 결제가 가장 자연스럽다.</p>
+        </div>
+        <div class="block risk">
+          <h3>리스크</h3>
+          <p>로그라이트는 전통적으로 인앱결제가 약하다(프리미엄 판매 장르). 클래스·부활·배속으로 채워야 한다. 유물 밸런스 작업이 크다. v1은 유물 20종, 구간 2개(20층)로 자른다.</p>
+        </div>
+      </div>
+      <aside class="meta">
+        <h3>VX 상품</h3>
+        <ul class="iap">
+          <li>스타터팩 (평생 1)<span class="px vx">100 VX</span></li>
+          <li><b>원정 부활</b> (판당 1회)<span class="px vx">100 VX</span></li>
+          <li>광부 클래스 해금<span class="px vx">300 VX</span></li>
+          <li><b>채굴 배속 ×2</b> (영구)<span class="px vx">500 VX</span></li>
+          <li>시즌 패스<span class="px vx">400 VX</span></li>
+        </ul>
+        <dl class="kv">
+          <dt>에셋</dt><dd>광부 3 · 방 타일 12 · 유물 20 · 보스 2 · UI 6 ≈ <b>50회</b></dd>
+          <dt>세션</dt><dd>20~30분</dd>
+          <dt>톤</dt><dd>어둡고 건조한 유머</dd>
+        </dl>
+        <h3>점수</h3>
+        <div class="scores">
+          <div class="score"><span class="lbl">유입 훅</span><div class="bar"><i style="width:100%"></i></div><span class="n">5</span></div>
+          <div class="score"><span class="lbl">결제 동기</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+          <div class="score"><span class="lbl">애착</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+          <div class="score"><span class="lbl">물량 적음</span><div class="bar"><i style="width:60%"></i></div><span class="n">3</span></div>
+          <div class="score"><span class="lbl">세션 깊이</span><div class="bar"><i style="width:100%"></i></div><span class="n">5</span></div>
+          <div class="score"><span class="lbl">경쟁 훅</span><div class="bar"><i style="width:100%"></i></div><span class="n">5</span></div>
+        </div>
+        <div class="total"><span>합계 / 30</span><b class="px">26</b></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- B -->
+  <section class="concept pick" id="b">
+    <div class="c-head">
+      <span class="px tag">B</span>
+      <h2 class="display">낮엔 용사, 밤엔 마왕</h2>
+      <span class="pill">매출 1순위</span>
+    </div>
+    <p class="hook">자는 동안 내 성을 지키고, 깨어나면 네 성을 턴다.</p>
+    <div class="mock">
+      <div>
+        <div class="phone"><img src="b-castle.png" width="224" height="400" alt="여러 층의 마왕성 단면, 층마다 슬라임·해골·임프 몬스터, 꼭대기 왕좌에 마왕, 1층 성문으로 기사가 들어온다"></div>
+        <div class="mock-cap">PixelLab 생성 · 방치형 RPG</div>
+      </div>
+      <ul class="mock-legend">
+        <li>장르: 방치형 RPG + 비대칭 비동기 PvP</li>
+        <li>층층이 쌓인 내 마왕성. 층마다 편성한 몬스터(슬라임·해골·임프)</li>
+        <li>꼭대기 왕좌 = 마왕(나). 1층 성문 = 쳐들어오는 용사</li>
+        <li>세로 탑 구조가 모바일 세로 화면과 그대로 맞는다</li>
+      </ul>
+    </div>
+    <div class="c-grid">
+      <div>
+        <div class="block">
+          <h3>한 판 구조</h3>
+          <p>모드가 둘이다. <b>밤(오프라인, 방치)</b>: 몬스터를 편성해 둔 내 마왕성을 자동 방어한다. 다른 유저의 용사 파티와 NPC가 쳐들어온다. <b>낮(접속, 능동)</b>: 내 용사 파티를 이끌고 남의 마왕성을 층층이 공략한다. 성 하나 = 15~30분. 층마다 방을 고르고, 자동전투 중 스킬 타이밍을 누른다.</p>
+        </div>
+        <div class="block">
+          <h3>첫 10초</h3>
+          <p>알림 한 줄: "밤사이 용사 3명이 쳐들어왔다 — 2명 격퇴." 보상을 탭해 받는다. 바로 아래 버튼 [복수하러 간다] → 나를 턴 용사 주인의 성 1층으로 간다. 설명 없이 두 모드가 다 보인다.</p>
+        </div>
+        <div class="block">
+          <h3>깊이</h3>
+          <p>몬스터·용사 수집과 강화(방치 RPG 표준 성장축), 성 층 설계(함정·배치), 공격 파티 시너지. 방어 편성과 공격 편성이 따로라 고민이 두 배다.</p>
+        </div>
+        <div class="block">
+          <h3>세션 사이</h3>
+          <p>밤 동안의 방어가 오프라인 수입이다 — 격퇴 보상이 쌓이고 약탈당하면 손실이 난다. <b>방어 로그가 곧 복수 대상 목록</b>이라 다음 접속 이유가 자동으로 생긴다.</p>
+        </div>
+        <div class="block">
+          <h3>경쟁 · 공유</h3>
+          <p>시즌 리그 = 공략 점수 + 방어 점수. 복수전이 경쟁심을 정면으로 건드린다 — "나를 턴 놈"이 실제 유저다. 초기엔 NPC 성과 고스트로 채운다. 공유: 내 성 단면 스크린샷.</p>
+        </div>
+        <div class="block strength">
+          <h3>강점</h3>
+          <p>Verse8 홈 1번 배너(Heroes Unite)가 증명한 장르이고, 수집·강화·배속으로 이어지는 결제 구조가 다섯 후보 중 가장 검증됐다. 낮/밤 비대칭이 신박함이다. Dungeon Warden의 "던전이 되어라" 컨셉과 경험을 그대로 살린다. PixelLab 캐릭터(8방향 + 애니)가 가장 잘 먹히는 장르다.</p>
+        </div>
+        <div class="block risk">
+          <h3>리스크</h3>
+          <p>물량 최대 — 몬스터·용사 × 애니메이션. v1은 몬스터 10, 용사 4, 성 5층으로 자른다. 비동기 PvP 밸런스: 방어가 너무 세면 공격이 재미없다. 수집형은 가챠 유혹이 크지만 확정 영입을 유지한다(분쟁 = VXShop 권한 박탈 리스크).</p>
+        </div>
+      </div>
+      <aside class="meta">
+        <h3>VX 상품</h3>
+        <ul class="iap">
+          <li>스타터팩 (평생 1)<span class="px vx">100 VX</span></li>
+          <li>몬스터·용사 확정 영입<span class="px vx">200~400 VX</span></li>
+          <li>성 층 확장<span class="px vx">300 VX</span></li>
+          <li><b>방치 배속 ×2</b> (영구)<span class="px vx">500 VX</span></li>
+          <li>시즌 패스<span class="px vx">400 VX</span></li>
+          <li><b>복수 재도전권</b><span class="px vx">50 VX</span></li>
+        </ul>
+        <dl class="kv">
+          <dt>에셋</dt><dd>캐릭터 14 × (8방향 + 애니 3) · 성 타일 · UI ≈ <b>90회</b></dd>
+          <dt>세션</dt><dd>방어 확인 1~2분 + 공략 15~30분</dd>
+          <dt>톤</dt><dd>귀여운 다크 판타지</dd>
+        </dl>
+        <h3>점수</h3>
+        <div class="scores">
+          <div class="score"><span class="lbl">유입 훅</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+          <div class="score"><span class="lbl">결제 동기</span><div class="bar"><i style="width:100%"></i></div><span class="n">5</span></div>
+          <div class="score"><span class="lbl">애착</span><div class="bar"><i style="width:100%"></i></div><span class="n">5</span></div>
+          <div class="score"><span class="lbl">물량 적음</span><div class="bar"><i style="width:40%"></i></div><span class="n">2</span></div>
+          <div class="score"><span class="lbl">세션 깊이</span><div class="bar"><i style="width:100%"></i></div><span class="n">5</span></div>
+          <div class="score"><span class="lbl">경쟁 훅</span><div class="bar"><i style="width:100%"></i></div><span class="n">5</span></div>
+        </div>
+        <div class="total"><span>합계 / 30</span><b class="px">26</b></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- C -->
+  <section class="concept" id="c">
+    <div class="c-head">
+      <span class="px tag">C</span>
+      <h2 class="display">꿈수선공</h2>
+    </div>
+    <p class="hook">악몽 한 편을 끝까지 수선하라. 실 한 가닥이 카드 한 장이다.</p>
+    <div class="mock">
+      <div>
+        <div class="phone"><img src="c-dream.png" width="224" height="400" alt="밤하늘 아래 두건 쓴 수선공이 빛나는 원형 태피스트리를 짜고, 위로 눈이 빛나는 거대한 악몽이 드리워 있다"></div>
+        <div class="mock-cap">PixelLab 생성 · 덱빌더 (하단 글자는 생성 오류)</div>
+      </div>
+      <ul class="mock-legend">
+        <li>장르: 전투 없는 로그라이트 덱빌더, 한 판 15~25분</li>
+        <li>아래 수선공이 짜는 원형 태피스트리 = 이번 판의 결과물</li>
+        <li>위의 악몽 = 달래야 할 상대. 공격이 아니라 수선</li>
+      </ul>
+    </div>
+    <div class="c-grid">
+      <div>
+        <div class="block">
+          <h3>한 판 구조</h3>
+          <p>꿈 한 편 = 15~25분, 장면 7개를 지나는 노드 맵. 장면마다 악몽이 나오고, 손패의 실 카드로 달랜다. 금실(안전·약함), 은실(균형), 검은실(강하지만 균열 +). 균열이 100%가 되면 꿈이 깨져 판이 끝난다. 끝까지 가면 태피스트리가 완성되고 판다.</p>
+        </div>
+        <div class="block">
+          <h3>첫 10초</h3>
+          <p>악몽 하나, 카드 두 장. 금실을 탭하면 악몽의 불안 수치가 줄고 태피스트리에 첫 무늬가 생긴다. 덱 편집과 노드 맵은 두 번째 꿈부터 열린다.</p>
+        </div>
+        <div class="block">
+          <h3>깊이</h3>
+          <p>실 카드 풀(v1 40장), 장면 사이 카드 추가·제거, 꿈 주인(아이·노인·병사…)마다 다른 악몽 패턴.</p>
+        </div>
+        <div class="block">
+          <h3>세션 사이</h3>
+          <p>판 태피스트리가 이자처럼 자란다. 오프라인은 안전한 성장, 접속은 위험한 수선.</p>
+        </div>
+        <div class="block">
+          <h3>경쟁 · 공유</h3>
+          <p>시즌 리그 = 꿈 한 편에서 만든 태피스트리 최고가. 균열 90% 이상으로 완주하면 배율 보너스 — 담력이 순위다. 완성 태피스트리 이미지가 공유물.</p>
+        </div>
+        <div class="block strength">
+          <h3>강점</h3>
+          <p>덱빌더는 장시간이 검증된 장르다. 전투 없는 "수선" 덱빌더는 톤이 새롭다. 한 판의 결과가 그림으로 남는다.</p>
+        </div>
+        <div class="block risk">
+          <h3>리스크</h3>
+          <p>카드 텍스트와 밸런스가 무겁다. 모바일 세로 한 손에서 카드 가독성이 문제라 손패는 4장까지. 덱빌더 결제는 카드 판매로 흐르기 쉬워 파워 판매 경계에 선다.</p>
+        </div>
+      </div>
+      <aside class="meta">
+        <h3>VX 상품</h3>
+        <ul class="iap">
+          <li>스타터팩 (평생 1)<span class="px vx">100 VX</span></li>
+          <li><b>꿈 재진입</b> (판당 1회)<span class="px vx">100 VX</span></li>
+          <li>꿈 주인 해금<span class="px vx">300 VX</span></li>
+          <li><b>이자 배속 ×2</b> (영구)<span class="px vx">500 VX</span></li>
+          <li>시즌 패스<span class="px vx">400 VX</span></li>
+        </ul>
+        <dl class="kv">
+          <dt>에셋</dt><dd>수선공 1 · 악몽 10 · 카드 아이콘 30 · 무늬 8 ≈ <b>55회</b></dd>
+          <dt>세션</dt><dd>15~25분</dd>
+          <dt>톤</dt><dd>몽환, 서늘함</dd>
+        </dl>
+        <h3>점수</h3>
+        <div class="scores">
+          <div class="score"><span class="lbl">유입 훅</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+          <div class="score"><span class="lbl">결제 동기</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+          <div class="score"><span class="lbl">애착</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+          <div class="score"><span class="lbl">물량 적음</span><div class="bar"><i style="width:60%"></i></div><span class="n">3</span></div>
+          <div class="score"><span class="lbl">세션 깊이</span><div class="bar"><i style="width:100%"></i></div><span class="n">5</span></div>
+          <div class="score"><span class="lbl">경쟁 훅</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+        </div>
+        <div class="total"><span>합계 / 30</span><b class="px">24</b></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- D -->
+  <section class="concept" id="d">
+    <div class="c-head">
+      <span class="px tag">D</span>
+      <h2 class="display">화석이 되는 법</h2>
+    </div>
+    <p class="hook">좋은 화석이 되기 위해, 한 생을 산다.</p>
+    <div class="mock">
+      <div>
+        <div class="phone"><img src="d-fossil.png" width="224" height="400" alt="노을 진 호숫가에 고대 짐승이 서 있고, 그 아래 지층마다 화석 뼈와 껍데기가 박혀 있다"></div>
+        <div class="mock-cap">PixelLab 생성 · 생애 시뮬</div>
+      </div>
+      <ul class="mock-legend">
+        <li>장르: 생애 시뮬 + 세대 계승, 한 판 25~40분</li>
+        <li>지면 위 = 지금 살아 있는 생물(나)</li>
+        <li>아래 지층 = 지난 세대의 내 화석들이 쌓인 개인 박물관</li>
+      </ul>
+    </div>
+    <div class="c-grid">
+      <div>
+        <div class="block">
+          <h3>한 판 구조</h3>
+          <p>한 생애 = 25~40분, 계절 5개. 생물로 태어나 계절마다 행동 카드 3장 중 하나를 고른다 — 사냥, 이주, 쉰다, 싸운다, 짝짓는다. 선택이 몸을 바꾼다(뿔이 자라고, 이빨이 빠지고, 상처가 남는다). 늙어 죽으면 묻히고, 몸에 남은 것이 화석이 된다. 먼 미래 발굴자가 감정가를 매긴다.</p>
+        </div>
+        <div class="block">
+          <h3>첫 10초</h3>
+          <p>알이 깨진다. 행동 카드 "먹는다" 하나를 탭하면 몸이 커지고 화석 예상 칸에 뼈 하나가 찬다. "사는 방식 = 남는 모양"이 바로 보인다.</p>
+        </div>
+        <div class="block">
+          <h3>깊이</h3>
+          <p>종(초식/포식/수생/비행) × 환경 사건(빙하기·홍수·운석). 상처·질병·변이가 희귀도를 만든다 — 잘 사는 게 아니라 <b>이상하게</b> 살아야 희귀해진다.</p>
+        </div>
+        <div class="block">
+          <h3>세션 사이</h3>
+          <p>마지막 화석이 박물관에 전시되고 관람료가 쌓인다. 다음 생물은 전 세대 화석 층 위에서 태어나 계승 보너스를 받는다.</p>
+        </div>
+        <div class="block">
+          <h3>경쟁 · 공유</h3>
+          <p>시즌 박물관 리그 = 최고 감정가 표본. 표본 카드에 실루엣, 학명, 사인(死因)이 담긴다.</p>
+        </div>
+        <div class="block strength">
+          <h3>강점</h3>
+          <p>"화석이 되기 위해 산다"는 목표를 뒤집은 전례 없는 설정이다. 한 생애의 서사가 길게 붙잡는다. 이미지 보면 알겠지만 지층 단면이 그대로 세로 화면이다.</p>
+        </div>
+        <div class="block risk">
+          <h3>리스크</h3>
+          <p>물량 최대 — 종 × 성장 단계 × 변이. 선택이 결과로 이어지는 인과가 안 보이면 지루해진다. v1은 종 하나로 시작한다.</p>
+        </div>
+      </div>
+      <aside class="meta">
+        <h3>VX 상품</h3>
+        <ul class="iap">
+          <li>스타터팩 (평생 1)<span class="px vx">100 VX</span></li>
+          <li><b>한 계절 되돌리기</b> (판당 1회)<span class="px vx">100 VX</span></li>
+          <li>종 해금<span class="px vx">300 VX</span></li>
+          <li><b>계절 배속 ×2</b> (영구)<span class="px vx">500 VX</span></li>
+          <li>시즌 패스<span class="px vx">400 VX</span></li>
+        </ul>
+        <dl class="kv">
+          <dt>에셋</dt><dd>종 1 × 성장 4단계 · 변이 8 · 환경 5 · 행동 카드 10 ≈ <b>65회</b></dd>
+          <dt>세션</dt><dd>25~40분</dd>
+          <dt>톤</dt><dd>고요, 실존적</dd>
+        </dl>
+        <h3>점수</h3>
+        <div class="scores">
+          <div class="score"><span class="lbl">유입 훅</span><div class="bar"><i style="width:100%"></i></div><span class="n">5</span></div>
+          <div class="score"><span class="lbl">결제 동기</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+          <div class="score"><span class="lbl">애착</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+          <div class="score"><span class="lbl">물량 적음</span><div class="bar"><i style="width:40%"></i></div><span class="n">2</span></div>
+          <div class="score"><span class="lbl">세션 깊이</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+          <div class="score"><span class="lbl">경쟁 훅</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+        </div>
+        <div class="total"><span>합계 / 30</span><b class="px">23</b></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- E -->
+  <section class="concept" id="e">
+    <div class="c-head">
+      <span class="px tag">E</span>
+      <h2 class="display">소문 양조장</h2>
+    </div>
+    <p class="hook">마을 하나를 소문만으로 무너뜨려라.</p>
+    <div class="mock">
+      <div>
+        <div class="phone"><img src="e-village.png" width="224" height="400" alt="해질녘 숲속 작은 마을, 붉은 깃발 꽂힌 촌장 집이 등불에 밝고 흙길이 아래로 이어진다"></div>
+        <div class="mock-cap">PixelLab 생성 · 전략 시뮬</div>
+      </div>
+      <ul class="mock-legend">
+        <li>장르: 소문 전략 시뮬, 시나리오 한 편 30~60분</li>
+        <li>붉은 깃발 집 = 촌장. 이번 시나리오의 표적</li>
+        <li>흙길 = 소문이 퍼지는 관계선. 실제 게임에서는 주민 초상 + 연결선이 올라간다</li>
+      </ul>
+    </div>
+    <div class="c-grid">
+      <div>
+        <div class="block">
+          <h3>한 판 구조</h3>
+          <p>시나리오 한 편 = 마을 하나, 30~60분, 하루 단위 저장. 주민 20명과 목표가 주어진다 — "7일 안에 촌장을 몰아내라." 매일 소문 카드 3장(대상 + 사건)을 받아 주민에게 심는다. 밤이 지나면 관계망을 따라 퍼지며 변질된다. 주민의 신뢰·의심 수치가 오르내리고, 재판·선거·축제 같은 사건이 끼어든다. 들키면 내가 추방된다.</p>
+        </div>
+        <div class="block">
+          <h3>첫 10초</h3>
+          <p>목표 한 줄, 카드 한 장, 주민 한 명. 심는다 → 밤 → 아침에 소문이 변질돼 옆집으로 번진 게 보인다.</p>
+        </div>
+        <div class="block">
+          <h3>깊이</h3>
+          <p>시나리오별로 마을 구조와 목표가 다르다. 주민 성격(수다쟁이·의심꾼·입 무거운 자), 소문 조합 폭발. 누구에게 먼저 심을지가 판을 가르는 퍼즐 같은 전략이다.</p>
+        </div>
+        <div class="block">
+          <h3>세션 사이</h3>
+          <p>진행 중인 시나리오의 밤이 실시간으로 흐른다(오프라인 = 밤). 숙성 배속이 여기에 붙는다.</p>
+        </div>
+        <div class="block">
+          <h3>경쟁 · 공유</h3>
+          <p>시즌 리그 = 시나리오별 최단 일수 클리어. 변질 이력 카드("촌장이 도둑질 → 살인 → 왕위를 노린다")는 그 자체로 웃긴 공유물.</p>
+        </div>
+        <div class="block strength">
+          <h3>강점</h3>
+          <p>기존에 없는 장르 — 소문 전략 시뮬. 텍스트 중심이라 물량 대비 깊이가 가장 크다. 시나리오 팩이 자연스러운 유료 콘텐츠가 된다.</p>
+        </div>
+        <div class="block risk">
+          <h3>리스크</h3>
+          <p>한국어 문장 생성과 조사 처리(이/가, 을/를). 첫 시나리오가 너무 쉬우면 얕아 보인다. 주민 20명 관계망을 세로 화면에 담으려면 확대·축소가 필요하다.</p>
+        </div>
+      </div>
+      <aside class="meta">
+        <h3>VX 상품</h3>
+        <ul class="iap">
+          <li>스타터팩 (평생 1)<span class="px vx">100 VX</span></li>
+          <li>시나리오 팩 (3편)<span class="px vx">300 VX</span></li>
+          <li><b>하루 되감기</b> (판당 1회)<span class="px vx">100 VX</span></li>
+          <li><b>밤 배속 ×2</b> (영구)<span class="px vx">500 VX</span></li>
+          <li>시즌 패스<span class="px vx">400 VX</span></li>
+        </ul>
+        <dl class="kv">
+          <dt>에셋</dt><dd>주민 초상 20 · 마을 지도 3 · 말풍선 3 · 카드 2 · UI 6 ≈ <b>35회</b></dd>
+          <dt>세션</dt><dd>30~60분</dd>
+          <dt>톤</dt><dd>능청, 짓궂음</dd>
+        </dl>
+        <h3>점수</h3>
+        <div class="scores">
+          <div class="score"><span class="lbl">유입 훅</span><div class="bar"><i style="width:100%"></i></div><span class="n">5</span></div>
+          <div class="score"><span class="lbl">결제 동기</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+          <div class="score"><span class="lbl">애착</span><div class="bar"><i style="width:60%"></i></div><span class="n">3</span></div>
+          <div class="score"><span class="lbl">물량 적음</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+          <div class="score"><span class="lbl">세션 깊이</span><div class="bar"><i style="width:100%"></i></div><span class="n">5</span></div>
+          <div class="score"><span class="lbl">경쟁 훅</span><div class="bar"><i style="width:80%"></i></div><span class="n">4</span></div>
+        </div>
+        <div class="total"><span>합계 / 30</span><b class="px">25</b></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- MATRIX -->
+  <div class="matrix" id="matrix">
+    <h2 class="display">비교표</h2>
+    <p class="note">1~5. 세션 깊이 = 한 판을 30분 붙잡는 힘(선택 밀도, 빌드 다양성). 물량 적음 = PixelLab 생성 횟수와 텍스트·밸런스 작업량. 경쟁 훅 = 리그 지표가 숫자 하나로 바로 비교되는가.</p>
+    <div class="tbl">
+      <table>
+        <thead>
+          <tr><th>후보</th><th>장르</th><th>유입 훅</th><th>결제 동기</th><th>애착</th><th>물량 적음</th><th>세션 깊이</th><th>경쟁 훅</th><th>합계</th><th>한 판</th><th>생성</th></tr>
+        </thead>
+        <tbody>
+          <tr class="pick"><td>A 시체 광산</td><td>로그라이트</td><td class="hi">5</td><td>4</td><td>4</td><td>3</td><td class="hi">5</td><td class="hi">5</td><td class="sum">26</td><td>20~30분</td><td>≈50</td></tr>
+          <tr class="pick"><td>B 낮엔 용사 밤엔 마왕</td><td>방치형 RPG</td><td>4</td><td class="hi">5</td><td class="hi">5</td><td class="lo">2</td><td class="hi">5</td><td class="hi">5</td><td class="sum">26</td><td>15~30분</td><td>≈90</td></tr>
+          <tr><td>E 소문 양조장</td><td>전략 시뮬</td><td class="hi">5</td><td>4</td><td class="lo">3</td><td>4</td><td class="hi">5</td><td>4</td><td class="sum">25</td><td>30~60분</td><td>≈35</td></tr>
+          <tr><td>C 꿈수선공</td><td>덱빌더</td><td>4</td><td>4</td><td>4</td><td>3</td><td class="hi">5</td><td>4</td><td class="sum">24</td><td>15~25분</td><td>≈55</td></tr>
+          <tr><td>D 화석이 되는 법</td><td>생애 시뮬</td><td class="hi">5</td><td>4</td><td>4</td><td class="lo">2</td><td>4</td><td>4</td><td class="sum">23</td><td>25~40분</td><td>≈65</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- VERDICT -->
+  <div class="verdict" id="verdict">
+    <h2 class="display">결론</h2>
+    <p><strong>A와 B가 26점 동률이다.</strong> 갈리는 기준은 당신 목표인 <em>인앱결제 매출</em>이다.</p>
+    <p><strong>B 낮엔 용사, 밤엔 마왕</strong>을 추천한다. 수집·강화·배속·복수전이라는 결제 구조가 다섯 중 가장 검증됐다. Verse8 홈 배너가 방치형 RPG다. 방치(밤)와 장시간 능동(낮)을 둘 다 가져가고, Dungeon Warden의 "던전이 되어라"를 살린다. 약점인 물량은 PixelLab Tier 1(월 2,000회) 기준으로 v1 90회라 감당된다.</p>
+    <p><strong>A 시체 광산</strong>은 신박함 1순위지만, 로그라이트는 인앱결제가 약한 장르다. 한 가지 방법은 A의 "죽음이 다음 판 발판" 아이디어를 B에 이식하는 것이다 — 쓰러진 몬스터가 성의 망령 수비대가 된다.</p>
+    <p><strong>E</strong>는 가장 새로운 장르이고 물량도 가장 적어 두 번째 프로젝트로 좋다. C·D는 보류.</p>
+    <p>다음 단계: B를 고르면 v1 범위(몬스터 10, 용사 4, 성 5층)로 설계 문서를 쓰고, PixelLab으로 몬스터 1종을 8방향 + 애니메이션까지 뽑아 품질을 먼저 검증한다.</p>
+  </div>
+</div>
