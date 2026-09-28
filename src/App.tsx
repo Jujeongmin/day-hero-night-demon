@@ -14,6 +14,7 @@ import Shop from './screens/Shop';
 import League from './screens/League';
 import { startShop, type ShopItem } from './services/shop';
 import { isMuted, playBgm, setMuted, sfx, unlockAudio } from './services/audio';
+import { preloadSprites } from './render/battleCanvas';
 
 type Tab = 'upgrade' | 'log' | 'league' | 'shop';
 export type Panel =
@@ -78,7 +79,9 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (connected) playBgm('bgm_home');
+    if (!connected) return;
+    playBgm('bgm_home');
+    preloadSprites();
   }, [connected]);
 
   const toggleMute = () => {

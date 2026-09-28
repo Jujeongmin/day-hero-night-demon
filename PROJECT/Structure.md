@@ -1,21 +1,25 @@
-# Structure — basic-vite-react
+# Structure — 낮엔 용사, 밤엔 마왕
 
-## `src/main.tsx`
+## Client (`src/`)
 
-Entry point. Mounts `<App />` into `#root` via `createRoot`, wrapped in `StrictMode`. Imports `index.css`.
+- `main.tsx` — 진입. `index.css`(Tailwind 지시문)와 `styles.css`(게임 스타일) 로드.
+- `App.tsx` — 연결, 홈 데이터, 창(panel) 상태, 공략 전환, 실시간 알림, 상점 구독, 오디오 언락·탭 소리·음소거.
+- `screens/CastleScene.tsx` — 메인 화면: 배경·탑·층 버튼·몬스터·마왕·방치 수입·출정. `screens/CastleEdit.tsx` 층 편성(클릭 저장), `Match.tsx` 상대 고르기, `Raid.tsx` 공략(전투 캔버스+궁극기 창), `Result.tsx`, `Upgrade.tsx`, `Log.tsx`, `League.tsx`, `Shop.tsx`.
+- `render/battleCanvas.tsx` — 전투 캔버스(스프라이트 애니메이션, HP, 데미지 글자, 효과음). `render/timeline.ts` 서버 이벤트→프레임. `render/sfxMap.ts` 프레임→효과음. `render/Sprite.tsx`(CSS 스프라이트, `Portrait`), `render/skins.ts`(마왕 외형), `render/sprites.json`(시트 목록).
+- `services/api.ts` 원격 함수 래퍼(중복 호출 합침, 오류 문구), `services/shop.ts` VXShop, `services/audio.ts` BGM/효과음/음소거.
+- `strings/ko.ts` — 모든 문구.
 
-## `src/App.tsx`
+## Server (`server/src/`)
 
-Root component. Renders a single counter button styled with Tailwind utility classes.
+- `server.ts` — 원격 함수(getHome, claimIdle, upgrade, setFloor, recruit, findTargets, startRaid, startIntroRaid, setTactic, playRound, revive, endRaid, revenge, getLeague, `$onItemPurchased`). 잠금 `withLocks`, 스냅샷 `buildSnapshot`.
+- `catalog.ts`(유닛·함정·BALANCE), `battle.ts`(결정적 전투), `raid.ts`(공략 진행, `autoTactic`), `economy.ts`, `state.ts`(UserState, CastleSnapshot, Run), `castle.ts`, `league.ts`, `npc.ts`, `purchases.ts`(PRODUCTS, grantFor), `rng.ts`.
 
-## `src/App.css`
+## Assets
 
-Component-scoped styles for `App` (root layout: max-width, centered, padded).
+- `public/sprites/` 스트립 PNG + `tower.png`, `bg_night.png`, `bg_floor1.png`. `public/icons/` 64px 아이콘. `public/ui/` UI 조각. `public/audio/` 소리 + CREDITS.md.
+- `art/` 원본·후보(탑, 배경, 마왕 후보, UI 키트, 프레임, 상품 이미지 512px).
 
-## `src/index.css`
+## Docs & tests
 
-Global stylesheet — Tailwind `base`, `components`, `utilities` directives only.
-
-## `src/assets.json`
-
-Asset manifest. Empty (`{ "images": {} }`) in the baseline template.
+- `docs/art-style.md`, `docs/ui-style.md`, `docs/vxshop-products.md`, `docs/superpowers/plans/…v1.md`.
+- `tests/*.test.ts`(vitest, 순수 모듈), `server/test/server.test.ts`(Agent8 하네스). `scripts/stitch-strip.mjs`, `scripts/fetch-strip.mjs`.

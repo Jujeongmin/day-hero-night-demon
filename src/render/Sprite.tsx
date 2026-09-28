@@ -31,9 +31,7 @@ export default function Sprite(props: {
   if (!strip) {
     const size = 48 * scale;
     return (
-      <span className={`sprite-missing ${className}`} style={{ width: size, height: size }}>
-        {label}
-      </span>
+      <span className={`sprite-missing ${className}`} style={{ width: size, height: size }} role="img" aria-label={label} />
     );
   }
   const w = strip.w * scale;

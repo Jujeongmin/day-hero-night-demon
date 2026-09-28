@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import type { BattleEvent, Fighter, FloorBattle } from '../../server/src/battle';
-import { HEROES, LORD, MONSTERS } from '../../server/src/catalog';
 import type { LordSkin } from '../../server/src/state';
 import { sfx } from '../services/audio';
 import { sfxForFx } from './sfxMap';
@@ -18,20 +17,25 @@ type Strip = { frames: number; w: number; h: number };
 const strips = SPRITES as Record<string, Strip>;
 const images = new Map<string, HTMLImageElement>();
 
-function image(name: string): HTMLImageElement | null {
-  if (!strips[name]) return null;
+function load(name: string): HTMLImageElement {
   let img = images.get(name);
   if (!img) {
     img = new Image();
     img.src = `sprites/${name}.png`;
     images.set(name, img);
   }
+  return img;
+}
+
+function image(name: string): HTMLImageElement | null {
+  if (!strips[name]) return null;
+  const img = load(name);
   return img.complete && img.naturalWidth > 0 ? img : null;
 }
 
-function nameOf(f: Fighter): string {
-  if (f.kind === 'lord') return LORD.name;
-  return f.side === 'hero' ? HEROES[f.kind as keyof typeof HEROES].name : MONSTERS[f.kind as keyof typeof MONSTERS].name;
+/** 모든 시트를 미리 받아 둔다. 전투 첫 프레임에 이름 상자가 비치지 않게 앱 시작 때 부른다. */
+export function preloadSprites(): void {
+  for (const name of Object.keys(strips)) load(name);
 }
 
 /** 발 위치(아래 가운데) */
@@ -54,11 +58,12 @@ function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, sprite: string, ani
   const name = `${sprite}_${anim}`;
   const img = image(name);
   const flip = f.side === 'enemy';
+  // 시트가 목록에 없을 때만 자리 표시 상자. 아직 로드 중이면 다음 프레임까지 비워 둔다
   if (!img) {
-    ctx.fillStyle = f.side === 'hero' ? '#3a5a9a' : '#7a1b2f';
-    ctx.fillRect(x - 16, y - 32, 32, 32);
-    ctx.fillStyle = '#fff';
-    ctx.fillText(nameOf(f), x, y - 12);
+    if (!strips[name]) {
+      ctx.fillStyle = f.side === 'hero' ? '#3a5a9a' : '#7a1b2f';
+      ctx.fillRect(x - 16, y - 32, 32, 32);
+    }
     return;
   }
   const s = strips[name];

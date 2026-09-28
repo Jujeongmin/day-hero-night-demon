@@ -1,13 +1,17 @@
-# Status — basic-vite-react
+# Status — 낮엔 용사, 밤엔 마왕 (2026-09-28)
 
 ## Implemented
 
-- React 18 root mount with `StrictMode` (`main.tsx`)
-- Counter demo component with `useState` (`App.tsx`)
-- Tailwind CSS pipeline (directives in `index.css`, PostCSS + autoprefixer)
-- Empty asset manifest (`src/assets.json`)
+- 서버: 성·편성·강화·영입, 방치 수입, NPC/실플레이어 공략(층별 라운드 전투, 자동 전술, 궁극기, 부활), 빈 옥좌·그림자 대역·보호막, 복수, 시즌 리그(30명 브래킷·유령), VX 상품 8개 지급(`$onItemPurchased`, 중복 방지), 시즌 패스 한정 마왕 외형.
+- 클라이언트: 방치형 레이아웃(항상 보이는 마왕성 탑 + 아래 1/3 창), 층 클릭 편성(즉시 저장), 강화·기록·리그·상점 창, 공략 화면(전투 캔버스, 궁극기, 층 진행), 결과 창, 실시간 털림 알림, 소리 켜기/끄기.
+- 아트: 몬스터 6·용사 3·마왕(+패스 외형) 대기/공격/쓰러짐 스프라이트, 탑·붉은 달 배경, 검은 쇠·뼈 UI 키트, 아이콘 14개, 상품 이미지 512px 8장.
+- 소리: BGM 2곡, 효과음 9종 (Mixkit).
+- 테스트: vitest 80개, 서버 하네스 16개 모두 통과. preview 서버에서 계정 간 골드 이동·웹훅 보안(클라이언트 호출 거부) 확인.
 
-## Installed but not wired
+## Not yet
 
-- `@agent8/gameserver` — no networking / session code
-- `lucide-react` — no icons imported
+- Task 15 사용자 작업: 비공개 출시, VX Shop 상품 등록(`docs/vxshop-products.md`), 테스트 결제.
+- Task 19 밸런스 검증(승률표와 2~3안 제시 후 적용).
+- Task 20: 실결제 테스트, 실기기 확인, 스토어 설명, 공개 전환, 지표.
+- 층 배경 `bg_floor2/3`, `bg_throne` (지금은 전 층 `bg_floor1`).
+- GitHub 공개 저장소 (사용자가 나중에).
