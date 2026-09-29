@@ -1,8 +1,25 @@
 import { useEffect, useState } from 'react';
-import { errorText, type Api, type LeagueData } from '../services/api';
+import { errorText, type Api, type HomeData, type LeagueData } from '../services/api';
 import { T } from '../strings/ko';
+import Pass from './Pass';
 
-export default function League(props: { api: Api; onError: (m: string) => void }) {
+/** 리그 창: 순위 | 패스 두 탭 */
+export default function League(props: { api: Api; home: HomeData; onRefresh: () => Promise<void>; onError: (m: string) => void }) {
+  const [tab, setTab] = useState<'rank' | 'track'>('rank');
+  return (
+    <>
+      <div className="row">
+        <button className={`btn small ${tab === 'rank' ? 'on' : ''}`} onClick={() => setTab('rank')}>{T.pass.rank}</button>
+        <button className={`btn small ${tab === 'track' ? 'on' : ''}`} onClick={() => setTab('track')}>{T.pass.track}</button>
+      </div>
+      {tab === 'rank'
+        ? <Ranking api={props.api} onError={props.onError} />
+        : <Pass api={props.api} home={props.home} onRefresh={props.onRefresh} onToast={props.onError} />}
+    </>
+  );
+}
+
+function Ranking(props: { api: Api; onError: (m: string) => void }) {
   const [data, setData] = useState<LeagueData | null>(null);
   useEffect(() => {
     props.api.getLeague().then(setData).catch((e) => props.onError(errorText(e)));

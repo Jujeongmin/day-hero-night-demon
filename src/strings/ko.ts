@@ -123,6 +123,19 @@ export const T = {
     resetGo: '초기화',
     resetDone: '초기화했다',
   },
+  pass: {
+    rank: '순위',
+    track: '패스',
+    tier: (n: number) => `${n}단계`,
+    done: '완료',
+    prev: '이전 단계',
+    next: '다음 단계',
+    dragon: '흑룡',
+    passOnly: '패스',
+    claimAll: '모두 받기',
+    got: (gold: number, soul: number, skin: boolean) =>
+      `받았다! ${[gold ? `골드 ${gold.toLocaleString()}` : '', soul ? `영혼석 ${soul}` : '', skin ? '흑룡 외형' : ''].filter(Boolean).join(' · ')}`,
+  },
   siege: {
     stage: (n: number) => `공성 ${n}단계`,
     next: (n: number, ms: number) => `공성 ${n}단계 · ${Math.floor(ms / 60_000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`,
@@ -155,6 +168,7 @@ export const T = {
     NICK_BANNED: '쓸 수 없는 이름이다',
     NICK_TAKEN: '이미 누가 쓰는 이름이다',
     NICK_NO_CHANGES: '무료 변경을 이미 썼다',
+    PASS_NOTHING: '받을 보상이 없다',
     RESET_CONFIRM: "'초기화'를 정확히 입력해줘",
     RESET_IN_RAID: '공략 중에는 초기화할 수 없다',
     ONBOARDING_ORDER: '다시 시도해줘',

@@ -66,6 +66,7 @@ export function createApi(server: RemoteServer) {
     revive: () => call<RunResult>('revive'),
     endRaid: (abandon: boolean) => call<EndResult>('endRaid', [abandon]),
     getLeague: () => call<LeagueData>('getLeague'),
+    claimPassRewards: () => call<{ gold: number; soul: number; skins: string[] }>('claimPassRewards'),
     advanceOnboarding: (to: OnboardingStage) => call<{ onboarding: OnboardingState }>('advanceOnboarding', [to]),
     setNickname: (name: string) => call<{ nickname: string; onboarding: OnboardingState; nicknameChanges: number }>('setNickname', [name]),
     resetProgress: (text: string) => call<{ ok: true }>('resetProgress', [text]),

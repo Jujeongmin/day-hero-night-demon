@@ -231,7 +231,7 @@ export default function App() {
         break;
       case 'league':
         title = T.panels.league;
-        body = <League api={api} onError={onError} />;
+        body = <League api={api} home={home} onRefresh={refresh} onError={onError} />;
         break;
       case 'settings':
         title = T.panels.settings;
