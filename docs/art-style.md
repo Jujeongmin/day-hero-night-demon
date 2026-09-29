@@ -84,4 +84,4 @@
 
 ## 능력치 아이콘 (2026-09-29 승인)
 - `art/ui/stats/set.png`(pixflux 128×32 한 벌, seed 1101)을 4칸으로 잘라 `public/icons/stat_{hp,atk,def,spd}.png`. 강화 창 줄에 13px로.
-- 닫기 X(`public/ui/close.png`)는 검은 테두리까지 지운 붉은 X만(`art/ui/close/close_x_clean.png`) — 테두리가 창 위에서 그림자처럼 보였다.
+- 닫기 X(`public/ui/close_x.png`, 옛 캐시를 피하려고 이름을 바꿈)는 검은 테두리까지 지운 붉은 X만(`art/ui/close/close_x_clean.png`) — 테두리가 창 위에서 그림자처럼 보였다.
