@@ -381,5 +381,38 @@
     "frames": 1,
     "w": 240,
     "h": 200
+  },
+  "lord_dragon_idle": {
+    "frames": 5,
+    "w": 96,
+    "h": 96,
+    "box": [
+      2,
+      3,
+      84,
+      93
+    ]
+  },
+  "lord_dragon_attack": {
+    "frames": 7,
+    "w": 96,
+    "h": 96,
+    "box": [
+      2,
+      3,
+      89,
+      93
+    ]
+  },
+  "lord_dragon_death": {
+    "frames": 7,
+    "w": 96,
+    "h": 96,
+    "box": [
+      3,
+      3,
+      87,
+      93
+    ]
   }
 }

@@ -1,5 +1,8 @@
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { errorText, type Api, type HomeData } from '../services/api';
+import { chooseLordSkin } from '../../server/src/pass';
+import { Portrait } from '../render/Sprite';
+import { lordSpriteId } from '../render/skins';
 import { getAudioPrefs, setAudioPrefs, type AudioPrefs } from '../services/audio';
 import { T } from '../strings/ko';
 
@@ -63,6 +66,12 @@ export default function Settings(props: {
   const [askReset, setAskReset] = useState(false);
   const [busy, setBusy] = useState(false);
   const left = Math.max(0, 1 - (home.state.profile.nicknameChanges ?? 0));
+  // 마왕 외형: 기본 + 이번 시즌 패스(해골) + 영구 소장(흑룡). 기본만 있으면 칸을 숨긴다
+  const st = home.state;
+  const looks: ('base' | 'skull' | 'dragon')[] = ['base'];
+  if (st.season.pass) looks.push('skull');
+  if (st.skins?.includes('dragon')) looks.push('dragon');
+  const current = chooseLordSkin(st.lordSkin ?? null, st.skins ?? [], st.season.pass) ?? 'base';
 
   const change = (patch: Partial<AudioPrefs>) => {
     setAudioPrefs(patch);
@@ -99,6 +108,25 @@ export default function Settings(props: {
     <>
       {soundRow(T.settings.bgm, prefs.bgmOn, prefs.bgmVol, 'bgm')}
       {soundRow(T.settings.sfx, prefs.sfxOn, prefs.sfxVol, 'sfx')}
+
+      {looks.length > 1 && (
+        <>
+          <h4>{T.settings.lordLook}</h4>
+          <div className="looks">
+            {looks.map((l) => (
+              <button
+                key={l}
+                className={`look ${current === l ? 'on' : ''}`}
+                disabled={busy || current === l}
+                onClick={() => void act(() => api.setLordSkin(l))}
+              >
+                <Portrait id={lordSpriteId(l === 'base' ? undefined : l)} label={T.settings.looks[l]} />
+                <small>{T.settings.looks[l]}</small>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       <h4>{T.settings.nickname} · {home.state.profile.nickname}</h4>
       <div className="line">

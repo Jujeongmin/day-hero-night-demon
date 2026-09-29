@@ -122,6 +122,8 @@ export const T = {
     resetType: "확인하려면 '초기화'를 입력하세요",
     resetGo: '초기화',
     resetDone: '초기화했다',
+    lordLook: '마왕 외형',
+    looks: { base: '기본', skull: '해골 군주', dragon: '흑룡' } as Record<string, string>,
   },
   pass: {
     rank: '순위',
@@ -168,6 +170,7 @@ export const T = {
     NICK_BANNED: '쓸 수 없는 이름이다',
     NICK_TAKEN: '이미 누가 쓰는 이름이다',
     NICK_NO_CHANGES: '무료 변경을 이미 썼다',
+    SKIN_NOT_OWNED: '가지고 있지 않은 외형이다',
     PASS_NOTHING: '받을 보상이 없다',
     RESET_CONFIRM: "'초기화'를 정확히 입력해줘",
     RESET_IN_RAID: '공략 중에는 초기화할 수 없다',

@@ -51,7 +51,7 @@
 - 사람형 마왕은 폐기. 괴물형 `create_1_direction_object` 96px 후보 중 **날개 뿔 괴물**(불타는 왕관·검은 가시 갑옷)을 쓴다. PixelLab object `f570cf90-9862-41bd-bf1f-5ee2db029f09`.
 - **보관 후보 (사용자가 마음에 들어함, 나중에 쓸 곳이 생기면 쓴다)** — 원본 `art/lord/`:
   - `lord_pack_1.png` 해골 머리 군주 (염소 해골, 보라 불꽃, 망토) — object `1f9280a1-c6ec-414c-a635-c4251a23de69` → **시즌 패스 한정 외형으로 사용 중** (`public/sprites/lord_skull_*`)
-  - `lord_pack_2.png` 흑룡 마왕 (서 있는 검은 용) — object `eecdaa64-c4a6-4e4a-a88f-6bc9917ecffd`
+  - `lord_pack_2.png` 흑룡 마왕 (서 있는 검은 용) — object `eecdaa64-c4a6-4e4a-a88f-6bc9917ecffd` → **시즌 패스 10단계 보상 외형(영구)으로 사용** (`public/sprites/lord_dragon_*`, 2026-09-29 승인). 대기는 `idle2`(첫 `idle`은 날개에 흰 줄이 생겨 탈락), 쓰러짐은 `death2`. 원본 프레임 `art/frames/lord_dragon_*`.
   - `lord_pack_3.png` 용암 마왕 (용암 피부, 큰 도끼) — object `7437326d-1d60-46dc-9919-49e15cb7bd80`
   - `lord_char_a.png` 보라 날개 악마 — character `b709de8d-140f-4ee8-b885-817edc461b06`
   - 쓸 곳 후보: 시즌 패스 "한정 마왕 외형", 시즌 보상 외형, NPC 보스(그림자 마왕·높은 단계 침입자 길드).

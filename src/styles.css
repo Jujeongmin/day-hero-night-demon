@@ -244,6 +244,10 @@ canvas.battle {
 .pass-cell.dim { filter: grayscale(.9) brightness(.55); }
 .pass-cell.got { opacity: .45; }
 .glow { filter: brightness(1.2) drop-shadow(0 0 4px #ffcf4dcc); }
+.looks { display: flex; gap: 8px; }
+.look { background: none; border: 0; padding: 2px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--muted); }
+.look.on { color: var(--gold); filter: drop-shadow(0 0 4px #ffcf4dcc); }
+.look:disabled { cursor: default; }
 .siege-stage { position: absolute; left: 50%; bottom: 84px; translate: -50% 0; font-size: 12px; white-space: nowrap; }
 .invader.leaving { opacity: 0; transition: opacity 1.2s; }
 .siege-coin { position: absolute; width: 18px; height: 18px; image-rendering: pixelated; translate: -50% 0; }
