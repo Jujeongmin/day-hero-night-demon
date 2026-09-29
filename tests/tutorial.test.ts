@@ -29,3 +29,9 @@ describe('tutorial steps', () => {
     expect(isTutorialStage('cutscene')).toBe(false);
   });
 });
+
+describe('tutorial targets', () => {
+  it('the last sortie can close an open panel first so the sortie button shows', () => {
+    expect(TUT_STEPS.match_sortie?.targets).toEqual(['match-first', 'sortie', 'panel-close']);
+  });
+});

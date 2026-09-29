@@ -16,7 +16,8 @@ export const TUT_STEPS: Partial<Record<OnboardingStage, TutStep>> = {
   place_slot: { targets: ['pick-first'], line: T.tut.placeSlot },
   upgrade_tab: { targets: ['tab-upgrade'], line: T.tut.upgradeTab },
   upgrade_one: { targets: ['upgrade-first'], line: T.tut.upgradeOne },
-  match_sortie: { targets: ['match-first', 'sortie'], line: T.tut.matchSortie },
+  // 강화 창이 열려 있으면 출정 버튼이 숨으므로 먼저 창을 닫게 한다
+  match_sortie: { targets: ['match-first', 'sortie', 'panel-close'], line: T.tut.matchSortie },
   end: { targets: [], line: T.tut.end },
 };
 
