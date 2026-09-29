@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import type { OnboardingStage } from '../../server/src/state';
 import { Portrait } from '../render/Sprite';
 import { onTut } from './bus';
@@ -7,7 +7,7 @@ import { nextStage, TUT_STEPS } from './steps';
 /** 빛낼 대상이 이만큼 넘게 화면에 없으면 덮개를 걷는다(게임이 멈추지 않게). */
 const GIVE_UP_MS = 3000;
 
-interface Box { left: number; top: number; width: number; height: number }
+interface Box { left: number; top: number; width: number; height: number; /** 누를 곳이 아래 창 안이면 그 창의 윗변 */ sheetTop?: number }
 
 function findTarget(targets: string[]): HTMLElement | null {
   for (const t of targets) {
@@ -19,7 +19,7 @@ function findTarget(targets: string[]): HTMLElement | null {
 
 function sameBox(a: Box | null, b: Box | null): boolean {
   if (!a || !b) return a === b;
-  return a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height;
+  return a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height && a.sheetTop === b.sheetTop;
 }
 
 /** 대상 하나만 밝게, 나머지는 어둡게. 화면 어디를 눌러도 대상이 눌린다. */
@@ -29,6 +29,11 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
   const [box, setBox] = useState<Box | null>(null);
   const [gaveUp, setGaveUp] = useState(false);
   const boxRef = useRef<Box | null>(null);
+  const talkRef = useRef<HTMLDivElement>(null);
+  const [talkH, setTalkH] = useState(0);
+  useLayoutEffect(() => {
+    setTalkH(talkRef.current?.offsetHeight ?? 0);
+  }, [step?.line, box]);
 
   useEffect(() => onTut((ev) => {
     const to = nextStage(stage, ev);
@@ -47,7 +52,8 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
     const tick = (now: number) => {
       const el = findTarget(step.targets);
       const r = el?.getBoundingClientRect();
-      const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height } : null;
+      const sheet = el?.closest('.sheet')?.getBoundingClientRect();
+      const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height, ...(sheet ? { sheetTop: sheet.top } : {}) } : null;
       if (!sameBox(next, boxRef.current)) {
         boxRef.current = next;
         setBox(next);
@@ -82,12 +88,25 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
   };
 
   const pad = 6;
+  // 말풍선은 누를 곳 바로 옆: 누를 곳이 화면 아래쪽이면 그 위, 위쪽이면 그 아래 (2026-09-29 승인 C안). 화면 밖으로는 안 나간다
+  let talkStyle: CSSProperties | undefined;
+  if (box && talkH > 0) {
+    const vh = window.innerHeight;
+    const gap = 10;
+    // 아래 창 안의 버튼이면 창 내용을 가리지 않게 창 바깥 위쪽에 붙인다
+    const top = box.sheetTop !== undefined
+      ? box.sheetTop - 40 - talkH // 창 위 해골 장식(34px)을 피한다
+      : box.top + box.height / 2 > vh * 0.45
+        ? box.top - pad - gap - talkH
+        : box.top + box.height + pad + gap;
+    talkStyle = { top: Math.max(8, Math.min(vh - talkH - 8, top)) };
+  }
   return (
     <div className="tut" onClick={press}>
       {box
         ? <div className="tut-hole" style={{ left: box.left - pad, top: box.top - pad, width: box.width + pad * 2, height: box.height + pad * 2 }} />
         : <div className="tut-dim" />}
-      <div className="tut-talk">
+      <div className="tut-talk" ref={talkRef} style={talkStyle}>
         <Portrait id="imp" label="임프" />
         <p>{step.line}</p>
       </div>
