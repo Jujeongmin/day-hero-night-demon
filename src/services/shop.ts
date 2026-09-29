@@ -1,6 +1,6 @@
 import { VXShop } from '@verse8/platform/vanilla';
 import { SHOP_PRODUCTS } from '../../server/src/purchases';
-import { isLocal, localBuy } from './connection';
+import { isLocal, localBuy } from './localMode';
 
 export type ShopItem = ReturnType<typeof VXShop.getItems>[number];
 

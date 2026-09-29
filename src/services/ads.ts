@@ -3,7 +3,7 @@ import type { Placement } from '../../server/src/ads';
 import { BALANCE } from '../../server/src/catalog';
 import { dayKey, type UserState } from '../../server/src/state';
 import type { Api } from './api';
-import { isLocal } from './connection';
+import { isLocal } from './localMode';
 
 export type AdOutcome = 'ok' | 'dismissed' | 'failed';
 
