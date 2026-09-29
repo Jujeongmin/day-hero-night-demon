@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { simulateAuto } from '../server/src/battle';
-import { npcCastle, npcRaids, npcTierForPower } from '../server/src/npc';
+import { npcCastle, npcRaids, npcTierForPower, TUTORIAL_TARGET, tutorialCastle } from '../server/src/npc';
+import { floorEnemies, throneIndex } from '../server/src/raid';
 
 const H = 3_600_000;
 
@@ -40,5 +41,21 @@ describe('npc', () => {
     const many = npcRaids({ ...base, lastRaidAt: 0, now: 30 * H });
     expect(many.raids).toHaveLength(4);
     expect(many.lastRaidAt).toBe(30 * H);
+  });
+});
+
+describe('tutorial castle', () => {
+  it('level-1 heroes win it with any seed and meet the lord', () => {
+    const c = tutorialCastle();
+    expect(c.owner).toBe(TUTORIAL_TARGET);
+    const floors = [];
+    for (let f = 0; f <= throneIndex(c); f++) {
+      floors.push({ enemies: floorEnemies(c, f), trap: f < c.floors.length ? c.floors[f].trap : null });
+    }
+    expect(floors.at(-1)!.enemies[0].id).toBe('lord');
+    for (let seed = 1; seed <= 500; seed++) {
+      const r = simulateAuto({ heroes: [{ id: 'knight', level: 1 }, { id: 'archer', level: 1 }, { id: 'priest', level: 1 }], floors, seed });
+      expect(r.won, `seed ${seed}`).toBe(true);
+    }
   });
 });

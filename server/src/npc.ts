@@ -55,3 +55,17 @@ export function npcRaids(p: {
   const lastRaidAt = due > count ? p.now : p.lastRaidAt + count * BALANCE.npcRaidEveryMs;
   return { raids, lastRaidAt };
 }
+
+/** 튜토리얼 전용 상대. 옥좌에는 반쪽 힘의 그림자 마왕이 있어 첫 판에 마왕전까지 보여준다. */
+export const TUTORIAL_TARGET = 'npc:tut:1';
+
+export function tutorialCastle(): CastleSnapshot {
+  return {
+    owner: TUTORIAL_TARGET,
+    nickname: '침입자 길드 신참',
+    castleLevel: 1,
+    floors: [{ monsters: [{ id: 'slime', level: 1 }, { id: 'slime', level: 1 }], trap: null }],
+    throneEmpty: true,
+    shadow: true,
+  };
+}
