@@ -4,18 +4,19 @@
 
 전제(문서 기준): CPP 가입 완료, 게임이 Verse8에 **출시**되어 있어야 붙는다(비공개 출시로 먼저 테스트), Agent8 Game Server 사용.
 
-## 상품 8개
+## 판매 중 상품 5개 (2026-09-29 개편)
 
 | Product ID | Product Name | Price (VX) | Stock Quantity | Lifetime Limit | Period Limit | Time-Limited Sale | Image | Description (대시보드에 넣을 글) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `starter_pack` | Starter Pack | 100 | 999999 | 1 | — | — | `art/products/starter_pack.png` | Necromancer + 5,000 gold + 30 soul stones. One per account. |
 | `recruit_dragon` | Baby Dragon | 300 | 999999 | 1 | — | — | `art/products/recruit_dragon.png` | Recruit the baby dragon (breathes fire on every enemy). One per account. |
-| `idle_x2` | Idle Income x2 | 500 | 999999 | 1 | — | — | `art/products/idle_x2.png` | Idle gold income doubled, forever. One per account. |
-| `revive` | Revive | 100 | 999999 | — | — | — | `art/products/revive.png` | Revive your party at 50% HP once per raid. Stacks. |
-| `shadow_double` | Shadow Double | 100 | 999999 | — | — | — | `art/products/shadow_double.png` | 2 uses. A shadow guards your throne at 50% power while you are out raiding. Stacks. |
-| `revenge_ticket` | Revenge Ticket | 100 | 999999 | — | — | — | `art/products/revenge_ticket.png` | 2 extra revenges after today's 3 free revenges. Stacks. |
-| `daily_supply` | Daily Supply | 100 | 999999 | — | 1 / day (일별) | — | `art/products/daily_supply.png` | 5,000 gold + 15 soul stones. Once per day. |
-| `season_pass` | Season Pass | 400 | 999999 | — | — | — (아래 참고) | `art/products/season_pass.png` | Double season rewards + the Skull Lord look for your demon lord, for the current season. Resets every season (2 weeks). |
+| `season_pass` | Season Pass | 400 | 999999 | — | — | — (아래 참고) | `art/products/season_pass.png` | Unlocks the pass line of the season reward track + the Skull Lord look for your demon lord, for the current season. Resets every season (2 weeks). **(패스 트랙이 배포된 뒤 이 문구로 교체)** |
+| `speed_x3` | 3x Speed | 300 | 999999 | 1 | — | — | `art/products/speed_x3.png` | Watch raids at 3x speed. Forever. One per account. **(새로 등록)** |
+| `premium` | Premium Pass | 500 | 999999 | 1 | — | — | `art/products/premium.png` | Get ad rewards instantly without watching ads (same daily limits). Forever. One per account. **(새로 등록)** |
+
+## 끈 상품 5개 (삭제하지 말고 Status만 끈다)
+
+`daily_supply`, `revenge_ticket`, `shadow_double`, `revive`, `idle_x2` — 소모품은 광고 보상으로 옮겼다(`docs/superpowers/specs/2026-09-29-monetization-rework-design.md`). 서버는 끄기 전 결제분이 웹훅으로 와도 지급한다(`shadow_double`은 기능이 없어져 성공 처리만). 이미 `idle_x2`를 산 계정은 영구 2배가 유지된다.
 
 - Product ID는 `server/src/purchases.ts`의 `PRODUCTS`와 **글자까지 같아야** 한다. 서버는 모르는 ID를 받으면 `{ success: false }`를 돌려준다.
 - Stock Quantity는 문서대로 "무제한이면 높은 숫자".
