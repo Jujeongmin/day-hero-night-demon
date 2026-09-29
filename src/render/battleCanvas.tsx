@@ -3,7 +3,7 @@ import type { BattleEvent, Fighter, FloorBattle } from '../../server/src/battle'
 import type { LordSkin } from '../../server/src/state';
 import { sfx } from '../services/audio';
 import { sfxForFx } from './sfxMap';
-import { lordSpriteId } from './skins';
+import { auraBlur, AURA, lordSpriteId } from './skins';
 import SPRITES from './sprites.json';
 import { buildFrames, preHp, type Fx } from './timeline';
 
@@ -57,7 +57,7 @@ function spriteOf(f: Fighter, lordSkin: LordSkin | undefined): string {
 }
 
 /** 한 칸 그리기. 시트가 없으면 이름표 상자 */
-function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, sprite: string, anim: 'idle' | 'attack' | 'death', frame: number, x: number, y: number) {
+function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, sprite: string, anim: 'idle' | 'attack' | 'death', frame: number, x: number, y: number, now: number) {
   const name = `${sprite}_${anim}`;
   const img = image(name);
   const flip = f.side === 'enemy';
@@ -77,6 +77,11 @@ function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, sprite: string, ani
   ctx.translate(x, y);
   if (flip) ctx.scale(-1, 1);
   if (f.ghost) ctx.globalAlpha *= 0.6;
+  // 유료 마왕 외형: 몸 테두리 빛 (쓰러지면 끈다)
+  if (f.kind === 'lord' && sprite !== 'lord' && anim !== 'death') {
+    ctx.shadowColor = AURA.color;
+    ctx.shadowBlur = auraBlur(now);
+  }
   // 캔버스는 여백 포함 정사각형이고 캐릭터 발은 대략 아래에서 1/6 지점이다
   ctx.drawImage(img, fi * s.w, 0, s.w, s.h, -dw / 2, -dh * 0.84, dw, dh);
   ctx.restore();
@@ -123,7 +128,7 @@ function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: numbe
     const sprite = spriteOf(f, v.lordSkin);
     const s = strips[`${sprite}_${anim}`];
     if (anim === 'idle' && s) frame %= s.frames;
-    drawUnit(ctx, f, sprite, anim, frame, p.x, p.y);
+    drawUnit(ctx, f, sprite, anim, frame, p.x, p.y, now);
     const barY = hpBarY(sprite, p.y);
 
     if (hp > 0) {

@@ -69,6 +69,7 @@ export default function CastleScene(props: {
   const towerRef = useRef<HTMLDivElement>(null);
   const k = useHeight(towerRef) / TOWER_H;
   const open = floorsUnlocked(s.castle.level);
+  const lordSkin = chooseLordSkin(s.lordSkin ?? null, s.skins ?? [], s.season.pass);
 
   async function act(fn: () => Promise<unknown>, after?: () => void) {
     if (busy) return;
@@ -99,8 +100,8 @@ export default function CastleScene(props: {
       <div className="tower" ref={towerRef}>
         <img src="sprites/tower.png" alt="" draggable={false} />
 
-        <div className="unit-at" style={at(50, THRONE.stand)}>
-          <Sprite id={lordSpriteId(chooseLordSkin(s.lordSkin ?? null, s.skins ?? [], s.season.pass))} label={LORD.name} scale={unitScale} />
+        <div className={`unit-at ${lordSkin ? 'aura' : ''}`} style={at(50, THRONE.stand)}>
+          <Sprite id={lordSpriteId(lordSkin)} label={LORD.name} scale={unitScale} />
         </div>
 
         {TIERS.map((tier, i) => {

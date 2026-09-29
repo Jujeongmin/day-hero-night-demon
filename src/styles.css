@@ -244,6 +244,9 @@ canvas.battle {
 .pass-cell.dim { filter: grayscale(.9) brightness(.55); }
 .pass-cell.got { opacity: .45; }
 .glow { filter: brightness(1.2) drop-shadow(0 0 4px #ffcf4dcc); }
+/* 유료 마왕 외형 빛 테두리 (battleCanvas와 같은 값: skins.ts AURA) */
+.aura { animation: aura 1.6s ease-in-out infinite; }
+@keyframes aura { 0%, 100% { filter: drop-shadow(0 0 3px #b04dff) drop-shadow(0 0 1px #ff4de0); } 50% { filter: drop-shadow(0 0 9px #b04dff) drop-shadow(0 0 3px #ff4de0); } }
 .looks { display: flex; gap: 8px; }
 .look { background: none; border: 0; padding: 2px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--muted); }
 .look.on { color: var(--gold); filter: drop-shadow(0 0 4px #ffcf4dcc); }
