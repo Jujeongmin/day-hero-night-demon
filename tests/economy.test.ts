@@ -13,6 +13,14 @@ describe('economy', () => {
     expect(idleIncome(1, 10 * H, 5 * H, 1)).toBe(0);
   });
 
+  it('idle boost doubles only the boosted part of the window', () => {
+    // 레벨 1: 시간당 60. 4시간 중 뒤 2시간만 부스트 → 2×60 + 2×120 = 360
+    expect(idleIncome(1, 0, 4 * H, 1, { from: 2 * H, until: 10 * H })).toBe(360);
+    // 영구 2배는 부스트와 겹쳐도 2배까지
+    expect(idleIncome(1, 0, 4 * H, 2, { from: 0, until: 4 * H })).toBe(480);
+    expect(idleIncome(1, 0, 4 * H, 1, null)).toBe(240);
+  });
+
   it('loot = 10% of gold, capped by 500 × castle level, never more than gold', () => {
     expect(lootAmount(1000, 5)).toBe(100);
     expect(lootAmount(100_000, 2)).toBe(1000);

@@ -1,4 +1,4 @@
-import { PRODUCTS } from '../../server/src/purchases';
+import { SHOP_PRODUCTS } from '../../server/src/purchases';
 import { Portrait } from '../render/Sprite';
 import { buy, findItem, type ShopItem } from '../services/shop';
 import { T } from '../strings/ko';
@@ -7,7 +7,7 @@ import { T } from '../strings/ko';
 export default function Shop(props: { items: ShopItem[]; owned: Set<string> }) {
   return (
     <>
-      {PRODUCTS.map((id) => {
+      {SHOP_PRODUCTS.map((id) => {
         const item = findItem(props.items, id);
         const [name, desc] = T.products[id];
         const owned = props.owned.has(id) || !!item?.purchaseLimitReached;

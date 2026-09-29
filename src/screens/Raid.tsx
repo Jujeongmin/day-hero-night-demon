@@ -5,6 +5,7 @@ import { autoTactic, runStatus, type RunStatus } from '../../server/src/raid';
 import type { Run } from '../../server/src/state';
 import BattleCanvas from '../render/battleCanvas';
 import { floorBgId } from '../render/skins';
+import { nextSpeed, type Speed } from '../render/speed';
 import { playBgm, sfx } from '../services/audio';
 import { buy } from '../services/shop';
 import { errorText, type Api, type EndResult, type HomeData, type RunResult } from '../services/api';
@@ -23,7 +24,8 @@ export default function Raid(props: {
   const [status, setStatus] = useState<RunStatus | null>(home.state.run ? runStatus(home.state.run) : null);
   const [events, setEvents] = useState<BattleEvent[]>([]);
   const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState<1 | 2>(1);
+  const [speed, setSpeed] = useState<Speed>(1);
+  const has3x = home.state.perks?.speed3 === true;
   const [pendingUlt, setPendingUlt] = useState<string | null>(null);
   // 서버 응답마다 1씩 올린다. 이벤트가 없는 라운드가 와도 다음 라운드 호출이 멈추지 않게 한다.
   const [tick, setTick] = useState(0);
@@ -115,7 +117,10 @@ export default function Raid(props: {
       <img className="raid-backdrop" src="sprites/tower.png" alt="" draggable={false} />
       <header className="hud">
         <span className="pill">{run.snapshot.nickname}</span>
-        <button className="pill" onClick={() => setSpeed(speed === 1 ? 2 : 1)}>{T.speed(speed)}</button>
+        <span className="hud-row">
+          <button className="pill" onClick={() => setSpeed(nextSpeed(speed, has3x))}>{T.speed(speed)}</button>
+          {!has3x && <button className="pill locked" onClick={() => buy('speed_x3')} aria-label={T.products.speed_x3[0]}>{T.speed(3)}</button>}
+        </span>
       </header>
 
       <BattleCanvas battle={b} events={events} speed={speed} lordSkin={run.snapshot.lordSkin} bg={floorBgId(run.floor, run.snapshot.floors.length)} onDone={() => setPlaying(false)} />

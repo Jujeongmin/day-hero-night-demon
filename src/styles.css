@@ -48,6 +48,8 @@ select { font: inherit; }
 .tier.locked { background: #0007; }
 .tier.locked:hover { border-color: var(--bone); }
 
+.hud-row { display: flex; gap: 4px; }
+.pill.locked { filter: grayscale(.7) brightness(.75); }
 .float-idle { position: absolute; right: 8px; top: 48px; z-index: 3; animation: bob 1.4s ease-in-out infinite; }
 .scene-foot { position: absolute; left: 0; right: 0; bottom: 10px; z-index: 3; display: flex; justify-content: center; padding-inline: 12px; }
 .scene-foot .btn.big { min-width: 62%; }

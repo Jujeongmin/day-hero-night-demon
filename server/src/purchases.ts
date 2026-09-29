@@ -1,10 +1,15 @@
 import { BALANCE } from './catalog';
 import type { UserState } from './state';
 
+/** 웹훅이 지급할 수 있는 모든 상품. 폐기 상품(대시보드에서 끔)도 끄기 전 결제분을 위해 남긴다. */
 export const PRODUCTS = [
   'starter_pack', 'recruit_dragon', 'idle_x2', 'revive',
   'shadow_double', 'revenge_ticket', 'daily_supply', 'season_pass',
+  'speed_x3', 'premium',
 ] as const;
+
+/** 게임 상점에 보이는 상품 (2026-09-29: 소모품은 광고 보상으로 옮김) */
+export const SHOP_PRODUCTS = ['starter_pack', 'recruit_dragon', 'season_pass', 'speed_x3', 'premium'] as const;
 
 export type ProductId = (typeof PRODUCTS)[number];
 
@@ -28,6 +33,10 @@ export function grantFor(productId: string, quantity: number, s: UserState): Gra
       return { patch: { credits: { ...s.credits, revenge: s.credits.revenge + BALANCE.revengePerBuy * q } }, gold: 0, soul: 0 };
     case 'daily_supply':
       return { patch: {}, gold: BALANCE.dailySupplyGold * q, soul: BALANCE.dailySupplySoul * q };
+    case 'speed_x3':
+      return { patch: { perks: { ...s.perks, speed3: true } }, gold: 0, soul: 0 };
+    case 'premium':
+      return { patch: { perks: { ...s.perks, premium: true } }, gold: 0, soul: 0 };
     case 'season_pass':
       return { patch: { season: { ...s.season, pass: true } }, gold: 0, soul: 0 };
     default:

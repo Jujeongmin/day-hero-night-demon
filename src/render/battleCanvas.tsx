@@ -154,7 +154,7 @@ function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: numbe
 export default function BattleCanvas(props: {
   battle: FloorBattle | null;
   events: BattleEvent[];
-  speed: 1 | 2;
+  speed: 1 | 2 | 3;
   lordSkin?: LordSkin;
   /** 배경 시트 이름(`floorBgId`) */
   bg: string;

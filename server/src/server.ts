@@ -7,6 +7,7 @@ import {
 import { checkNickname, nicknameKey } from './nickname';
 import { npcCastle, npcRaids, npcTierForPower, TUTORIAL_TARGET, tutorialCastle } from './npc';
 import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun } from './raid';
+import { planAdReward, verifyAdRequest } from './ads';
 import { grantFor } from './purchases';
 import { rngNext, seedFrom } from './rng';
 import {
@@ -77,6 +78,16 @@ function tutorialTarget(): Target {
 }
 
 const NICKNAMES = 'nicknames';
+/** 광고 requestId 사용 기록. 모든 계정 통틀어 한 번만 쓴다(검증 응답이 계정을 알려주지 않아서). */
+const AD_CLAIMS = 'ad_claims';
+
+async function adClaimed(requestId: string): Promise<boolean> {
+  try {
+    return !!(await $global.getCollectionItem(AD_CLAIMS, requestId));
+  } catch {
+    return false;
+  }
+}
 
 /** 없으면 null. 로컬 하네스는 없는 문서를 읽으면 예외를 던진다. */
 async function nicknameOwner(key: string): Promise<string | null> {
@@ -305,6 +316,33 @@ export class Server {
     });
   }
 
+  async claimAdReward(placementId: string, requestId: string | null) {
+    const me = $sender.account;
+    // 프리미엄 여부는 서버 상태로만 판단한다. 검증(외부 호출)은 락 밖에서 해서 락을 오래 잡지 않는다.
+    const raw = await $global.getUserState(me);
+    const premium = !isNew(raw) && withDefaults(raw as UserState).perks.premium === true;
+    let id: string | null = null;
+    if (!premium) {
+      if (typeof requestId !== 'string' || requestId.length < 8 || requestId.length > 100 || requestId.includes('/')) {
+        throw new Error('AD_NOT_VERIFIED');
+      }
+      if (!(await verifyAdRequest(requestId))) throw new Error('AD_NOT_VERIFIED');
+      id = requestId;
+    }
+    return withLocks(id ? [me, `ad:${id}`] : [me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      if (id && (await adClaimed(id))) throw new Error('AD_USED');
+      const plan = planAdReward(s, placementId, now);
+      if (!plan.ok) throw new Error(plan.code);
+      if (id) await $global.addCollectionItem(AD_CLAIMS, { account: me, placementId, at: now }, { id });
+      if (plan.gold) await $asset.mint('gold', plan.gold);
+      if (plan.soul) await $asset.mint('soul', plan.soul);
+      await save(me, plan.patch);
+      return { gold: plan.gold, soul: plan.soul };
+    });
+  }
+
   async resetProgress(confirmText: string) {
     const me = $sender.account;
     if (confirmText !== '초기화') throw new Error('RESET_CONFIRM');
@@ -378,7 +416,7 @@ export class Server {
         state: s,
         ...(await balances(me)),
         now,
-        idlePreview: idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult),
+        idlePreview: idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult, s.idleBoost),
         seasonEndsAt: seasonEndsAt(now),
       };
     });
@@ -389,7 +427,7 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await loadState(me, now);
-      const gold = idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult);
+      const gold = idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult, s.idleBoost);
       if (gold > 0) await $asset.mint('gold', gold);
       await save(me, { idle: { ...s.idle, lastClaimAt: now } });
       return { gold };

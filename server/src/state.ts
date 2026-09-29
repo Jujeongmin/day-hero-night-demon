@@ -110,6 +110,12 @@ export interface UserState {
   starterOffered: boolean;
   processedPurchases: string[];
   onboarding: OnboardingState;
+  /** 광고 보상 오늘 횟수 (한국 시간 날짜) */
+  ads: { day: string; counts: Partial<Record<string, number>> };
+  /** 광고 방치 2배 구간 */
+  idleBoost: { from: number; until: number } | null;
+  /** VX 영구 상품 */
+  perks: { speed3: boolean; premium: boolean };
 }
 
 export function isNew(raw: unknown): boolean {
@@ -156,6 +162,9 @@ export function defaultState(account: string, now: number, seasonId: string): Us
     starterOffered: false,
     processedPurchases: [],
     onboarding: { at: 'cutscene', nicknameSet: false },
+    ads: { day: '', counts: {} },
+    idleBoost: null,
+    perks: { speed3: false, premium: false },
   };
 }
 
@@ -172,7 +181,12 @@ export function resolveFloors(s: UserState): ResolvedFloor[] {
 export function withDefaults(s: UserState): UserState {
   const onboarding: OnboardingState = s.onboarding ?? { at: s.introDone ? 'done' : 'cutscene', nicknameSet: false };
   const profile = { ...s.profile, nicknameChanges: s.profile.nicknameChanges ?? 0 };
-  return { ...s, onboarding, profile };
+  return {
+    ...s, onboarding, profile,
+    ads: s.ads ?? { day: '', counts: {} },
+    idleBoost: s.idleBoost ?? null,
+    perks: s.perks ?? { speed3: false, premium: false },
+  };
 }
 
 /** 설정의 데이터 초기화. 진행만 지우고 결제로 얻은 것·닉네임·중복 지급 방지 기록은 남긴다. */
@@ -196,5 +210,8 @@ export function resetState(s: UserState, now: number): UserState {
     starterOffered: s.starterOffered,
     processedPurchases: s.processedPurchases,
     onboarding: { at: 'done', nicknameSet: s.onboarding.nicknameSet },
+    // 오늘 광고 횟수는 초기화로 다시 받지 못하게, 영구 상품은 결제라 남긴다
+    ads: s.ads,
+    perks: s.perks,
   };
 }

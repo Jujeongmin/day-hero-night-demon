@@ -1,12 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { PRODUCTS, grantFor } from '../server/src/purchases';
+import { PRODUCTS, SHOP_PRODUCTS, grantFor } from '../server/src/purchases';
 import { defaultState } from '../server/src/state';
 
 const fresh = () => defaultState('0xbuyer0001', 0, 's1');
 
 describe('purchases', () => {
-  it('lists 8 products', () => {
-    expect(PRODUCTS).toHaveLength(8);
+  it('lists 10 products (5 retired ones still pay out)', () => {
+    expect(PRODUCTS).toHaveLength(10);
+  });
+
+  it('speed_x3 and premium are permanent perks', () => {
+    expect(grantFor('speed_x3', 1, fresh()).patch.perks).toEqual({ speed3: true, premium: false });
+    expect(grantFor('premium', 1, fresh()).patch.perks).toEqual({ speed3: false, premium: true });
+  });
+
+  it('the shop lists only the products still on sale', () => {
+    expect(SHOP_PRODUCTS).toEqual(['starter_pack', 'recruit_dragon', 'season_pass', 'speed_x3', 'premium']);
   });
 
   it('starter pack: necromancer + 5000 gold + 30 soul', () => {

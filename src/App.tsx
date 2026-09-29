@@ -37,7 +37,8 @@ function samePanel(a: Panel, b: Panel): boolean {
 function ownedProducts(s: UserState): Set<string> {
   const owned = new Set<string>();
   if (s.season.pass) owned.add('season_pass');
-  if (s.idle.mult >= 2) owned.add('idle_x2');
+  if (s.perks?.speed3) owned.add('speed_x3');
+  if (s.perks?.premium) owned.add('premium');
   if (s.roster.dragon) owned.add('recruit_dragon');
   if (s.roster.necro) owned.add('starter_pack');
   return owned;
