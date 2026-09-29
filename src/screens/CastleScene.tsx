@@ -64,6 +64,19 @@ export default function CastleScene(props: {
     [s.siege?.lastWaveAt, home.siegeWaveMs, home.now],
   );
   const onWaveDue = useCallback(() => { onRefresh().catch(() => undefined); }, [onRefresh]);
+  // 바로 부른 파도: getHome은 그 결과를 다시 주지 않으므로 여기서 들고 있다가 재생한다
+  const [calledWave, setCalledWave] = useState<{ at: number; won: boolean } | null>(null);
+  const [calling, setCalling] = useState(false);
+  const callWave = useCallback(() => {
+    if (calling) return;
+    setCalling(true);
+    api.callSiegeWave()
+      .then((r) => { setCalledWave(r.wave); return onRefresh(); })
+      .catch((e) => onError(errorText(e)))
+      .finally(() => setCalling(false));
+  }, [api, calling, onRefresh, onError]);
+  const served = home.siegeLastWave ?? null;
+  const lastWave = calledWave && (!served || calledWave.at > served.at) ? calledWave : served;
   // 영구 2배(옛 상품) 계정은 광고 2배를 쓰지 않는다
   const doubleLeft = home.state.idle.mult >= 2 ? 0 : adsLeft(home.state, 'idle_double', Date.now());
   const towerRef = useRef<HTMLDivElement>(null);
@@ -134,7 +147,9 @@ export default function CastleScene(props: {
         paused={!!s.run}
         stage={s.siege?.stage ?? 1}
         nextWaveAt={nextWaveAt}
-        lastWave={home.siegeLastWave ?? null}
+        lastWave={lastWave}
+        compact={panelOpen}
+        onCall={calling ? null : callWave}
         onWaveDue={onWaveDue}
         onFighting={onDefending}
       />

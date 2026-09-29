@@ -10,7 +10,7 @@ import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun 
 import { planAdReward } from './ads';
 import { chooseLordSkin, planPassClaim } from './pass';
 import { grantFor } from './purchases';
-import { runSiege } from './siege';
+import { fightWave, runSiege } from './siege';
 import { rngNext, seedFrom } from './rng';
 import {
   canAdvance, dayKey, defaultState, isNew, isStage, resetState, resolveFloors, withDefaults,
@@ -359,6 +359,20 @@ export class Server {
       if (plan.soul) await $asset.mint('soul', plan.soul);
       await save(me, plan.patch);
       return { gold: plan.gold, soul: plan.soul };
+    });
+  }
+
+  /** 공성 파도를 지금 바로 부른다(무료). 직전 파도에서 BALANCE.siegeCallGapMs가 지나야 한다. */
+  async callSiegeWave() {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const { s } = await advanceSiege(me, await loadState(me, now), now);
+      if (now - s.siege.lastWaveAt < BALANCE.siegeCallGapMs) throw new Error('SIEGE_TOO_SOON');
+      const r = fightWave({ account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s) });
+      const siege = { stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold };
+      await save(me, { siege });
+      return { wave: { at: now, won: r.won }, siege, gold: r.gold };
     });
   }
 

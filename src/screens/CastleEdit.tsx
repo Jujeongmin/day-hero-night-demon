@@ -54,7 +54,7 @@ export default function CastleEdit(props: { api: Api; home: HomeData; floor: num
             <small>{MONSTERS[id].name}</small>
           </button>
         ))}
-        <button className="btn small ghost" disabled={busy} onClick={() => place(null)}>{T.emptySlot}</button>
+        <button className="btn small ghost" disabled={busy} onClick={() => place(null)}>{T.clearSlot}</button>
       </div>
     </>
   );

@@ -68,6 +68,8 @@ export const BALANCE = {
   /** 스테이지형 공성(2026-09-29 승인): 2분마다 파도 1번, 막으면 단계 × siegeGoldPerKill × 3 */
   siegeWaveMs: 2 * 60_000,
   siegeGoldPerKill: 1,
+  /** 바로 부르기(무료 스킵, 2026-09-29 승인): 파도와 파도 사이 최소 간격 = 화면 연출 길이 */
+  siegeCallGapMs: 10_000,
   /** 20단계를 넘으면 레벨 대신 단계마다 능력치 +10% */
   siegeMultPerStage: 0.1,
   lootRate: 0.1,

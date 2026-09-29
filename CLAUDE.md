@@ -316,7 +316,7 @@ Verse8 공식 기능이 존재하는 영역을 불필요하게 자체 구현하�
 
 1. 현재 상태: `PROJECT/Status.md` (된 것·남은 것), 결정 기록: `docs/ui-style.md`, `docs/art-style.md`, `docs/vxshop-products.md`. 계획서의 Task 15(사용자 작업)·20이 남았다. Task 19 밸런스는 2026-09-29 B안으로 끝.
 2. 준비: `npm install`, `cd server && npm install` (서버 타입 검사용). `.env`(VITE_AGENT8_VERSE/ACCOUNT)는 저장소에 들어 있다.
-3. 확인: `npm test`(vitest 131개), `npm run test:server`(하네스 23개), `npx tsc --noEmit -p tsconfig.app.json`, `npx tsc -p server/tsconfig.json --noEmit`.
+3. 확인: `npm test`(vitest 131개), `npm run test:server`(하네스 24개), `npx tsc --noEmit -p tsconfig.app.json`, `npx tsc -p server/tsconfig.json --noEmit`.
 4. 미리보기: `npx vite --port 5199 --strictPort` (5173은 다른 것이 쓸 때가 있다). 서버는 Agent8 편집기가 `<verse>-preview`에 배포하고, `git push origin develop`이 빌드·배포다.
 
 사용자가 정한 작업 규칙 (대화에서 나온 것, 코드에 없음):

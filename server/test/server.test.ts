@@ -336,3 +336,13 @@ describe('season pass track', () => {
     expect((await server.setLordSkin('base')).lordSkin).toBe('base');
   });
 });
+
+describe('siege', () => {
+  test('calling a wave right after the last one is refused', async (server) => {
+    server.connect({ account: 't50-siege' });
+    const home = await server.getHome();
+    expect(home.state.siege.stage).toBe(1);
+    expect(await fails(server.callSiegeWave())).toBe(true);
+    expect((await server.getHome()).state.siege.stage).toBe(1);
+  });
+});

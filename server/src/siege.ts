@@ -12,6 +12,23 @@ export function siegeWave(stage: number): HeroSpec[] {
     : { id, level }));
 }
 
+function defenseOf(castleLevel: number, floors: ResolvedFloor[]) {
+  return [
+    ...floors.map((f) => ({ enemies: f.monsters.map((m) => ({ id: m.id, level: m.level })) })),
+    { enemies: [{ id: 'lord' as const, level: castleLevel }] },
+  ];
+}
+
+/** 파도 하나: at 시각의 시드로 싸워 막았는지와 다음 단계·골드를 낸다. */
+export function fightWave(p: { account: string; stage: number; at: number; castleLevel: number; floors: ResolvedFloor[] }): { won: boolean; stage: number; gold: number } {
+  const stage = Math.max(1, p.stage);
+  const raid = simulateAuto({ heroes: siegeWave(stage), floors: defenseOf(p.castleLevel, p.floors), seed: seedFrom(p.account, 'siege', p.at) });
+  const won = !raid.won;
+  return won
+    ? { won, stage: stage + 1, gold: stage * BALANCE.siegeGoldPerKill * 3 }
+    : { won, stage: Math.max(1, stage - 1), gold: 0 };
+}
+
 /** 마지막 처리 이후 도착한 파도를 순서대로 싸운다. 막으면 단계 +1·골드, 뚫리면 단계 −1. 최대 8시간치. */
 export function runSiege(p: {
   account: string; stage: number; lastWaveAt: number; now: number; castleLevel: number; floors: ResolvedFloor[];
@@ -20,24 +37,15 @@ export function runSiege(p: {
   const total = Math.max(0, Math.floor((p.now - p.lastWaveAt) / W));
   const cap = Math.floor((BALANCE.idleCapHours * 3_600_000) / W);
   const skip = Math.max(0, total - cap);
-  const defense = [
-    ...p.floors.map((f) => ({ enemies: f.monsters.map((m) => ({ id: m.id, level: m.level })) })),
-    { enemies: [{ id: 'lord' as const, level: p.castleLevel }] },
-  ];
   let stage = Math.max(1, p.stage);
   let gold = 0;
   const waves: { at: number; won: boolean }[] = [];
   for (let i = skip + 1; i <= total; i++) {
     const at = p.lastWaveAt + i * W;
-    const raid = simulateAuto({ heroes: siegeWave(stage), floors: defense, seed: seedFrom(p.account, 'siege', at) });
-    const won = !raid.won;
-    waves.push({ at, won });
-    if (won) {
-      gold += stage * BALANCE.siegeGoldPerKill * 3;
-      stage += 1;
-    } else {
-      stage = Math.max(1, stage - 1);
-    }
+    const r = fightWave({ account: p.account, stage, at, castleLevel: p.castleLevel, floors: p.floors });
+    waves.push({ at, won: r.won });
+    gold += r.gold;
+    stage = r.stage;
   }
   return { stage, lastWaveAt: p.lastWaveAt + total * W, gold, waves };
 }

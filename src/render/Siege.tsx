@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Sprite from './Sprite';
 import { SIEGE, idleSiege, startWave, stepSiege, waveRunning, type SiegeState } from './siegeSim';
+import { BALANCE } from '../../server/src/catalog';
 import { T } from '../strings/ko';
 
 const TICK_MS = 66;
@@ -21,8 +22,12 @@ export default function Siege(props: {
   /** 다음 파도 시각이 지나면 서버에 결과를 물어본다 */
   onWaveDue: () => void;
   onFighting: (fighting: boolean) => void;
+  /** 아래 창이 열려 있으면 단계 표시·부르기 버튼을 숨긴다(1층을 가리지 않게) */
+  compact: boolean;
+  /** 바로 부르기(무료 스킵). 요청 중이면 null */
+  onCall: (() => void) | null;
 }) {
-  const { ground, paused, stage, nextWaveAt, lastWave, onWaveDue, onFighting } = props;
+  const { ground, paused, stage, nextWaveAt, lastWave, onWaveDue, onFighting, compact, onCall } = props;
   const [s, setS] = useState<SiegeState>(idleSiege);
   const [now, setNow] = useState(Date.now());
   // 재생 중에는 싸우기 전 단계를 보여 주고, 끝나면 새 단계로 바꾼다
@@ -71,6 +76,8 @@ export default function Siege(props: {
 
   if (paused) return null;
   const breached = s.held === false && s.castleHp === 0;
+  // 직전 파도에서 서버 최소 간격이 지나야 부를 수 있다
+  const canCall = !!onCall && !running && now - (nextWaveAt - BALANCE.siegeWaveMs) >= BALANCE.siegeCallGapMs;
   return (
     <div className="siege" style={{ bottom: ground }} aria-hidden>
       {s.invaders.map((v) => (
@@ -88,12 +95,21 @@ export default function Siege(props: {
           />
         </div>
       ))}
-      <div className="castle-hp" style={{ left: '50%' }}>
-        <span style={{ width: `${(s.castleHp / SIEGE.castleMax) * 100}%` }} />
-      </div>
-      <span className="siege-stage pill">
-        {breached ? T.siege.breached : running ? T.siege.stage(shownStage) : T.siege.next(shownStage, Math.max(0, nextWaveAt - now))}
-      </span>
+      {!compact && (
+        <>
+          <div className="castle-hp" style={{ left: '50%' }}>
+            <span style={{ width: `${(s.castleHp / SIEGE.castleMax) * 100}%` }} />
+          </div>
+          <div className="siege-stage">
+            <span className="pill">
+              {breached ? T.siege.breached : running ? T.siege.stage(shownStage) : T.siege.next(shownStage, Math.max(0, nextWaveAt - now))}
+            </span>
+            {!running && (
+              <button className="btn small gold" disabled={!canCall} onClick={() => onCall?.()}>{T.siege.call}</button>
+            )}
+          </div>
+        </>
+      )}
       {s.coins.map((c) => {
         // 쓰러진 자리에서 톡 튀어 올라(0~0.3초) 잠깐 떠 있다가(~0.9초) 그 자리에서 사라진다(채집)
         const a = c.age;

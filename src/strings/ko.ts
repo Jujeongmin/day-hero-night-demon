@@ -11,6 +11,7 @@ export const T = {
   throne: '옥좌',
   floor: (n: number) => `${n}층`,
   emptySlot: '빈 칸',
+  clearSlot: '비우기',
   logTitle: '방어 기록',
   logDefended: (name: string) => `${name}의 침입을 막았다`,
   logRobbed: (name: string, g: number) => (g > 0 ? `${name}에게 털렸다 (−${g})` : `${name}에게 털렸다`),
@@ -142,6 +143,7 @@ export const T = {
     stage: (n: number) => `공성 ${n}단계`,
     next: (n: number, ms: number) => `공성 ${n}단계 · ${Math.floor(ms / 60_000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`,
     breached: '성문 돌파! 단계 하락',
+    call: '바로 부르기',
   },
   ads: {
     watch: (label: string) => `${label} (광고)`,
@@ -171,6 +173,7 @@ export const T = {
     NICK_TAKEN: '이미 누가 쓰는 이름이다',
     NICK_NO_CHANGES: '무료 변경을 이미 썼다',
     SKIN_NOT_OWNED: '가지고 있지 않은 외형이다',
+    SIEGE_TOO_SOON: '조금 뒤에 부를 수 있다',
     PASS_NOTHING: '받을 보상이 없다',
     RESET_CONFIRM: "'초기화'를 정확히 입력해줘",
     RESET_IN_RAID: '공략 중에는 초기화할 수 없다',
