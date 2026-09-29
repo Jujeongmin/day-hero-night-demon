@@ -6,7 +6,7 @@ import {
 } from './league';
 import { checkNickname, nicknameKey } from './nickname';
 import { npcCastle, npcRaids, npcTierForPower, TUTORIAL_TARGET, tutorialCastle } from './npc';
-import { advanceRound, beginFloor, extendAway, lordDefeated, reviveRun, runStatus, startRun } from './raid';
+import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun } from './raid';
 import { grantFor } from './purchases';
 import { rngNext, seedFrom } from './rng';
 import {
@@ -47,9 +47,7 @@ async function syncCastle(account: string, s: UserState): Promise<void> {
     castleLevel: s.castle.level,
     power: castlePower(s.castle.level, floors),
     floors,
-    awayUntil: s.awayUntil,
     shieldUntil: s.shieldUntil,
-    shadowUntil: s.shadowUntil,
   }, { id: account });
 }
 
@@ -65,7 +63,7 @@ function npcTargets(s: UserState, now: number): Target[] {
     const c = npcCastle(tier, `${dayKey(now)}-${i}`);
     return {
       id: c.owner, nickname: c.nickname, power: castlePower(c.castleLevel, c.floors),
-      castleLevel: c.castleLevel, throneEmpty: false, estLoot: npcLoot(c.castleLevel), npc: true,
+      castleLevel: c.castleLevel, estLoot: npcLoot(c.castleLevel), npc: true,
     };
   });
 }
@@ -74,7 +72,7 @@ function tutorialTarget(): Target {
   const c = tutorialCastle();
   return {
     id: c.owner, nickname: c.nickname, power: castlePower(c.castleLevel, c.floors),
-    castleLevel: c.castleLevel, throneEmpty: false, estLoot: npcLoot(c.castleLevel), npc: true,
+    castleLevel: c.castleLevel, estLoot: npcLoot(c.castleLevel), npc: true,
   };
 }
 
@@ -104,26 +102,20 @@ async function buildSnapshot(target: string, now: number): Promise<CastleSnapsho
     nickname: d.profile.nickname,
     castleLevel: d.castle.level,
     floors: resolveFloors(d),
-    throneEmpty: d.awayUntil > now,
-    shadow: d.shadowUntil > now,
+    throneEmpty: false,
+    shadow: false,
     ...(d.season.pass ? { lordSkin: 'skull' as const } : {}),
   };
 }
 
 async function beginRun(
   me: string, s: UserState, snapshot: CastleSnapshot,
-  opts: { isRevenge: boolean; revengeLogId: string | null; useShadow: boolean; extra?: Partial<UserState> },
+  opts: { isRevenge: boolean; revengeLogId: string | null; extra?: Partial<UserState> },
   now: number,
 ) {
   if (s.run) throw new Error('이미 공략 중이다');
   const run = startRun({ account: me, snapshot, isRevenge: opts.isRevenge, revengeLogId: opts.revengeLogId, now });
-  const patch: Partial<UserState> = { ...(opts.extra ?? {}), run, awayUntil: now + BALANCE.awayStartMs };
-  if (opts.useShadow) {
-    if (s.credits.shadow < 1) throw new Error('그림자 대역이 없다');
-    const credits = { ...s.credits, ...(opts.extra?.credits ?? {}) };
-    patch.credits = { ...credits, shadow: credits.shadow - 1 };
-    patch.shadowUntil = now + BALANCE.awayMaxMs;
-  }
+  const patch: Partial<UserState> = { ...(opts.extra ?? {}), run };
   await save(me, patch);
   await syncCastle(me, { ...s, ...patch });
   return { run, status: runStatus(run) };
@@ -140,8 +132,6 @@ async function finishRun(me: string, s: UserState, run: Run, won: boolean, loot:
   const offerStarter = won && !s.starterOffered;
   const patch: Partial<UserState> = {
     run: null,
-    awayUntil: 0,
-    shadowUntil: 0,
     firstWinDay: won ? today : s.firstWinDay,
     starterOffered: s.starterOffered || offerStarter,
     introDone: s.introDone || run.target === 'npc:0:intro',
@@ -150,15 +140,10 @@ async function finishRun(me: string, s: UserState, run: Run, won: boolean, loot:
       : s.raidLog,
   };
   await save(me, patch);
-  const honor = honorForRaid({ won, throneEmpty: run.snapshot.throneEmpty, lordDefeated: lord, isRevenge: run.isRevenge });
+  const honor = honorForRaid({ won, lordDefeated: lord, isRevenge: run.isRevenge });
   if (honor) await addHonor(me, { ...s, ...patch }, honor, now);
   await syncCastle(me, { ...s, ...patch });
   return { won, loot, soul, lordDefeated: lord, offerStarter, honor };
-}
-
-/** 공략 중 행동을 하면 옥좌는 다시 빈다(탭을 닫았다가 돌아와 이어하는 경우). */
-function resumeAway(s: UserState, now: number): number {
-  return s.awayUntil < now ? now + BALANCE.awayPerFloorMs : s.awayUntil;
 }
 
 async function realTargets(me: string, s: UserState, now: number): Promise<Target[]> {
@@ -180,11 +165,10 @@ async function realTargets(me: string, s: UserState, now: number): Promise<Targe
   }
   const out: Target[] = [];
   for (const r of picked) {
-    const throneEmpty = (r.awayUntil ?? 0) > now;
     const gold = await $asset.get('gold', r.account);
     out.push({
       id: r.account, nickname: r.nickname, power: r.power, castleLevel: r.castleLevel,
-      throneEmpty, estLoot: lootAmount(gold, r.castleLevel, throneEmpty), npc: false,
+      estLoot: lootAmount(gold, r.castleLevel), npc: false,
     });
   }
   return out;
@@ -199,7 +183,7 @@ async function settleDefender(me: string, s: UserState, run: Run, won: boolean, 
   let loot = 0;
   if (won) {
     const defGold = await $asset.get('gold', def);
-    loot = lootAmount(defGold, run.snapshot.castleLevel, run.snapshot.throneEmpty && !run.snapshot.shadow);
+    loot = lootAmount(defGold, run.snapshot.castleLevel);
     if (run.isRevenge) {
       const mine = s.raidLog.find((e) => e.id === run.revengeLogId);
       if (mine) loot = Math.min(defGold, Math.max(loot, mine.goldLost));
@@ -214,7 +198,7 @@ async function settleDefender(me: string, s: UserState, run: Run, won: boolean, 
   }
   const entry: RaidLogEntry = {
     id: `${me}-${now}`, at: now, attacker: me, attackerName: s.profile.nickname,
-    attackerWon: won, goldLost: loot, throneEmpty: run.snapshot.throneEmpty, npc: false, revenged: false,
+    attackerWon: won, goldLost: loot, npc: false, revenged: false,
   };
   const patch: Partial<UserState> = { raidLog: [entry, ...d.raidLog].slice(0, 20) };
   if (won) patch.shieldUntil = now + BALANCE.shieldMs;
@@ -277,17 +261,16 @@ async function addHonor(account: string, s: UserState, amount: number, now: numb
 async function applyNpcRaids(me: string, s: UserState, now: number): Promise<UserState> {
   const { raids, lastRaidAt } = npcRaids({
     lastRaidAt: s.idle.lastRaidAt, now, account: me, castleLevel: s.castle.level,
-    floors: resolveFloors(s), awayUntil: s.awayUntil,
+    floors: resolveFloors(s),
   });
   if (raids.length === 0 && lastRaidAt === s.idle.lastRaidAt) return s;
   let gold = await $asset.get('gold');
   let delta = 0;
   const log: RaidLogEntry[] = [];
   for (const r of raids) {
-    const empty = s.awayUntil > r.at;
-    const base = { id: `npc-${r.at}`, at: r.at, attacker: 'npc', attackerName: '침입자 길드', throneEmpty: empty, npc: true, revenged: true };
+    const base = { id: `npc-${r.at}`, at: r.at, attacker: 'npc', attackerName: '침입자 길드', npc: true, revenged: true };
     if (r.attackerWon) {
-      const lost = lootAmount(gold, s.castle.level, empty);
+      const lost = lootAmount(gold, s.castle.level);
       gold -= lost;
       delta -= lost;
       log.push({ ...base, attackerWon: true, goldLost: lost });
@@ -468,7 +451,7 @@ export class Server {
     });
   }
 
-  async startRaid(targetId: string, useShadow: boolean) {
+  async startRaid(targetId: string) {
     const me = $sender.account;
     return withLocks([me], async () => {
       const now = Date.now();
@@ -476,7 +459,7 @@ export class Server {
       const t = s.lastTargets.find((x) => x.id === targetId);
       if (!t) throw new Error('제안받은 대상이 아니다');
       const snapshot = await buildSnapshot(t.id, now);
-      return beginRun(me, s, snapshot, { isRevenge: false, revengeLogId: null, useShadow: useShadow === true }, now);
+      return beginRun(me, s, snapshot, { isRevenge: false, revengeLogId: null }, now);
     });
   }
 
@@ -486,7 +469,7 @@ export class Server {
       const now = Date.now();
       const s = await loadState(me, now);
       if (s.introDone) throw new Error('입문 공략은 이미 끝났다');
-      return beginRun(me, s, npcCastle(0, 'intro'), { isRevenge: false, revengeLogId: null, useShadow: false }, now);
+      return beginRun(me, s, npcCastle(0, 'intro'), { isRevenge: false, revengeLogId: null }, now);
     });
   }
 
@@ -498,7 +481,7 @@ export class Server {
       if (!s.run) throw new Error('공략 중이 아니다');
       if (!TACTICS.includes(tactic as Tactic)) throw new Error('잘못된 전술이다');
       const r = beginFloor(s.run, tactic as Tactic, s.heroes);
-      await save(me, { run: r.run, awayUntil: resumeAway(s, now) });
+      await save(me, { run: r.run });
       return { run: r.run, events: r.events, status: runStatus(r.run) };
     });
   }
@@ -510,11 +493,8 @@ export class Server {
       const s = await loadState(me, now);
       if (!s.run) throw new Error('공략 중이 아니다');
       if (ult !== null && !HERO_ORDER.includes(ult as HeroId)) throw new Error('잘못된 궁극기다');
-      const before = s.run.floor;
       const r = advanceRound(s.run, ult as HeroId | null);
-      let awayUntil = resumeAway(s, now);
-      if (r.run.floor !== before) awayUntil = extendAway(awayUntil, s.run.startedAt);
-      await save(me, { run: r.run, awayUntil });
+      await save(me, { run: r.run });
       return { run: r.run, events: r.events, status: runStatus(r.run) };
     });
   }
@@ -527,7 +507,7 @@ export class Server {
       if (!s.run) throw new Error('공략 중이 아니다');
       if (s.credits.revive < 1) throw new Error('NO_REVIVE_CREDIT');
       const run = reviveRun(s.run);
-      await save(me, { run, credits: { ...s.credits, revive: s.credits.revive - 1 }, awayUntil: resumeAway(s, now) });
+      await save(me, { run, credits: { ...s.credits, revive: s.credits.revive - 1 } });
       return { run, status: runStatus(run) };
     });
   }
@@ -578,7 +558,7 @@ export class Server {
         extra.credits = { ...s.credits, revenge: s.credits.revenge - 1 };
       }
       const snapshot = await buildSnapshot(entry.attacker, now);
-      return beginRun(me, s, snapshot, { isRevenge: true, revengeLogId: logId, useShadow: false, extra }, now);
+      return beginRun(me, s, snapshot, { isRevenge: true, revengeLogId: logId, extra }, now);
     });
   }
 

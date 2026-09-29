@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { HeroId } from '../server/src/catalog';
 import {
-  advanceRound, autoTactic, beginFloor, extendAway, floorEnemies, lordDefeated, reviveRun, runStatus, startRun,
+  advanceRound, autoTactic, beginFloor, floorEnemies, lordDefeated, reviveRun, runStatus, startRun,
 } from '../server/src/raid';
 import type { CastleSnapshot, Run } from '../server/src/state';
 import { BALANCE } from '../server/src/catalog';
@@ -63,7 +63,7 @@ describe('raid', () => {
     expect(lordDefeated(run)).toBe(false);
   });
 
-  it('a shadow double guards an empty throne at half strength', () => {
+  it('npc-only setups: half-strength lord, or no lord at all', () => {
     expect(floorEnemies(snap({ throneEmpty: true, shadow: true }), 1)).toEqual([{ id: 'lord', level: 1, mult: 0.5 }]);
     expect(floorEnemies(snap({ throneEmpty: true }), 1)).toEqual([]);
   });
@@ -84,10 +84,5 @@ describe('raid', () => {
     const fighting = beginFloor(run, 'guard', heroes(1)).run;
     expect(runStatus(fighting)).toBe('fighting');
     expect(() => beginFloor(fighting, 'guard', heroes(1))).toThrow();
-  });
-
-  it('away time extends by 10 min per floor, capped at 40 min from start', () => {
-    expect(extendAway(20 * 60_000, 0)).toBe(30 * 60_000);
-    expect(extendAway(38 * 60_000, 0)).toBe(BALANCE.awayMaxMs);
   });
 });

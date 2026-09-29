@@ -22,7 +22,8 @@ export function grantFor(productId: string, quantity: number, s: UserState): Gra
     case 'revive':
       return { patch: { credits: { ...s.credits, revive: s.credits.revive + BALANCE.revivePerBuy * q } }, gold: 0, soul: 0 };
     case 'shadow_double':
-      return { patch: { credits: { ...s.credits, shadow: s.credits.shadow + BALANCE.shadowPerBuy * q } }, gold: 0, soul: 0 };
+      // 폐기 상품: 대시보드에서 끄기 전에 결제된 건은 성공으로만 처리한다(대역 기능이 없어졌다)
+      return { patch: {}, gold: 0, soul: 0 };
     case 'revenge_ticket':
       return { patch: { credits: { ...s.credits, revenge: s.credits.revenge + BALANCE.revengePerBuy * q } }, gold: 0, soul: 0 };
     case 'daily_supply':

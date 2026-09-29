@@ -27,7 +27,7 @@ describe('purchases', () => {
 
   it('consumables add credits by quantity', () => {
     expect(grantFor('revive', 2, fresh()).patch.credits?.revive).toBe(2);
-    expect(grantFor('shadow_double', 1, fresh()).patch.credits?.shadow).toBe(2);
+    expect(grantFor('shadow_double', 1, fresh())).toEqual({ patch: {}, gold: 0, soul: 0 }); // 폐기 상품
     expect(grantFor('revenge_ticket', 3, fresh()).patch.credits?.revenge).toBe(6);
   });
 

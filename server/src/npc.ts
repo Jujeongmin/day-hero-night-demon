@@ -36,7 +36,7 @@ export function npcTierForPower(power: number): number {
 }
 
 export function npcRaids(p: {
-  lastRaidAt: number; now: number; account: string; castleLevel: number; floors: ResolvedFloor[]; awayUntil: number;
+  lastRaidAt: number; now: number; account: string; castleLevel: number; floors: ResolvedFloor[];
 }): { raids: { at: number; attackerWon: boolean }[]; lastRaidAt: number } {
   const due = Math.floor((p.now - p.lastRaidAt) / BALANCE.npcRaidEveryMs);
   const count = Math.max(0, Math.min(BALANCE.npcRaidMax, due));
@@ -44,7 +44,7 @@ export function npcRaids(p: {
   const raids: { at: number; attackerWon: boolean }[] = [];
   for (let i = 0; i < count; i++) {
     const at = p.lastRaidAt + (i + 1) * BALANCE.npcRaidEveryMs;
-    const throne: EnemySpec[] = p.awayUntil > at ? [] : [{ id: 'lord', level: p.castleLevel }];
+    const throne: EnemySpec[] = [{ id: 'lord', level: p.castleLevel }];
     const floors = [
       ...p.floors.map((f) => ({ enemies: f.monsters.map((m) => ({ id: m.id, level: m.level })), trap: f.trap })),
       { enemies: throne, trap: null },

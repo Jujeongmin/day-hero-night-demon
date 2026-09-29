@@ -8,10 +8,9 @@ export function idleIncome(castleLevel: number, lastClaimAt: number, now: number
   return Math.floor((elapsed / HOUR) * BALANCE.idleGoldPerCastleLevelHour * castleLevel * mult);
 }
 
-export function lootAmount(defenderGold: number, defenderCastleLevel: number, throneEmpty: boolean): number {
+export function lootAmount(defenderGold: number, defenderCastleLevel: number): number {
   const base = Math.min(defenderGold * BALANCE.lootRate, defenderCastleLevel * BALANCE.lootCapPerCastleLevel);
-  const withBonus = throneEmpty ? base * (1 + BALANCE.emptyThroneLootBonus) : base;
-  return Math.max(0, Math.min(defenderGold, Math.floor(withBonus)));
+  return Math.max(0, Math.min(defenderGold, Math.floor(base)));
 }
 
 export function npcLoot(castleLevel: number): number {

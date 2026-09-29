@@ -64,19 +64,7 @@ describe('raid vs npc', () => {
     const home = await server.getHome();
     expect(home.state.introDone).toBe(true);
     expect(home.state.run).toBe(null);
-    expect(home.state.awayUntil).toBe(0);
     expect(await fails(server.startIntroRaid())).toBe(true);
-  });
-
-  test('starting a raid empties the throne until it ends', async (server) => {
-    server.connect({ account: 't8-away' });
-    await server.getHome();
-    const targets = await server.findTargets();
-    expect(targets.length).toBe(3);
-    await server.startRaid(targets[0].id, false);
-    expect((await server.getHome()).state.awayUntil).toBeGreaterThan(Date.now());
-    await server.endRaid(true);
-    expect((await server.getHome()).state.awayUntil).toBe(0);
   });
 
   test('only offered targets can be raided', async (server) => {
@@ -166,7 +154,7 @@ describe('pvp', () => {
     }
   });
 
-  test('a player out raiding shows up with an empty throne', async (server) => {
+  test('a player out raiding still defends with the lord', async (server) => {
     const A = `t12-away-${Date.now()}`;
     const B = `t12-look-${Date.now()}`;
     server.connect({ account: A });
@@ -178,7 +166,8 @@ describe('pvp', () => {
     server.connect({ account: B });
     await server.getHome();
     const seen = await findTarget(server, A);
-    expect(!!seen && seen.throneEmpty).toBe(true);
+    expect(!!seen).toBe(true);
+    expect('throneEmpty' in seen).toBe(false);
 
     server.connect({ account: A });
     await server.endRaid(true);
@@ -220,9 +209,9 @@ describe('league', () => {
     await server.startIntroRaid();
     await playAll(server);
     const end = await server.endRaid(false);
-    expect(end.honor).toBe(15);
+    expect(end.honor).toBe(10); // 입문 NPC는 마왕이 없어 기본 10
     const lg = await server.getLeague();
-    expect(lg.myHonor).toBe(15);
+    expect(lg.myHonor).toBe(10);
     expect(lg.bracket.length).toBe(30);
     expect(lg.bracket.some((r: any) => r.me)).toBe(true);
   });

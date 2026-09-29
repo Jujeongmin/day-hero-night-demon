@@ -54,7 +54,7 @@ export function createApi(server: RemoteServer) {
     setFloor: (index: number, monsters: (string | null)[], trap: string | null) => call<{ floor: unknown }>('setFloor', [index, monsters, trap]),
     recruit: (monsterId: string) => call<{ soul: number }>('recruit', [monsterId]),
     findTargets: () => call<Target[]>('findTargets'),
-    startRaid: (targetId: string, useShadow: boolean) => call<RunResult>('startRaid', [targetId, useShadow]),
+    startRaid: (targetId: string) => call<RunResult>('startRaid', [targetId]),
     startIntroRaid: () => call<RunResult>('startIntroRaid'),
     revenge: (logId: string) => call<RunResult>('revenge', [logId]),
     setTactic: (tactic: string) => call<RunResult>('setTactic', [tactic]),

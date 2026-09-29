@@ -69,13 +69,9 @@ export const BALANCE = {
   idleCapHours: 8,
   lootRate: 0.1,
   lootCapPerCastleLevel: 500,
-  emptyThroneLootBonus: 0.5,
   npcLootPerCastleLevel: 200,
   defenseRewardPerCastleLevel: 50,
   shieldMs: 2 * 3_600_000,
-  awayStartMs: 20 * 60_000,
-  awayPerFloorMs: 10 * 60_000,
-  awayMaxMs: 40 * 60_000,
   revengeWindowMs: 24 * 3_600_000,
   freeRevengesPerDay: 3,
   npcRaidEveryMs: 2 * 3_600_000,
@@ -92,7 +88,6 @@ export const BALANCE = {
   dailySupplyGold: 5000,
   dailySupplySoul: 15,
   revivePerBuy: 1,
-  shadowPerBuy: 2,
   revengePerBuy: 2,
 } as const;
 

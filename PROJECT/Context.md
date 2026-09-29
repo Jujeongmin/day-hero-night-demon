@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Verse8 웹게임(모바일 세로). 방치형 RPG: 내 마왕성은 항상 자동으로 지켜지고, 출정하면 다른 플레이어의 성을 비동기로 공략한다. **빈 옥좌 규칙**: 출정 중에는 마왕이 옥좌를 비워 내 성이 약해지고, 남들은 "성주 부재 중" 표시와 +50% 약탈을 본다. 2주 시즌 리그, VX Shop 상품 8개.
+Verse8 웹게임(모바일 세로). 방치형 RPG: 내 마왕성은 항상 자동으로 지켜지고, 출정하면 다른 플레이어의 성을 비동기로 공략한다. 출정 중에도 마왕이 옥좌를 지킨다(빈 옥좌 규칙은 2026-09-29 폐기). 2주 시즌 리그. 수익화는 VX 영구 상품 + Verse8 광고 보상으로 바꾸는 중(`docs/superpowers/specs/2026-09-29-monetization-rework-design.md`).
 
 설계 문서: https://claude.ai/code/artifact/e0a24442-e501-45fb-9f7f-97a6ce67a9b7 · 구현 계획: `docs/superpowers/plans/2026-09-28-day-hero-night-demon-v1.md`
 

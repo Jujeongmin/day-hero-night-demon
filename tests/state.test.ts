@@ -85,7 +85,7 @@ describe('resetState', () => {
       roster: { slime: { level: 9 }, skeleton: { level: 7 }, imp: { level: 4 }, necro: { level: 6 }, dragon: { level: 8 } },
       heroes: { knight: { level: 9 }, archer: { level: 9 }, priest: { level: 9 } },
       idle: { lastClaimAt: 1, lastRaidAt: 1, mult: 2 },
-      credits: { revive: 2, shadow: 1, revenge: 3 },
+      credits: { revive: 2, shadow: 1, revenge: 3 } as UserState['credits'],
       season: { id: 's1', bracketId: 'b1', honor: 300, pass: true, rewardedFor: null },
       introDone: true,
       starterOffered: true,
@@ -97,7 +97,7 @@ describe('resetState', () => {
     expect(r.heroes).toEqual(s0.heroes);
     expect(r.roster).toEqual({ slime: { level: 1 }, skeleton: { level: 1 }, necro: { level: 1 }, dragon: { level: 1 } });
     expect(r.idle).toEqual({ lastClaimAt: 5_000, lastRaidAt: 5_000, mult: 2 });
-    expect(r.credits).toEqual({ revive: 2, shadow: 1, revenge: 3 });
+    expect(r.credits).toEqual({ revive: 2, revenge: 3 }); // 옛 대역 횟수는 버린다
     expect(r.season).toEqual({ id: 's1', bracketId: null, honor: 0, pass: true, rewardedFor: null });
     expect(r.profile).toEqual(s.profile);
     expect(r.processedPurchases).toEqual(['p1', 'p2']);

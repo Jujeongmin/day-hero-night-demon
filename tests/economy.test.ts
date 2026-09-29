@@ -13,11 +13,10 @@ describe('economy', () => {
     expect(idleIncome(1, 10 * H, 5 * H, 1)).toBe(0);
   });
 
-  it('loot = 10% of gold, capped by 500 × castle level, +50% if throne empty, never more than gold', () => {
-    expect(lootAmount(1000, 5, false)).toBe(100);
-    expect(lootAmount(100_000, 2, false)).toBe(1000);
-    expect(lootAmount(1000, 5, true)).toBe(150);
-    expect(lootAmount(0, 5, true)).toBe(0);
+  it('loot = 10% of gold, capped by 500 × castle level, never more than gold', () => {
+    expect(lootAmount(1000, 5)).toBe(100);
+    expect(lootAmount(100_000, 2)).toBe(1000);
+    expect(lootAmount(0, 5)).toBe(0);
   });
 
   it('npc loot = 200 × castle level, at least level 1', () => {

@@ -46,7 +46,7 @@ function ownedProducts(s: UserState): Set<string> {
 function purchasedSomething(a: HomeData, b: HomeData): boolean {
   const c = (h: HomeData) => h.state.credits;
   return b.gold > a.gold || b.soul > a.soul
-    || c(b).revive > c(a).revive || c(b).shadow > c(a).shadow || c(b).revenge > c(a).revenge
+    || c(b).revive > c(a).revive || c(b).revenge > c(a).revenge
     || (b.state.season.pass && !a.state.season.pass) || b.state.idle.mult > a.state.idle.mult
     || Object.keys(b.state.roster).length > Object.keys(a.state.roster).length;
 }

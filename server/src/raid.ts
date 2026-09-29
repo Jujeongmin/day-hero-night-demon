@@ -105,6 +105,3 @@ export function lordDefeated(run: Run): boolean {
   return runStatus(run) === 'victory' && (!run.snapshot.throneEmpty || run.snapshot.shadow);
 }
 
-export function extendAway(awayUntil: number, startedAt: number): number {
-  return Math.min(startedAt + BALANCE.awayMaxMs, awayUntil + BALANCE.awayPerFloorMs);
-}

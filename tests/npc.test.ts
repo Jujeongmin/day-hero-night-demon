@@ -33,7 +33,7 @@ describe('npc', () => {
   });
 
   it('npc raids: one per 2h, max 4, remainder kept', () => {
-    const base = { account: 'a', castleLevel: 1, floors: [{ monsters: [{ id: 'slime' as const, level: 1 }], trap: null }], awayUntil: 0 };
+    const base = { account: 'a', castleLevel: 1, floors: [{ monsters: [{ id: 'slime' as const, level: 1 }], trap: null }] };
     expect(npcRaids({ ...base, lastRaidAt: 0, now: 1 * H }).raids).toHaveLength(0);
     const two = npcRaids({ ...base, lastRaidAt: 0, now: 5 * H });
     expect(two.raids.map((r) => r.at)).toEqual([2 * H, 4 * H]);

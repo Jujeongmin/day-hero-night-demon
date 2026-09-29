@@ -16,6 +16,7 @@ export interface CastleSnapshot {
   nickname: string;
   castleLevel: number;
   floors: ResolvedFloor[];
+  /** NPC 구성 전용: 입문 NPC는 마왕 없음(throneEmpty), 튜토리얼 NPC는 반쪽 마왕(throneEmpty + shadow). 플레이어 성은 항상 false. */
   throneEmpty: boolean;
   shadow: boolean;
   lordSkin?: LordSkin;
@@ -43,7 +44,6 @@ export interface RaidLogEntry {
   attackerName: string;
   attackerWon: boolean;
   goldLost: number;
-  throneEmpty: boolean;
   npc: boolean;
   revenged: boolean;
 }
@@ -53,7 +53,6 @@ export interface Target {
   nickname: string;
   power: number;
   castleLevel: number;
-  throneEmpty: boolean;
   estLoot: number;
   npc: boolean;
 }
@@ -99,10 +98,8 @@ export interface UserState {
   traps: Partial<Record<TrapId, { level: number }>>;
   heroes: Record<HeroId, { level: number }>;
   idle: { lastClaimAt: number; lastRaidAt: number; mult: 1 | 2 };
-  awayUntil: number;
   shieldUntil: number;
-  shadowUntil: number;
-  credits: { revive: number; shadow: number; revenge: number };
+  credits: { revive: number; revenge: number };
   run: Run | null;
   lastTargets: Target[];
   raidLog: RaidLogEntry[];
@@ -129,7 +126,7 @@ export function dayKey(now: number): string {
 }
 
 function introLog(now: number): RaidLogEntry[] {
-  const base = { attacker: 'npc:intro', attackerName: '침입자 길드', goldLost: 0, throneEmpty: false, npc: true, revenged: true };
+  const base = { attacker: 'npc:intro', attackerName: '침입자 길드', goldLost: 0, npc: true, revenged: true };
   return [
     { ...base, id: 'intro-3', at: now - 1_000, attackerWon: true },
     { ...base, id: 'intro-2', at: now - 2_000, attackerWon: false },
@@ -147,10 +144,8 @@ export function defaultState(account: string, now: number, seasonId: string): Us
     heroes: { knight: { level: 1 }, archer: { level: 1 }, priest: { level: 1 } },
     // 방치 수입과 NPC 습격은 계정을 만든 순간부터 센다.
     idle: { lastClaimAt: now, lastRaidAt: now, mult: 1 },
-    awayUntil: 0,
     shieldUntil: 0,
-    shadowUntil: 0,
-    credits: { revive: 0, shadow: 0, revenge: 0 },
+    credits: { revive: 0, revenge: 0 },
     run: null,
     lastTargets: [],
     raidLog: introLog(now),
@@ -191,7 +186,7 @@ export function resetState(s: UserState, now: number): UserState {
     profile: s.profile,
     roster: { ...fresh.roster, ...paid },
     idle: { ...fresh.idle, mult: s.idle.mult },
-    credits: s.credits,
+    credits: { revive: s.credits.revive, revenge: s.credits.revenge },
     raidLog: [],
     // 같은 날 첫 승리 영혼석·무료 복수 횟수를 초기화로 다시 받지 못하게 그대로 둔다
     firstWinDay: s.firstWinDay,

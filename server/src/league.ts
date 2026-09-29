@@ -24,9 +24,9 @@ export function leagueCollection(seasonId: string): string {
 
 export const DEFENSE_HONOR = 3;
 
-export function honorForRaid(r: { won: boolean; throneEmpty: boolean; lordDefeated: boolean; isRevenge: boolean }): number {
+export function honorForRaid(r: { won: boolean; lordDefeated: boolean; isRevenge: boolean }): number {
   if (!r.won) return 0;
-  let h = r.throneEmpty ? 15 : 10;
+  let h = 10;
   if (r.lordDefeated) h += 5;
   return r.isRevenge ? h * 2 : h;
 }

@@ -52,7 +52,6 @@ export default function CastleScene(props: {
   const [busy, setBusy] = useState(false);
   const towerRef = useRef<HTMLDivElement>(null);
   const k = useHeight(towerRef) / TOWER_H;
-  const away = s.awayUntil > Date.now();
   const open = floorsUnlocked(s.castle.level);
 
   async function act(fn: () => Promise<unknown>, after?: () => void) {
@@ -85,9 +84,7 @@ export default function CastleScene(props: {
         <img src="sprites/tower.png" alt="" draggable={false} />
 
         <div className="unit-at" style={at(50, THRONE.stand)}>
-          {away
-            ? <span className="chip">{T.throneEmptyBadge}</span>
-            : <Sprite id={lordSpriteId(s.season.pass ? 'skull' : undefined)} label={LORD.name} scale={unitScale} />}
+          <Sprite id={lordSpriteId(s.season.pass ? 'skull' : undefined)} label={LORD.name} scale={unitScale} />
         </div>
 
         {TIERS.map((tier, i) => {

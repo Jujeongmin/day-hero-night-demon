@@ -3,12 +3,12 @@
 ## 설명 (한 줄 → 한국어 → 영어, 808자)
 
 ```
-남의 성을 털러 간 사이, 내 옥좌는 비어 있다.
+낮엔 남의 성을 털고, 밤엔 내 성을 지킨다.
 
 용사가 되어 남의 마왕성을 털고, 마왕이 되어 내 성을 지키세요.
 - 층을 눌러 슬라임·해골병·거미와 함정을 배치해 최대 3층 성을 쌓아요.
 - 공략은 층마다 전술을 고르고 궁극기 타이밍만 정하면 돼요. 클릭만으로 끝.
-- 출정하는 동안 내 옥좌는 비어요. 그 사이 털리면 더 많이 빼앗기니 그림자 대역을 세워 두세요.
+- 자리를 비워도 부하 몬스터와 함정, 옥좌의 마왕이 성을 지켜요.
 - 나를 턴 상대에겐 하루 3번 무료로 복수할 수 있어요.
 - 2주 시즌마다 30명 리그에서 명예를 겨뤄요.
 자리를 비운 동안에도 성은 골드를 모아요.
@@ -16,7 +16,7 @@
 Raid other players' demon castles as a hero, then guard your own as the demon lord.
 - Tap a floor to place slimes, skeletons, spiders and traps. Build up to 3 floors.
 - Raids go floor by floor: pick a tactic, time your ultimate. Clicks only.
-- While you're out raiding, your throne sits empty and raiders take more. Leave a Shadow Double on guard.
+- Your monsters, traps and demon lord guard the castle even while you're away.
 - Got robbed? Strike back with 3 free revenges a day.
 - Compete for honor in a 30-player league every 2-week season.
 Your castle keeps earning gold while you're away.

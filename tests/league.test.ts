@@ -22,9 +22,8 @@ import { DEFENSE_HONOR, ghostHonor, honorForRaid, rankBracket, seasonRewardSoul 
 
 describe('league', () => {
   it('honor per raid', () => {
-    const base = { won: true, throneEmpty: false, lordDefeated: false, isRevenge: false };
+    const base = { won: true, lordDefeated: false, isRevenge: false };
     expect(honorForRaid(base)).toBe(10);
-    expect(honorForRaid({ ...base, throneEmpty: true })).toBe(15);
     expect(honorForRaid({ ...base, lordDefeated: true })).toBe(15);
     expect(honorForRaid({ ...base, isRevenge: true, lordDefeated: true })).toBe(30);
     expect(honorForRaid({ ...base, won: false })).toBe(0);
