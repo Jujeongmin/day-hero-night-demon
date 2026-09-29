@@ -4362,7 +4362,7 @@ await window.__server.remoteFunction('$onItemPurchased', [{ account: '<내 계�
 
 - [ ] **Step 5: 저가 테스트 결제 (사용자 작업)**
 
-사용자가 VX로 `daily_supply`(100 VX)를 한 번 산다. 확인: 결제 창 → 닫힘 → 골드 +3,000, 영혼석 +10이 홈에 반영. 같은 상품을 같은 날 다시 사려 하면 막힌다(하루 1회). 결과를 `docs/vxshop-products.md` 아래에 날짜와 함께 적는다.
+사용자가 VX로 `daily_supply`(100 VX)를 한 번 산다. 확인: 결제 창 → 닫힘 → 골드 +5,000, 영혼석 +15가 홈에 반영. 같은 상품을 같은 날 다시 사려 하면 막힌다(하루 1회). 결과를 `docs/vxshop-products.md` 아래에 날짜와 함께 적는다.
 
 - [ ] **Step 6: 커밋**
 
@@ -5143,9 +5143,9 @@ git commit -m "balance: tune stats for 55-75% matched attack win rate"
 | `recruit_dragon` | 새끼 용 생김, 다시 사기 막힘 |
 | `idle_x2` | 방치 수입 미리보기가 두 배, 다시 사기 막힘 |
 | `revive` | 공략 전멸 화면에서 구매 → 부활 버튼 활성 → 부활 → 같은 판 두 번째 부활 불가 |
-| `shadow_double` | 매칭에서 체크 가능 → 출정 중 다른 계정이 볼 때 옥좌층에 마왕(50%) 등장 |
-| `revenge_ticket` | 무료 3회 소진 후 복수 가능 |
-| `daily_supply` | 골드 +3,000, 영혼석 +10, 같은 날 두 번째 막힘 |
+| `shadow_double` | 1개 사면 2회분 생김 → 매칭에서 체크 가능 → 출정 중 다른 계정이 볼 때 옥좌층에 마왕(50%) 등장 |
+| `revenge_ticket` | 1개 사면 2장 생김 → 무료 3회 소진 후 복수 가능 |
+| `daily_supply` | 골드 +5,000, 영혼석 +15, 같은 날 두 번째 막힘 |
 | `season_pass` | 리그 보상 두 배(시즌 종료 전이라 상태값 `season.pass: true`만 확인) |
 
 각 결과를 `docs/launch-checklist.md`에 날짜와 함께 적는다. 하나라도 지급이 안 되면 공개하지 않는다.

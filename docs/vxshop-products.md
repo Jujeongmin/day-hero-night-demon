@@ -12,9 +12,9 @@
 | `recruit_dragon` | Baby Dragon | 300 | 999999 | 1 | — | — | `art/products/recruit_dragon.png` | Recruit the baby dragon (breathes fire on every enemy). One per account. |
 | `idle_x2` | Idle Income x2 | 500 | 999999 | 1 | — | — | `art/products/idle_x2.png` | Idle gold income doubled, forever. One per account. |
 | `revive` | Revive | 100 | 999999 | — | — | — | `art/products/revive.png` | Revive your party at 50% HP once per raid. Stacks. |
-| `shadow_double` | Shadow Double | 100 | 999999 | — | — | — | `art/products/shadow_double.png` | A shadow guards your throne at 50% power during your next raid. Stacks. |
-| `revenge_ticket` | Revenge Ticket | 100 | 999999 | — | — | — | `art/products/revenge_ticket.png` | One extra revenge after today's 3 free revenges. Stacks. |
-| `daily_supply` | Daily Supply | 100 | 999999 | — | 1 / day (일별) | — | `art/products/daily_supply.png` | 3,000 gold + 10 soul stones. Once per day. |
+| `shadow_double` | Shadow Double | 100 | 999999 | — | — | — | `art/products/shadow_double.png` | 2 uses. A shadow guards your throne at 50% power while you are out raiding. Stacks. |
+| `revenge_ticket` | Revenge Ticket | 100 | 999999 | — | — | — | `art/products/revenge_ticket.png` | 2 extra revenges after today's 3 free revenges. Stacks. |
+| `daily_supply` | Daily Supply | 100 | 999999 | — | 1 / day (일별) | — | `art/products/daily_supply.png` | 5,000 gold + 15 soul stones. Once per day. |
 | `season_pass` | Season Pass | 400 | 999999 | — | — | — (아래 참고) | `art/products/season_pass.png` | Double season rewards + the Skull Lord look for your demon lord, for the current season. Resets every season (2 weeks). |
 
 - Product ID는 `server/src/purchases.ts`의 `PRODUCTS`와 **글자까지 같아야** 한다. 서버는 모르는 ID를 받으면 `{ success: false }`를 돌려준다.
@@ -22,6 +22,7 @@
 - Image: 512×512 PNG (`art/products/`, 64px 아이콘을 8배 확대한 것, 바탕 `#1a1024`).
 - Metadata(JSON)는 비워 둔다. 서버가 쓰지 않는다.
 - 최저가는 100 VX(사용자 결정, 2026-09-29: 100 VX 미만 상품은 두지 않는다). 8개 합계 1,700 VX.
+- 지급량은 `BALANCE`(`starterGold`, `dailySupplyGold`, `shadowPerBuy` 등)에 있다. 2026-09-29 가격 인상에 맞춰 일일 보급 3,000+10 → 5,000+15, 그림자 대역 1 → 2회, 복수권 1 → 2장. **대시보드 Description을 이 표대로 고쳐야 한다(3개).**
 - 가격은 `BALANCE`와 무관하다(VX 가격은 대시보드가 진실). 클라이언트는 `VXShop.getItems()`의 `price`를 그대로 표시한다.
 
 ### season_pass 판매 기간
@@ -45,4 +46,4 @@
 - (비공개 출시 날짜)
 - 상품 등록 완료: 2026-09-29 (사용자). 50 VX 3종(shadow_double·revenge_ticket·daily_supply)은 100 VX로 등록. 대시보드 ID 대조: (출시된 게임 상점에서 8개 모두 가격이 뜨는지 확인 후 기록)
 - 보안 확인: 2026-09-28 preview에서 안전 확인(위). 프로덕션 재확인: (날짜)
-- (테스트 결제 결과: daily_supply 100 VX → 골드 +3,000, 영혼석 +10, 같은 날 재구매 차단)
+- (테스트 결제 결과: daily_supply 100 VX → 골드 +5,000, 영혼석 +15, 같은 날 재구매 차단)

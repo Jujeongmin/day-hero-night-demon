@@ -86,6 +86,14 @@ export const BALANCE = {
   seasonMs: 14 * 86_400_000,
   seasonEpoch: Date.UTC(2026, 9, 12),
   bracketSize: 30,
+  /** VX 상품 1개당 지급량 (가격은 대시보드가 정한다) */
+  starterGold: 5000,
+  starterSoul: 30,
+  dailySupplyGold: 5000,
+  dailySupplySoul: 15,
+  revivePerBuy: 1,
+  shadowPerBuy: 2,
+  revengePerBuy: 2,
 } as const;
 
 export function scaleStats(base: Stats, level: number, mult = 1): Stats {

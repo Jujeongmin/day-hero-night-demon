@@ -27,12 +27,12 @@ describe('purchases', () => {
 
   it('consumables add credits by quantity', () => {
     expect(grantFor('revive', 2, fresh()).patch.credits?.revive).toBe(2);
-    expect(grantFor('shadow_double', 1, fresh()).patch.credits?.shadow).toBe(1);
-    expect(grantFor('revenge_ticket', 3, fresh()).patch.credits?.revenge).toBe(3);
+    expect(grantFor('shadow_double', 1, fresh()).patch.credits?.shadow).toBe(2);
+    expect(grantFor('revenge_ticket', 3, fresh()).patch.credits?.revenge).toBe(6);
   });
 
-  it('daily supply: 3000 gold + 10 soul per unit', () => {
-    expect(grantFor('daily_supply', 1, fresh())).toEqual({ patch: {}, gold: 3000, soul: 10 });
+  it('daily supply: 5000 gold + 15 soul per unit', () => {
+    expect(grantFor('daily_supply', 1, fresh())).toEqual({ patch: {}, gold: 5000, soul: 15 });
   });
 
   it('season pass marks the current season', () => {
