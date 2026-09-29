@@ -19,7 +19,7 @@ describe('npc', () => {
     for (let seed = 0; seed < 30; seed++) {
       const r = simulateAuto({
         heroes: [{ id: 'knight', level: 1 }, { id: 'archer', level: 1 }, { id: 'priest', level: 1 }],
-        floors: c.floors.map((f) => ({ enemies: f.monsters, trap: f.trap })),
+        floors: c.floors.map((f) => ({ enemies: f.monsters })),
         seed,
       });
       expect(r.won).toBe(true);
@@ -33,7 +33,7 @@ describe('npc', () => {
   });
 
   it('npc raids: one per 2h, max 4, remainder kept', () => {
-    const base = { account: 'a', castleLevel: 1, floors: [{ monsters: [{ id: 'slime' as const, level: 1 }], trap: null }] };
+    const base = { account: 'a', castleLevel: 1, floors: [{ monsters: [{ id: 'slime' as const, level: 1 }] }] };
     expect(npcRaids({ ...base, lastRaidAt: 0, now: 1 * H }).raids).toHaveLength(0);
     const two = npcRaids({ ...base, lastRaidAt: 0, now: 5 * H });
     expect(two.raids.map((r) => r.at)).toEqual([2 * H, 4 * H]);
@@ -50,7 +50,7 @@ describe('tutorial castle', () => {
     expect(c.owner).toBe(TUTORIAL_TARGET);
     const floors = [];
     for (let f = 0; f <= throneIndex(c); f++) {
-      floors.push({ enemies: floorEnemies(c, f), trap: f < c.floors.length ? c.floors[f].trap : null });
+      floors.push({ enemies: floorEnemies(c, f) });
     }
     expect(floors.at(-1)!.enemies[0].id).toBe('lord');
     for (let seed = 1; seed <= 500; seed++) {

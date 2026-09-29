@@ -2,7 +2,7 @@ import type { BattleEvent, FloorBattle } from '../../server/src/battle';
 import { T } from '../strings/ko';
 
 export interface Fx {
-  kind: 'hit' | 'heal' | 'trap' | 'down' | 'raise' | 'ult' | 'status' | 'end';
+  kind: 'hit' | 'heal' | 'down' | 'raise' | 'ult' | 'status' | 'end';
   key: string | null;
   text: string;
   /** 공격·회복을 한 쪽. 이 캐릭터가 공격 동작을 한다 */
@@ -20,7 +20,7 @@ export function preHp(battle: FloorBattle, events: BattleEvent[]): Record<string
   const hp: Record<string, number> = Object.fromEntries(battle.fighters.map((f) => [f.key, f.hp]));
   for (let i = events.length - 1; i >= 0; i--) {
     const e = events[i];
-    if (e.t === 'attack' || e.t === 'trap') hp[e.to] = Math.min(max[e.to], hp[e.to] + e.dmg);
+    if (e.t === 'attack') hp[e.to] = Math.min(max[e.to], hp[e.to] + e.dmg);
     else if (e.t === 'heal') hp[e.to] = Math.max(0, hp[e.to] - e.amount);
     else if (e.t === 'raise') hp[e.key] = 0;
   }
@@ -40,10 +40,6 @@ export function buildFrames(battle: FloorBattle, events: BattleEvent[]): Frame[]
       case 'attack':
         hp[e.to] = Math.max(0, hp[e.to] - e.dmg);
         fx = { kind: 'hit', key: e.to, text: `−${e.dmg}`, from: e.from };
-        break;
-      case 'trap':
-        hp[e.to] = Math.max(0, hp[e.to] - e.dmg);
-        fx = { kind: 'trap', key: e.to, text: `−${e.dmg}` };
         break;
       case 'heal':
         hp[e.to] = Math.min(max[e.to], hp[e.to] + e.amount);

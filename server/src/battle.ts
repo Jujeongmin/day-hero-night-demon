@@ -1,6 +1,6 @@
 import {
-  BALANCE, HEROES, LORD, MONSTERS, TRAPS, scaleStats,
-  type HeroId, type MonsterId, type SkillId, type Stats, type Tactic, type TrapId,
+  BALANCE, HEROES, LORD, MONSTERS, scaleStats,
+  type HeroId, type MonsterId, type SkillId, type Stats, type Tactic,
 } from './catalog';
 import { rngNext } from './rng';
 
@@ -31,7 +31,6 @@ export interface FloorBattle {
   round: number;
   rng: number;
   fighters: Fighter[];
-  trap: { id: TrapId; level: number } | null;
   tactic: Tactic;
   ultCharge: number;
   ultUsed: boolean;
@@ -45,14 +44,11 @@ export type BattleEvent =
   | { t: 'status'; to: string; status: 'taunt' | 'web' | 'stun'; rounds: number }
   | { t: 'down'; key: string }
   | { t: 'raise'; key: string; hp: number }
-  | { t: 'trap'; trap: TrapId; to: string; dmg: number }
   | { t: 'ult'; hero: HeroId }
   | { t: 'end'; outcome: 'won' | 'lost' };
 
 export interface HeroSpec { id: HeroId; level: number; hp?: number }
 export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number }
-
-type Trap = { id: TrapId; level: number };
 
 function makeFighter(
   key: string, side: Side, kind: UnitKind, level: number, row: 'front' | 'back',
@@ -66,7 +62,7 @@ function makeFighter(
 }
 
 export function createFloorBattle(input: {
-  heroes: HeroSpec[]; enemies: EnemySpec[]; trap: Trap | null; tactic: Tactic; seed: number;
+  heroes: HeroSpec[]; enemies: EnemySpec[]; tactic: Tactic; seed: number;
 }): { battle: FloorBattle; events: BattleEvent[] } {
   const fighters: Fighter[] = [];
   for (const h of input.heroes) {
@@ -87,17 +83,10 @@ export function createFloorBattle(input: {
     }
   });
   const battle: FloorBattle = {
-    round: 0, rng: input.seed >>> 0, fighters, trap: input.trap, tactic: input.tactic,
+    round: 0, rng: input.seed >>> 0, fighters, tactic: input.tactic,
     ultCharge: 0, ultUsed: false, raiseUsed: false, outcome: 'ongoing',
   };
   const events: BattleEvent[] = [];
-  if (input.trap?.id === 'spikes') {
-    const dmg = trapDamage(input.trap);
-    for (const f of alive(battle, 'hero')) {
-      events.push({ t: 'trap', trap: 'spikes', to: f.key, dmg });
-      applyDamage(battle, f, dmg, events);
-    }
-  }
   checkOutcome(battle, events);
   return { battle, events };
 }
@@ -108,13 +97,6 @@ export function playRound(input: FloorBattle, ult: HeroId | null): { battle: Flo
   if (b.outcome !== 'ongoing') return { battle: b, events };
   b.round += 1;
   if (ult && ultReady(b)) useUlt(b, ult, events);
-  if (b.outcome === 'ongoing' && b.trap?.id === 'flame' && b.round % 2 === 0) {
-    const t = pick(b, alive(b, 'hero'));
-    const dmg = trapDamage(b.trap);
-    events.push({ t: 'trap', trap: 'flame', to: t.key, dmg });
-    applyDamage(b, t, dmg, events);
-    checkOutcome(b, events);
-  }
   const order = b.fighters
     .filter((f) => f.hp > 0)
     .sort((a, c) => effSpd(c) - effSpd(a) || a.key.localeCompare(c.key));
@@ -163,7 +145,7 @@ export function firstAliveHero(b: FloorBattle): HeroId | null {
 }
 
 export function simulateAuto(input: {
-  heroes: HeroSpec[]; floors: { enemies: EnemySpec[]; trap: Trap | null }[]; seed: number;
+  heroes: HeroSpec[]; floors: { enemies: EnemySpec[] }[]; seed: number;
 }): { won: boolean; floorsCleared: number } {
   let hp: Partial<Record<HeroId, number>> = {};
   let seed = input.seed;
@@ -173,7 +155,7 @@ export function simulateAuto(input: {
     const party = input.heroes
       .filter((h) => (hp[h.id] ?? 1) > 0)
       .map((h) => ({ ...h, hp: hp[h.id] }));
-    let { battle } = createFloorBattle({ heroes: party, enemies: floor.enemies, trap: floor.trap, tactic: 'charge', seed });
+    let { battle } = createFloorBattle({ heroes: party, enemies: floor.enemies, tactic: 'charge', seed });
     while (battle.outcome === 'ongoing') {
       battle = playRound(battle, ultReady(battle) ? firstAliveHero(battle) : null).battle;
     }
@@ -206,10 +188,6 @@ function pick<T>(b: FloorBattle, arr: T[]): T {
 
 function calcDamage(atk: number, mult: number, def: number): number {
   return Math.max(1, Math.round(atk * mult - 0.5 * def));
-}
-
-function trapDamage(trap: Trap): number {
-  return Math.round(TRAPS[trap.id].damage * (1 + BALANCE.levelScale * (trap.level - 1)));
 }
 
 function heal(t: Fighter, amount: number): number {

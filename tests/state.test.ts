@@ -20,7 +20,7 @@ describe('state', () => {
   it('default state: 1 floor (slime, skeleton, spikes), 3 heroes lv1, 3 intro log entries', () => {
     const s = defaultState('0xaaaa1111', 1_000_000_000, 's1');
     expect(s.v).toBe(1);
-    expect(s.castle).toEqual({ level: 1, floors: [{ monsters: ['slime', 'skeleton', null], trap: 'spikes' }] });
+    expect(s.castle).toEqual({ level: 1, floors: [{ monsters: ['slime', 'skeleton', null] }] });
     expect(s.heroes).toEqual({ knight: { level: 1 }, archer: { level: 1 }, priest: { level: 1 } });
     expect(s.raidLog).toHaveLength(3);
     expect(s.raidLog.filter((e) => !e.attackerWon)).toHaveLength(2);
@@ -33,7 +33,7 @@ describe('state', () => {
     const s = defaultState('0xaaaa1111', 0, 's1');
     s.roster.slime = { level: 5 };
     expect(resolveFloors(s)).toEqual([
-      { monsters: [{ id: 'slime', level: 5 }, { id: 'skeleton', level: 1 }], trap: { id: 'spikes', level: 1 } },
+      { monsters: [{ id: 'slime', level: 5 }, { id: 'skeleton', level: 1 }] },
     ]);
   });
 });
@@ -81,7 +81,7 @@ describe('resetState', () => {
     const s = {
       ...s0,
       profile: { nickname: '검은마왕', createdAt: 1, nicknameChanges: 1 },
-      castle: { level: 5, floors: [{ monsters: ['dragon', 'necro', 'imp'], trap: 'flame' }] },
+      castle: { level: 5, floors: [{ monsters: ['dragon', 'necro', 'imp'] }] },
       roster: { slime: { level: 9 }, skeleton: { level: 7 }, imp: { level: 4 }, necro: { level: 6 }, dragon: { level: 8 } },
       heroes: { knight: { level: 9 }, archer: { level: 9 }, priest: { level: 9 } },
       idle: { lastClaimAt: 1, lastRaidAt: 1, mult: 2 },

@@ -471,7 +471,7 @@ export class Server {
     });
   }
 
-  async upgrade(kind: 'castle' | 'monster' | 'hero' | 'trap', id: string | null) {
+  async upgrade(kind: 'castle' | 'monster' | 'hero', id: string | null) {
     const me = $sender.account;
     return withLocks([me], async () => {
       const now = Date.now();
@@ -485,13 +485,13 @@ export class Server {
     });
   }
 
-  async setFloor(index: number, monsters: unknown, trap: unknown) {
+  async setFloor(index: number, monsters: unknown) {
     const me = $sender.account;
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await loadState(me, now);
       if (s.run) throw new Error('공략 중에는 편성을 바꿀 수 없다');
-      const floor = validateFloor(s, index, monsters, trap);
+      const floor = validateFloor(s, index, monsters);
       const floors = s.castle.floors.map((f, i) => (i === index ? floor : f));
       const patch: Partial<UserState> = { castle: { ...s.castle, floors } };
       await save(me, patch);

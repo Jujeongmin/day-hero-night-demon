@@ -1,24 +1,20 @@
-import { BALANCE, HEROES, MONSTERS, TRAPS, type HeroId, type MonsterId, type TrapId } from './catalog';
+import { BALANCE, HEROES, MONSTERS, type HeroId, type MonsterId } from './catalog';
 import { castleUpgradeCost, floorsUnlocked, unitUpgradeCost } from './economy';
 import type { FloorLayout, UserState } from './state';
 
 export function planUpgrade(
-  s: UserState, kind: 'castle' | 'monster' | 'hero' | 'trap', id: string | null,
+  s: UserState, kind: 'castle' | 'monster' | 'hero', id: string | null,
 ): { cost: number; patch: Partial<UserState> } {
   if (kind === 'castle') {
     if (s.castle.level >= BALANCE.maxCastleLevel) throw new Error('성이 최대 레벨이다');
     const level = s.castle.level + 1;
     const floors = [...s.castle.floors];
-    while (floors.length < floorsUnlocked(level)) floors.push({ monsters: [null, null, null], trap: null });
+    while (floors.length < floorsUnlocked(level)) floors.push({ monsters: [null, null, null] });
     const roster = { ...s.roster };
     for (const m of Object.values(MONSTERS)) {
       if ('castleLevel' in m.unlock && m.unlock.castleLevel <= level && !roster[m.id]) roster[m.id] = { level: 1 };
     }
-    const traps = { ...s.traps };
-    for (const t of Object.values(TRAPS)) {
-      if (t.unlockCastleLevel <= level && !traps[t.id]) traps[t.id] = { level: 1 };
-    }
-    return { cost: castleUpgradeCost(s.castle.level), patch: { castle: { level, floors }, roster, traps } };
+    return { cost: castleUpgradeCost(s.castle.level), patch: { castle: { level, floors }, roster } };
   }
   if (kind === 'monster') {
     const m = s.roster[id as MonsterId];
@@ -34,17 +30,10 @@ export function planUpgrade(
     if (cost === null) throw new Error('최대 레벨이다');
     return { cost, patch: { heroes: { ...s.heroes, [id as HeroId]: { level: h.level + 1 } } } };
   }
-  if (kind === 'trap') {
-    const t = s.traps[id as TrapId];
-    if (!t) throw new Error('보유하지 않은 함정이다');
-    const cost = unitUpgradeCost(t.level);
-    if (cost === null) throw new Error('최대 레벨이다');
-    return { cost, patch: { traps: { ...s.traps, [id as TrapId]: { level: t.level + 1 } } } };
-  }
   throw new Error('잘못된 강화 종류다');
 }
 
-export function validateFloor(s: UserState, index: number, monsters: unknown, trap: unknown): FloorLayout {
+export function validateFloor(s: UserState, index: number, monsters: unknown): FloorLayout {
   if (!Number.isInteger(index) || index < 0 || index >= Math.min(floorsUnlocked(s.castle.level), s.castle.floors.length)) {
     throw new Error('잠긴 층이다');
   }
@@ -54,8 +43,7 @@ export function validateFloor(s: UserState, index: number, monsters: unknown, tr
     if (typeof m !== 'string' || !s.roster[m as MonsterId]) throw new Error('보유하지 않은 몬스터다');
     return m as MonsterId;
   });
-  if (trap !== null && (typeof trap !== 'string' || !s.traps[trap as TrapId])) throw new Error('보유하지 않은 함정이다');
-  return { monsters: cleaned, trap: trap as TrapId | null };
+  return { monsters: cleaned };
 }
 
 export function planRecruit(s: UserState, monsterId: string): { soul: number; patch: Partial<UserState> } {

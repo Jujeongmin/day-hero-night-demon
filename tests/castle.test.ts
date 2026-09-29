@@ -13,13 +13,12 @@ describe('castle rules', () => {
     expect(patch.roster?.imp).toEqual({ level: 1 });
   });
 
-  it('castle lv3 unlocks spider and the flame trap', () => {
+  it('castle lv3 unlocks spider', () => {
     const s = fresh();
     s.castle.level = 2;
-    s.castle.floors.push({ monsters: [null, null, null], trap: null });
+    s.castle.floors.push({ monsters: [null, null, null] });
     const { patch } = planUpgrade(s, 'castle', null);
     expect(patch.roster?.spider).toEqual({ level: 1 });
-    expect(patch.traps?.flame).toEqual({ level: 1 });
   });
 
   it('monster upgrade costs by level and rejects unowned', () => {
@@ -27,18 +26,17 @@ describe('castle rules', () => {
     expect(() => planUpgrade(fresh(), 'monster', 'dragon')).toThrow();
   });
 
-  it('hero and trap upgrades', () => {
+  it('hero upgrades; traps no longer exist', () => {
     expect(planUpgrade(fresh(), 'hero', 'archer').patch.heroes?.archer).toEqual({ level: 2 });
-    expect(planUpgrade(fresh(), 'trap', 'spikes').patch.traps?.spikes).toEqual({ level: 2 });
+    expect(() => planUpgrade(fresh(), 'trap' as 'hero', 'spikes')).toThrow();
     expect(() => planUpgrade(fresh(), 'hero', 'wizard')).toThrow();
   });
 
   it('validateFloor accepts owned units and rejects everything else', () => {
-    expect(validateFloor(fresh(), 0, ['skeleton', 'skeleton', null], 'spikes')).toEqual({ monsters: ['skeleton', 'skeleton', null], trap: 'spikes' });
-    expect(() => validateFloor(fresh(), 1, [null, null, null], null)).toThrow();
-    expect(() => validateFloor(fresh(), 0, ['dragon', null, null], null)).toThrow();
-    expect(() => validateFloor(fresh(), 0, ['slime', null], null)).toThrow();
-    expect(() => validateFloor(fresh(), 0, [null, null, null], 'flame')).toThrow();
+    expect(validateFloor(fresh(), 0, ['skeleton', 'skeleton', null])).toEqual({ monsters: ['skeleton', 'skeleton', null] });
+    expect(() => validateFloor(fresh(), 1, [null, null, null])).toThrow();
+    expect(() => validateFloor(fresh(), 0, ['dragon', null, null])).toThrow();
+    expect(() => validateFloor(fresh(), 0, ['slime', null])).toThrow();
   });
 
   it('recruit costs soul, only for soul-unlocked monsters not yet owned', () => {

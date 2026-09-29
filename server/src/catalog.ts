@@ -1,6 +1,5 @@
 export type MonsterId = 'slime' | 'skeleton' | 'imp' | 'spider' | 'necro' | 'dragon';
 export type HeroId = 'knight' | 'archer' | 'priest';
-export type TrapId = 'spikes' | 'flame';
 export type Tactic = 'charge' | 'guard' | 'focus';
 export type SkillId =
   | 'taunt' | 'pierce' | 'backline' | 'web' | 'raise' | 'breath'
@@ -27,11 +26,12 @@ export interface HeroDef {
   row: 'front' | 'back';
 }
 
+/** 2026-09-29: 함정 폐기에 맞춰 기본 몬스터 4종 공격력 ×1.1 (A안) */
 export const MONSTERS: Record<MonsterId, MonsterDef> = {
-  slime:    { id: 'slime',    name: '슬라임',     stats: { hp: 120, atk: 10, def: 8, spd: 2 }, skill: 'taunt',    cooldown: 3, unlock: { castleLevel: 1 } },
-  skeleton: { id: 'skeleton', name: '해골병',     stats: { hp: 80,  atk: 18, def: 4, spd: 4 }, skill: 'pierce',   cooldown: 2, unlock: { castleLevel: 1 } },
-  imp:      { id: 'imp',      name: '임프',       stats: { hp: 60,  atk: 16, def: 2, spd: 5 }, skill: 'backline', cooldown: 0, unlock: { castleLevel: 2 } },
-  spider:   { id: 'spider',   name: '거미',       stats: { hp: 70,  atk: 12, def: 4, spd: 6 }, skill: 'web',      cooldown: 3, unlock: { castleLevel: 3 } },
+  slime:    { id: 'slime',    name: '슬라임',     stats: { hp: 120, atk: 11, def: 8, spd: 2 }, skill: 'taunt',    cooldown: 3, unlock: { castleLevel: 1 } },
+  skeleton: { id: 'skeleton', name: '해골병',     stats: { hp: 80,  atk: 20, def: 4, spd: 4 }, skill: 'pierce',   cooldown: 2, unlock: { castleLevel: 1 } },
+  imp:      { id: 'imp',      name: '임프',       stats: { hp: 60,  atk: 18, def: 2, spd: 5 }, skill: 'backline', cooldown: 0, unlock: { castleLevel: 2 } },
+  spider:   { id: 'spider',   name: '거미',       stats: { hp: 70,  atk: 13, def: 4, spd: 6 }, skill: 'web',      cooldown: 3, unlock: { castleLevel: 3 } },
   necro:    { id: 'necro',    name: '네크로맨서', stats: { hp: 70,  atk: 12, def: 3, spd: 3 }, skill: 'raise',    cooldown: 0, unlock: { soul: 150, product: 'starter_pack' } },
   dragon:   { id: 'dragon',   name: '새끼 용',    stats: { hp: 110, atk: 20, def: 6, spd: 3 }, skill: 'breath',   cooldown: 3, unlock: { soul: 400, product: 'recruit_dragon' } },
 };
@@ -47,11 +47,6 @@ export const LORD = {
   stats: { hp: 390, atk: 31, def: 8, spd: 4 } as Stats,
   skill: 'dark_wave' as SkillId,
   cooldown: 3,
-};
-
-export const TRAPS: Record<TrapId, { id: TrapId; name: string; damage: number; unlockCastleLevel: number }> = {
-  spikes: { id: 'spikes', name: '가시', damage: 10, unlockCastleLevel: 1 },
-  flame:  { id: 'flame',  name: '불꽃', damage: 25, unlockCastleLevel: 3 },
 };
 
 export const HERO_ORDER: HeroId[] = ['knight', 'archer', 'priest'];

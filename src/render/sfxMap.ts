@@ -5,7 +5,6 @@ import type { Fx } from './timeline';
 export function sfxForFx(fx: Fx): Sfx | null {
   switch (fx.kind) {
     case 'hit': return 'sfx_attack';
-    case 'trap': return 'sfx_hit';
     case 'ult': return 'sfx_ult';
     case 'end': return fx.text === '' ? null : fx.text === '층 돌파' ? 'sfx_win' : 'sfx_lose';
     default: return null;

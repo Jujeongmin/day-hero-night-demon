@@ -51,8 +51,8 @@ export function createApi(server: RemoteServer) {
   return {
     getHome: () => call<HomeData>('getHome'),
     claimIdle: () => call<{ gold: number }>('claimIdle'),
-    upgrade: (kind: 'castle' | 'monster' | 'hero' | 'trap', id: string | null) => call<{ cost: number }>('upgrade', [kind, id]),
-    setFloor: (index: number, monsters: (string | null)[], trap: string | null) => call<{ floor: unknown }>('setFloor', [index, monsters, trap]),
+    upgrade: (kind: 'castle' | 'monster' | 'hero', id: string | null) => call<{ cost: number }>('upgrade', [kind, id]),
+    setFloor: (index: number, monsters: (string | null)[]) => call<{ floor: unknown }>('setFloor', [index, monsters]),
     recruit: (monsterId: string) => call<{ soul: number }>('recruit', [monsterId]),
     findTargets: () => call<Target[]>('findTargets'),
     startRaid: (targetId: string) => call<RunResult>('startRaid', [targetId]),

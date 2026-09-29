@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HEROES, MONSTERS, TRAPS, type HeroId, type MonsterId, type TrapId } from '../../server/src/catalog';
+import { HEROES, MONSTERS, type HeroId, type MonsterId } from '../../server/src/catalog';
 import { castleUpgradeCost, unitUpgradeCost } from '../../server/src/economy';
 import { Portrait } from '../render/Sprite';
 import { errorText, type Api, type HomeData } from '../services/api';
@@ -51,8 +51,6 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
       {(Object.keys(s.roster) as MonsterId[]).map((id, i) => row(id, MONSTERS[id].name, s.roster[id]!.level, () => api.upgrade('monster', id), i === 0))}
       <h4>{T.heroesTitle}</h4>
       {(Object.keys(s.heroes) as HeroId[]).map((id) => row(id, HEROES[id].name, s.heroes[id].level, () => api.upgrade('hero', id)))}
-      <h4>{T.trapsTitle}</h4>
-      {(Object.keys(s.traps) as TrapId[]).map((id) => row(`trap_${id}`, TRAPS[id].name, s.traps[id]!.level, () => api.upgrade('trap', id)))}
       {soulMonsters.length > 0 && <h4>{T.recruitTitle}</h4>}
       {soulMonsters.map((id) => {
         const unlock = MONSTERS[id].unlock as { soul: number };

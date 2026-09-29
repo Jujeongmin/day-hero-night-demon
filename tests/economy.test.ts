@@ -40,8 +40,8 @@ describe('economy', () => {
 
   it('power = castle level × 2 + placed monster levels', () => {
     expect(castlePower(3, [
-      { monsters: [{ id: 'slime', level: 2 }, { id: 'imp', level: 4 }], trap: null },
-      { monsters: [], trap: { id: 'spikes', level: 3 } },
+      { monsters: [{ id: 'slime', level: 2 }, { id: 'imp', level: 4 }] },
+      { monsters: [] },
     ])).toBe(12);
   });
 });

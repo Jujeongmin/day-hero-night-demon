@@ -1,4 +1,4 @@
-import { BALANCE, HERO_ORDER, type MonsterId, type TrapId } from './catalog';
+import { BALANCE, HERO_ORDER, type MonsterId } from './catalog';
 import { simulateAuto, type EnemySpec } from './battle';
 import { rngNext, seedFrom } from './rng';
 import type { CastleSnapshot, ResolvedFloor } from './state';
@@ -9,7 +9,7 @@ export function npcCastle(tier: number, seedKey: string): CastleSnapshot {
   if (tier === 0) {
     return {
       owner: `npc:0:${seedKey}`, nickname: '침입자 길드 견습', castleLevel: 1,
-      floors: [{ monsters: [{ id: 'slime', level: 1 }, { id: 'slime', level: 1 }], trap: null }],
+      floors: [{ monsters: [{ id: 'slime', level: 1 }, { id: 'slime', level: 1 }] }],
       throneEmpty: true, shadow: false,
     };
   }
@@ -24,9 +24,7 @@ export function npcCastle(tier: number, seedKey: string): CastleSnapshot {
       s = r.state;
       monsters.push({ id: POOL[Math.floor(r.value * POOL.length)], level });
     }
-    const trap: { id: TrapId; level: number } | null =
-      tier >= 3 ? { id: tier >= 6 ? 'flame' : 'spikes', level: Math.ceil(level / 2) } : null;
-    floors.push({ monsters, trap });
+    floors.push({ monsters });
   }
   return { owner: `npc:${tier}:${seedKey}`, nickname: `침입자 길드 ${tier}단`, castleLevel: tier, floors, throneEmpty: false, shadow: false };
 }
@@ -46,8 +44,8 @@ export function npcRaids(p: {
     const at = p.lastRaidAt + (i + 1) * BALANCE.npcRaidEveryMs;
     const throne: EnemySpec[] = [{ id: 'lord', level: p.castleLevel }];
     const floors = [
-      ...p.floors.map((f) => ({ enemies: f.monsters.map((m) => ({ id: m.id, level: m.level })), trap: f.trap })),
-      { enemies: throne, trap: null },
+      ...p.floors.map((f) => ({ enemies: f.monsters.map((m) => ({ id: m.id, level: m.level })) })),
+      { enemies: throne },
     ];
     const r = simulateAuto({ heroes: HERO_ORDER.map((id) => ({ id, level: heroLevel })), floors, seed: seedFrom(p.account, at) });
     raids.push({ at, attackerWon: r.won });
@@ -64,7 +62,7 @@ export function tutorialCastle(): CastleSnapshot {
     owner: TUTORIAL_TARGET,
     nickname: '침입자 길드 신참',
     castleLevel: 1,
-    floors: [{ monsters: [{ id: 'slime', level: 1 }, { id: 'slime', level: 1 }], trap: null }],
+    floors: [{ monsters: [{ id: 'slime', level: 1 }, { id: 'slime', level: 1 }] }],
     throneEmpty: true,
     shadow: true,
   };

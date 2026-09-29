@@ -74,11 +74,9 @@ export function beginFloor(run: Run, tactic: Tactic, heroes: Record<HeroId, { le
     .filter((id) => (run.heroesHp[id] ?? 1) > 0)
     .map((id) => ({ id, level: heroes[id].level, hp: run.heroesHp[id] }));
   const f = run.floor;
-  const trap = f < run.snapshot.floors.length ? run.snapshot.floors[f].trap : null;
   const { battle, events } = createFloorBattle({
     heroes: party,
     enemies: floorEnemies(run.snapshot, f),
-    trap,
     tactic,
     seed: seedFrom(run.seed, f, run.reviveUsed ? 'revived' : 'first'),
   });

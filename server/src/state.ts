@@ -1,11 +1,11 @@
-import type { HeroId, MonsterId, Tactic, TrapId } from './catalog';
+import type { HeroId, MonsterId, Tactic } from './catalog';
 import type { FloorBattle } from './battle';
 
-export interface FloorLayout { monsters: (MonsterId | null)[]; trap: TrapId | null }
+/** 함정은 2026-09-29 폐기. 옛 저장본의 trap 칸은 읽지 않는다. */
+export interface FloorLayout { monsters: (MonsterId | null)[] }
 
 export interface ResolvedFloor {
   monsters: { id: MonsterId; level: number }[];
-  trap: { id: TrapId; level: number } | null;
 }
 
 /** 시즌 패스 보유자의 한정 마왕 외형. 표시용이며 전투 수치에는 영향이 없다. */
@@ -97,7 +97,6 @@ export interface UserState {
   profile: { nickname: string; createdAt: number; nicknameChanges: number };
   castle: { level: number; floors: FloorLayout[] };
   roster: Partial<Record<MonsterId, { level: number }>>;
-  traps: Partial<Record<TrapId, { level: number }>>;
   heroes: Record<HeroId, { level: number }>;
   idle: { lastClaimAt: number; lastRaidAt: number; mult: 1 | 2 };
   shieldUntil: number;
@@ -147,9 +146,8 @@ export function defaultState(account: string, now: number, seasonId: string): Us
   return {
     v: 1,
     profile: { nickname: nicknameFor(account), createdAt: now, nicknameChanges: 0 },
-    castle: { level: 1, floors: [{ monsters: ['slime', 'skeleton', null], trap: 'spikes' }] },
+    castle: { level: 1, floors: [{ monsters: ['slime', 'skeleton', null] }] },
     roster: { slime: { level: 1 }, skeleton: { level: 1 } },
-    traps: { spikes: { level: 1 } },
     heroes: { knight: { level: 1 }, archer: { level: 1 }, priest: { level: 1 } },
     // 방치 수입과 NPC 습격은 계정을 만든 순간부터 센다.
     idle: { lastClaimAt: now, lastRaidAt: now, mult: 1 },
@@ -177,7 +175,6 @@ export function resolveFloors(s: UserState): ResolvedFloor[] {
     monsters: f.monsters
       .filter((id): id is MonsterId => id !== null)
       .map((id) => ({ id, level: s.roster[id]?.level ?? 1 })),
-    trap: f.trap ? { id: f.trap, level: s.traps[f.trap]?.level ?? 1 } : null,
   }));
 }
 

@@ -10,9 +10,8 @@ const heroes = [
 ];
 
 describe('sfxForFx', () => {
-  it('maps attacks, traps and ultimates to their sounds', () => {
+  it('maps attacks and ultimates to their sounds', () => {
     expect(sfxForFx({ kind: 'hit', key: 'e:0', text: '−5', from: 'h:knight' })).toBe('sfx_attack');
-    expect(sfxForFx({ kind: 'trap', key: 'h:knight', text: '−15' })).toBe('sfx_hit');
     expect(sfxForFx({ kind: 'ult', key: 'h:knight', text: '방패 돌진' })).toBe('sfx_ult');
     expect(sfxForFx({ kind: 'heal', key: 'h:knight', text: '+8', from: 'h:priest' })).toBe(null);
     expect(sfxForFx({ kind: 'status', key: 'e:0', text: '기절' })).toBe(null);
@@ -24,7 +23,7 @@ describe('sfxForFx', () => {
   });
 
   it('a real cleared floor ends its frames with the win sound', () => {
-    const { battle } = createFloorBattle({ heroes, enemies: [{ id: 'slime', level: 1 }], trap: null, tactic: 'charge', seed: 5 });
+    const { battle } = createFloorBattle({ heroes, enemies: [{ id: 'slime', level: 1 }], tactic: 'charge', seed: 5 });
     let b = battle;
     let last: ReturnType<typeof sfxForFx> = null;
     for (let i = 0; i < 20 && b.outcome === 'ongoing'; i++) {
