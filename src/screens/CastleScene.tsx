@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { BALANCE, LORD, MONSTERS } from '../../server/src/catalog';
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { BALANCE, LORD, MONSTERS, scaleStats } from '../../server/src/catalog';
 import { floorsUnlocked } from '../../server/src/economy';
 import AdButton from '../render/AdButton';
+import Siege from '../render/Siege';
 import Sprite from '../render/Sprite';
 import { adsLeft } from '../services/ads';
 import { chooseLordSkin } from '../../server/src/pass';
@@ -54,6 +55,13 @@ export default function CastleScene(props: {
   const s = home.state;
   const [busy, setBusy] = useState(false);
   const [choose, setChoose] = useState(false);
+  // 공성 연출: 성문 앞에서 싸우는 동안 1층 몬스터가 공격 동작
+  const [defending, setDefending] = useState(false);
+  const onDefending = useCallback((f: boolean) => setDefending(f), []);
+  // 1층 몬스터 공격력 합 (연출 속도용)
+  const floor1Atk = (s.castle.floors[0]?.monsters ?? [])
+    .filter((m): m is NonNullable<typeof m> => !!m)
+    .reduce((a, m) => a + scaleStats(MONSTERS[m].stats, s.roster[m]?.level ?? 1).atk, 0);
   // 영구 2배(옛 상품) 계정은 광고 2배를 쓰지 않는다
   const doubleLeft = home.state.idle.mult >= 2 ? 0 : adsLeft(home.state, 'idle_double', Date.now());
   const towerRef = useRef<HTMLDivElement>(null);
@@ -100,7 +108,7 @@ export default function CastleScene(props: {
             <div key={i}>
               {!locked && floor.monsters.map((m, j) => m && (
                 <div className="unit-at" key={j} style={at(SLOT_X[j], tier.stand)}>
-                  <Sprite id={m} label={MONSTERS[m].name} flip scale={unitScale} />
+                  <Sprite id={m} anim={defending && i === 0 ? 'attack' : 'idle'} label={MONSTERS[m].name} flip scale={unitScale} />
                 </div>
               ))}
               <button
@@ -117,6 +125,13 @@ export default function CastleScene(props: {
           );
         })}
       </div>
+
+      <Siege
+        ground={panelOpen ? 12 : 90}
+        atk={floor1Atk}
+        paused={!!s.run}
+        onFighting={onDefending}
+      />
 
       {home.idlePreview > 0 && (
         <button

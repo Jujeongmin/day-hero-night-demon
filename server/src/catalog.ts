@@ -65,6 +65,10 @@ export const BALANCE = {
   floorRestHeal: 0.1,
   idleGoldPerCastleLevelHour: 60,
   idleCapHours: 8,
+  /** 공성 방어(2026-09-29 승인): 시간당 처치 = siegeKillsBase + 전투력 ÷ siegePowerPerKill, 처치당 골드 = 성 레벨 × siegeGoldPerLevel */
+  siegeKillsBase: 10,
+  siegePowerPerKill: 4,
+  siegeGoldPerLevel: 2,
   lootRate: 0.1,
   lootCapPerCastleLevel: 500,
   npcLootPerCastleLevel: 200,

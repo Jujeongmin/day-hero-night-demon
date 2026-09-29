@@ -1,6 +1,6 @@
 import { BALANCE, HERO_ORDER, TACTICS, type HeroId, type Tactic } from './catalog';
 import { planRecruit, planUpgrade, validateFloor } from './castle';
-import { castlePower, idleIncome, lootAmount, npcLoot } from './economy';
+import { castlePower, idleIncome, lootAmount, npcLoot, siegeGold } from './economy';
 import {
   DEFENSE_HONOR, honorForRaid, leagueCollection, rankBracket, seasonEndsAt, seasonIdAt, seasonRewardSoul, seasonStartOf,
 } from './league';
@@ -453,7 +453,9 @@ export class Server {
         state: s,
         ...(await balances(me)),
         now,
-        idlePreview: idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult),
+        idlePreview: idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult)
+          + siegeGold(s.castle.level, castlePower(s.castle.level, resolveFloors(s)), s.idle.lastClaimAt, now).gold,
+        siegeKillsPerHour: BALANCE.siegeKillsBase + castlePower(s.castle.level, resolveFloors(s)) / BALANCE.siegePowerPerKill,
         seasonEndsAt: seasonEndsAt(now),
       };
     });
@@ -464,10 +466,11 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await loadState(me, now);
-      const gold = idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult);
+      const siege = siegeGold(s.castle.level, castlePower(s.castle.level, resolveFloors(s)), s.idle.lastClaimAt, now);
+      const gold = idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult) + siege.gold;
       if (gold > 0) await $asset.mint('gold', gold);
       await save(me, { idle: { ...s.idle, lastClaimAt: now } });
-      return { gold };
+      return { gold, kills: siege.kills };
     });
   }
 

@@ -8,6 +8,13 @@ export function idleIncome(castleLevel: number, lastClaimAt: number, now: number
   return Math.floor((elapsed / HOUR) * BALANCE.idleGoldPerCastleLevelHour * castleLevel * mult);
 }
 
+/** 방치 중 성으로 몰려온 침입자를 몬스터가 처치한 수와 그 골드. 방치 수입과 같은 창(최대 8시간). */
+export function siegeGold(castleLevel: number, power: number, lastClaimAt: number, now: number): { kills: number; gold: number } {
+  const hours = Math.max(0, Math.min(now - lastClaimAt, BALANCE.idleCapHours * HOUR)) / HOUR;
+  const kills = Math.floor(hours * (BALANCE.siegeKillsBase + power / BALANCE.siegePowerPerKill));
+  return { kills, gold: kills * castleLevel * BALANCE.siegeGoldPerLevel };
+}
+
 export function lootAmount(defenderGold: number, defenderCastleLevel: number): number {
   const base = Math.min(defenderGold * BALANCE.lootRate, defenderCastleLevel * BALANCE.lootCapPerCastleLevel);
   return Math.max(0, Math.min(defenderGold, Math.floor(base)));
