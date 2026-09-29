@@ -68,6 +68,18 @@ export const T = {
   bracketTitle: '내 브래킷 (30명)',
   topTitle: '전체 상위 20',
   noBracket: '첫 공략에서 이기면 브래킷에 들어간다',
+  stats: { hp: '체력', atk: '공격', def: '방어', spd: '속도' },
+  skills: {
+    taunt: (cd: number) => `도발: ${cd}턴마다 2턴 동안 적의 공격을 끌어온다`,
+    pierce: (cd: number) => `관통: ${cd}턴마다 방어를 절반 무시하고 벤다`,
+    backline: () => '기습(상시): 뒷줄의 적을 먼저 노린다',
+    web: (cd: number) => `거미줄: ${cd}턴마다 적 하나를 2턴 동안 느리게 한다`,
+    raise: () => '되살리기(상시): 처음 쓰러진 아군을 한 번 체력 30%로 일으킨다',
+    breath: (cd: number) => `화염: ${cd}턴마다 적 전체를 태운다(60%)`,
+    double_shot: (cd: number) => `연사: ${cd}턴마다 두 번 쏜다(60%씩)`,
+    heal: (cd: number) => `치유: ${cd}턴마다 가장 다친 아군을 체력 25% 회복`,
+    dark_wave: (cd: number) => `암흑 파동: ${cd}턴마다 적 전체를 공격(80%)`,
+  } as Record<string, (cd: number) => string>,
   tut: {
     raidSortie: '우선 옆 동네 길드 성부터 털어 봅시다!',
     raidUlt: '기가 모이면 궁극기! 지금 눌러 보십쇼.',

@@ -81,3 +81,7 @@
 - 설정 아이콘 `public/ui/settings.png` = `art/ui/settings/set_b.png`(뼈 톱니 + 해골, 64px pixflux seed 902)를 내용 영역으로 자른 것. HUD 가운데 36px.
 - 음량 슬라이더: 막대는 UI 키트 `bar.png` 9조각, 손잡이 `public/ui/knob.png` = `art/ui/settings/knob_a.png`(해골, 32px seed 911). 막대 그림 후보 `track.png`는 지저분해서 쓰지 않는다.
 - 컷신 240×240 pixflux: `art/cutscene/cut1_d`(청구서 가득한 상자, seed 852) · `cut2_b`(812) · `cut3_a`(821) · `cut4_a`(831) · `cut5_a`(841) → `public/cutscene/cut1~5.png`. 제목은 5컷을 어둡게 깔고 아래쪽에 글자.
+
+## 능력치 아이콘 (2026-09-29 승인)
+- `art/ui/stats/set.png`(pixflux 128×32 한 벌, seed 1101)을 4칸으로 잘라 `public/icons/stat_{hp,atk,def,spd}.png`. 강화 창 줄에 13px로.
+- 닫기 X(`public/ui/close.png`)는 검은 테두리까지 지운 붉은 X만(`art/ui/close/close_x_clean.png`) — 테두리가 창 위에서 그림자처럼 보였다.
