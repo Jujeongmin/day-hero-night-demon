@@ -7,7 +7,7 @@ import {
 import { checkNickname, nicknameKey } from './nickname';
 import { npcCastle, npcRaids, npcTierForPower, TUTORIAL_TARGET, tutorialCastle } from './npc';
 import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun } from './raid';
-import { planAdReward, verifyAdRequest } from './ads';
+import { planAdReward } from './ads';
 import { chooseLordSkin, planPassClaim } from './pass';
 import { grantFor } from './purchases';
 import { rngNext, seedFrom } from './rng';
@@ -324,7 +324,8 @@ export class Server {
 
   async claimAdReward(placementId: string, requestId: string | null) {
     const me = $sender.account;
-    // 프리미엄 여부는 서버 상태로만 판단한다. 검증(외부 호출)은 락 밖에서 해서 락을 오래 잡지 않는다.
+    // Agent8 서버는 외부 주소를 부를 수 없어(fetch 없음, 2026-09-29 preview 확인) Verse8 광고 검증을 못 한다.
+    // 사용자 결정: 검증 없이 하루 한도 + requestId 1회 사용으로만 막는다. 속여도 성실한 시청자와 같은 한도까지다.
     const raw = await $global.getUserState(me);
     const premium = !isNew(raw) && withDefaults(raw as UserState).perks.premium === true;
     let id: string | null = null;
@@ -332,7 +333,6 @@ export class Server {
       if (typeof requestId !== 'string' || requestId.length < 8 || requestId.length > 100 || requestId.includes('/')) {
         throw new Error('AD_NOT_VERIFIED');
       }
-      if (!(await verifyAdRequest(requestId))) throw new Error('AD_NOT_VERIFIED');
       id = requestId;
     }
     return withLocks(id ? [me, `ad:${id}`] : [me], async () => {

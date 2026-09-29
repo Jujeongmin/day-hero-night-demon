@@ -31,26 +31,3 @@ export function planAdReward(s: UserState, placement: string, now: number): AdPl
   if (income <= 0) return { ok: false, code: 'AD_NOT_NOW' };
   return { ok: true, patch: { ads, idle: { ...s.idle, lastClaimAt: now } }, gold: income * 2, soul: 0 };
 }
-
-const VERIFY_URL = 'https://ads-verifier.verse8.io/ads/status?requestId=';
-
-type FetchLike = (url: string) => Promise<{ ok: boolean; json: () => Promise<unknown> }>;
-type Runtime = { fetch?: FetchLike; setTimeout?: (fn: () => void, ms: number) => unknown };
-
-/** 공식 문서의 서버 검증: verified면 true, pending이면 1.5초 간격으로 최대 4번 다시 묻는다.
- *  Agent8 서버 타입에는 fetch가 선언돼 있지 않다. 없으면 AD_VERIFY_UNAVAILABLE로 알린다. */
-export async function verifyAdRequest(requestId: string): Promise<boolean> {
-  const rt = globalThis as unknown as Runtime;
-  const fetchFn = rt.fetch;
-  if (typeof fetchFn !== 'function') throw new Error('AD_VERIFY_UNAVAILABLE');
-  const wait = (ms: number) => new Promise<void>((r) => { if (rt.setTimeout) rt.setTimeout(r, ms); else r(); });
-  for (let i = 0; i < 4; i++) {
-    const res = await fetchFn(VERIFY_URL + encodeURIComponent(requestId));
-    if (!res.ok) return false;
-    const body = (await res.json()) as { status?: string };
-    if (body.status === 'verified') return true;
-    if (body.status !== 'pending') return false;
-    await wait(1500);
-  }
-  return false;
-}

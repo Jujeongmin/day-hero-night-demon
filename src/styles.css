@@ -13,6 +13,10 @@
 }
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; background: #000; color: var(--text); font-family: var(--font); }
+/* 게임 화면: 글자·그림을 끌어 선택하지 않게 (입력칸만 예외) */
+body { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+img { -webkit-user-drag: none; }
+input, textarea { user-select: text; -webkit-user-select: text; }
 /* 모바일에서 누를 때 뜨는 기본 회색 상자와 기본 버튼 모양을 끈다 */
 button { font: inherit; color: inherit; cursor: pointer; appearance: none; -webkit-appearance: none; -webkit-tap-highlight-color: transparent; }
 button:focus:not(:focus-visible) { outline: none; }

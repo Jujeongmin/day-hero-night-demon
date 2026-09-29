@@ -295,11 +295,16 @@ describe('reset', () => {
 });
 
 describe('ads', () => {
-  test('without premium a made-up requestId is refused', async (server) => {
+  test('without premium: a requestId is needed and works once across accounts', async (server) => {
+    const id = `req-${Date.now()}-abcdef`;
     server.connect({ account: 't30-ad' });
     await server.getHome();
-    expect(await fails(server.claimAdReward('daily_supply', 'made-up-request-id'))).toBe(true);
     expect(await fails(server.claimAdReward('daily_supply', null))).toBe(true);
+    expect(await fails(server.claimAdReward('daily_supply', 'short'))).toBe(true);
+    expect((await server.claimAdReward('daily_supply', id)).gold).toBe(5000);
+    server.connect({ account: 't30-ad2' });
+    await server.getHome();
+    expect(await fails(server.claimAdReward('daily_supply', id))).toBe(true);
   });
 
   test('premium skips the ad but keeps the daily limit', async (server) => {

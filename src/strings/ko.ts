@@ -135,7 +135,6 @@ export const T = {
     AD_NOT_NOW: '지금은 받을 수 없다',
     AD_NOT_VERIFIED: '광고 확인이 안 됐다. 다시 시도해줘',
     AD_USED: '이미 받은 광고다',
-    AD_VERIFY_UNAVAILABLE: '지금은 광고 보상을 받을 수 없다',
     NICK_LENGTH: '이름은 2~8자로 정해줘',
     NICK_CHARS: '한글·영문·숫자만 쓸 수 있다',
     NICK_BANNED: '쓸 수 없는 이름이다',
