@@ -58,19 +58,18 @@ export default function Siege(props: {
         <span style={{ width: `${(s.castleHp / SIEGE.castleMax) * 100}%` }} />
       </div>
       {s.coins.map((c) => {
-        // 쓰러진 자리에서 톡 튀어 올라(0~0.3초) 잠깐 떠 있다가(~0.9초) 방치 수입 버튼으로 빨려 간다
+        // 쓰러진 자리에서 톡 튀어 올라(0~0.3초) 잠깐 떠 있다가(~0.9초) 그 자리에서 사라진다(채집)
         const a = c.age;
-        let left = c.x;
+        const left = c.x;
         let bottom = `${6 + 28 * Math.min(1, a / 0.3) * (2 - Math.min(1, a / 0.3))}px`;
         let scale = 1;
         let opacity = 1;
         if (a >= 0.3 && a < 0.9) bottom = `${34 + Math.sin((a - 0.3) * 10) * 2}px`;
         if (a >= 0.9) {
           const k = Math.min(1, (a - 0.9) / (SIEGE.coinFor - 0.9));
-          left = c.x + (92 - c.x) * k * k;
-          bottom = `calc(34px + (100cqh - ${ground}px - 110px) * ${k * k})`;
-          scale = 1 - k * 0.5;
-          opacity = 1 - k * 0.4;
+          bottom = `${34 + k * 8}px`;
+          scale = 1 + k * 0.3;
+          opacity = 1 - k;
         }
         return (
           <img key={c.id} className="siege-coin" src="icons/gold.png" alt="" draggable={false}
