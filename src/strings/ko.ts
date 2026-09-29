@@ -123,6 +123,11 @@ export const T = {
     resetGo: '초기화',
     resetDone: '초기화했다',
   },
+  siege: {
+    stage: (n: number) => `공성 ${n}단계`,
+    next: (n: number, ms: number) => `공성 ${n}단계 · ${Math.floor(ms / 60_000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`,
+    breached: '성문 돌파! 단계 하락',
+  },
   ads: {
     watch: (label: string) => `${label} (광고)`,
     instant: (label: string) => `${label} (바로)`,

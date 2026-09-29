@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
-import { BALANCE, LORD, MONSTERS, scaleStats } from '../../server/src/catalog';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { BALANCE, LORD, MONSTERS } from '../../server/src/catalog';
 import { floorsUnlocked } from '../../server/src/economy';
 import AdButton from '../render/AdButton';
 import Siege from '../render/Siege';
@@ -58,10 +58,12 @@ export default function CastleScene(props: {
   // 공성 연출: 성문 앞에서 싸우는 동안 1층 몬스터가 공격 동작
   const [defending, setDefending] = useState(false);
   const onDefending = useCallback((f: boolean) => setDefending(f), []);
-  // 1층 몬스터 공격력 합 (연출 속도용)
-  const floor1Atk = (s.castle.floors[0]?.monsters ?? [])
-    .filter((m): m is NonNullable<typeof m> => !!m)
-    .reduce((a, m) => a + scaleStats(MONSTERS[m].stats, s.roster[m]?.level ?? 1).atk, 0);
+  // 다음 공성 파도 시각: 서버 시각을 이 기기 시계로 옮긴다
+  const nextWaveAt = useMemo(
+    () => (s.siege?.lastWaveAt ?? home.now) + (home.siegeWaveMs ?? 120_000) + (Date.now() - home.now),
+    [s.siege?.lastWaveAt, home.siegeWaveMs, home.now],
+  );
+  const onWaveDue = useCallback(() => { onRefresh().catch(() => undefined); }, [onRefresh]);
   // 영구 2배(옛 상품) 계정은 광고 2배를 쓰지 않는다
   const doubleLeft = home.state.idle.mult >= 2 ? 0 : adsLeft(home.state, 'idle_double', Date.now());
   const towerRef = useRef<HTMLDivElement>(null);
@@ -128,8 +130,11 @@ export default function CastleScene(props: {
 
       <Siege
         ground={panelOpen ? 12 : 90}
-        atk={floor1Atk}
         paused={!!s.run}
+        stage={s.siege?.stage ?? 1}
+        nextWaveAt={nextWaveAt}
+        lastWave={home.siegeLastWave ?? null}
+        onWaveDue={onWaveDue}
         onFighting={onDefending}
       />
 

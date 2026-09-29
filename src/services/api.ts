@@ -14,6 +14,9 @@ export interface HomeData {
   soul: number;
   now: number;
   idlePreview: number;
+  /** 이번 조회에서 서버가 처리한 마지막 공성 파도 */
+  siegeLastWave: { at: number; won: boolean } | null;
+  siegeWaveMs: number;
   seasonEndsAt: number;
 }
 
@@ -50,7 +53,7 @@ export function createApi(server: RemoteServer) {
   }
   return {
     getHome: () => call<HomeData>('getHome'),
-    claimIdle: () => call<{ gold: number }>('claimIdle'),
+    claimIdle: () => call<{ gold: number; siegeGold: number }>('claimIdle'),
     upgrade: (kind: 'castle' | 'monster' | 'hero', id: string | null) => call<{ cost: number }>('upgrade', [kind, id]),
     setFloor: (index: number, monsters: (string | null)[]) => call<{ floor: unknown }>('setFloor', [index, monsters]),
     recruit: (monsterId: string) => call<{ soul: number }>('recruit', [monsterId]),

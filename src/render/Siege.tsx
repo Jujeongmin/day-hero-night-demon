@@ -1,32 +1,65 @@
 import { useEffect, useRef, useState } from 'react';
 import Sprite from './Sprite';
-import { SIEGE, stepSiege, type SiegeState } from './siegeSim';
+import { SIEGE, idleSiege, startWave, stepSiege, waveRunning, type SiegeState } from './siegeSim';
+import { T } from '../strings/ko';
 
 const TICK_MS = 66;
 
-/** 홈 화면: 성으로 몰려오는 침입 용사를 1층 몬스터가 쓰러뜨리는 연출. 골드는 서버가 방치 수입과 함께 계산한다. */
+/**
+ * 홈 화면 공성: 2분마다 침입 용사 3명이 몰려와 1층 몬스터와 싸운다.
+ * 승패·단계·골드는 서버가 정하고, 여기서는 서버가 알려 준 마지막 파도 결과를 재생한다.
+ */
 export default function Siege(props: {
   /** 땅 높이 = 화면 아래에서 탑 밑동까지(px) */
   ground: number;
-  /** 1층 몬스터 공격력 합 (강할수록 빨리 쓰러뜨린다) */
-  atk: number;
   paused: boolean;
+  stage: number;
+  /** 다음 파도 시각(이 기기 시계 기준) */
+  nextWaveAt: number;
+  /** 서버가 마지막으로 처리한 파도 (at = 서버 시각) */
+  lastWave: { at: number; won: boolean } | null;
+  /** 다음 파도 시각이 지나면 서버에 결과를 물어본다 */
+  onWaveDue: () => void;
   onFighting: (fighting: boolean) => void;
 }) {
-  const { ground, atk, paused, onFighting } = props;
-  const [s, setS] = useState<SiegeState>({ t: 0, nextId: 1, spawnIn: 0.5, invaders: [], coins: [], castleHp: SIEGE.castleMax });
+  const { ground, paused, stage, nextWaveAt, lastWave, onWaveDue, onFighting } = props;
+  const [s, setS] = useState<SiegeState>(idleSiege);
+  const [now, setNow] = useState(Date.now());
+  // 재생 중에는 싸우기 전 단계를 보여 주고, 끝나면 새 단계로 바꾼다
+  const [shownStage, setShownStage] = useState(stage);
+  const played = useRef(0);
+  const askedAt = useRef(0);
   const fightingRef = useRef(false);
-  const atkRef = useRef(atk);
-  atkRef.current = atk;
+
+  // 서버가 새 파도를 처리했으면 그 결과(막음/뚫림)대로 재생
+  useEffect(() => {
+    if (!lastWave || lastWave.at <= played.current) return;
+    played.current = lastWave.at;
+    setS((prev) => startWave(prev, lastWave.won));
+  }, [lastWave]);
+
+  const running = waveRunning(s);
+  useEffect(() => {
+    if (running) return;
+    setShownStage(stage);
+  }, [running, stage]);
 
   useEffect(() => {
     if (paused) return;
     const id = window.setInterval(() => {
       if (document.hidden) return;
-      setS((prev) => stepSiege(prev, TICK_MS / 1000, atkRef.current, Math.random));
+      setS((prev) => stepSiege(prev, TICK_MS / 1000));
+      setNow(Date.now());
     }, TICK_MS);
     return () => window.clearInterval(id);
   }, [paused]);
+
+  // 다음 파도 시각이 지나면 서버에 물어본다. 실패하거나 아직 처리 전이면 15초 뒤 다시(연속 호출 방지)
+  useEffect(() => {
+    if (paused || now < nextWaveAt + 500 || now - askedAt.current < 15_000) return;
+    askedAt.current = now;
+    onWaveDue();
+  }, [paused, now, nextWaveAt, onWaveDue]);
 
   const fighting = s.invaders.some((v) => v.state === 'fight');
   useEffect(() => {
@@ -37,12 +70,13 @@ export default function Siege(props: {
   }, [fighting, onFighting]);
 
   if (paused) return null;
+  const breached = s.held === false && s.castleHp === 0;
   return (
     <div className="siege" style={{ bottom: ground }} aria-hidden>
       {s.invaders.map((v) => (
-        <div key={v.id} className="invader" style={{ left: `${v.x}%` }}>
+        <div key={v.id} className={`invader ${v.state === 'leave' ? 'leaving' : ''}`} style={{ left: `${v.x}%` }}>
           {v.state !== 'dead' && (
-            <span className="inv-hp"><span style={{ width: `${(v.hp / SIEGE.maxHp) * 100}%` }} /></span>
+            <span className="inv-hp"><span style={{ width: `${v.hp}%` }} /></span>
           )}
           <Sprite
             id={v.kind}
@@ -57,10 +91,12 @@ export default function Siege(props: {
       <div className="castle-hp" style={{ left: '50%' }}>
         <span style={{ width: `${(s.castleHp / SIEGE.castleMax) * 100}%` }} />
       </div>
+      <span className="siege-stage pill">
+        {breached ? T.siege.breached : running ? T.siege.stage(shownStage) : T.siege.next(shownStage, Math.max(0, nextWaveAt - now))}
+      </span>
       {s.coins.map((c) => {
         // 쓰러진 자리에서 톡 튀어 올라(0~0.3초) 잠깐 떠 있다가(~0.9초) 그 자리에서 사라진다(채집)
         const a = c.age;
-        const left = c.x;
         let bottom = `${6 + 28 * Math.min(1, a / 0.3) * (2 - Math.min(1, a / 0.3))}px`;
         let scale = 1;
         let opacity = 1;
@@ -73,7 +109,7 @@ export default function Siege(props: {
         }
         return (
           <img key={c.id} className="siege-coin" src="icons/gold.png" alt="" draggable={false}
-            style={{ left: `${left}%`, bottom, opacity, scale: String(scale) }} />
+            style={{ left: `${c.x}%`, bottom, opacity, scale: String(scale) }} />
         );
       })}
     </div>
