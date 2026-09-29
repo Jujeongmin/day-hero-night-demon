@@ -14,7 +14,7 @@ export const T = {
   emptySlot: '빈 칸',
   logTitle: '방어 기록',
   logDefended: (name: string) => `${name}의 침입을 막았다`,
-  logRobbed: (name: string, g: number) => `${name}에게 털렸다 (−${g})`,
+  logRobbed: (name: string, g: number) => (g > 0 ? `${name}에게 털렸다 (−${g})` : `${name}에게 털렸다`),
   ult: { knight: '방패 돌진', archer: '화살비', priest: '축복' } as Record<string, string>,
   giveUp: '포기',
   confirmGiveUp: '공략을 포기할까? 전리품은 없다.',

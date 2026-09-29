@@ -2,32 +2,68 @@
   "skeleton_idle": {
     "frames": 4,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      24,
+      7,
+      28,
+      50
+    ]
   },
   "skeleton_attack": {
     "frames": 7,
     "w": 76,
-    "h": 76
+    "h": 76,
+    "box": [
+      23,
+      12,
+      33,
+      49
+    ]
   },
   "skeleton_death": {
     "frames": 7,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      9,
+      10,
+      43,
+      46
+    ]
   },
   "knight_idle": {
     "frames": 4,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      20,
+      7,
+      31,
+      50
+    ]
   },
   "knight_attack": {
     "frames": 7,
     "w": 76,
-    "h": 76
+    "h": 76,
+    "box": [
+      14,
+      11,
+      47,
+      50
+    ]
   },
   "knight_death": {
     "frames": 7,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      5,
+      8,
+      58,
+      49
+    ]
   },
   "bg_floor1": {
     "frames": 1,
@@ -37,137 +73,299 @@
   "imp_idle": {
     "frames": 4,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      22,
+      9,
+      24,
+      48
+    ]
   },
   "imp_attack": {
     "frames": 7,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      15,
+      10,
+      38,
+      47
+    ]
   },
   "imp_death": {
     "frames": 7,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      9,
+      5,
+      45,
+      53
+    ]
   },
   "necro_idle": {
     "frames": 4,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      23,
+      9,
+      20,
+      48
+    ]
   },
   "necro_attack": {
     "frames": 7,
     "w": 72,
-    "h": 72
+    "h": 72,
+    "box": [
+      25,
+      11,
+      38,
+      48
+    ]
   },
   "necro_death": {
     "frames": 7,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      7,
+      8,
+      55,
+      47
+    ]
   },
   "priest_idle": {
     "frames": 4,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      24,
+      8,
+      20,
+      49
+    ]
   },
   "priest_attack": {
     "frames": 7,
     "w": 76,
-    "h": 76
+    "h": 76,
+    "box": [
+      23,
+      12,
+      34,
+      49
+    ]
   },
   "priest_death": {
     "frames": 7,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      5,
+      8,
+      51,
+      47
+    ]
   },
   "archer_idle": {
     "frames": 4,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      18,
+      7,
+      33,
+      50
+    ]
   },
   "archer_attack": {
     "frames": 7,
     "w": 76,
-    "h": 76
+    "h": 76,
+    "box": [
+      22,
+      11,
+      46,
+      50
+    ]
   },
   "archer_death": {
     "frames": 7,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      5,
+      8,
+      47,
+      47
+    ]
   },
   "slime_idle": {
     "frames": 4,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      13,
+      9,
+      43,
+      48
+    ]
   },
   "slime_attack": {
     "frames": 7,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      9,
+      11,
+      49,
+      46
+    ]
   },
   "slime_death": {
     "frames": 7,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      8,
+      11,
+      52,
+      47
+    ]
   },
   "lord_idle": {
     "frames": 4,
     "w": 96,
-    "h": 96
+    "h": 96,
+    "box": [
+      3,
+      2,
+      89,
+      93
+    ]
   },
   "lord_attack": {
     "frames": 7,
     "w": 96,
-    "h": 96
+    "h": 96,
+    "box": [
+      2,
+      2,
+      91,
+      93
+    ]
   },
   "lord_death": {
     "frames": 7,
     "w": 96,
-    "h": 96
+    "h": 96,
+    "box": [
+      2,
+      2,
+      91,
+      93
+    ]
   },
   "dragon_idle": {
     "frames": 4,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      2,
+      3,
+      63,
+      63
+    ]
   },
   "dragon_attack": {
     "frames": 7,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      2,
+      3,
+      64,
+      63
+    ]
   },
   "dragon_death": {
     "frames": 7,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      2,
+      3,
+      64,
+      63
+    ]
   },
   "spider_idle": {
     "frames": 4,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      4,
+      4,
+      58,
+      59
+    ]
   },
   "spider_attack": {
     "frames": 7,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      3,
+      4,
+      61,
+      59
+    ]
   },
   "spider_death": {
     "frames": 7,
     "w": 68,
-    "h": 68
+    "h": 68,
+    "box": [
+      3,
+      5,
+      61,
+      58
+    ]
   },
   "lord_skull_idle": {
     "frames": 4,
     "w": 96,
-    "h": 96
+    "h": 96,
+    "box": [
+      1,
+      4,
+      92,
+      91
+    ]
   },
   "lord_skull_attack": {
     "frames": 7,
     "w": 96,
-    "h": 96
+    "h": 96,
+    "box": [
+      0,
+      2,
+      95,
+      93
+    ]
   },
   "lord_skull_death": {
     "frames": 7,
     "w": 96,
-    "h": 96
+    "h": 96,
+    "box": [
+      2,
+      4,
+      92,
+      91
+    ]
   },
   "bg_floor2": {
     "frames": 1,

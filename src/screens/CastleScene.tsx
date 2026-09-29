@@ -8,7 +8,8 @@ import { T } from '../strings/ko';
 
 /** tower.png(224×400) 안에서 몬스터가 딛는 선(%). 누르는 영역은 그 선 위 몬스터 키만큼. */
 const THRONE = { stand: 10.5 };
-const TIERS = [76, 53.5, 31].map((stand) => ({ stand, top: stand - 13, bottom: stand + 4 })); // 1층, 2층, 3층
+/** inset: 층 벽 좌우 여백(%). 누르는 영역·잠금 표시를 탑 벽 폭에 맞춘다 */
+const TIERS = [[76, 23.5], [53.5, 28], [31, 31.5]].map(([stand, inset]) => ({ stand, inset, top: stand - 13, bottom: stand + 4 })); // 1층, 2층, 3층
 const SLOT_X = [36, 50, 64];
 const TOWER_H = 400;
 
@@ -74,7 +75,7 @@ export default function CastleScene(props: {
   const unitScale = k * 0.7;
 
   return (
-    <div className="scene">
+    <div className={`scene ${panelOpen ? 'panel-open' : ''}`}>
       <img className="backdrop" src="sprites/bg_night.png" alt="" draggable={false} />
       <header className="hud">
         <span className="pill"><b>{home.gold}</b> {T.gold}</span>
@@ -103,7 +104,7 @@ export default function CastleScene(props: {
               ))}
               <button
                 className={`tier ${locked ? 'locked' : ''} ${selected === i ? 'on' : ''}`}
-                style={{ top: `${tier.top}%`, height: `${tier.bottom - tier.top}%` }}
+                style={{ top: `${tier.top}%`, height: `${tier.bottom - tier.top}%`, left: `${tier.inset}%`, right: `${tier.inset}%` }}
                 disabled={!!s.run}
                 onClick={() => (locked ? onLocked() : onFloor(i))}
                 aria-label={T.floor(i + 1)}

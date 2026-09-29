@@ -1,18 +1,39 @@
 import type { CSSProperties } from 'react';
 import SPRITES from './sprites.json';
 
-type Strip = { frames: number; w: number; h: number };
+/** box: 모든 프레임에서 그림이 있는 영역 [x, y, w, h] */
+type Strip = { frames: number; w: number; h: number; box?: number[] };
 const strips = SPRITES as Record<string, Strip>;
 
 /** 목록 앞에 붙는 작은 그림: 캐릭터면 대기 동작 첫 프레임, 아니면 public/icons/<id>.png */
 export function Portrait(props: { id: string; label: string }) {
+  const strip = strips[`${props.id}_idle`];
   return (
     <span className="portrait">
-      {strips[`${props.id}_idle`]
-        ? <Sprite id={props.id} label={props.label} scale={0.85} still />
-        : <img src={`icons/${props.id}.png`} alt={props.label} draggable={false} />}
+      {strip?.box
+        ? <PortraitArt id={props.id} label={props.label} strip={strip} box={strip.box} />
+        : strip
+          ? <Sprite id={props.id} label={props.label} scale={0.85} still />
+          : <img src={`icons/${props.id}.png`} alt={props.label} draggable={false} />}
     </span>
   );
+}
+
+/** 초상화 칸 안쪽 크기(px). 캐릭터 캔버스는 여백이 넓어서 그림 영역만 잘라 이 크기에 맞춘다 */
+const PORTRAIT_INNER = 28;
+
+function PortraitArt(props: { id: string; label: string; strip: Strip; box: number[] }) {
+  const { id, label, strip, box } = props;
+  const [bx, by, bw, bh] = box;
+  const k = PORTRAIT_INNER / Math.max(bw, bh);
+  const style: CSSProperties = {
+    width: bw * k,
+    height: bh * k,
+    backgroundImage: `url(sprites/${id}_idle.png)`,
+    backgroundSize: `${strip.w * strip.frames * k}px ${strip.h * k}px`,
+    backgroundPosition: `${-bx * k}px ${-by * k}px`,
+  };
+  return <span className="portrait-art" style={style} role="img" aria-label={label} />;
 }
 
 /** 스프라이트 시트가 있으면 애니메이션, 없으면 이름표 상자로 대신 그린다. */

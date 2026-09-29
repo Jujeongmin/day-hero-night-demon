@@ -16,9 +16,8 @@ describe('home & economy', () => {
     expect(home.state.raidLog.length).toBe(3);
   });
 
-  test('claimIdle pays 2 hours once', async (server) => {
+  test('a new account starts with no idle gold', async (server) => {
     server.connect({ account: 't5-bob' });
-    expect((await server.claimIdle()).gold).toBe(120);
     expect((await server.claimIdle()).gold).toBe(0);
   });
 

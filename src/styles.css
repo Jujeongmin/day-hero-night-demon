@@ -26,6 +26,8 @@ select { font: inherit; }
 .pill b { color: var(--gold); font-weight: 400; }
 .chip { display: inline-block; background: #000c; border: 2px solid var(--bone); border-radius: 4px; padding: 0 6px; font-size: 12px; white-space: nowrap; }
 .chip.hint { border-color: var(--gold); color: var(--gold); animation: bob 1.2s ease-in-out infinite; }
+/* 층 안내는 몬스터를 가리지 않게 층 아래 벽에 */
+.tier .chip.hint { position: absolute; left: 50%; top: calc(100% + 4px); translate: -50% 0; }
 @keyframes bob { 50% { transform: translateY(-3px); } }
 
 /* 메인 화면 */
@@ -34,12 +36,13 @@ select { font: inherit; }
 .hud { position: absolute; left: 8px; right: 8px; top: 8px; z-index: 3; display: flex; justify-content: space-between; gap: 6px; pointer-events: none; }
 .hud > * { pointer-events: auto; }
 
-/* 위쪽은 재화 표시(약 44px)와 옥좌 위 마왕 머리가 들어갈 자리를 비운다 */
-.tower { position: absolute; left: 50%; bottom: 64px; height: min(calc(93cqh - 112px), calc(100cqw * 400 / 224)); aspect-ratio: 224 / 400; max-width: 100%; transform: translateX(-50%); }
+/* 위쪽은 재화 표시(약 44px)와 옥좌 위 마왕 머리가 들어갈 자리를, 아래는 출정 버튼(약 76px + 여백 10px)을 비운다 */
+.tower { position: absolute; left: 50%; bottom: 90px; height: min(calc(93cqh - 138px), calc(100cqw * 400 / 224)); aspect-ratio: 224 / 400; max-width: 100%; transform: translateX(-50%); }
+.scene.panel-open .tower { bottom: 12px; height: min(calc(93cqh - 60px), calc(100cqw * 400 / 224)); }
 .tower img { width: 100%; height: 100%; image-rendering: pixelated; display: block; user-select: none; }
 .unit-at { position: absolute; transform: translate(-50%, -100%); pointer-events: none; }
 .tier {
-  position: absolute; left: 16%; right: 16%; border: 2px solid transparent; border-radius: 6px; background: transparent;
+  position: absolute; border: 2px solid transparent; border-radius: 6px; background: transparent;
   display: flex; align-items: center; justify-content: center;
 }
 .tier:hover:not(:disabled), .tier.on { border-color: var(--gold); background: #ffcf4d18; }
@@ -60,7 +63,7 @@ select { font: inherit; }
 .btn:active:not(:disabled) { transform: translateY(1px); }
 .btn:disabled { filter: grayscale(.8) brightness(.7); }
 .btn.big { border-width: 20px; border-image: url(/ui/button_big.png) 20 fill / 20px stretch; font-size: 24px; padding: 0 16px; color: var(--bone); }
-.btn.small { font-size: 13px; min-height: 30px; border-width: 8px; border-image-width: 8px; padding: 0 2px; }
+.btn.small { white-space: nowrap; font-size: 13px; min-height: 30px; border-width: 8px; border-image-width: 8px; padding: 0 2px; }
 .btn.gold { color: var(--gold); }
 .btn.ghost { filter: brightness(.8); }
 .btn.on { color: var(--gold); filter: brightness(1.3) drop-shadow(0 0 3px #ff4a5e88); }
@@ -81,6 +84,10 @@ select { font: inherit; }
   background: url(/ui/crest.png) center / contain no-repeat; image-rendering: pixelated; pointer-events: none;
 }
 .sheet-head { display: flex; justify-content: space-between; align-items: center; padding: 2px 4px; font-size: 18px; color: var(--bone); }
+.sheet-head .close { background: none; border: 0; padding: 0; width: 32px; height: 32px; }
+.sheet-head .close img { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+.sheet-head .close:hover { filter: brightness(1.25); }
+.sheet-head .close:active { transform: translateY(1px); }
 .sheet-body { flex: 1; overflow-y: auto; padding: 2px 4px 6px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
 .sheet-body h4 { margin: 4px 0 0; font-weight: 400; color: var(--muted); font-size: 13px; }
 .line { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-bottom: 4px; border-bottom: 1px dashed #efe3c833; }
@@ -109,6 +116,7 @@ select { font: inherit; }
 .portrait img { position: absolute; inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); object-fit: contain; image-rendering: pixelated; }
 /* 캐릭터 프레임은 여백이 넓다. 몸통이 칸 가운데 오도록 가운데 정렬 후 살짝 위로 */
 .portrait .sprite, .portrait .sprite-missing { position: absolute; left: 50%; top: 50%; translate: -50% -52%; }
+.portrait .portrait-art { position: absolute; left: 50%; top: 50%; translate: -50% -50%; background-repeat: no-repeat; image-rendering: pixelated; }
 .item { display: flex; align-items: center; gap: 8px; min-width: 0; }
 @keyframes strip { to { background-position: calc(-1 * var(--strip)) 0; } }
 .sprite-missing { display: grid; place-items: center; background: #7a1b2f; border: 2px solid #000; border-radius: 4px; font-size: 11px; }

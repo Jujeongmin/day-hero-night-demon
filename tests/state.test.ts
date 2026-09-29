@@ -24,7 +24,7 @@ describe('state', () => {
     expect(s.heroes).toEqual({ knight: { level: 1 }, archer: { level: 1 }, priest: { level: 1 } });
     expect(s.raidLog).toHaveLength(3);
     expect(s.raidLog.filter((e) => !e.attackerWon)).toHaveLength(2);
-    expect(s.idle.lastClaimAt).toBe(1_000_000_000 - 2 * 3_600_000);
+    expect(s.idle.lastClaimAt).toBe(1_000_000_000);
     expect(s.idle.lastRaidAt).toBe(1_000_000_000);
     expect(s.introDone).toBe(false);
   });

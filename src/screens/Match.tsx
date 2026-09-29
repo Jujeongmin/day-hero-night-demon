@@ -30,6 +30,14 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
   const shadows = home.state.credits.shadow;
   return (
     <>
+      {/* 출정 전에 고르는 것이라 목록 위에 둔다 (작은 화면에서 창 아래로 밀려 잘리지 않게) */}
+      {shadows === 0 && <button className="btn small" onClick={() => buy('shadow_double')}>{T.products.shadow_double[0]}</button>}
+      {shadows > 0 && (
+        <label className="line">
+          <span>{T.shadowUse(shadows)}</span>
+          <input type="checkbox" checked={useShadow} onChange={(e) => setUseShadow(e.target.checked)} />
+        </label>
+      )}
       {!targets && <p className="muted">{T.loading}</p>}
       {targets?.map((t) => (
         <div className="line" key={t.id}>
@@ -41,13 +49,6 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
           <button className="btn small" disabled={busy} onClick={() => start(t.id)}>{T.sortie}</button>
         </div>
       ))}
-      {shadows === 0 && <button className="btn small" onClick={() => buy('shadow_double')}>{T.products.shadow_double[0]}</button>}
-      {shadows > 0 && (
-        <label className="line">
-          <span>{T.shadowUse(shadows)}</span>
-          <input type="checkbox" checked={useShadow} onChange={(e) => setUseShadow(e.target.checked)} />
-        </label>
-      )}
     </>
   );
 }

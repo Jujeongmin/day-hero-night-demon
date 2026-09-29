@@ -238,7 +238,7 @@ export default function App() {
         <section className="sheet">
           <header className="sheet-head">
             <span>{title}</span>
-            <button className="link" onClick={() => setPanel(null)} aria-label={T.close}>✕</button>
+            <button className="close" onClick={() => setPanel(null)} aria-label={T.close}><img src="ui/close.png" alt="" draggable={false} /></button>
           </header>
           <div className="sheet-body">{body}</div>
         </section>
