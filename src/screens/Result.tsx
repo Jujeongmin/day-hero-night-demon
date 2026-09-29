@@ -12,7 +12,7 @@ export default function Result(props: { result: EndResult; onClose: () => void }
         {r.soul > 0 && <span>{T.soul} +{r.soul}</span>}
       </div>
       {r.offerStarter && <button className="btn gold" onClick={() => buy('starter_pack')}>{T.buyStarter}</button>}
-      <button className="btn" onClick={props.onClose}>{T.ok}</button>
+      <button className="btn" data-tut="result-ok" onClick={props.onClose}>{T.ok}</button>
     </>
   );
 }

@@ -8,6 +8,7 @@ import { floorBgId } from '../render/skins';
 import { playBgm, sfx } from '../services/audio';
 import { buy } from '../services/shop';
 import { errorText, type Api, type EndResult, type HomeData, type RunResult } from '../services/api';
+import { emitTut } from '../tutorial/bus';
 import { T } from '../strings/ko';
 
 export default function Raid(props: {
@@ -91,7 +92,10 @@ export default function Raid(props: {
       setPendingUlt(null);
       void call(() => api.playRound(ult));
     } else if (status === 'victory') {
+      emitTut('battle_over');
       void finish(false);
+    } else if (status === 'wiped') {
+      emitTut('battle_over');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, playing, tick]);
@@ -135,8 +139,9 @@ export default function Raid(props: {
             <button
               key={h}
               className="btn gold"
+              data-tut={h === HERO_ORDER[0] ? 'ult' : undefined}
               disabled={!ultReady || !heroAlive(h) || pendingUlt !== null}
-              onClick={() => setPendingUlt(h)}
+              onClick={() => { setPendingUlt(h); emitTut('ult_used'); }}
             >
               {T.ult[h]}
             </button>

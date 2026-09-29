@@ -39,14 +39,14 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
         </label>
       )}
       {!targets && <p className="muted">{T.loading}</p>}
-      {targets?.map((t) => (
+      {targets?.map((t, i) => (
         <div className="line" key={t.id}>
           <span>
             <b>{t.nickname}</b> {t.npc && <span className="badge">{T.npcTag}</span>} {t.throneEmpty && <span className="badge">{T.throneEmptyBadge}</span>}
             <br />
             <small>{T.power} {t.power} · {T.estLoot} {t.estLoot}</small>
           </span>
-          <button className="btn small" disabled={busy} onClick={() => start(t.id)}>{T.sortie}</button>
+          <button className="btn small" data-tut={i === 0 ? 'match-first' : undefined} disabled={busy} onClick={() => start(t.id)}>{T.sortie}</button>
         </div>
       ))}
     </>

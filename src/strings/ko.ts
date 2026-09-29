@@ -39,7 +39,6 @@ export const T = {
   soundOn: '소리',
   soundOff: '무음',
   close: '닫기',
-  tapFloorHint: '층을 눌러 몬스터 배치',
   editFloor: '편성',
   floorEditTitle: (n: number) => `${n}층 편성`,
   save: '저장',

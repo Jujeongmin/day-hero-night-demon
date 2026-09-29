@@ -17,13 +17,13 @@ import Nickname from './screens/Nickname';
 import { startShop, type ShopItem } from './services/shop';
 import { isMuted, playBgm, setMuted, sfx, unlockAudio } from './services/audio';
 import { preloadSprites } from './render/battleCanvas';
+import { emitTut } from './tutorial/bus';
 
 type Tab = 'upgrade' | 'log' | 'league' | 'shop';
 export type Panel =
   | { name: Tab } | { name: 'match' } | { name: 'floor'; floor: number } | { name: 'result'; result: EndResult };
 
 const TABS: Tab[] = ['upgrade', 'log', 'league', 'shop'];
-const HINT_KEY = 'hint.floorTapped';
 
 function samePanel(a: Panel, b: Panel): boolean {
   if (a.name === 'floor' && b.name === 'floor') return a.floor === b.floor;
@@ -48,14 +48,6 @@ function purchasedSomething(a: HomeData, b: HomeData): boolean {
     || Object.keys(b.state.roster).length > Object.keys(a.state.roster).length;
 }
 
-function readHint(): boolean {
-  try {
-    return localStorage.getItem(HINT_KEY) !== '1';
-  } catch {
-    return true;
-  }
-}
-
 export default function App() {
   const { connected, server } = useGameServer();
   const api = useMemo(() => (server ? createApi(server) : null), [server]);
@@ -63,7 +55,6 @@ export default function App() {
   const [raiding, setRaiding] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [hint, setHint] = useState(readHint);
   const [muted, setMutedState] = useState(isMuted);
 
   // 첫 입력에서 오디오를 풀고, 버튼을 누를 때마다 탭 소리
@@ -182,21 +173,15 @@ export default function App() {
   const startRaid = () => {
     setPanel(null);
     setRaiding(true);
+    emitTut('raid_started');
   };
 
   // 열린 창을 다시 누르면 닫는다
   const toggle = (next: Panel) => setPanel((cur) => (cur && samePanel(cur, next) ? null : next));
 
   const openFloor = (floor: number) => {
-    if (hint) {
-      setHint(false);
-      try {
-        localStorage.setItem(HINT_KEY, '1');
-      } catch {
-        // 저장이 막혀도 힌트만 다시 보일 뿐이다
-      }
-    }
     toggle({ name: 'floor', floor });
+    emitTut('floor_opened');
   };
 
   if (raiding) {
@@ -228,7 +213,7 @@ export default function App() {
         break;
       case 'result':
         title = panel.result.won ? T.victory : T.defeat;
-        body = <Result result={panel.result} onClose={() => setPanel(null)} />;
+        body = <Result result={panel.result} onClose={() => { setPanel(null); emitTut('result_closed'); }} />;
         break;
       case 'upgrade':
         title = T.panels.upgrade;
@@ -255,7 +240,6 @@ export default function App() {
         api={api}
         home={home}
         selected={panel?.name === 'floor' ? panel.floor : null}
-        hint={hint && !panel}
         panelOpen={!!panel}
         muted={muted}
         onToggleMute={toggleMute}
@@ -277,7 +261,14 @@ export default function App() {
       )}
       <nav className="tabs">
         {TABS.map((t) => (
-          <button key={t} className={panel?.name === t ? 'on' : ''} onClick={() => toggle({ name: t })}>{T.tabs[t]}</button>
+          <button
+            key={t}
+            className={panel?.name === t ? 'on' : ''}
+            data-tut={`tab-${t}`}
+            onClick={() => { toggle({ name: t }); if (t === 'upgrade') emitTut('upgrade_opened'); }}
+          >
+            {T.tabs[t]}
+          </button>
         ))}
       </nav>
       {toast && <div className="toast">{toast}</div>}

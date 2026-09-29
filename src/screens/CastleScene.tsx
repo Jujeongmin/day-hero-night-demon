@@ -37,7 +37,6 @@ export default function CastleScene(props: {
   api: Api;
   home: HomeData;
   selected: number | null;
-  hint: boolean;
   /** 아래 창이 열리면 출정 버튼을 숨겨 탑을 가리지 않는다 */
   panelOpen: boolean;
   muted: boolean;
@@ -49,7 +48,7 @@ export default function CastleScene(props: {
   onLocked: () => void;
   onError: (msg: string) => void;
 }) {
-  const { api, home, selected, hint, panelOpen, muted, onToggleMute, onRefresh, onRaid, onMatch, onFloor, onLocked, onError } = props;
+  const { api, home, selected, panelOpen, muted, onToggleMute, onRefresh, onRaid, onMatch, onFloor, onLocked, onError } = props;
   const s = home.state;
   const [busy, setBusy] = useState(false);
   const towerRef = useRef<HTMLDivElement>(null);
@@ -104,13 +103,13 @@ export default function CastleScene(props: {
               ))}
               <button
                 className={`tier ${locked ? 'locked' : ''} ${selected === i ? 'on' : ''}`}
+                data-tut={`floor-${i}`}
                 style={{ top: `${tier.top}%`, height: `${tier.bottom - tier.top}%`, left: `${tier.inset}%`, right: `${tier.inset}%` }}
                 disabled={!!s.run}
                 onClick={() => (locked ? onLocked() : onFloor(i))}
                 aria-label={T.floor(i + 1)}
               >
                 {locked && <span className="chip">{T.lockedFloor(levelFor(i))}</span>}
-                {hint && i === 0 && <span className="chip hint">{T.tapFloorHint}</span>}
               </button>
             </div>
           );
@@ -129,6 +128,7 @@ export default function CastleScene(props: {
         ) : (
           <button
             className="btn big"
+            data-tut="sortie"
             disabled={busy}
             onClick={() => (s.introDone ? onMatch() : act(() => api.startIntroRaid(), onRaid))}
           >

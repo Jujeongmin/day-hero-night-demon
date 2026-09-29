@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MONSTERS, TRAPS, type MonsterId, type TrapId } from '../../server/src/catalog';
 import { Portrait } from '../render/Sprite';
 import { errorText, type Api, type HomeData } from '../services/api';
+import { emitTut } from '../tutorial/bus';
 import { T } from '../strings/ko';
 
 /** 칸을 누르고 몬스터를 누르면 바로 저장된다. 키보드 없이 클릭만으로 끝난다. */
@@ -9,7 +10,9 @@ export default function CastleEdit(props: { api: Api; home: HomeData; floor: num
   const { api, home, floor, onSaved, onError } = props;
   const s = home.state;
   const current = s.castle.floors[floor];
-  const [slot, setSlot] = useState(0);
+  // 첫 빈 칸을 골라 연다: 몬스터 한 번만 누르면 배치된다
+  const firstEmpty = current.monsters.findIndex((m) => m === null);
+  const [slot, setSlot] = useState(firstEmpty >= 0 ? firstEmpty : 0);
   const [busy, setBusy] = useState(false);
   const owned = Object.keys(s.roster) as MonsterId[];
   const ownedTraps = Object.keys(s.traps) as TrapId[];
@@ -20,6 +23,7 @@ export default function CastleEdit(props: { api: Api; home: HomeData; floor: num
     try {
       await api.setFloor(floor, monsters, trap);
       await onSaved();
+      emitTut('floor_saved');
     } catch (e) {
       onError(errorText(e));
     } finally {
@@ -45,8 +49,8 @@ export default function CastleEdit(props: { api: Api; home: HomeData; floor: num
         ))}
       </div>
       <div className="chips">
-        {owned.map((id) => (
-          <button key={id} className="btn small pick" disabled={busy} onClick={() => place(id)}>
+        {owned.map((id, i) => (
+          <button key={id} className="btn small pick" data-tut={i === 0 ? 'pick-first' : undefined} disabled={busy} onClick={() => place(id)}>
             <Portrait id={id} label={MONSTERS[id].name} />
             <small>{MONSTERS[id].name}</small>
           </button>

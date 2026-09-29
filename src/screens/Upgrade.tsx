@@ -3,6 +3,7 @@ import { HEROES, MONSTERS, TRAPS, type HeroId, type MonsterId, type TrapId } fro
 import { castleUpgradeCost, unitUpgradeCost } from '../../server/src/economy';
 import { Portrait } from '../render/Sprite';
 import { errorText, type Api, type HomeData } from '../services/api';
+import { emitTut } from '../tutorial/bus';
 import { T } from '../strings/ko';
 
 export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: () => Promise<void>; onError: (m: string) => void }) {
@@ -16,6 +17,7 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
     try {
       await fn();
       await onRefresh();
+      emitTut('upgraded');
     } catch (e) {
       onError(errorText(e));
     } finally {
@@ -23,12 +25,12 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
     }
   }
 
-  const row = (id: string, label: string, level: number, onUp: () => Promise<unknown>) => {
+  const row = (id: string, label: string, level: number, onUp: () => Promise<unknown>, first = false) => {
     const cost = unitUpgradeCost(level);
     return (
       <div className="line" key={id}>
         <span className="item"><Portrait id={id} label={label} />{label} {T.level(level)}</span>
-        <button className="btn small" disabled={busy || cost === null || home.gold < cost} onClick={() => act(onUp)}>
+        <button className="btn small" data-tut={first ? 'upgrade-first' : undefined} disabled={busy || cost === null || home.gold < cost} onClick={() => act(onUp)}>
           {cost === null ? T.maxLevel : T.upgradeBtn(cost)}
         </button>
       </div>
@@ -46,7 +48,7 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
         </button>
       </div>
       <h4>{T.monstersTitle}</h4>
-      {(Object.keys(s.roster) as MonsterId[]).map((id) => row(id, MONSTERS[id].name, s.roster[id]!.level, () => api.upgrade('monster', id)))}
+      {(Object.keys(s.roster) as MonsterId[]).map((id, i) => row(id, MONSTERS[id].name, s.roster[id]!.level, () => api.upgrade('monster', id), i === 0))}
       <h4>{T.heroesTitle}</h4>
       {(Object.keys(s.heroes) as HeroId[]).map((id) => row(id, HEROES[id].name, s.heroes[id].level, () => api.upgrade('hero', id)))}
       <h4>{T.trapsTitle}</h4>
