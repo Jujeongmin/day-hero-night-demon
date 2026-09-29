@@ -136,6 +136,12 @@ export default function App() {
       .catch((e) => onError(errorText(e)));
   }, [connected, api, onError]);
 
+  // 초기화 뒤 튜토리얼 첫 단계: 열린 창(설정)을 닫아야 출정 버튼이 보인다
+  const onboardingAt = home?.state.onboarding?.at;
+  useEffect(() => {
+    if (onboardingAt === 'raid_sortie') setPanel(null);
+  }, [onboardingAt]);
+
   if (!connected || !api) return <div className="center">{T.connecting}</div>;
   if (!home) return <div className="center">{T.loading}</div>;
 

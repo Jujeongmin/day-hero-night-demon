@@ -290,7 +290,8 @@ describe('reset', () => {
     expect(home.gold).toBe(300);
     expect(home.soul).toBe(0);
     expect(home.state.roster.slime.level).toBe(1);
-    expect(home.state.onboarding.at).toBe('done');
+    expect(home.state.onboarding.at).toBe('raid_sortie');
+    expect(home.state.introDone).toBe(false);
   });
 });
 

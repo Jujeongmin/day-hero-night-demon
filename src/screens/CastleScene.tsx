@@ -114,7 +114,7 @@ export default function CastleScene(props: {
         <span className="hud-col">
           <span className="pill"><b>{home.gold}</b> {T.gold}</span>
           {home.power !== undefined && (
-            <span className="pill power" aria-label={T.siege.power}><img src="icons/stat_atk.png" alt="" draggable={false} /><b>{home.power.toLocaleString()}</b></span>
+            <span className="pill power" aria-label={T.siege.power}><img src="icons/stat_atk.png" alt="" draggable={false} />{T.siege.power} <b>{home.power.toLocaleString()}</b></span>
           )}
         </span>
         <button className="hud-icon" data-tut="settings" onClick={onSettings} aria-label={T.settings.title}><img src="ui/settings.png" alt="" draggable={false} /></button>

@@ -76,7 +76,7 @@ describe('onboarding', () => {
 });
 
 describe('resetState', () => {
-  it('wipes progress but keeps purchases, nickname and finished onboarding', () => {
+  it('wipes progress, keeps purchases and nickname, and replays the click tutorial', () => {
     const s0 = defaultState('0xaaaa1111', 1, 's1');
     const s = {
       ...s0,
@@ -101,8 +101,8 @@ describe('resetState', () => {
     expect(r.season).toEqual({ id: 's1', bracketId: null, honor: 0, pass: true, rewardedFor: null, claimed: { free: 0, pass: 0 } });
     expect(r.profile).toEqual(s.profile);
     expect(r.processedPurchases).toEqual(['p1', 'p2']);
-    expect(r.onboarding).toEqual({ at: 'done', nicknameSet: true });
-    expect(r.introDone).toBe(true);
+    expect(r.onboarding).toEqual({ at: 'raid_sortie', nicknameSet: true });
+    expect(r.introDone).toBe(false);
     expect(r.raidLog).toEqual([]);
     expect(r.run).toBe(null);
   });

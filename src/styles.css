@@ -38,7 +38,7 @@ select { font: inherit; }
 /* 메인 화면 */
 .scene { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--night); container-type: size; }
 .backdrop { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center bottom; image-rendering: pixelated; user-select: none; }
-.hud { position: absolute; left: 8px; right: 8px; top: 8px; z-index: 3; display: flex; justify-content: space-between; gap: 6px; pointer-events: none; }
+.hud { position: absolute; left: 8px; right: 8px; top: 8px; z-index: 3; display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; pointer-events: none; }
 .hud > * { pointer-events: auto; }
 
 /* 위쪽은 재화 표시(약 44px)와 옥좌 위 마왕 머리가 들어갈 자리를, 아래는 출정 버튼(약 76px + 여백 10px)을 비운다 */

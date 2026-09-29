@@ -215,10 +215,11 @@ export function resetState(s: UserState, now: number): UserState {
     firstWinDay: s.firstWinDay,
     revengeUsed: s.revengeUsed,
     season: { ...fresh.season, id: s.season.id, pass: s.season.pass, rewardedFor: s.season.rewardedFor },
-    introDone: true,
+    // 초기화하면 클릭 튜토리얼을 처음부터 다시 보여 준다(컷신·닉네임은 건너뜀, 2026-09-29 사용자 요청)
+    introDone: false,
     starterOffered: s.starterOffered,
     processedPurchases: s.processedPurchases,
-    onboarding: { at: 'done', nicknameSet: s.onboarding.nicknameSet },
+    onboarding: { at: 'raid_sortie', nicknameSet: s.onboarding.nicknameSet },
     // 오늘 광고 횟수는 초기화로 다시 받지 못하게, 영구 상품은 결제라 남긴다
     ads: s.ads,
     perks: s.perks,
