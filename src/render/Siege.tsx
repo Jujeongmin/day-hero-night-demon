@@ -14,7 +14,7 @@ export default function Siege(props: {
   onFighting: (fighting: boolean) => void;
 }) {
   const { ground, atk, paused, onFighting } = props;
-  const [s, setS] = useState<SiegeState>({ t: 0, nextId: 1, spawnIn: 0.5, invaders: [], coins: [] });
+  const [s, setS] = useState<SiegeState>({ t: 0, nextId: 1, spawnIn: 0.5, invaders: [], coins: [], castleHp: SIEGE.castleMax });
   const fightingRef = useRef(false);
   const atkRef = useRef(atk);
   atkRef.current = atk;
@@ -46,7 +46,7 @@ export default function Siege(props: {
           )}
           <Sprite
             id={v.kind}
-            anim={v.state === 'dead' ? 'death' : 'idle'}
+            anim={v.state === 'dead' ? 'death' : v.state === 'fight' ? 'attack' : 'idle'}
             className={v.state === 'dead' ? 'once' : v.state === 'walk' ? 'walking' : ''}
             flip={!v.fromLeft}
             scale={0.85}
@@ -54,14 +54,27 @@ export default function Siege(props: {
           />
         </div>
       ))}
+      <div className="castle-hp" style={{ left: '50%' }}>
+        <span style={{ width: `${(s.castleHp / SIEGE.castleMax) * 100}%` }} />
+      </div>
       {s.coins.map((c) => {
-        const k = Math.min(1, c.age / SIEGE.coinFor);
-        // 금화는 쓰러진 자리에서 오른쪽 위 방치 수입 버튼 쪽으로 날아간다
-        const left = c.x + (92 - c.x) * k;
-        const lift = k * 100;
+        // 쓰러진 자리에서 톡 튀어 올라(0~0.3초) 잠깐 떠 있다가(~0.9초) 방치 수입 버튼으로 빨려 간다
+        const a = c.age;
+        let left = c.x;
+        let bottom = `${6 + 28 * Math.min(1, a / 0.3) * (2 - Math.min(1, a / 0.3))}px`;
+        let scale = 1;
+        let opacity = 1;
+        if (a >= 0.3 && a < 0.9) bottom = `${34 + Math.sin((a - 0.3) * 10) * 2}px`;
+        if (a >= 0.9) {
+          const k = Math.min(1, (a - 0.9) / (SIEGE.coinFor - 0.9));
+          left = c.x + (92 - c.x) * k * k;
+          bottom = `calc(34px + (100cqh - ${ground}px - 110px) * ${k * k})`;
+          scale = 1 - k * 0.5;
+          opacity = 1 - k * 0.4;
+        }
         return (
           <img key={c.id} className="siege-coin" src="icons/gold.png" alt="" draggable={false}
-            style={{ left: `${left}%`, bottom: `calc(20px + ${lift}cqh * 0.6)`, opacity: 1 - k * 0.6 }} />
+            style={{ left: `${left}%`, bottom, opacity, scale: String(scale) }} />
         );
       })}
     </div>
