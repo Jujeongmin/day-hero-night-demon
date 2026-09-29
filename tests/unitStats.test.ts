@@ -6,10 +6,10 @@ describe('unitStats', () => {
   it('shows current stats and what the next level adds', () => {
     const r = unitStats(MONSTERS.slime.stats, 1);
     expect(r.now).toEqual({ hp: 120, atk: 11, def: 8, spd: 2 });
-    expect(r.gain).toEqual({ hp: 12, atk: 1, def: 1, spd: 0 });
+    expect(r.gain).toEqual({ hp: 18, atk: 2, def: 1, spd: 0 });
   });
   it('no gain at max level', () => {
-    expect(unitStats(HEROES.knight.stats, 20).gain).toBe(null);
+    expect(unitStats(HEROES.knight.stats, 100).gain).toBe(null);
   });
 });
 

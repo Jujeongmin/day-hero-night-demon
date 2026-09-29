@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { castleUpgradeCost } from '../server/src/economy';
 import { planRecruit, planUpgrade, validateFloor } from '../server/src/castle';
 import { defaultState } from '../server/src/state';
 
@@ -7,7 +8,7 @@ const fresh = () => defaultState('0xtest0001', 0, 's1');
 describe('castle rules', () => {
   it('castle upgrade adds a floor at lv2 and unlocks imp', () => {
     const { cost, patch } = planUpgrade(fresh(), 'castle', null);
-    expect(cost).toBe(1000);
+    expect(cost).toBe(castleUpgradeCost(1));
     expect(patch.castle?.level).toBe(2);
     expect(patch.castle?.floors).toHaveLength(2);
     expect(patch.roster?.imp).toEqual({ level: 1 });
@@ -22,7 +23,7 @@ describe('castle rules', () => {
   });
 
   it('monster upgrade costs by level and rejects unowned', () => {
-    expect(planUpgrade(fresh(), 'monster', 'slime')).toEqual({ cost: 100, patch: { roster: { slime: { level: 2 }, skeleton: { level: 1 } } } });
+    expect(planUpgrade(fresh(), 'monster', 'slime')).toEqual({ cost: 50, patch: { roster: { slime: { level: 2 }, skeleton: { level: 1 } } } });
     expect(() => planUpgrade(fresh(), 'monster', 'dragon')).toThrow();
   });
 

@@ -20,6 +20,9 @@ export interface CastleSnapshot {
   throneEmpty: boolean;
   shadow: boolean;
   lordSkin?: LordSkin;
+  /** NPC 등급 성 전용: 마왕 레벨(없으면 성 레벨로 계산)과 몬스터·마왕 능력치 배수 */
+  lordLevel?: number;
+  mult?: number;
 }
 
 export interface Run {

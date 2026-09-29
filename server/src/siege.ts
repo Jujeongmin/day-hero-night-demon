@@ -1,15 +1,15 @@
 import { simulateAuto, type HeroSpec } from './battle';
 import { BALANCE, HERO_ORDER } from './catalog';
+import { lordLevel, waveGold } from './growth';
 import { seedFrom } from './rng';
 import type { ResolvedFloor } from './state';
 
-/** 공성 단계의 침입 파도: 기사·궁수·성직자, 레벨 = 단계(20 초과분은 능력치 배수). */
+/** 공성 단계의 침입 파도: 기사·궁수·성직자, 레벨 = 단계, 능력치 ×0.5. 최대 레벨을 넘으면 단계마다 ×1.15 더 */
 export function siegeWave(stage: number): HeroSpec[] {
   const level = Math.min(BALANCE.maxUnitLevel, stage);
   const over = Math.max(0, stage - BALANCE.maxUnitLevel);
-  return HERO_ORDER.map((id) => (over > 0
-    ? { id, level, mult: Math.round((1 + BALANCE.siegeMultPerStage * over) * 100) / 100 }
-    : { id, level }));
+  const mult = BALANCE.growth.invaderMult * Math.pow(BALANCE.growth.statGrowth, over);
+  return HERO_ORDER.map((id) => ({ id, level, mult }));
 }
 
 /** 막는 쪽: 내 층 몬스터 → 옥좌의 마왕. mult = 용사 레벨에서 오는 공성 방어 배수 */
@@ -17,7 +17,7 @@ function defenseOf(castleLevel: number, floors: ResolvedFloor[], mult: number) {
   const m1 = mult === 1 ? {} : { mult };
   return [
     ...floors.map((f) => ({ enemies: f.monsters.map((m) => ({ id: m.id, level: m.level, ...m1 })) })),
-    { enemies: [{ id: 'lord' as const, level: castleLevel, ...m1 }] },
+    { enemies: [{ id: 'lord' as const, level: lordLevel(castleLevel), ...m1 }] },
   ];
 }
 
@@ -35,7 +35,7 @@ export function fightWave(p: { account: string; stage: number; at: number; castl
   const raid = simulateAuto({ heroes: siegeWave(stage), floors: defenseOf(p.castleLevel, p.floors, p.mult ?? 1), seed: seedFrom(p.account, 'siege', p.at) });
   const won = !raid.won;
   return won
-    ? { won, stage: stage + 1, gold: stage * BALANCE.siegeGoldPerKill * 3 }
+    ? { won, stage: stage + 1, gold: waveGold(stage) }
     : { won, stage: Math.max(1, stage - 1), gold: 0 };
 }
 

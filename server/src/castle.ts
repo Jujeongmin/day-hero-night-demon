@@ -14,7 +14,7 @@ export function planUpgrade(
     for (const m of Object.values(MONSTERS)) {
       if ('castleLevel' in m.unlock && m.unlock.castleLevel <= level && !roster[m.id]) roster[m.id] = { level: 1 };
     }
-    return { cost: castleUpgradeCost(s.castle.level), patch: { castle: { level, floors }, roster } };
+    return { cost: castleUpgradeCost(s.castle.level) ?? 0, patch: { castle: { level, floors }, roster } };
   }
   if (kind === 'monster') {
     const m = s.roster[id as MonsterId];

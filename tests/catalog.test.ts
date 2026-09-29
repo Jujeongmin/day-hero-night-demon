@@ -8,9 +8,9 @@ describe('catalog', () => {
     expect(HEROES.knight.row).toBe('front');
   });
 
-  it('scales stats by 10% per level, keeps speed', () => {
-    const s = scaleStats({ hp: 100, atk: 10, def: 10, spd: 4 }, 11);
-    expect(s).toEqual({ hp: 200, atk: 20, def: 20, spd: 4 });
+  it('scales stats ×1.15 per level, keeps speed', () => {
+    expect(scaleStats({ hp: 100, atk: 10, def: 10, spd: 4 }, 2)).toEqual({ hp: 115, atk: 12, def: 12, spd: 4 });
+    expect(scaleStats({ hp: 100, atk: 10, def: 10, spd: 4 }, 11)).toEqual({ hp: 405, atk: 40, def: 40, spd: 4 });
   });
 
   it('applies a multiplier (shadow double = 0.5)', () => {

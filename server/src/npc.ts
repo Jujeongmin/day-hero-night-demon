@@ -1,10 +1,13 @@
 import { BALANCE, HERO_ORDER, type MonsterId } from './catalog';
 import { simulateAuto, type EnemySpec } from './battle';
+import { avgMonsterLevel } from './economy';
+import { lordLevel } from './growth';
 import { rngNext, seedFrom } from './rng';
 import type { CastleSnapshot, ResolvedFloor } from './state';
 
 const POOL: MonsterId[] = ['slime', 'skeleton', 'imp', 'spider'];
 
+/** NPC 등급 성(모두에게 같은 난이도): 등급 = 몬스터·마왕 레벨. 층 수는 등급에 따라 1→2→3, 층이 늘면 조금 약하게 */
 export function npcCastle(tier: number, seedKey: string): CastleSnapshot {
   if (tier === 0) {
     return {
@@ -13,9 +16,14 @@ export function npcCastle(tier: number, seedKey: string): CastleSnapshot {
       throneEmpty: true, shadow: false,
     };
   }
-  let s = seedFrom('npc', tier, seedKey);
-  const floorsCount = Math.min(3, 1 + Math.floor((tier - 1) / 3));
-  const level = Math.min(BALANCE.maxUnitLevel, Math.max(1, tier * 2 - 1));
+  const G = BALANCE.growth;
+  const t = Math.max(1, Math.floor(tier));
+  let s = seedFrom('npc', t, seedKey);
+  const floorsCount = t >= G.npcThreeFloorsFrom ? 3 : t >= G.npcTwoFloorsFrom ? 2 : 1;
+  const level = Math.min(BALANCE.maxUnitLevel, t);
+  // 최대 레벨을 넘는 등급은 등급마다 ×1.15 더
+  const over = Math.pow(G.statGrowth, Math.max(0, t - BALANCE.maxUnitLevel));
+  const mult = Math.round(G.npcMultByFloors[floorsCount - 1] * over * 1000) / 1000;
   const floors: ResolvedFloor[] = [];
   for (let i = 0; i < floorsCount; i++) {
     const monsters: { id: MonsterId; level: number }[] = [];
@@ -26,11 +34,22 @@ export function npcCastle(tier: number, seedKey: string): CastleSnapshot {
     }
     floors.push({ monsters });
   }
-  return { owner: `npc:${tier}:${seedKey}`, nickname: `침입자 길드 ${tier}단`, castleLevel: tier, floors, throneEmpty: false, shadow: false };
+  return {
+    owner: `npc:${t}:${seedKey}`, nickname: `침입자 길드 ${t}단`, castleLevel: Math.min(BALANCE.maxCastleLevel, floorsCount),
+    floors, throneEmpty: false, shadow: false, lordLevel: level, mult,
+  };
 }
 
-export function npcTierForPower(power: number): number {
-  return Math.max(1, Math.min(10, Math.round(power / 8)));
+/** 내 용사 평균 레벨 */
+export function avgHeroLevel(heroes: Record<string, { level: number }>): number {
+  const lv = Object.values(heroes).map((h) => h.level);
+  return Math.max(1, Math.round(lv.reduce((a, b) => a + b, 0) / lv.length));
+}
+
+/** 출정 NPC 목록: 용사 평균 레벨 −1(쉬움) / 같음(보통) / +1(어려움) 등급 */
+export function npcTiersFor(heroes: Record<string, { level: number }>): number[] {
+  const a = avgHeroLevel(heroes);
+  return [Math.max(1, a - 1), a, a + 1];
 }
 
 export function npcRaids(p: {
@@ -38,11 +57,12 @@ export function npcRaids(p: {
 }): { raids: { at: number; attackerWon: boolean }[]; lastRaidAt: number } {
   const due = Math.floor((p.now - p.lastRaidAt) / BALANCE.npcRaidEveryMs);
   const count = Math.max(0, Math.min(BALANCE.npcRaidMax, due));
-  const heroLevel = Math.max(1, Math.min(BALANCE.maxUnitLevel, p.castleLevel * 2 - 1));
+  // 습격해 오는 용사 = 내 성 몬스터 평균 레벨(비슷한 세기)
+  const heroLevel = Math.min(BALANCE.maxUnitLevel, avgMonsterLevel(p.floors));
   const raids: { at: number; attackerWon: boolean }[] = [];
   for (let i = 0; i < count; i++) {
     const at = p.lastRaidAt + (i + 1) * BALANCE.npcRaidEveryMs;
-    const throne: EnemySpec[] = [{ id: 'lord', level: p.castleLevel }];
+    const throne: EnemySpec[] = [{ id: 'lord', level: lordLevel(p.castleLevel) }];
     const floors = [
       ...p.floors.map((f) => ({ enemies: f.monsters.map((m) => ({ id: m.id, level: m.level })) })),
       { enemies: throne },

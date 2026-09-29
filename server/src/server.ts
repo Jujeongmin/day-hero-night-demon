@@ -1,11 +1,12 @@
 import { BALANCE, HERO_ORDER, TACTICS, type HeroId, type Tactic } from './catalog';
 import { planRecruit, planUpgrade, validateFloor } from './castle';
-import { castlePower, displayPower, heroLootBonus, idleIncome, lootAmount, npcLoot, siegeDefenseMult } from './economy';
+import { castlePower, displayPower, heroLootBonus, idleIncome, lootAmount, npcLoot, pvpLootCap, siegeDefenseMult, snapshotPower } from './economy';
+import { waveGold } from './growth';
 import {
   DEFENSE_HONOR, honorForRaid, leagueCollection, rankBracket, seasonEndsAt, seasonIdAt, seasonRewardSoul, seasonStartOf,
 } from './league';
 import { checkNickname, nicknameKey } from './nickname';
-import { npcCastle, npcRaids, npcTierForPower, TUTORIAL_TARGET, tutorialCastle } from './npc';
+import { npcCastle, npcRaids, npcTiersFor, TUTORIAL_TARGET, tutorialCastle } from './npc';
 import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun } from './raid';
 import { planAdReward } from './ads';
 import { chooseLordSkin, planPassClaim } from './pass';
@@ -60,13 +61,12 @@ async function balances(account: string): Promise<{ gold: number; soul: number }
 }
 
 function npcTargets(s: UserState, now: number): Target[] {
-  const base = npcTierForPower(castlePower(s.castle.level, resolveFloors(s)));
-  const tiers = [Math.max(1, base - 1), base, Math.min(10, base + 1)];
-  return tiers.map((tier, i) => {
+  // 고정 등급(모두에게 같은 난이도): 용사 평균 레벨 −1 / 같음 / +1
+  return npcTiersFor(s.heroes).map((tier, i) => {
     const c = npcCastle(tier, `${dayKey(now)}-${i}`);
     return {
-      id: c.owner, nickname: c.nickname, power: castlePower(c.castleLevel, c.floors),
-      castleLevel: c.castleLevel, estLoot: npcLoot(c.castleLevel), npc: true,
+      id: c.owner, nickname: c.nickname, power: snapshotPower(c),
+      castleLevel: c.castleLevel, estLoot: npcLoot(tier), npc: true,
     };
   });
 }
@@ -74,8 +74,8 @@ function npcTargets(s: UserState, now: number): Target[] {
 function tutorialTarget(): Target {
   const c = tutorialCastle();
   return {
-    id: c.owner, nickname: c.nickname, power: castlePower(c.castleLevel, c.floors),
-    castleLevel: c.castleLevel, estLoot: npcLoot(c.castleLevel), npc: true,
+    id: c.owner, nickname: c.nickname, power: snapshotPower(c),
+    castleLevel: c.castleLevel, estLoot: npcLoot(1), npc: true,
   };
 }
 
@@ -187,7 +187,7 @@ async function realTargets(me: string, s: UserState, now: number): Promise<Targe
     const gold = await $asset.get('gold', r.account);
     out.push({
       id: r.account, nickname: r.nickname, power: r.power, castleLevel: r.castleLevel,
-      estLoot: lootAmount(gold, r.castleLevel), npc: false,
+      estLoot: lootAmount(gold, pvpLootCap(r.floors ?? [])), npc: false,
     });
   }
   return out;
@@ -202,7 +202,7 @@ async function settleDefender(me: string, s: UserState, run: Run, won: boolean, 
   let loot = 0;
   if (won) {
     const defGold = await $asset.get('gold', def);
-    loot = lootAmount(defGold, run.snapshot.castleLevel);
+    loot = lootAmount(defGold, pvpLootCap(run.snapshot.floors));
     if (run.isRevenge) {
       const mine = s.raidLog.find((e) => e.id === run.revengeLogId);
       if (mine) loot = Math.min(defGold, Math.max(loot, mine.goldLost));
@@ -212,7 +212,7 @@ async function settleDefender(me: string, s: UserState, run: Run, won: boolean, 
       await $asset.mint('gold', loot);
     }
   } else {
-    await $asset.mint('gold', BALANCE.defenseRewardPerCastleLevel * d.castle.level, def);
+    await $asset.mint('gold', waveGold(withDefaults(d).siege.best) * BALANCE.growth.defenseRewardWaves, def);
     await addHonor(def, d, DEFENSE_HONOR, now);
   }
   const entry: RaidLogEntry = {
@@ -313,12 +313,12 @@ async function applyNpcRaids(me: string, s: UserState, now: number): Promise<Use
   for (const r of raids) {
     const base = { id: `npc-${r.at}`, at: r.at, attacker: 'npc', attackerName: '침입자 길드', npc: true, revenged: true };
     if (r.attackerWon) {
-      const lost = lootAmount(gold, s.castle.level);
+      const lost = lootAmount(gold, pvpLootCap(resolveFloors(s)));
       gold -= lost;
       delta -= lost;
       log.push({ ...base, attackerWon: true, goldLost: lost });
     } else {
-      const reward = BALANCE.defenseRewardPerCastleLevel * s.castle.level;
+      const reward = waveGold(s.siege.best) * BALANCE.growth.defenseRewardWaves;
       gold += reward;
       delta += reward;
       log.push({ ...base, attackerWon: false, goldLost: 0 });
@@ -397,7 +397,7 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await rollSeason(me, await loadState(me, now), now);
-      const plan = planPassClaim(s.season);
+      const plan = planPassClaim(s.season, s.siege.best);
       if (!plan.gold && !plan.soul && plan.skins.length === 0
         && plan.claimed.free === s.season.claimed.free && plan.claimed.pass === s.season.claimed.pass) {
         throw new Error('PASS_NOTHING');
@@ -497,7 +497,7 @@ export class Server {
         state: s,
         ...(await balances(me)),
         now,
-        idlePreview: idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult) + s.siege.pendingGold,
+        idlePreview: idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult) + s.siege.pendingGold,
         // 이번에 처리된 파도 중 마지막 것만 화면에서 재생한다
         siegeLastWave: waves.length > 0 ? waves[waves.length - 1] : null,
         siegeWaveMs: BALANCE.siegeWaveMs,
@@ -515,7 +515,7 @@ export class Server {
       const now = Date.now();
       const { s } = await advanceSiege(me, await loadState(me, now), now);
       const siegeGold = s.siege.pendingGold;
-      const gold = idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult) + siegeGold;
+      const gold = idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult) + siegeGold;
       if (gold > 0) await $asset.mint('gold', gold);
       await save(me, { idle: { ...s.idle, lastClaimAt: now }, siege: { ...s.siege, pendingGold: 0 } });
       return { gold, siegeGold };

@@ -1,5 +1,6 @@
 import { BALANCE, HERO_ORDER, type HeroId, type Tactic } from './catalog';
 import { createFloorBattle, playRound, restedHeroesHp, type BattleEvent, type EnemySpec } from './battle';
+import { lordLevel } from './growth';
 import { seedFrom } from './rng';
 import type { CastleSnapshot, Run } from './state';
 
@@ -13,9 +14,9 @@ export function floorEnemies(s: CastleSnapshot, floor: number): EnemySpec[] {
   if (floor > throneIndex(s)) return [];
   if (floor === throneIndex(s)) {
     if (s.throneEmpty && !s.shadow) return [];
-    return [{ id: 'lord', level: s.castleLevel, mult: s.throneEmpty ? 0.5 : 1 }];
+    return [{ id: 'lord', level: s.lordLevel ?? lordLevel(s.castleLevel), mult: (s.mult ?? 1) * (s.throneEmpty ? 0.5 : 1) }];
   }
-  return s.floors[floor].monsters.map((m) => ({ id: m.id, level: m.level }));
+  return s.floors[floor].monsters.map((m) => (s.mult ? { id: m.id, level: m.level, mult: s.mult } : { id: m.id, level: m.level }));
 }
 
 function nextFloorWithEnemies(s: CastleSnapshot, from: number): number {

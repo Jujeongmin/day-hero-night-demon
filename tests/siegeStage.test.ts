@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../server/src/catalog';
+import { waveGold } from '../server/src/growth';
 import { runSiege, siegeWave } from '../server/src/siege';
 import type { ResolvedFloor } from '../server/src/state';
 
@@ -9,22 +10,24 @@ const weak: ResolvedFloor[] = [{ monsters: [] }];
 
 describe('siege waves', () => {
   it('a wave is three heroes at the stage level, stronger past level 20', () => {
-    expect(siegeWave(5).map((h) => [h.id, h.level, h.mult ?? 1])).toEqual([['knight', 5, 1], ['archer', 5, 1], ['priest', 5, 1]]);
-    expect(siegeWave(23)[0]).toMatchObject({ level: 20, mult: 1.3 });
+    expect(siegeWave(5).map((h) => [h.id, h.level, h.mult])).toEqual([['knight', 5, 0.5], ['archer', 5, 0.5], ['priest', 5, 0.5]]);
+    expect(siegeWave(102)[0].level).toBe(100);
+    expect(siegeWave(102)[0].mult).toBeCloseTo(0.5 * 1.15 * 1.15);
   });
 
-  it('holding climbs one stage per wave and pays stage × 1 × 3', () => {
+  it('holding climbs one stage per wave and pays the wave gold of each stage', () => {
     const r = runSiege({ account: 'a', stage: 1, lastWaveAt: 0, now: 3 * W, castleLevel: 10, floors: strong });
     expect(r.waves).toEqual([{ at: W, won: true }, { at: 2 * W, won: true }, { at: 3 * W, won: true }]);
     expect(r.stage).toBe(4);
-    expect(r.gold).toBe((1 + 2 + 3) * BALANCE.siegeGoldPerKill * 3);
+    expect(r.gold).toBe(waveGold(1) + waveGold(2) + waveGold(3));
     expect(r.lastWaveAt).toBe(3 * W);
   });
 
   it('a breach drops a stage (never below 1) and pays nothing', () => {
-    const r = runSiege({ account: 'a', stage: 3, lastWaveAt: 0, now: 2 * W + 5, castleLevel: 1, floors: weak });
+    const r = runSiege({ account: 'a', stage: 30, lastWaveAt: 0, now: 2 * W + 5, castleLevel: 1, floors: weak });
     expect(r.waves.every((w) => !w.won)).toBe(true);
-    expect(r.stage).toBe(1);
+    expect(r.stage).toBe(28);
+    expect(runSiege({ account: 'a', stage: 1, lastWaveAt: 0, now: W, castleLevel: 1, floors: [{ monsters: [] }], mult: 0.01 }).stage).toBe(1);
     expect(r.gold).toBe(0);
     expect(r.lastWaveAt).toBe(2 * W);
   });

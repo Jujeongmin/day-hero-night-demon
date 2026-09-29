@@ -1,43 +1,31 @@
 import { describe, expect, it } from 'vitest';
 import { simulateAuto } from '../server/src/battle';
-import type { MonsterId } from '../server/src/catalog';
-import { floorsUnlocked } from '../server/src/economy';
-import { rngNext, seedFrom } from '../server/src/rng';
+import { npcCastle } from '../server/src/npc';
+import { floorEnemies, throneIndex } from '../server/src/raid';
 
-const POOL: MonsterId[] = ['slime', 'skeleton', 'imp', 'spider'];
-
-function winRate(stage: number, samples = 400): number {
-  const castleLevel = Math.min(10, 1 + Math.floor(stage / 2));
+/** 용사 셋이 모두 Lv t 일 때, 같은 등급(t) NPC 성을 이기는 비율 */
+function winRate(tier: number, samples = 300): number {
   let wins = 0;
   for (let i = 0; i < samples; i++) {
-    let s = seedFrom('balance', stage, i);
+    const c = npcCastle(tier, `b${i}`);
     const floors = [];
-    for (let f = 0; f < floorsUnlocked(castleLevel); f++) {
-      const enemies = [];
-      for (let j = 0; j < 3; j++) {
-        const r = rngNext(s);
-        s = r.state;
-        enemies.push({ id: POOL[Math.floor(r.value * POOL.length)], level: stage });
-      }
-      floors.push({ enemies });
-    }
-    floors.push({ enemies: [{ id: 'lord' as const, level: castleLevel }] });
+    for (let f = 0; f <= throneIndex(c); f++) floors.push({ enemies: floorEnemies(c, f) });
     const r = simulateAuto({
-      heroes: [{ id: 'knight', level: stage }, { id: 'archer', level: stage }, { id: 'priest', level: stage }],
+      heroes: [{ id: 'knight', level: tier }, { id: 'archer', level: tier }, { id: 'priest', level: tier }],
       floors,
-      seed: s,
+      seed: i + 1,
     });
     if (r.won) wins += 1;
   }
   return wins / samples;
 }
 
-// 목표는 55~75%. 함정 폐기 + 몬스터 공격력 ×1.1(A안, 2026-09-29) 측정치 51~73%라 여유를 두고 50~80%로 막는다.
+// 큰 숫자 성장(2026-09-29): 등급 NPC의 층 수별 배수(1 / 0.95 / 0.92)로 "보통" 승률을 약 60~65%에 맞췄다. 50~80%로 막는다.
 describe('balance', () => {
-  for (const stage of [1, 5, 10, 15, 20]) {
-    it(`stage ${stage}: attacker win rate is 50–80%`, () => {
-      const rate = winRate(stage);
-      console.log(`stage ${stage}: ${(rate * 100).toFixed(1)}%`);
+  for (const tier of [1, 5, 10, 15, 25, 40, 70, 100]) {
+    it(`tier ${tier}: same-level heroes win 50–80%`, () => {
+      const rate = winRate(tier);
+      console.log(`tier ${tier}: ${(rate * 100).toFixed(1)}%`);
       expect(rate).toBeGreaterThanOrEqual(0.5);
       expect(rate).toBeLessThanOrEqual(0.8);
     });

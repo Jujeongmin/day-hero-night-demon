@@ -33,10 +33,10 @@ describe('planAdReward', () => {
   });
 
   it('idle double: pays twice the idle income now, three a day, nothing to double → refused', () => {
-    let s = { ...fresh(), idle: { lastClaimAt: NOW - 2 * H, lastRaidAt: NOW, mult: 1 as const }, siege: { stage: 5, lastWaveAt: NOW, pendingGold: 30 } };
+    let s = { ...fresh(), idle: { lastClaimAt: NOW - 2 * H, lastRaidAt: NOW, mult: 1 as const }, siege: { stage: 5, lastWaveAt: NOW, pendingGold: 30, best: 1 } };
     const r = planAdReward(s, 'idle_double', NOW);
-    // 2시간 방치 120 + 쌓인 공성 골드 30 의 두 배
-    expect(r).toMatchObject({ ok: true, gold: 2 * (120 + 30), soul: 0 });
+    // 2시간 방치(최고 1단계: 시간당 파도 골드 15 × 5 = 75) 150 + 쌓인 공성 골드 30 의 두 배
+    expect(r).toMatchObject({ ok: true, gold: 2 * (150 + 30), soul: 0 });
     s = apply(s, r);
     expect(s.idle.lastClaimAt).toBe(NOW);
     expect(s.siege.pendingGold).toBe(0);

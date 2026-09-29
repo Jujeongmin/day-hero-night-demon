@@ -1,4 +1,5 @@
 import { BALANCE } from './catalog';
+import { scaledGold } from './growth';
 import type { UserState } from './state';
 
 /** 웹훅이 지급할 수 있는 모든 상품. 폐기 상품(대시보드에서 끔)도 끄기 전 결제분을 위해 남긴다. */
@@ -19,7 +20,7 @@ export function grantFor(productId: string, quantity: number, s: UserState): Gra
   const q = Math.max(1, Math.floor(Number(quantity) || 1));
   switch (productId) {
     case 'starter_pack':
-      return { patch: { roster: { ...s.roster, necro: s.roster.necro ?? { level: 1 } } }, gold: BALANCE.starterGold, soul: BALANCE.starterSoul };
+      return { patch: { roster: { ...s.roster, necro: s.roster.necro ?? { level: 1 } } }, gold: scaledGold(BALANCE.starterGold, (s.siege?.best ?? 1)), soul: BALANCE.starterSoul };
     case 'recruit_dragon':
       return { patch: { roster: { ...s.roster, dragon: s.roster.dragon ?? { level: 1 } } }, gold: 0, soul: 0 };
     case 'idle_x2':
@@ -32,7 +33,7 @@ export function grantFor(productId: string, quantity: number, s: UserState): Gra
     case 'revenge_ticket':
       return { patch: { credits: { ...s.credits, revenge: s.credits.revenge + BALANCE.revengePerBuy * q } }, gold: 0, soul: 0 };
     case 'daily_supply':
-      return { patch: {}, gold: BALANCE.dailySupplyGold * q, soul: BALANCE.dailySupplySoul * q };
+      return { patch: {}, gold: scaledGold(BALANCE.dailySupplyGold, (s.siege?.best ?? 1)) * q, soul: BALANCE.dailySupplySoul * q };
     case 'speed_x3':
       return { patch: { perks: { ...s.perks, speed3: true } }, gold: 0, soul: 0 };
     case 'premium':

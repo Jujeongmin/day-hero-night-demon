@@ -24,9 +24,9 @@ describe('home & economy', () => {
   test('upgrade spends gold and raises the level', async (server) => {
     server.connect({ account: 't5-carol' });
     await server.getHome();
-    expect((await server.upgrade('monster', 'slime')).cost).toBe(100);
+    expect((await server.upgrade('monster', 'slime')).cost).toBe(50);
     const home = await server.getHome();
-    expect(home.gold).toBe(200);
+    expect(home.gold).toBe(250);
     expect(home.state.roster.slime.level).toBe(2);
   });
 
@@ -350,7 +350,7 @@ describe('siege', () => {
   test('siege ranking starts at stage 1 and home shows a power number', async (server) => {
     server.connect({ account: 't51-siege' });
     const home = await server.getHome();
-    expect(home.power).toBeGreaterThan(0);
+    expect(home.power).toBe(100);
     expect(home.state.siege.best).toBe(1);
     const r = await server.getSiegeRanking();
     expect(r.myBest).toBe(1);

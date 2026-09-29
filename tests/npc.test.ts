@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { simulateAuto } from '../server/src/battle';
-import { npcCastle, npcRaids, npcTierForPower, TUTORIAL_TARGET, tutorialCastle } from '../server/src/npc';
+import { npcCastle, npcRaids, npcTiersFor, TUTORIAL_TARGET, tutorialCastle } from '../server/src/npc';
 import { floorEnemies, throneIndex } from '../server/src/raid';
 
 const H = 3_600_000;
 
 describe('npc', () => {
-  it('npc castles are deterministic and scale with tier', () => {
+  it('npc tier castles are the same for everyone: tier = monster and lord level, floors 1 → 2 → 3', () => {
     expect(npcCastle(3, 'k')).toEqual(npcCastle(3, 'k'));
-    expect(npcCastle(1, 'k').floors).toHaveLength(1);
-    expect(npcCastle(10, 'k').floors).toHaveLength(3);
-    expect(npcCastle(10, 'k').floors[0].monsters[0].level).toBe(19);
+    expect(npcCastle(10, 'k').floors).toHaveLength(1);
+    expect(npcCastle(11, 'k').floors).toHaveLength(2);
+    expect(npcCastle(31, 'k').floors).toHaveLength(3);
+    expect(npcCastle(40, 'k').floors[0].monsters[0].level).toBe(40);
+    expect(npcCastle(40, 'k').lordLevel).toBe(40);
+    expect(npcCastle(40, 'k').mult).toBe(0.92);
+    expect(npcCastle(102, 'k').floors[0].monsters[0].level).toBe(100);
   });
 
   it('intro castle (tier 0) is always beaten by lv1 heroes', () => {
@@ -26,10 +30,9 @@ describe('npc', () => {
     }
   });
 
-  it('tier follows power', () => {
-    expect(npcTierForPower(4)).toBe(1);
-    expect(npcTierForPower(40)).toBe(5);
-    expect(npcTierForPower(500)).toBe(10);
+  it('the raid list offers tiers around the average hero level: easy, normal, hard', () => {
+    expect(npcTiersFor({ knight: { level: 1 }, archer: { level: 1 }, priest: { level: 1 } })).toEqual([1, 1, 2]);
+    expect(npcTiersFor({ knight: { level: 10 }, archer: { level: 8 }, priest: { level: 12 } })).toEqual([9, 10, 11]);
   });
 
   it('npc raids: one per 2h, max 4, remainder kept', () => {
