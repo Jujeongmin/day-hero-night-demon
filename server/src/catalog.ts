@@ -44,13 +44,13 @@ export const HEROES: Record<HeroId, HeroDef> = {
 
 export const LORD = {
   name: '마왕',
-  stats: { hp: 300, atk: 22, def: 8, spd: 4 } as Stats,
+  stats: { hp: 390, atk: 31, def: 8, spd: 4 } as Stats,
   skill: 'dark_wave' as SkillId,
   cooldown: 3,
 };
 
 export const TRAPS: Record<TrapId, { id: TrapId; name: string; damage: number; unlockCastleLevel: number }> = {
-  spikes: { id: 'spikes', name: '가시', damage: 15, unlockCastleLevel: 1 },
+  spikes: { id: 'spikes', name: '가시', damage: 10, unlockCastleLevel: 1 },
   flame:  { id: 'flame',  name: '불꽃', damage: 25, unlockCastleLevel: 3 },
 };
 
@@ -63,6 +63,8 @@ export const BALANCE = {
   maxCastleLevel: 10,
   maxRounds: 30,
   ultChargePerRound: 34,
+  /** 층을 넘어갈 때 살아 있는 용사가 회복하는 최대 체력 비율 */
+  floorRestHeal: 0.1,
   idleGoldPerCastleLevelHour: 60,
   idleCapHours: 8,
   lootRate: 0.1,

@@ -1,5 +1,5 @@
 import { BALANCE, HERO_ORDER, type HeroId, type Tactic } from './catalog';
-import { createFloorBattle, heroesHp, playRound, type BattleEvent, type EnemySpec } from './battle';
+import { createFloorBattle, playRound, restedHeroesHp, type BattleEvent, type EnemySpec } from './battle';
 import { seedFrom } from './rng';
 import type { CastleSnapshot, Run } from './state';
 
@@ -59,7 +59,7 @@ function settle(run: Run, events: BattleEvent[]): { run: Run; events: BattleEven
   return {
     run: {
       ...run,
-      heroesHp: heroesHp(run.battle),
+      heroesHp: restedHeroesHp(run.battle),
       battle: null,
       tactic: null,
       floor: nextFloorWithEnemies(run.snapshot, run.floor + 1),

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { BALANCE } from '../server/src/catalog';
+import { BALANCE, TRAPS } from '../server/src/catalog';
 import {
-  createFloorBattle, heroesHp, playRound, simulateAuto, ultReady,
+  createFloorBattle, heroesHp, playRound, restedHeroesHp, simulateAuto, ultReady,
   type BattleEvent, type FloorBattle,
 } from '../server/src/battle';
 
@@ -85,7 +85,7 @@ describe('battle', () => {
     const { events } = createFloorBattle({ heroes: heroes(1), enemies: [{ id: 'slime', level: 1 }], trap: { id: 'spikes', level: 1 }, tactic: 'charge', seed: 7 });
     const traps = events.filter((e) => e.t === 'trap');
     expect(traps).toHaveLength(3);
-    for (const e of traps) expect(e.t === 'trap' && e.dmg).toBe(15);
+    for (const e of traps) expect(e.t === 'trap' && e.dmg).toBe(TRAPS.spikes.damage);
   });
 
   it('flame hits one hero on even rounds', () => {
@@ -109,6 +109,18 @@ describe('battle', () => {
     const hp = heroesHp(fightToEnd(battle).battle);
     expect(Object.keys(hp).sort()).toEqual(['archer', 'knight', 'priest']);
     expect(hp.knight).toBeGreaterThan(0);
+  });
+
+  it('restedHeroesHp heals survivors by floorRestHeal of max HP, capped, and leaves the fallen down', () => {
+    const { battle } = createFloorBattle({ heroes: heroes(1), enemies: [{ id: 'slime', level: 1 }], trap: null, tactic: 'charge', seed: 13 });
+    const [knight, archer, priest] = battle.fighters.filter((f) => f.side === 'hero');
+    knight.hp = 10;
+    archer.hp = 0;
+    priest.hp = priest.maxHp - 1;
+    const hp = restedHeroesHp(battle);
+    expect(hp.knight).toBe(10 + Math.round(knight.maxHp * BALANCE.floorRestHeal));
+    expect(hp.archer).toBe(0);
+    expect(hp.priest).toBe(priest.maxHp);
   });
 
   it('simulateAuto clears all floors and skips empty ones', () => {

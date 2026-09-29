@@ -147,6 +147,16 @@ export function heroesHp(b: FloorBattle): Partial<Record<HeroId, number>> {
   return out;
 }
 
+/** 층을 깬 뒤 다음 층으로 가져갈 용사 체력: 살아 있으면 최대 체력의 floorRestHeal만큼 회복 */
+export function restedHeroesHp(b: FloorBattle): Partial<Record<HeroId, number>> {
+  const out: Partial<Record<HeroId, number>> = {};
+  for (const f of b.fighters) {
+    if (f.side !== 'hero') continue;
+    out[f.kind as HeroId] = f.hp > 0 ? Math.min(f.maxHp, f.hp + Math.round(f.maxHp * BALANCE.floorRestHeal)) : 0;
+  }
+  return out;
+}
+
 export function firstAliveHero(b: FloorBattle): HeroId | null {
   const f = b.fighters.find((x) => x.side === 'hero' && x.hp > 0);
   return f ? (f.kind as HeroId) : null;
@@ -168,7 +178,7 @@ export function simulateAuto(input: {
       battle = playRound(battle, ultReady(battle) ? firstAliveHero(battle) : null).battle;
     }
     if (battle.outcome === 'lost') return { won: false, floorsCleared: i };
-    hp = heroesHp(battle);
+    hp = restedHeroesHp(battle);
     seed = battle.rng;
   }
   return { won: true, floorsCleared: input.floors.length };
