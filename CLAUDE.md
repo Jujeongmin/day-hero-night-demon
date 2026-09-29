@@ -314,6 +314,8 @@ Verse8 공식 기능이 존재하는 영역을 불필요하게 자체 구현하�
 
 새 세션에는 이전 대화 기억이 없다. 아래 순서로 시작한다.
 
+0. 코드 받기: GitHub 공개 저장소 `https://github.com/Jujeongmin/day-hero-night-demon`(원격 이름 `github`)에서 clone한다. 배포(Agent8 빌드)는 Verse8 GitLab 원격 `origin`의 develop 브랜치 push로만 된다 — 새 PC에서는 GitLab 주소(접근 토큰 포함)를 사용자에게 받아 `git remote add origin …`으로 따로 붙인다. 토큰은 파일·출력에 쓰지 않는다. 작업 후에는 두 원격 모두에 push한다(`git push origin develop`, `git push github develop`).
+
 1. 현재 상태: `PROJECT/Status.md` (된 것·남은 것), 결정 기록: `docs/ui-style.md`, `docs/art-style.md`, `docs/vxshop-products.md`. 계획서의 Task 15(사용자 작업)·20이 남았다. Task 19 밸런스는 2026-09-29 B안으로 끝.
 2. 준비: `npm install`, `cd server && npm install` (서버 타입 검사용). `.env`(VITE_AGENT8_VERSE/ACCOUNT)는 저장소에 들어 있다.
 3. 확인: `npm test`(vitest 143개), `npm run test:server`(하네스 25개), `npx tsc --noEmit -p tsconfig.app.json`, `npx tsc -p server/tsconfig.json --noEmit`.
