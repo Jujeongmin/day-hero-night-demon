@@ -141,3 +141,29 @@ canvas.battle {
 @media (prefers-reduced-motion: reduce) {
   .sprite, .chip.hint, .float-idle { animation: none; }
 }
+
+/* 컷신 */
+.cutscene { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 48px 16px 24px; background: var(--night); cursor: pointer; user-select: none; }
+.cut-img { width: min(100%, 58vh); aspect-ratio: 1; image-rendering: pixelated; }
+.cut-line {
+  width: min(100%, 58vh); margin: 0; min-height: 64px; font-size: 17px; line-height: 1.4;
+  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 fill / 12px stretch; image-rendering: pixelated;
+}
+.cut-title-wrap { position: relative; width: min(100%, 58vh); display: grid; place-items: center; }
+.cut-title-wrap > * { grid-area: 1 / 1; }
+.cut-img.dim { width: 100%; filter: brightness(.55); }
+.cut-title { position: relative; align-self: end; margin: 0 0 6%; font-weight: 400; font-size: 34px; color: var(--bone); text-shadow: 0 2px 0 #000, 0 0 12px #ff4a5e88; text-align: center; }
+.cut-skip { position: absolute; right: 8px; top: 8px; }
+
+/* 닉네임 */
+.nick-screen { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px; background: var(--night); }
+.nick-lord { width: min(70%, 34vh); aspect-ratio: 1; image-rendering: pixelated; }
+.nick-box {
+  width: min(100%, 360px); display: flex; flex-direction: column; gap: 8px; align-items: stretch; text-align: center;
+  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 fill / 12px stretch; image-rendering: pixelated;
+}
+.nick-box h2 { margin: 0; font-weight: 400; color: var(--bone); }
+.nick-input {
+  font: inherit; font-size: 20px; text-align: center; color: var(--text); background: none; min-width: 0;
+  border: 8px solid transparent; border-image: url(/ui/pill.png) 8 fill / 8px stretch; image-rendering: pixelated; padding: 4px;
+}

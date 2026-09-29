@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useGameServer, useGlobalMyState } from '@agent8/gameserver';
-import type { UserState } from '../server/src/state';
+import type { OnboardingStage, UserState } from '../server/src/state';
 import { createApi, errorText, type EndResult, type HomeData } from './services/api';
 import { T } from './strings/ko';
 import CastleScene from './screens/CastleScene';
@@ -12,6 +12,8 @@ import Upgrade from './screens/Upgrade';
 import Log from './screens/Log';
 import Shop from './screens/Shop';
 import League from './screens/League';
+import Cutscene from './screens/Cutscene';
+import Nickname from './screens/Nickname';
 import { startShop, type ShopItem } from './services/shop';
 import { isMuted, playBgm, setMuted, sfx, unlockAudio } from './services/audio';
 import { preloadSprites } from './render/battleCanvas';
@@ -146,6 +148,36 @@ export default function App() {
 
   if (!connected || !api) return <div className="center">{T.connecting}</div>;
   if (!home) return <div className="center">{T.loading}</div>;
+
+  // 서버가 아직 옛 버전이면(배포 사이) 온보딩 칸이 없다. 그때는 평소 화면을 그린다
+  const stage: OnboardingStage = home.state.onboarding?.at ?? 'done';
+
+  const advance = async (to: OnboardingStage) => {
+    try {
+      await api.advanceOnboarding(to);
+      await refresh();
+    } catch (e) {
+      onError(errorText(e));
+    }
+  };
+
+  if (stage === 'cutscene') {
+    return (
+      <div className="app">
+        <Cutscene onDone={() => void advance('nickname')} />
+        {toast && <div className="toast">{toast}</div>}
+      </div>
+    );
+  }
+
+  if (stage === 'nickname' || home.state.onboarding?.nicknameSet === false) {
+    return (
+      <div className="app">
+        <Nickname api={api} onDone={refresh} onError={onError} />
+        {toast && <div className="toast">{toast}</div>}
+      </div>
+    );
+  }
 
   const startRaid = () => {
     setPanel(null);
