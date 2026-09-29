@@ -8,6 +8,7 @@ import { checkNickname, nicknameKey } from './nickname';
 import { npcCastle, npcRaids, npcTierForPower, TUTORIAL_TARGET, tutorialCastle } from './npc';
 import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun } from './raid';
 import { planAdReward, verifyAdRequest } from './ads';
+import { chooseLordSkin, planPassClaim } from './pass';
 import { grantFor } from './purchases';
 import { rngNext, seedFrom } from './rng';
 import {
@@ -115,7 +116,11 @@ async function buildSnapshot(target: string, now: number): Promise<CastleSnapsho
     floors: resolveFloors(d),
     throneEmpty: false,
     shadow: false,
-    ...(d.season.pass ? { lordSkin: 'skull' as const } : {}),
+    ...(() => {
+      const w = withDefaults(d);
+      const skin = chooseLordSkin(w.lordSkin, w.skins, w.season.pass && w.season.id === seasonIdAt(now));
+      return skin ? { lordSkin: skin } : {};
+    })(),
   };
 }
 
@@ -234,10 +239,11 @@ async function rollSeason(account: string, s: UserState, now: number): Promise<U
       s.season.bracketId, seasonStartOf(s.season.id), end,
     );
     const me = ranked.find((r) => r.id === account);
-    if (me) soul = seasonRewardSoul(me.rank, s.season.pass);
+    if (me) soul = seasonRewardSoul(me.rank);
   }
   if (soul) await $asset.mint('soul', soul, account);
-  const season = { id: current, bracketId: null, honor: 0, pass: false, rewardedFor: s.season.id };
+  // 안 받은 패스 보상은 시즌과 함께 사라진다(트랙 화면에 안내)
+  const season = { id: current, bracketId: null, honor: 0, pass: false, rewardedFor: s.season.id, claimed: { free: 0, pass: 0 } };
   await save(account, { season });
   return { ...s, season };
 }
@@ -340,6 +346,37 @@ export class Server {
       if (plan.soul) await $asset.mint('soul', plan.soul);
       await save(me, plan.patch);
       return { gold: plan.gold, soul: plan.soul };
+    });
+  }
+
+  async claimPassRewards() {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await rollSeason(me, await loadState(me, now), now);
+      const plan = planPassClaim(s.season);
+      if (!plan.gold && !plan.soul && plan.skins.length === 0
+        && plan.claimed.free === s.season.claimed.free && plan.claimed.pass === s.season.claimed.pass) {
+        throw new Error('PASS_NOTHING');
+      }
+      if (plan.gold) await $asset.mint('gold', plan.gold);
+      if (plan.soul) await $asset.mint('soul', plan.soul);
+      const skins = [...new Set([...s.skins, ...plan.skins])];
+      await save(me, { season: { ...s.season, claimed: plan.claimed }, skins });
+      return { gold: plan.gold, soul: plan.soul, skins: plan.skins };
+    });
+  }
+
+  async setLordSkin(skin: string) {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      const ok = skin === 'base' || (skin === 'skull' && s.season.pass) || (skin === 'dragon' && s.skins.includes('dragon'));
+      if (!ok) throw new Error('SKIN_NOT_OWNED');
+      const lordSkin = skin as UserState['lordSkin'];
+      await save(me, { lordSkin });
+      return { lordSkin };
     });
   }
 

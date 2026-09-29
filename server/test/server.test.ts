@@ -317,3 +317,19 @@ describe('ads', () => {
     expect((await server.getHome()).state.idleBoost.until).toBeGreaterThan(Date.now());
   });
 });
+
+describe('season pass track', () => {
+  test('nothing to claim before the first tier', async (server) => {
+    server.connect({ account: 't40-pass' });
+    await server.getHome();
+    expect(await fails(server.claimPassRewards())).toBe(true);
+  });
+
+  test('the lord look can only be set to an owned one', async (server) => {
+    server.connect({ account: 't40-skin' });
+    await server.getHome();
+    expect(await fails(server.setLordSkin('dragon'))).toBe(true);
+    expect(await fails(server.setLordSkin('gold'))).toBe(true);
+    expect((await server.setLordSkin('base')).lordSkin).toBe('base');
+  });
+});

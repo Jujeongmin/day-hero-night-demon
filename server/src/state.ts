@@ -9,7 +9,7 @@ export interface ResolvedFloor {
 }
 
 /** 시즌 패스 보유자의 한정 마왕 외형. 표시용이며 전투 수치에는 영향이 없다. */
-export type LordSkin = 'skull';
+export type LordSkin = 'skull' | 'dragon';
 
 export interface CastleSnapshot {
   owner: string;
@@ -63,6 +63,8 @@ export interface SeasonState {
   honor: number;
   pass: boolean;
   rewardedFor: string | null;
+  /** 패스 트랙에서 받은 마지막 단계 (무료 줄·패스 줄) */
+  claimed: { free: number; pass: number };
 }
 
 /** 첫 실행 흐름. 서버가 앞으로만 움직이게 막는다. */
@@ -116,6 +118,9 @@ export interface UserState {
   idleBoost: { from: number; until: number } | null;
   /** VX 영구 상품 */
   perks: { speed3: boolean; premium: boolean };
+  /** 영구 소장 마왕 외형과 고른 외형(null = 자동: 패스면 해골) */
+  skins: string[];
+  lordSkin: 'base' | LordSkin | null;
 }
 
 export function isNew(raw: unknown): boolean {
@@ -156,7 +161,7 @@ export function defaultState(account: string, now: number, seasonId: string): Us
     lastTargets: [],
     raidLog: introLog(now),
     revengeUsed: { day: '', count: 0 },
-    season: { id: seasonId, bracketId: null, honor: 0, pass: false, rewardedFor: null },
+    season: { id: seasonId, bracketId: null, honor: 0, pass: false, rewardedFor: null, claimed: { free: 0, pass: 0 } },
     introDone: false,
     firstWinDay: null,
     starterOffered: false,
@@ -165,6 +170,8 @@ export function defaultState(account: string, now: number, seasonId: string): Us
     ads: { day: '', counts: {} },
     idleBoost: null,
     perks: { speed3: false, premium: false },
+    skins: [],
+    lordSkin: null,
   };
 }
 
@@ -186,6 +193,9 @@ export function withDefaults(s: UserState): UserState {
     ads: s.ads ?? { day: '', counts: {} },
     idleBoost: s.idleBoost ?? null,
     perks: s.perks ?? { speed3: false, premium: false },
+    season: { ...s.season, claimed: s.season.claimed ?? { free: 0, pass: 0 } },
+    skins: s.skins ?? [],
+    lordSkin: s.lordSkin ?? null,
   };
 }
 
@@ -213,5 +223,7 @@ export function resetState(s: UserState, now: number): UserState {
     // 오늘 광고 횟수는 초기화로 다시 받지 못하게, 영구 상품은 결제라 남긴다
     ads: s.ads,
     perks: s.perks,
+    skins: s.skins,
+    lordSkin: s.lordSkin,
   };
 }

@@ -4,6 +4,7 @@ import { floorsUnlocked } from '../../server/src/economy';
 import AdButton from '../render/AdButton';
 import Sprite from '../render/Sprite';
 import { adsLeft } from '../services/ads';
+import { chooseLordSkin } from '../../server/src/pass';
 import { lordSpriteId } from '../render/skins';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
@@ -86,7 +87,7 @@ export default function CastleScene(props: {
         <img src="sprites/tower.png" alt="" draggable={false} />
 
         <div className="unit-at" style={at(50, THRONE.stand)}>
-          <Sprite id={lordSpriteId(s.season.pass ? 'skull' : undefined)} label={LORD.name} scale={unitScale} />
+          <Sprite id={lordSpriteId(chooseLordSkin(s.lordSkin ?? null, s.skins ?? [], s.season.pass))} label={LORD.name} scale={unitScale} />
         </div>
 
         {TIERS.map((tier, i) => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { floorBgId } from '../src/render/skins';
+import { floorBgId, lordSpriteId } from '../src/render/skins';
 
 describe('floorBgId', () => {
   it('uses one background per monster floor and a throne room for the last stage', () => {
@@ -12,5 +12,12 @@ describe('floorBgId', () => {
   it('a one-floor castle goes straight from floor 1 to the throne room', () => {
     expect(floorBgId(0, 1)).toBe('bg_floor1');
     expect(floorBgId(1, 1)).toBe('bg_throne');
+  });
+});
+
+describe('lordSpriteId', () => {
+  it('uses the look sheet when it exists, otherwise the base lord', () => {
+    expect(lordSpriteId(undefined)).toBe('lord');
+    expect(lordSpriteId('skull')).toBe('lord_skull');
   });
 });

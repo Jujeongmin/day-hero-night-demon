@@ -49,7 +49,6 @@ describe('league', () => {
   });
 
   it('season rewards', () => {
-    expect([1, 2, 3, 4, 10, 11].map((r) => seasonRewardSoul(r, false))).toEqual([100, 60, 60, 30, 30, 10]);
-    expect(seasonRewardSoul(1, true)).toBe(200);
+    expect([1, 2, 3, 4, 10, 11].map((r) => seasonRewardSoul(r))).toEqual([100, 60, 60, 30, 30, 10]);
   });
 });

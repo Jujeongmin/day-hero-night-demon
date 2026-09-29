@@ -60,7 +60,7 @@ export function rankBracket(
   });
 }
 
-export function seasonRewardSoul(rank: number, pass: boolean): number {
+export function seasonRewardSoul(rank: number): number {
   const base = rank === 1 ? 100 : rank <= 3 ? 60 : rank <= 10 ? 30 : 10;
-  return pass ? base * 2 : base;
+  return base;
 }

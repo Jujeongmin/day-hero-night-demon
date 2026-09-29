@@ -57,6 +57,9 @@ export const TRAPS: Record<TrapId, { id: TrapId; name: string; damage: number; u
 export const HERO_ORDER: HeroId[] = ['knight', 'archer', 'priest'];
 export const TACTICS: Tactic[] = ['charge', 'guard', 'focus'];
 
+/** 패스 한 칸 보상. skin은 영구 소장 마왕 외형 */
+export interface PassReward { gold?: number; soul?: number; skin?: 'dragon' }
+
 export const BALANCE = {
   levelScale: 0.1,
   maxUnitLevel: 20,
@@ -82,6 +85,20 @@ export const BALANCE = {
   seasonMs: 14 * 86_400_000,
   seasonEpoch: Date.UTC(2026, 9, 12),
   bracketSize: 30,
+  /** 시즌 패스 트랙: 명예 이만큼마다 1단계 (2026-09-29 승인) */
+  passTierHonor: 150,
+  passTiers: [
+    { free: { gold: 500 }, pass: { gold: 2000 } },
+    { free: { soul: 5 }, pass: { soul: 20 } },
+    { free: { gold: 1000 }, pass: { gold: 4000 } },
+    { free: { soul: 5 }, pass: { soul: 30 } },
+    { free: { gold: 1500 }, pass: { gold: 6000 } },
+    { free: { soul: 10 }, pass: { soul: 40 } },
+    { free: { gold: 2000 }, pass: { gold: 8000 } },
+    { free: { soul: 10 }, pass: { soul: 50 } },
+    { free: { gold: 3000 }, pass: { gold: 10000 } },
+    { free: { soul: 20 }, pass: { soul: 60, skin: 'dragon' } },
+  ] as { free: PassReward; pass: PassReward }[],
   /** VX 상품 1개당 지급량 (가격은 대시보드가 정한다) */
   starterGold: 5000,
   starterSoul: 30,

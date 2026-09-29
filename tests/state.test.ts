@@ -98,7 +98,7 @@ describe('resetState', () => {
     expect(r.roster).toEqual({ slime: { level: 1 }, skeleton: { level: 1 }, necro: { level: 1 }, dragon: { level: 1 } });
     expect(r.idle).toEqual({ lastClaimAt: 5_000, lastRaidAt: 5_000, mult: 2 });
     expect(r.credits).toEqual({ revive: 2, revenge: 3 }); // 옛 대역 횟수는 버린다
-    expect(r.season).toEqual({ id: 's1', bracketId: null, honor: 0, pass: true, rewardedFor: null });
+    expect(r.season).toEqual({ id: 's1', bracketId: null, honor: 0, pass: true, rewardedFor: null, claimed: { free: 0, pass: 0 } });
     expect(r.profile).toEqual(s.profile);
     expect(r.processedPurchases).toEqual(['p1', 'p2']);
     expect(r.onboarding).toEqual({ at: 'done', nicknameSet: true });
