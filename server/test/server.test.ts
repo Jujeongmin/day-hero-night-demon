@@ -285,3 +285,22 @@ describe('onboarding', () => {
     expect((await server.advanceOnboarding('done')).onboarding.at).toBe('done');
   });
 });
+
+describe('reset', () => {
+  test('reset wants the exact confirm word, refuses mid-raid, and keeps purchases', async (server) => {
+    server.connect({ account: 't21-reset' });
+    await server.getHome();
+    await server.upgrade('monster', 'slime');
+    expect(await fails(server.resetProgress('초기화 '))).toBe(true);
+    const targets = await server.findTargets();
+    await server.startRaid(targets[0].id, false);
+    expect(await fails(server.resetProgress('초기화'))).toBe(true);
+    await server.endRaid(true);
+    await server.resetProgress('초기화');
+    const home = await server.getHome();
+    expect(home.gold).toBe(300);
+    expect(home.soul).toBe(0);
+    expect(home.state.roster.slime.level).toBe(1);
+    expect(home.state.onboarding.at).toBe('done');
+  });
+});

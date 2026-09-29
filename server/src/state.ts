@@ -179,3 +179,27 @@ export function withDefaults(s: UserState): UserState {
   const profile = { ...s.profile, nicknameChanges: s.profile.nicknameChanges ?? 0 };
   return { ...s, onboarding, profile };
 }
+
+/** 설정의 데이터 초기화. 진행만 지우고 결제로 얻은 것·닉네임·중복 지급 방지 기록은 남긴다. */
+export function resetState(s: UserState, now: number): UserState {
+  const fresh = defaultState('', now, s.season.id);
+  const paid: UserState['roster'] = {};
+  if (s.roster.necro) paid.necro = { level: 1 };
+  if (s.roster.dragon) paid.dragon = { level: 1 };
+  return {
+    ...fresh,
+    profile: s.profile,
+    roster: { ...fresh.roster, ...paid },
+    idle: { ...fresh.idle, mult: s.idle.mult },
+    credits: s.credits,
+    raidLog: [],
+    // 같은 날 첫 승리 영혼석·무료 복수 횟수를 초기화로 다시 받지 못하게 그대로 둔다
+    firstWinDay: s.firstWinDay,
+    revengeUsed: s.revengeUsed,
+    season: { ...fresh.season, id: s.season.id, pass: s.season.pass, rewardedFor: s.season.rewardedFor },
+    introDone: true,
+    starterOffered: s.starterOffered,
+    processedPurchases: s.processedPurchases,
+    onboarding: { at: 'done', nicknameSet: s.onboarding.nicknameSet },
+  };
+}

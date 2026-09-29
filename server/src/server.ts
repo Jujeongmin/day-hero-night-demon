@@ -10,7 +10,7 @@ import { advanceRound, beginFloor, extendAway, lordDefeated, reviveRun, runStatu
 import { grantFor } from './purchases';
 import { rngNext, seedFrom } from './rng';
 import {
-  canAdvance, dayKey, defaultState, isNew, isStage, resolveFloors, withDefaults,
+  canAdvance, dayKey, defaultState, isNew, isStage, resetState, resolveFloors, withDefaults,
   type CastleSnapshot, type OnboardingState, type RaidLogEntry, type Run, type Target, type UserState,
 } from './state';
 
@@ -319,6 +319,31 @@ export class Server {
       const onboarding: OnboardingState = { ...s.onboarding, at: to };
       await save(me, { onboarding });
       return { onboarding };
+    });
+  }
+
+  async resetProgress(confirmText: string) {
+    const me = $sender.account;
+    if (confirmText !== '초기화') throw new Error('RESET_CONFIRM');
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      if (s.run) throw new Error('RESET_IN_RAID');
+      const next = resetState(s, now);
+      const b = await balances(me);
+      if (b.gold > 0) await $asset.burn('gold', b.gold);
+      if (b.soul > 0) await $asset.burn('soul', b.soul);
+      await $asset.mint('gold', BALANCE.startGold);
+      if (s.season.bracketId) {
+        try {
+          await $global.deleteCollectionItem(leagueCollection(s.season.id), me);
+        } catch {
+          // 리그 항목이 없으면 지울 것도 없다
+        }
+      }
+      await $global.updateUserState(me, next);
+      await syncCastle(me, next);
+      return { ok: true as const };
     });
   }
 

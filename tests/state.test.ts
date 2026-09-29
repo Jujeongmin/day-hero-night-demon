@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canAdvance, dayKey, defaultState, isNew, nicknameFor, resolveFloors, withDefaults, type UserState } from '../server/src/state';
+import { canAdvance, dayKey, defaultState, isNew, nicknameFor, resolveFloors, resetState, withDefaults, type UserState } from '../server/src/state';
 
 describe('state', () => {
   it('treats empty or unversioned state as new', () => {
@@ -72,5 +72,38 @@ describe('onboarding', () => {
     expect(canAdvance('end', 'done')).toBe(true);
     expect(canAdvance('place_slot', 'raid_sortie')).toBe(false);
     expect(canAdvance('done', 'done')).toBe(false);
+  });
+});
+
+describe('resetState', () => {
+  it('wipes progress but keeps purchases, nickname and finished onboarding', () => {
+    const s0 = defaultState('0xaaaa1111', 1, 's1');
+    const s = {
+      ...s0,
+      profile: { nickname: '검은마왕', createdAt: 1, nicknameChanges: 1 },
+      castle: { level: 5, floors: [{ monsters: ['dragon', 'necro', 'imp'], trap: 'flame' }] },
+      roster: { slime: { level: 9 }, skeleton: { level: 7 }, imp: { level: 4 }, necro: { level: 6 }, dragon: { level: 8 } },
+      heroes: { knight: { level: 9 }, archer: { level: 9 }, priest: { level: 9 } },
+      idle: { lastClaimAt: 1, lastRaidAt: 1, mult: 2 },
+      credits: { revive: 2, shadow: 1, revenge: 3 },
+      season: { id: 's1', bracketId: 'b1', honor: 300, pass: true, rewardedFor: null },
+      introDone: true,
+      starterOffered: true,
+      processedPurchases: ['p1', 'p2'],
+      onboarding: { at: 'done', nicknameSet: true },
+    } as unknown as UserState;
+    const r = resetState(s, 5_000);
+    expect(r.castle).toEqual(s0.castle);
+    expect(r.heroes).toEqual(s0.heroes);
+    expect(r.roster).toEqual({ slime: { level: 1 }, skeleton: { level: 1 }, necro: { level: 1 }, dragon: { level: 1 } });
+    expect(r.idle).toEqual({ lastClaimAt: 5_000, lastRaidAt: 5_000, mult: 2 });
+    expect(r.credits).toEqual({ revive: 2, shadow: 1, revenge: 3 });
+    expect(r.season).toEqual({ id: 's1', bracketId: null, honor: 0, pass: true, rewardedFor: null });
+    expect(r.profile).toEqual(s.profile);
+    expect(r.processedPurchases).toEqual(['p1', 'p2']);
+    expect(r.onboarding).toEqual({ at: 'done', nicknameSet: true });
+    expect(r.introDone).toBe(true);
+    expect(r.raidLog).toEqual([]);
+    expect(r.run).toBe(null);
   });
 });
