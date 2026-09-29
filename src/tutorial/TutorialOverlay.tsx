@@ -61,6 +61,16 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
   }, [step]);
 
   if (!step || gaveUp) return null;
+  if (step.passive) {
+    return (
+      <div className="tut passive">
+        <div className="tut-talk">
+          <Portrait id="imp" label="임프" />
+          <p>{step.line}</p>
+        </div>
+      </div>
+    );
+  }
 
   const press = () => {
     if (step.targets.length === 0) {

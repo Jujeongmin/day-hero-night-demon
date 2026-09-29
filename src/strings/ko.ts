@@ -16,6 +16,7 @@ export const T = {
   logDefended: (name: string) => `${name}의 침입을 막았다`,
   logRobbed: (name: string, g: number) => (g > 0 ? `${name}에게 털렸다 (−${g})` : `${name}에게 털렸다`),
   ult: { knight: '방패 돌진', archer: '화살비', priest: '축복' } as Record<string, string>,
+  ultAuto: '기가 차면 궁극기가 자동으로 나간다',
   giveUp: '포기',
   confirmGiveUp: '공략을 포기할까? 전리품은 없다.',
   revive: (n: number) => `부활 (보유 ${n})`,
@@ -83,7 +84,7 @@ export const T = {
   } as Record<string, (cd: number) => string>,
   tut: {
     raidSortie: '우선 옆 동네 길드 성부터 털어 봅시다!',
-    raidUlt: '기가 모이면 궁극기! 지금 눌러 보십쇼.',
+    raidUlt: '기가 모이면 궁극기가 저절로 나갑니다. 구경하시지요!',
     raidResult: '금화가 들어왔습니다!',
     placeFloor: '이제 우리 성도 지켜야지요. 1층을 눌러 보십쇼.',
     placeSlot: '빈 자리에 부하를 세웁니다.',

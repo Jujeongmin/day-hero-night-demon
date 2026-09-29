@@ -191,6 +191,7 @@ canvas.battle {
 
 /* 튜토리얼 덮개: 구멍 주변을 큰 그림자로 어둡게 */
 .tut { position: fixed; inset: 0; z-index: 50; cursor: pointer; }
+.tut.passive { pointer-events: none; cursor: default; }
 .tut-dim { position: absolute; inset: 0; background: #000a; }
 .tut-hole { position: absolute; border-radius: 8px; box-shadow: 0 0 0 9999px #000a; outline: 2px solid var(--gold); animation: tutpulse 1s ease-in-out infinite; pointer-events: none; }
 @keyframes tutpulse { 50% { outline-color: #ffcf4d55; } }

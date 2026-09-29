@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { BattleEvent } from '../../server/src/battle';
-import { HERO_ORDER } from '../../server/src/catalog';
+import { firstAliveHero, ultReady, type BattleEvent } from '../../server/src/battle';
 import { autoTactic, runStatus, type RunStatus } from '../../server/src/raid';
 import type { Run } from '../../server/src/state';
 import AdButton from '../render/AdButton';
@@ -27,7 +26,6 @@ export default function Raid(props: {
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<Speed>(1);
   const has3x = home.state.perks?.speed3 === true;
-  const [pendingUlt, setPendingUlt] = useState<string | null>(null);
   // 서버 응답마다 1씩 올린다. 이벤트가 없는 라운드가 와도 다음 라운드 호출이 멈추지 않게 한다.
   const [tick, setTick] = useState(0);
   const busy = useRef(false);
@@ -91,8 +89,9 @@ export default function Raid(props: {
       // 전술은 자동: 플레이어가 고를 것을 줄인다
       void call(() => api.setTactic(autoTactic(run)));
     } else if (status === 'fighting') {
-      const ult = pendingUlt;
-      setPendingUlt(null);
+      // 궁극기는 자동: 기가 차면 살아 있는 첫 용사가 쓴다(밸런스 측정 simulateAuto와 같은 규칙)
+      const b0 = run?.battle;
+      const ult = b0 && ultReady(b0) ? firstAliveHero(b0) : null;
       void call(() => api.playRound(ult));
     } else if (status === 'victory') {
       emitTut('battle_over');
@@ -106,8 +105,6 @@ export default function Raid(props: {
   if (!run || !status) return <div className="scene center">{T.loading}</div>;
 
   const b = run.battle;
-  const ultReady = !!b && b.outcome === 'ongoing' && !b.ultUsed && b.ultCharge >= 100;
-  const heroAlive = (h: string) => !!b?.fighters.some((f) => f.key === `h:${h}` && f.hp > 0);
   const stages = [...run.snapshot.floors.map((_, i) => T.floor(i + 1)), T.throne];
   const revives = home.state.credits.revive;
 
@@ -139,21 +136,7 @@ export default function Raid(props: {
         <button className="link" onClick={() => { if (window.confirm(T.confirmGiveUp)) void finish(true); }}>{T.giveUp}</button>
       </header>
       <div className="sheet-body">
-      {status !== 'wiped' && (
-        <div className="row">
-          {HERO_ORDER.map((h) => (
-            <button
-              key={h}
-              className="btn gold"
-              data-tut={h === HERO_ORDER[0] ? 'ult' : undefined}
-              disabled={!ultReady || !heroAlive(h) || pendingUlt !== null}
-              onClick={() => setPendingUlt(h)}
-            >
-              {T.ult[h]}
-            </button>
-          ))}
-        </div>
-      )}
+      {status !== 'wiped' && <p className="muted">{T.ultAuto}</p>}
 
       {status === 'wiped' && !playing && (
         <div className="row">
