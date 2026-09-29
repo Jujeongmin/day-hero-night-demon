@@ -4,13 +4,14 @@ import { castlePower, idleIncome, lootAmount, npcLoot } from './economy';
 import {
   DEFENSE_HONOR, honorForRaid, leagueCollection, rankBracket, seasonEndsAt, seasonIdAt, seasonRewardSoul, seasonStartOf,
 } from './league';
-import { npcCastle, npcRaids, npcTierForPower } from './npc';
+import { checkNickname, nicknameKey } from './nickname';
+import { npcCastle, npcRaids, npcTierForPower, TUTORIAL_TARGET, tutorialCastle } from './npc';
 import { advanceRound, beginFloor, extendAway, lordDefeated, reviveRun, runStatus, startRun } from './raid';
 import { grantFor } from './purchases';
 import { rngNext, seedFrom } from './rng';
 import {
-  dayKey, defaultState, isNew, resolveFloors,
-  type CastleSnapshot, type RaidLogEntry, type Run, type Target, type UserState,
+  canAdvance, dayKey, defaultState, isNew, isStage, resolveFloors, withDefaults,
+  type CastleSnapshot, type OnboardingState, type RaidLogEntry, type Run, type Target, type UserState,
 } from './state';
 
 // ---- 모듈 헬퍼: Server 클래스 밖이라 원격 함수로 노출되지 않는다 ----
@@ -25,7 +26,7 @@ async function withLocks<T>(accounts: string[], fn: () => Promise<T>): Promise<T
 /** 락 안에서만 부른다. 처음 보는 계정이면 기본 상태·시작 골드·매칭 정보를 만든다. */
 async function loadState(account: string, now: number): Promise<UserState> {
   const raw = await $global.getUserState(account);
-  if (!isNew(raw)) return raw as UserState;
+  if (!isNew(raw)) return withDefaults(raw as UserState);
   const s = defaultState(account, now, seasonIdAt(now));
   await $global.updateUserState(account, s);
   await $asset.mint('gold', BALANCE.startGold, account);
@@ -69,7 +70,28 @@ function npcTargets(s: UserState, now: number): Target[] {
   });
 }
 
+function tutorialTarget(): Target {
+  const c = tutorialCastle();
+  return {
+    id: c.owner, nickname: c.nickname, power: castlePower(c.castleLevel, c.floors),
+    castleLevel: c.castleLevel, throneEmpty: false, estLoot: npcLoot(c.castleLevel), npc: true,
+  };
+}
+
+const NICKNAMES = 'nicknames';
+
+/** 없으면 null. 로컬 하네스는 없는 문서를 읽으면 예외를 던진다. */
+async function nicknameOwner(key: string): Promise<string | null> {
+  try {
+    const row = (await $global.getCollectionItem(NICKNAMES, key)) as { account?: string } | null;
+    return row?.account ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function buildSnapshot(target: string, now: number): Promise<CastleSnapshot> {
+  if (target === TUTORIAL_TARGET) return tutorialCastle();
   if (target.startsWith('npc:')) {
     const [, tier, key] = target.split(':');
     return npcCastle(Number(tier), key);
@@ -289,6 +311,56 @@ async function applyNpcRaids(me: string, s: UserState, now: number): Promise<Use
 }
 
 export class Server {
+  async advanceOnboarding(to: string) {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const s = await loadState(me, Date.now());
+      if (!isStage(to) || !canAdvance(s.onboarding.at, to)) throw new Error('ONBOARDING_ORDER');
+      const onboarding: OnboardingState = { ...s.onboarding, at: to };
+      await save(me, { onboarding });
+      return { onboarding };
+    });
+  }
+
+  async setNickname(name: string) {
+    const me = $sender.account;
+    const check = checkNickname(name);
+    if (!check.ok) throw new Error(check.code);
+    const key = nicknameKey(check.name);
+    // 같은 이름을 동시에 잡으려는 두 계정을 줄 세운다
+    return withLocks([me, `nick:${key}`], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      const first = !s.onboarding.nicknameSet;
+      if (!first && s.profile.nicknameChanges >= 1) throw new Error('NICK_NO_CHANGES');
+      const owner = await nicknameOwner(key);
+      if (owner && owner !== me) throw new Error('NICK_TAKEN');
+      await $global.addCollectionItem(NICKNAMES, { account: me, name: check.name }, { id: key });
+      if (!first) {
+        const oldKey = nicknameKey(s.profile.nickname);
+        if (oldKey !== key && (await nicknameOwner(oldKey)) === me) {
+          await $global.deleteCollectionItem(NICKNAMES, oldKey);
+        }
+      }
+      const profile = { ...s.profile, nickname: check.name, nicknameChanges: s.profile.nicknameChanges + (first ? 0 : 1) };
+      const onboarding: OnboardingState = {
+        at: s.onboarding.at === 'nickname' ? 'raid_sortie' : s.onboarding.at,
+        nicknameSet: true,
+      };
+      await save(me, { profile, onboarding });
+      const next = { ...s, profile, onboarding };
+      await syncCastle(me, next);
+      if (s.season.bracketId) {
+        await $global.addCollectionItem(
+          leagueCollection(s.season.id),
+          { account: me, nickname: check.name, bracketId: s.season.bracketId, honor: s.season.honor },
+          { id: me },
+        );
+      }
+      return { nickname: check.name, onboarding, nicknameChanges: profile.nicknameChanges };
+    });
+  }
+
   async getHome() {
     const me = $sender.account;
     return withLocks([me], async () => {
@@ -363,7 +435,9 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await loadState(me, now);
-      const targets = [...(await realTargets(me, s, now)), ...npcTargets(s, now)].slice(0, 3);
+      const targets = s.onboarding.at === 'match_sortie'
+        ? [tutorialTarget()]
+        : [...(await realTargets(me, s, now)), ...npcTargets(s, now)].slice(0, 3);
       await save(me, { lastTargets: targets });
       return targets;
     });
@@ -455,7 +529,11 @@ export class Server {
       } else {
         loot = await settleDefender(me, s, run, won, now);
       }
-      return finishRun(me, s, run, won, loot, now);
+      const result = await finishRun(me, s, run, won, loot, now);
+      if (run.target === TUTORIAL_TARGET && s.onboarding.at === 'match_sortie') {
+        await save(me, { onboarding: { ...s.onboarding, at: 'end' } });
+      }
+      return result;
     });
   }
 

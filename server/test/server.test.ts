@@ -227,3 +227,61 @@ describe('league', () => {
     expect(lg.bracket.some((r: any) => r.me)).toBe(true);
   });
 });
+
+describe('onboarding', () => {
+  test('a new account starts at the cutscene and can only move forward', async (server) => {
+    server.connect({ account: 't20-new' });
+    const home = await server.getHome();
+    expect(home.state.onboarding).toEqual({ at: 'cutscene', nicknameSet: false });
+    expect(await fails(server.advanceOnboarding('raid_sortie'))).toBe(true);
+    expect((await server.advanceOnboarding('nickname')).onboarding.at).toBe('nickname');
+    expect(await fails(server.advanceOnboarding('cutscene'))).toBe(true);
+  });
+
+  test('setNickname checks rules and duplicates, and moves nickname → tutorial', async (server) => {
+    server.connect({ account: 't20-a' });
+    await server.getHome();
+    await server.advanceOnboarding('nickname');
+    expect(await fails(server.setNickname('마'))).toBe(true);
+    const r = await server.setNickname('검은마왕');
+    expect(r.nickname).toBe('검은마왕');
+    expect(r.onboarding).toEqual({ at: 'raid_sortie', nicknameSet: true });
+
+    server.connect({ account: 't20-b' });
+    await server.getHome();
+    await server.advanceOnboarding('nickname');
+    expect(await fails(server.setNickname('검은마왕'))).toBe(true);
+    expect((await server.setNickname('붉은마왕')).nickname).toBe('붉은마왕');
+  });
+
+  test('after onboarding, one free rename; the old name frees up', async (server) => {
+    server.connect({ account: 't20-c' });
+    await server.getHome();
+    await server.advanceOnboarding('nickname');
+    await server.setNickname('첫이름');
+    const r = await server.setNickname('두번째');
+    expect(r.nicknameChanges).toBe(1);
+    expect(await fails(server.setNickname('세번째'))).toBe(true);
+    server.connect({ account: 't20-d' });
+    await server.getHome();
+    await server.advanceOnboarding('nickname');
+    expect((await server.setNickname('첫이름')).nickname).toBe('첫이름');
+  });
+
+  test('the tutorial raid offers only the tutorial castle and finishing it ends the tutorial', async (server) => {
+    server.connect({ account: 't20-tut' });
+    await server.getHome();
+    await server.advanceOnboarding('nickname');
+    await server.setNickname('튜토마왕');
+    await server.advanceOnboarding('match_sortie');
+    const targets = await server.findTargets();
+    expect(targets.map((t: { id: string }) => t.id)).toEqual(['npc:tut:1']);
+    await server.startRaid('npc:tut:1', false);
+    const res = await playAll(server);
+    expect(res.status).toBe('victory');
+    await server.endRaid(false);
+    const home = await server.getHome();
+    expect(home.state.onboarding.at).toBe('end');
+    expect((await server.advanceOnboarding('done')).onboarding.at).toBe('done');
+  });
+});
