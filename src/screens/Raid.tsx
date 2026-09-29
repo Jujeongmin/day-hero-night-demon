@@ -132,11 +132,10 @@ export default function Raid(props: {
 
     <section className="sheet raid-sheet">
       <header className="sheet-head">
-        <span>{status === 'wiped' ? T.defeat : T.ultTitle}</span>
+        <span>{status === 'wiped' ? T.defeat : ''}</span>
         <button className="link" onClick={() => { if (window.confirm(T.confirmGiveUp)) void finish(true); }}>{T.giveUp}</button>
       </header>
       <div className="sheet-body">
-      {status !== 'wiped' && <p className="muted">{T.ultAuto}</p>}
 
       {status === 'wiped' && !playing && (
         <div className="row">
