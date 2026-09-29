@@ -4,7 +4,7 @@ import { checkNickname, nicknameKey } from '../server/src/nickname';
 describe('checkNickname', () => {
   it('accepts 2–8 Korean/English/digit characters and trims spaces around', () => {
     expect(checkNickname('마왕')).toEqual({ ok: true, name: '마왕' });
-    expect(checkNickname('  DarkLord7 ')).toEqual({ ok: true, name: 'DarkLord7' });
+    expect(checkNickname('  DarkLrd7 ')).toEqual({ ok: true, name: 'DarkLrd7' });
     expect(checkNickname('여덟글자닉네임임')).toEqual({ ok: true, name: '여덟글자닉네임임' });
   });
 
