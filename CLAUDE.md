@@ -318,6 +318,7 @@ Verse8 공식 기능이 존재하는 영역을 불필요하게 자체 구현하�
 2. 준비: `npm install`, `cd server && npm install` (서버 타입 검사용). `.env`(VITE_AGENT8_VERSE/ACCOUNT)는 저장소에 들어 있다.
 3. 확인: `npm test`(vitest 136개), `npm run test:server`(하네스 25개), `npx tsc --noEmit -p tsconfig.app.json`, `npx tsc -p server/tsconfig.json --noEmit`.
 4. 미리보기: `npx vite --port 5199 --strictPort` (5173은 다른 것이 쓸 때가 있다). 서버는 Agent8 편집기가 `<verse>-preview`에 배포하고, `git push origin develop`이 빌드·배포다.
+5. **로컬 서버 모드(배포 전 확인은 이걸로 먼저):** 미리보기 주소에 `?local=1`을 붙이면 브라우저 안에서 `server/src/server.ts`를 그대로 돌린다(`src/services/localServer.ts`, 개발 서버에서만 켜지고 빌드에는 안 들어감). `&acct=이름`으로 계정 바꾸기. 콘솔 도구 `localServer.buy('premium')`, `.gold(5000)`, `.soul(100)`, `.rewind(분)`, `.as('다른계정')`, `.wipe()`. 결제는 웹훅 직접 호출, 광고는 항상 끝까지 본 것으로 친다. 서버 변경은 여기서 먼저 끝까지 확인하고 사용자에게 보여 준다.
 
 사용자가 정한 작업 규칙 (대화에서 나온 것, 코드에 없음):
 - 화면 정보는 적게, 마우스(클릭)만으로 조작, 한눈에 이해되게. 유저가 이탈하지 않게.

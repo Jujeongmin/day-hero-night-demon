@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { useGameServer, useGlobalMyState } from '@agent8/gameserver';
+import { useMyLiveState, useServer } from './services/connection';
 import type { OnboardingStage, UserState } from '../server/src/state';
 import { createApi, errorText, type EndResult, type HomeData } from './services/api';
 import { T } from './strings/ko';
@@ -53,7 +53,7 @@ function purchasedSomething(a: HomeData, b: HomeData): boolean {
 }
 
 export default function App() {
-  const { connected, server } = useGameServer();
+  const { connected, server } = useServer();
   const api = useMemo(() => (server ? createApi(server) : null), [server]);
   const [home, setHome] = useState<HomeData | null>(null);
   const [raiding, setRaiding] = useState(false);
@@ -87,7 +87,7 @@ export default function App() {
   }, []);
 
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
-  const live = useGlobalMyState() as Partial<UserState> | undefined;
+  const live = useMyLiveState() as Partial<UserState> | undefined;
   const lastSeenLog = useRef<string | null>(null);
   const advancing = useRef<OnboardingStage | null>(null);
 

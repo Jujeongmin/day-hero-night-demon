@@ -3,6 +3,7 @@ import type { Placement } from '../../server/src/ads';
 import { BALANCE } from '../../server/src/catalog';
 import { dayKey, type UserState } from '../../server/src/state';
 import type { Api } from './api';
+import { isLocal } from './connection';
 
 export type AdOutcome = 'ok' | 'dismissed' | 'failed';
 
@@ -15,7 +16,10 @@ export function adsLeft(s: UserState, p: Exclude<Placement, 'revive'>, now: numb
 /** 프리미엄이면 광고 없이, 아니면 보상형 광고를 끝까지 본 뒤 서버에 보상을 요청한다. 버튼 클릭에서만 부른다. */
 export async function earnAd(api: Api, placement: Placement, premium: boolean): Promise<AdOutcome> {
   if (!premium) {
-    const r = await Verse8Ads.showRewarded({ placementId: placement });
+    // 로컬 서버 모드: 광고를 끝까지 본 것으로 친다
+    const r = isLocal()
+      ? { status: 'rewarded' as const, requestId: `local-ad-${Date.now()}-${Math.random().toString(36).slice(2, 8)}` }
+      : await Verse8Ads.showRewarded({ placementId: placement });
     if (r.status === 'dismissed') return 'dismissed';
     if (r.status !== 'rewarded') return 'failed';
     await api.claimAdReward(placement, r.requestId);
