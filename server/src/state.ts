@@ -119,7 +119,7 @@ export function defaultState(account: string, now: number, seasonId: string): Us
     roster: { slime: { level: 1 }, skeleton: { level: 1 } },
     traps: { spikes: { level: 1 } },
     heroes: { knight: { level: 1 }, archer: { level: 1 }, priest: { level: 1 } },
-    // 첫 [보상 받기]가 2시간분 방치 수입을 주도록. NPC 습격은 지금부터 센다.
+    // 방치 수입과 NPC 습격은 계정을 만든 순간부터 센다.
     idle: { lastClaimAt: now, lastRaidAt: now, mult: 1 },
     awayUntil: 0,
     shieldUntil: 0,
