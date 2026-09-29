@@ -453,7 +453,7 @@ export class Server {
         state: s,
         ...(await balances(me)),
         now,
-        idlePreview: idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult, s.idleBoost),
+        idlePreview: idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult),
         seasonEndsAt: seasonEndsAt(now),
       };
     });
@@ -464,7 +464,7 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await loadState(me, now);
-      const gold = idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult, s.idleBoost);
+      const gold = idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult);
       if (gold > 0) await $asset.mint('gold', gold);
       await save(me, { idle: { ...s.idle, lastClaimAt: now } });
       return { gold };

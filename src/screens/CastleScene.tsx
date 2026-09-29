@@ -53,6 +53,9 @@ export default function CastleScene(props: {
   const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onError } = props;
   const s = home.state;
   const [busy, setBusy] = useState(false);
+  const [choose, setChoose] = useState(false);
+  // 영구 2배(옛 상품) 계정은 광고 2배를 쓰지 않는다
+  const doubleLeft = home.state.idle.mult >= 2 ? 0 : adsLeft(home.state, 'idle_double', Date.now());
   const towerRef = useRef<HTMLDivElement>(null);
   const k = useHeight(towerRef) / TOWER_H;
   const open = floorsUnlocked(s.castle.level);
@@ -116,26 +119,33 @@ export default function CastleScene(props: {
       </div>
 
       {home.idlePreview > 0 && (
-        <button className="btn gold float-idle" disabled={busy} onClick={() => act(() => api.claimIdle())}>
+        <button
+          className="btn gold float-idle"
+          disabled={busy}
+          onClick={() => (doubleLeft > 0 ? setChoose(!choose) : act(() => api.claimIdle()))}
+        >
           +{home.idlePreview}
         </button>
       )}
 
-      {!s.run && (() => {
-        const now = Date.now();
-        const boostMin = s.idleBoost && s.idleBoost.until > now ? Math.ceil((s.idleBoost.until - now) / 60_000) : 0;
-        const left = adsLeft(s, 'idle_boost', now);
-        // 영구 2배(옛 상품)가 있으면 광고 2배는 소용없다
-        if (s.idle.mult >= 2) return null;
-        return (
-          <div className="float-boost">
-            {boostMin > 0 && <span className="pill">{T.ads.boostLeft(boostMin)}</span>}
-            {left > 0 && (
-              <AdButton api={api} placement="idle_boost" label={T.ads.boost} premium={!!s.perks?.premium} className="btn small gold" onDone={onRefresh} onToast={onError} />
-            )}
-          </div>
-        );
-      })()}
+      {/* 방치 수입: 그냥 받기 / 광고 보고 두 배 받기 */}
+      {choose && home.idlePreview > 0 && (
+        <div className="idle-choice">
+          <button className="btn small" disabled={busy} onClick={() => { setChoose(false); void act(() => api.claimIdle()); }}>
+            {T.ads.plain(home.idlePreview)}
+          </button>
+          <AdButton
+            api={api}
+            placement="idle_double"
+            label={T.ads.double(home.idlePreview * 2)}
+            premium={!!s.perks?.premium}
+            className="btn small gold"
+            onDone={async () => { setChoose(false); await onRefresh(); }}
+            onToast={onError}
+          />
+          <small className="muted">{T.ads.left(doubleLeft)}</small>
+        </div>
+      )}
 
       {!panelOpen && <div className="scene-foot">
         {s.run ? (

@@ -125,8 +125,8 @@ export const T = {
     receive: '받기',
     revenge: '복수 +1',
     revive: '부활',
-    boost: '방치 ×2',
-    boostLeft: (min: number) => `×2 ${min}분`,
+    plain: (g: number) => `그냥 받기 +${g}`,
+    double: (g: number) => `2배 받기 +${g}`,
     got: '받았다!',
   },
   errors: {

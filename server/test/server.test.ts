@@ -310,11 +310,9 @@ describe('ads', () => {
     const r = await server.claimAdReward('daily_supply', null);
     expect(r.gold).toBe(5000);
     expect(await fails(server.claimAdReward('daily_supply', null))).toBe(true);
-    for (let i = 0; i < 3; i++) await server.claimAdReward('idle_boost', null);
-    expect(await fails(server.claimAdReward('idle_boost', null))).toBe(true);
+    expect(await fails(server.claimAdReward('idle_double', null))).toBe(true); // 방금 만든 계정은 받을 방치 수입이 0
     expect(await fails(server.claimAdReward('revive', null))).toBe(true);
     expect(await fails(server.claimAdReward('free_gold', null))).toBe(true);
-    expect((await server.getHome()).state.idleBoost.until).toBeGreaterThan(Date.now());
   });
 });
 

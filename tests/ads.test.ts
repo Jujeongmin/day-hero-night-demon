@@ -32,15 +32,20 @@ describe('planAdReward', () => {
     expect(planAdReward(fresh(), 'revive', NOW)).toEqual({ ok: false, code: 'AD_NOT_NOW' });
   });
 
-  it('idle boost: 4 hours, stacking extends, three a day', () => {
-    let s = fresh();
-    s = apply(s, planAdReward(s, 'idle_boost', NOW));
-    expect(s.idleBoost).toEqual({ from: NOW, until: NOW + 4 * H });
-    s = apply(s, planAdReward(s, 'idle_boost', NOW + H));
-    expect(s.idleBoost).toEqual({ from: NOW, until: NOW + 8 * H });
-    s = apply(s, planAdReward(s, 'idle_boost', NOW + H));
+  it('idle double: pays twice the idle income now, three a day, nothing to double → refused', () => {
+    let s = { ...fresh(), idle: { lastClaimAt: NOW - 2 * H, lastRaidAt: NOW, mult: 1 as const } };
+    const r = planAdReward(s, 'idle_double', NOW);
+    expect(r).toMatchObject({ ok: true, gold: 2 * 120, soul: 0 });
+    s = apply(s, r);
+    expect(s.idle.lastClaimAt).toBe(NOW);
+    expect(planAdReward(s, 'idle_double', NOW)).toEqual({ ok: false, code: 'AD_NOT_NOW' });
+    for (let i = 0; i < 2; i++) {
+      s = { ...s, idle: { ...s.idle, lastClaimAt: NOW - H } };
+      s = apply(s, planAdReward(s, 'idle_double', NOW));
+    }
+    s = { ...s, idle: { ...s.idle, lastClaimAt: NOW - H } };
+    expect(planAdReward(s, 'idle_double', NOW)).toEqual({ ok: false, code: 'AD_LIMIT' });
     expect(s.ads.day).toBe(dayKey(NOW));
-    expect(planAdReward(s, 'idle_boost', NOW + H)).toEqual({ ok: false, code: 'AD_LIMIT' });
   });
 
   it('unknown placement is refused', () => {

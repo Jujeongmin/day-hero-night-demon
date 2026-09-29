@@ -114,8 +114,6 @@ export interface UserState {
   onboarding: OnboardingState;
   /** 광고 보상 오늘 횟수 (한국 시간 날짜) */
   ads: { day: string; counts: Partial<Record<string, number>> };
-  /** 광고 방치 2배 구간 */
-  idleBoost: { from: number; until: number } | null;
   /** VX 영구 상품 */
   perks: { speed3: boolean; premium: boolean };
   /** 영구 소장 마왕 외형과 고른 외형(null = 자동: 패스면 해골) */
@@ -168,7 +166,6 @@ export function defaultState(account: string, now: number, seasonId: string): Us
     processedPurchases: [],
     onboarding: { at: 'cutscene', nicknameSet: false },
     ads: { day: '', counts: {} },
-    idleBoost: null,
     perks: { speed3: false, premium: false },
     skins: [],
     lordSkin: null,
@@ -191,7 +188,6 @@ export function withDefaults(s: UserState): UserState {
   return {
     ...s, onboarding, profile,
     ads: s.ads ?? { day: '', counts: {} },
-    idleBoost: s.idleBoost ?? null,
     perks: s.perks ?? { speed3: false, premium: false },
     season: { ...s.season, claimed: s.season.claimed ?? { free: 0, pass: 0 } },
     skins: s.skins ?? [],

@@ -106,8 +106,7 @@ export const BALANCE = {
   dailySupplySoul: 15,
   revivePerBuy: 1,
   /** 광고 보상 하루 한도(부활은 판당 1회라 따로 없다) */
-  adLimits: { daily_supply: 1, revenge: 3, idle_boost: 3 },
-  idleBoostHours: 4,
+  adLimits: { daily_supply: 1, revenge: 3, idle_double: 3 },
   revengePerBuy: 2,
 } as const;
 
