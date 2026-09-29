@@ -164,3 +164,14 @@ canvas.battle {
   font: inherit; font-size: 20px; text-align: center; color: var(--text); background: none; min-width: 0;
   border: 8px solid transparent; border-image: url(/ui/pill.png) 8 fill / 8px stretch; image-rendering: pixelated; padding: 4px;
 }
+
+/* 튜토리얼 덮개: 구멍 주변을 큰 그림자로 어둡게 */
+.tut { position: fixed; inset: 0; z-index: 50; cursor: pointer; }
+.tut-dim { position: absolute; inset: 0; background: #000a; }
+.tut-hole { position: absolute; border-radius: 8px; box-shadow: 0 0 0 9999px #000a; outline: 2px solid var(--gold); animation: tutpulse 1s ease-in-out infinite; pointer-events: none; }
+@keyframes tutpulse { 50% { outline-color: #ffcf4d55; } }
+.tut-talk {
+  position: absolute; left: 8px; right: 8px; top: 52px; max-width: 464px; margin: 0 auto; display: flex; gap: 8px; align-items: center;
+  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 fill / 12px stretch; image-rendering: pixelated;
+}
+.tut-talk p { margin: 0; font-size: 16px; line-height: 1.35; color: var(--bone); }

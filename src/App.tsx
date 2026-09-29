@@ -18,6 +18,8 @@ import { startShop, type ShopItem } from './services/shop';
 import { isMuted, playBgm, setMuted, sfx, unlockAudio } from './services/audio';
 import { preloadSprites } from './render/battleCanvas';
 import { emitTut } from './tutorial/bus';
+import { isTutorialStage } from './tutorial/steps';
+import TutorialOverlay from './tutorial/TutorialOverlay';
 
 type Tab = 'upgrade' | 'log' | 'league' | 'shop';
 export type Panel =
@@ -91,6 +93,7 @@ export default function App() {
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
   const live = useGlobalMyState() as Partial<UserState> | undefined;
   const lastSeenLog = useRef<string | null>(null);
+  const advancing = useRef<OnboardingStage | null>(null);
 
   const refresh = useCallback(async () => {
     if (!api) return;
@@ -144,13 +147,19 @@ export default function App() {
   const stage: OnboardingStage = home.state.onboarding?.at ?? 'done';
 
   const advance = async (to: OnboardingStage) => {
+    // 같은 단계로 두 번 보내지 않는다 (신호가 겹칠 때)
+    if (advancing.current === to) return;
+    advancing.current = to;
     try {
       await api.advanceOnboarding(to);
       await refresh();
     } catch (e) {
       onError(errorText(e));
+    } finally {
+      advancing.current = null;
     }
   };
+  const tutorial = isTutorialStage(stage) && <TutorialOverlay stage={stage} onAdvance={(to) => void advance(to)} />;
 
   if (stage === 'cutscene') {
     return (
@@ -194,6 +203,7 @@ export default function App() {
           onRefresh={refresh}
           onError={onError}
         />
+        {tutorial}
         {toast && <div className="toast">{toast}</div>}
       </div>
     );
@@ -271,6 +281,7 @@ export default function App() {
           </button>
         ))}
       </nav>
+      {tutorial}
       {toast && <div className="toast">{toast}</div>}
     </div>
   );
