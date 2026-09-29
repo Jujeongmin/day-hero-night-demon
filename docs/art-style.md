@@ -31,6 +31,16 @@
 - 승인(2026-09-29): 2층 `art/bg/floor2_a.png`(이끼 초록 벽, seed 201), 3층 `art/bg/floor3_b.png`(해골 기둥·큰 문·보라 횃불, seed 302), 옥좌층 `art/bg/throne_d.png`(뿔 달린 검은 옥좌를 가운데, seed 412, 문장에 "in the center of the room on a raised stone dais"). 탈락 후보도 `art/bg/`에 둔다.
 - 게임용: `public/sprites/bg_floor1~3.png`, `bg_throne.png`. 층 번호 → 시트 이름은 `src/render/skins.ts` `floorBgId`.
 
+### 전투 배경 v2 (2026-09-29 승인, 위 옆모습 배경을 대체)
+- 옆모습 배경은 바닥이 얇아 위 두 줄 유닛이 벽 위에 떠 보였다. 캔버스와 같은 **240×200, `view: low top-down`**, 뒷벽은 위 30%, 바닥이 아래 70%.
+- 문장만으로는 벽이 절반을 차지해서 **구도 가이드 img2img**로 뽑았다: 후보 그림의 벽 줄을 위 60px로, 바닥을 아래 140px로 늘려 붙인 가이드(80×67로 줄였다 키우고 12색) → `init_image_strength: 120`.
+- 원본 `art/bg/guided1_a`(1층, seed 711) · `guided2_a`(2층, 721) · `guided3_a`(3층, 731) · `guidedT_a`(옥좌, 741). 탈락 후보 `deep*`.
+- 옥좌층은 뒷벽 가운데 옥좌와 겹치지 않게 유닛을 앞쪽에 세운다(`battleCanvas.tsx` `positions`). 체력바는 그림 영역(`sprites.json` `box`) 머리 위에 그린다.
+
+## 닫기 버튼 (2026-09-29 승인)
+- `public/ui/close.png`: 붉은 X만(`art/ui/close/close_b.png`에서 검은 방패를 걷어낸 `close_b_xonly.png`를 내용 영역으로 자름). 창 머리 오른쪽 30px.
+- 해골·뿔 장식 `public/ui/crest.png`는 해골 뒤 창틀 조각(어두운 사다리꼴)을 지운 것. 원본 `art/ui/crest_orig.png`.
+
 ## 비인간형 (슬라임·거미·새끼 용)
 
 - `create_1_direction_object`, `view: sidescroller`, 해골병 대기 프레임을 `style_images`로 넣는다(→ 68×68, 후보 16장 중 고름).

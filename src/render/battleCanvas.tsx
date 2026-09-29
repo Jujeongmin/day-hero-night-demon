@@ -13,7 +13,7 @@ const UNIT_SCALE = 0.8;
 const IDLE_MS = 140;
 const STEP_MS = 350;
 
-type Strip = { frames: number; w: number; h: number };
+type Strip = { frames: number; w: number; h: number; box?: number[] };
 const strips = SPRITES as Record<string, Strip>;
 const images = new Map<string, HTMLImageElement>();
 
@@ -43,8 +43,11 @@ function positions(b: FloorBattle): Record<string, { x: number; y: number }> {
   const out: Record<string, { x: number; y: number }> = {};
   const heroes = b.fighters.filter((f) => f.side === 'hero');
   const enemies = b.fighters.filter((f) => f.side === 'enemy');
-  heroes.forEach((f, i) => { out[f.key] = { x: f.row === 'front' ? 88 : 44, y: 86 + i * 50 }; });
-  enemies.forEach((f, i) => { out[f.key] = { x: i % 2 === 0 ? 156 : 200, y: 86 + i * 50 }; });
+  // 옥좌층은 뒷벽 가운데 옥좌와 겹치지 않게 모두 앞쪽 바닥에 세운다
+  const throne = enemies.length === 1 && enemies[0].kind === 'lord';
+  const rows = throne ? [122, 156, 190] : [86, 136, 186];
+  heroes.forEach((f, i) => { out[f.key] = { x: f.row === 'front' ? 88 : 44, y: rows[i] }; });
+  enemies.forEach((f, i) => { out[f.key] = throne ? { x: 178, y: 178 } : { x: i % 2 === 0 ? 156 : 200, y: rows[i] }; });
   return out;
 }
 
@@ -77,6 +80,13 @@ function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, sprite: string, ani
   // 캔버스는 여백 포함 정사각형이고 캐릭터 발은 대략 아래에서 1/6 지점이다
   ctx.drawImage(img, fi * s.w, 0, s.w, s.h, -dw / 2, -dh * 0.84, dw, dh);
   ctx.restore();
+}
+
+/** 체력바 위치: 대기 그림의 머리 위 4px. 그림 영역을 모르면 예전처럼 발에서 50px 위 */
+function hpBarY(sprite: string, footY: number): number {
+  const s = strips[`${sprite}_idle`];
+  if (!s?.box) return footY - 50;
+  return Math.round(footY - s.h * UNIT_SCALE * 0.84 + s.box[1] * UNIT_SCALE - 8);
 }
 
 interface View { hp: Record<string, number>; fx: Fx | null; fxAt: number; downAt: Record<string, number>; step: number; lordSkin?: LordSkin; bg: string }
@@ -114,20 +124,21 @@ function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: numbe
     const s = strips[`${sprite}_${anim}`];
     if (anim === 'idle' && s) frame %= s.frames;
     drawUnit(ctx, f, sprite, anim, frame, p.x, p.y);
+    const barY = hpBarY(sprite, p.y);
 
     if (hp > 0) {
       ctx.fillStyle = '#000a';
-      ctx.fillRect(p.x - 15, p.y - 50, 30, 4);
+      ctx.fillRect(p.x - 15, barY, 30, 4);
       ctx.fillStyle = f.side === 'hero' ? '#3cf07a' : '#ff5a5a';
-      ctx.fillRect(p.x - 15, p.y - 50, 30 * Math.max(0, hp / f.maxHp), 4);
+      ctx.fillRect(p.x - 15, barY, 30 * Math.max(0, hp / f.maxHp), 4);
     }
     if (v.fx?.key === f.key && v.fx.text) {
       const rise = Math.min(1, (now - v.fxAt) / v.step) * 8;
       ctx.fillStyle = v.fx.kind === 'heal' ? '#8f8' : '#ffe14d';
       ctx.strokeStyle = '#000';
       ctx.lineWidth = 3;
-      ctx.strokeText(v.fx.text, p.x, p.y - 56 - rise);
-      ctx.fillText(v.fx.text, p.x, p.y - 56 - rise);
+      ctx.strokeText(v.fx.text, p.x, barY - 6 - rise);
+      ctx.fillText(v.fx.text, p.x, barY - 6 - rise);
     }
   }
   if (v.fx && v.fx.key === null && v.fx.text) {

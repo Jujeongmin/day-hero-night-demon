@@ -68,7 +68,7 @@
   "bg_floor1": {
     "frames": 1,
     "w": 240,
-    "h": 112
+    "h": 200
   },
   "imp_idle": {
     "frames": 4,
@@ -370,16 +370,16 @@
   "bg_floor2": {
     "frames": 1,
     "w": 240,
-    "h": 112
+    "h": 200
   },
   "bg_floor3": {
     "frames": 1,
     "w": 240,
-    "h": 112
+    "h": 200
   },
   "bg_throne": {
     "frames": 1,
     "w": 240,
-    "h": 112
+    "h": 200
   }
 }
