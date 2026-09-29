@@ -11,8 +11,6 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
   const { api, home, onRefresh, onError } = props;
   const s = home.state;
   const [busy, setBusy] = useState(false);
-  // 줄을 누르면 스킬 설명을 펼친다
-  const [open, setOpen] = useState<string | null>(null);
 
   async function act(fn: () => Promise<unknown>) {
     if (busy) return;
@@ -42,12 +40,12 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
     );
     return (
       <div className="line unit-line" key={id}>
-        <span className="item" onClick={() => setOpen(open === id ? null : id)}>
+        <span className="item">
           <Portrait id={id} label={label} />
           <span>
             {label} {T.level(level)}
             <span className="stats">{(['hp', 'atk', 'def'] as const).map(stat)}</span>
-            {open === id && <small className="skill">{skillText(unit.skill, unit.cooldown)}</small>}
+            <small className="skill">{skillText(unit.skill, unit.cooldown)}</small>
           </span>
         </span>
         <button className="btn small" data-tut={first ? 'upgrade-first' : undefined} disabled={busy || cost === null || home.gold < cost} onClick={() => act(onUp)}>
@@ -76,7 +74,13 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
         const unlock = MONSTERS[id].unlock as { soul: number };
         return (
           <div className="line" key={id}>
-            <span className="item"><Portrait id={id} label={MONSTERS[id].name} />{MONSTERS[id].name}</span>
+            <span className="item">
+              <Portrait id={id} label={MONSTERS[id].name} />
+              <span>
+                {MONSTERS[id].name}
+                <small className="skill">{skillText(MONSTERS[id].skill, MONSTERS[id].cooldown)}</small>
+              </span>
+            </span>
             <button className="btn small" disabled={busy || home.soul < unlock.soul} onClick={() => act(() => api.recruit(id))}>
               {T.recruitSoul(unlock.soul)}
             </button>

@@ -134,7 +134,6 @@ select { font: inherit; }
 /* 캐릭터 프레임은 여백이 넓다. 몸통이 칸 가운데 오도록 가운데 정렬 후 살짝 위로 */
 .portrait .sprite, .portrait .sprite-missing { position: absolute; left: 50%; top: 50%; translate: -50% -52%; }
 .portrait .portrait-art { position: absolute; left: 50%; top: 50%; translate: -50% -50%; background-repeat: no-repeat; image-rendering: pixelated; }
-.unit-line .item { cursor: pointer; }
 .stats { display: flex; flex-wrap: wrap; gap: 2px 8px; font-size: 12px; color: var(--muted); }
 .stat { display: inline-flex; align-items: center; gap: 2px; }
 .stat img { width: 13px; height: 13px; image-rendering: pixelated; }
