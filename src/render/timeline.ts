@@ -1,5 +1,6 @@
 import type { BattleEvent, FloorBattle } from '../../server/src/battle';
 import { T } from '../strings/ko';
+import { formatNum } from '../../server/src/growth';
 
 export interface Fx {
   kind: 'hit' | 'heal' | 'down' | 'raise' | 'ult' | 'status' | 'end';
@@ -39,11 +40,11 @@ export function buildFrames(battle: FloorBattle, events: BattleEvent[]): Frame[]
     switch (e.t) {
       case 'attack':
         hp[e.to] = Math.max(0, hp[e.to] - e.dmg);
-        fx = { kind: 'hit', key: e.to, text: `−${e.dmg}`, from: e.from };
+        fx = { kind: 'hit', key: e.to, text: `−${formatNum(e.dmg)}`, from: e.from };
         break;
       case 'heal':
         hp[e.to] = Math.min(max[e.to], hp[e.to] + e.amount);
-        fx = { kind: 'heal', key: e.to, text: `+${e.amount}`, from: e.from };
+        fx = { kind: 'heal', key: e.to, text: `+${formatNum(e.amount)}`, from: e.from };
         break;
       case 'down':
         fx = { kind: 'down', key: e.key, text: '쓰러짐' };
