@@ -4,7 +4,6 @@ import { isTutorialStage, nextStage, TUT_STEPS } from '../src/tutorial/steps';
 describe('tutorial steps', () => {
   it('walks the whole loop with the events the screens send', () => {
     expect(nextStage('raid_sortie', 'raid_started')).toBe('raid_ult');
-    expect(nextStage('raid_ult', 'ult_used')).toBe('raid_result');
     expect(nextStage('raid_ult', 'battle_over')).toBe('raid_result');
     expect(nextStage('raid_result', 'result_closed')).toBe('place_floor');
     expect(nextStage('place_floor', 'floor_opened')).toBe('place_slot');

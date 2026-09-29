@@ -2,7 +2,7 @@ import type { OnboardingStage } from '../../server/src/state';
 import { T } from '../strings/ko';
 
 export type TutEvent =
-  | 'raid_started' | 'ult_used' | 'battle_over' | 'result_closed'
+  | 'raid_started' | 'battle_over' | 'result_closed'
   | 'floor_opened' | 'floor_saved' | 'upgrade_opened' | 'upgraded' | 'tapped';
 
 /** targets: 빛낼 대상의 data-tut 값. 앞에서부터 화면에 있는 첫 번째를 쓴다. */
@@ -22,7 +22,8 @@ export const TUT_STEPS: Partial<Record<OnboardingStage, TutStep>> = {
 
 const NEXT: Partial<Record<OnboardingStage, Partial<Record<TutEvent, OnboardingStage>>>> = {
   raid_sortie: { raid_started: 'raid_ult' },
-  raid_ult: { ult_used: 'raid_result', battle_over: 'raid_result' },
+  // 궁극기를 눌러도 결과창이 뜰 때까지(전투 끝) 기다린다
+  raid_ult: { battle_over: 'raid_result' },
   raid_result: { result_closed: 'place_floor' },
   place_floor: { floor_opened: 'place_slot' },
   place_slot: { floor_saved: 'upgrade_tab' },

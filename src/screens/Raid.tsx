@@ -141,7 +141,7 @@ export default function Raid(props: {
               className="btn gold"
               data-tut={h === HERO_ORDER[0] ? 'ult' : undefined}
               disabled={!ultReady || !heroAlive(h) || pendingUlt !== null}
-              onClick={() => { setPendingUlt(h); emitTut('ult_used'); }}
+              onClick={() => setPendingUlt(h)}
             >
               {T.ult[h]}
             </button>
