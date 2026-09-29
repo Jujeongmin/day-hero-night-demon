@@ -1,6 +1,6 @@
 # VX Shop 상품 등록표
 
-등록은 사용자가 직접 한다: Verse8 게임 관리 → VX Shop → Add New Item. 대시보드 항목 이름은 [공식 문서](https://docs.verse8.io/ko/docs/vxshop/registering-products) 기준.
+등록은 사용자가 직접 한다: Verse8 게임 관리 → VX Shop → Add New Item → 양식 작성 → **Active 스위치 켜기** → 저장. 가격 기준: 100 VX ≈ $1 (2026-09-29 문서 재확인). 대시보드 항목 이름은 [공식 문서](https://docs.verse8.io/ko/docs/vxshop/registering-products) 기준.
 
 전제(문서 기준): CPP 가입 완료, 게임이 Verse8에 **출시**되어 있어야 붙는다(비공개 출시로 먼저 테스트), Agent8 Game Server 사용.
 
