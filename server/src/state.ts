@@ -66,9 +66,34 @@ export interface SeasonState {
   rewardedFor: string | null;
 }
 
+/** 첫 실행 흐름. 서버가 앞으로만 움직이게 막는다. */
+export const ONBOARDING_ORDER = [
+  'cutscene', 'nickname',
+  'raid_sortie', 'raid_ult', 'raid_result', 'place_floor', 'place_slot', 'upgrade_tab', 'upgrade_one',
+  'match_sortie', 'end', 'done',
+] as const;
+export type OnboardingStage = (typeof ONBOARDING_ORDER)[number];
+export interface OnboardingState { at: OnboardingStage; nicknameSet: boolean }
+
+export function isStage(x: unknown): x is OnboardingStage {
+  return typeof x === 'string' && (ONBOARDING_ORDER as readonly string[]).includes(x);
+}
+
+/** 클라이언트가 advanceOnboarding으로 옮길 수 있는가. 닉네임(setNickname)과 튜토리얼 공략 끝(endRaid)은 서버가 옮긴다. */
+export function canAdvance(from: OnboardingStage, to: OnboardingStage): boolean {
+  const a = ONBOARDING_ORDER.indexOf(from);
+  const b = ONBOARDING_ORDER.indexOf(to);
+  if (b <= a) return false;
+  if (from === 'cutscene') return to === 'nickname';
+  if (from === 'end') return to === 'done';
+  const first = ONBOARDING_ORDER.indexOf('raid_sortie');
+  const last = ONBOARDING_ORDER.indexOf('match_sortie');
+  return a >= first && a < last && b <= last;
+}
+
 export interface UserState {
   v: 1;
-  profile: { nickname: string; createdAt: number };
+  profile: { nickname: string; createdAt: number; nicknameChanges: number };
   castle: { level: number; floors: FloorLayout[] };
   roster: Partial<Record<MonsterId, { level: number }>>;
   traps: Partial<Record<TrapId, { level: number }>>;
@@ -87,6 +112,7 @@ export interface UserState {
   firstWinDay: string | null;
   starterOffered: boolean;
   processedPurchases: string[];
+  onboarding: OnboardingState;
 }
 
 export function isNew(raw: unknown): boolean {
@@ -114,7 +140,7 @@ function introLog(now: number): RaidLogEntry[] {
 export function defaultState(account: string, now: number, seasonId: string): UserState {
   return {
     v: 1,
-    profile: { nickname: nicknameFor(account), createdAt: now },
+    profile: { nickname: nicknameFor(account), createdAt: now, nicknameChanges: 0 },
     castle: { level: 1, floors: [{ monsters: ['slime', 'skeleton', null], trap: 'spikes' }] },
     roster: { slime: { level: 1 }, skeleton: { level: 1 } },
     traps: { spikes: { level: 1 } },
@@ -134,6 +160,7 @@ export function defaultState(account: string, now: number, seasonId: string): Us
     firstWinDay: null,
     starterOffered: false,
     processedPurchases: [],
+    onboarding: { at: 'cutscene', nicknameSet: false },
   };
 }
 
@@ -144,4 +171,11 @@ export function resolveFloors(s: UserState): ResolvedFloor[] {
       .map((id) => ({ id, level: s.roster[id]?.level ?? 1 })),
     trap: f.trap ? { id: f.trap, level: s.traps[f.trap]?.level ?? 1 } : null,
   }));
+}
+
+/** 이 칸들이 생기기 전에 저장된 계정을 읽을 때 채운다. 입문 공략을 끝낸 계정은 튜토리얼을 다시 보지 않는다. */
+export function withDefaults(s: UserState): UserState {
+  const onboarding: OnboardingState = s.onboarding ?? { at: s.introDone ? 'done' : 'cutscene', nicknameSet: false };
+  const profile = { ...s.profile, nicknameChanges: s.profile.nicknameChanges ?? 0 };
+  return { ...s, onboarding, profile };
 }

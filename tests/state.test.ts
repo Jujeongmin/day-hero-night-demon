@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dayKey, defaultState, isNew, nicknameFor, resolveFloors } from '../server/src/state';
+import { canAdvance, dayKey, defaultState, isNew, nicknameFor, resolveFloors, withDefaults, type UserState } from '../server/src/state';
 
 describe('state', () => {
   it('treats empty or unversioned state as new', () => {
@@ -35,5 +35,42 @@ describe('state', () => {
     expect(resolveFloors(s)).toEqual([
       { monsters: [{ id: 'slime', level: 5 }, { id: 'skeleton', level: 1 }], trap: { id: 'spikes', level: 1 } },
     ]);
+  });
+});
+
+describe('onboarding', () => {
+  it('a new account starts at the cutscene without a chosen nickname', () => {
+    const s = defaultState('0xaaaa1111', 1_000_000_000, 's1');
+    expect(s.onboarding).toEqual({ at: 'cutscene', nicknameSet: false });
+    expect(s.profile.nicknameChanges).toBe(0);
+  });
+
+  it('old saves: finished intro → done but still asked for a nickname; unfinished → cutscene', () => {
+    const s = defaultState('0xaaaa1111', 1, 's1');
+    const { onboarding: _drop, ...rest } = s;
+    void _drop;
+    const old = { ...rest, profile: { nickname: s.profile.nickname, createdAt: 1 } } as unknown as UserState;
+    expect(withDefaults({ ...old, introDone: true }).onboarding).toEqual({ at: 'done', nicknameSet: false });
+    expect(withDefaults({ ...old, introDone: false }).onboarding).toEqual({ at: 'cutscene', nicknameSet: false });
+    expect(withDefaults(old).profile.nicknameChanges).toBe(0);
+  });
+
+  it('withDefaults keeps saves that already have the fields', () => {
+    const s = { ...defaultState('0xaaaa1111', 1, 's1'), onboarding: { at: 'upgrade_tab' as const, nicknameSet: true } };
+    expect(withDefaults(s).onboarding).toEqual({ at: 'upgrade_tab', nicknameSet: true });
+  });
+
+  it('canAdvance: only forward, and only through the doors the client may open', () => {
+    expect(canAdvance('cutscene', 'nickname')).toBe(true);
+    expect(canAdvance('cutscene', 'raid_sortie')).toBe(false);
+    expect(canAdvance('nickname', 'raid_sortie')).toBe(false);
+    expect(canAdvance('raid_sortie', 'raid_ult')).toBe(true);
+    expect(canAdvance('raid_ult', 'place_floor')).toBe(true);
+    expect(canAdvance('upgrade_one', 'match_sortie')).toBe(true);
+    expect(canAdvance('upgrade_one', 'end')).toBe(false);
+    expect(canAdvance('match_sortie', 'end')).toBe(false);
+    expect(canAdvance('end', 'done')).toBe(true);
+    expect(canAdvance('place_slot', 'raid_sortie')).toBe(false);
+    expect(canAdvance('done', 'done')).toBe(false);
   });
 });
