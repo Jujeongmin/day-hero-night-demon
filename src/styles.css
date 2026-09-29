@@ -10,6 +10,8 @@
   --ruby: #ff4a5e;
   --hp: #3cf07a;
   --font: 'Do Hyeon', 'Malgun Gothic', sans-serif;
+  /* frame_sq.png 가운데 색(스포이드). 창 안쪽을 이 한 색으로 칠한다 — 그림 가운데를 늘리면 오른쪽에 어두운 띠가 생긴다 */
+  --panel: rgb(81, 20, 35);
 }
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; background: #000; color: var(--text); font-family: var(--font); }
@@ -54,7 +56,7 @@ select { font: inherit; }
 
 .idle-choice {
   position: absolute; right: 8px; top: 132px; z-index: 4; display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 150px;
-  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 fill / 12px stretch; image-rendering: pixelated;
+  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated;
 }
 .idle-choice small { text-align: center; font-size: 11px; }
 .hud-row { display: flex; gap: 4px; }
@@ -87,7 +89,7 @@ select { font: inherit; }
 /* 아래 창: 화면의 약 1/3, 위에 해골·뿔 장식 */
 .sheet {
   position: relative; z-index: 5; flex: none; height: 34%; display: flex; flex-direction: column; margin-top: 18px;
-  border: 12px solid transparent; border-bottom-width: 6px; border-image: url(/ui/frame_sq.png) 10 fill / 12px 12px 6px stretch; image-rendering: pixelated;
+  border: 12px solid transparent; border-bottom-width: 6px; border-image: url(/ui/frame_sq.png) 10 / 12px 12px 6px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated;
 }
 .sheet::before {
   content: ''; position: absolute; left: 50%; top: -34px; width: 150px; height: 44px; transform: translateX(-50%);
@@ -166,7 +168,7 @@ canvas.battle {
 .cut-img { width: min(100%, 58vh); aspect-ratio: 1; image-rendering: pixelated; }
 .cut-line {
   width: min(100%, 58vh); margin: 0; min-height: 64px; font-size: 17px; line-height: 1.4;
-  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 fill / 12px stretch; image-rendering: pixelated;
+  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated;
 }
 .cut-title-wrap { position: relative; width: min(100%, 58vh); display: grid; place-items: center; }
 .cut-title-wrap > * { grid-area: 1 / 1; }
@@ -179,7 +181,7 @@ canvas.battle {
 .nick-lord { width: min(70%, 34vh); aspect-ratio: 1; image-rendering: pixelated; }
 .nick-box {
   width: min(100%, 360px); display: flex; flex-direction: column; gap: 8px; align-items: stretch; text-align: center;
-  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 fill / 12px stretch; image-rendering: pixelated;
+  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated;
 }
 .nick-box h2 { margin: 0; font-weight: 400; color: var(--bone); }
 .nick-input {
@@ -194,7 +196,7 @@ canvas.battle {
 @keyframes tutpulse { 50% { outline-color: #ffcf4d55; } }
 .tut-talk {
   position: absolute; left: 8px; right: 8px; top: 52px; max-width: 464px; margin: 0 auto; display: flex; gap: 8px; align-items: center;
-  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 fill / 12px stretch; image-rendering: pixelated;
+  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated;
 }
 .tut-talk p { margin: 0; font-size: 16px; line-height: 1.35; color: var(--bone); }
 

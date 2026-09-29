@@ -46,7 +46,7 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
           <Portrait id={id} label={label} />
           <span>
             {label} {T.level(level)}
-            <span className="stats">{(['hp', 'atk', 'def', 'spd'] as const).map(stat)}</span>
+            <span className="stats">{(['hp', 'atk', 'def'] as const).map(stat)}</span>
             {open === id && <small className="skill">{skillText(unit.skill, unit.cooldown)}</small>}
           </span>
         </span>
