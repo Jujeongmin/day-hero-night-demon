@@ -13,16 +13,16 @@ describe('growth curve', () => {
     expect([1, 2, 10].map(lordLevel)).toEqual([1, 11, 91]);
   });
 
-  it('wave gold = 3 invaders × 5 × 1.2^(stage−1)', () => {
+  it('wave gold = 3 invaders × 5 × 1.18^(stage−1)', () => {
     expect(waveGold(1)).toBe(15);
     expect(waveGold(2)).toBe(18);
-    expect(waveGold(11)).toBe(Math.round(15 * Math.pow(1.2, 10)));
+    expect(waveGold(11)).toBe(Math.round(15 * Math.pow(1.18, 10)));
   });
 
-  it('fixed gold rewards stay until stage 10, then grow ×1.2 per stage', () => {
+  it('fixed gold rewards stay until stage 10, then grow ×1.18 per stage', () => {
     expect(scaledGold(5000, 1)).toBe(5000);
     expect(scaledGold(5000, 10)).toBe(5000);
-    expect(scaledGold(5000, 11)).toBe(6000);
+    expect(scaledGold(5000, 11)).toBe(5900);
   });
 
   it('big numbers read as k / m / b', () => {
@@ -56,16 +56,16 @@ describe('economy', () => {
     expect(npcLoot(0)).toBe(npcLoot(1));
   });
 
-  it('unit upgrade starts at 50 and grows ×1.2, null at max level 100', () => {
+  it('unit upgrade starts at 50 and grows ×1.3, null at max level 100', () => {
     expect(unitUpgradeCost(1)).toBe(50);
-    expect(unitUpgradeCost(2)).toBe(60);
+    expect(unitUpgradeCost(2)).toBe(65);
     expect(unitUpgradeCost(99)).toBeGreaterThan(1e9);
     expect(unitUpgradeCost(100)).toBeNull();
   });
 
   it('castle upgrade = 3 × the ten lord levels it adds, null at max', () => {
     let sum = 0;
-    for (let l = 1; l < 11; l++) sum += 50 * Math.pow(1.2, l - 1);
+    for (let l = 1; l < 11; l++) sum += 50 * Math.pow(1.3, l - 1);
     expect(castleUpgradeCost(1)).toBe(Math.round(sum * 3));
     expect(castleUpgradeCost(10)).toBeNull();
   });

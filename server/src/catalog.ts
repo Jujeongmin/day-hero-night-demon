@@ -60,8 +60,10 @@ export const BALANCE = {
   growth: {
     /** 능력치: 레벨마다 ×1.15 */
     statGrowth: 1.15,
-    /** 비용·골드: 레벨(단계)마다 ×1.2 */
-    costGrowth: 1.2,
+    /** 강화 비용: 레벨마다 ×1.3 (2026-09-29 성장 속도 다안 승인: 1일 Lv22 · 7일 Lv39 · 60일 Lv61 시뮬레이션) */
+    costGrowth: 1.3,
+    /** 골드 보상(공성·방치·전리품·고정 보상): 단계마다 ×1.18 — 비용보다 느리게 늘어 갈수록 천천히 큰다 */
+    goldGrowth: 1.18,
     unitCostBase: 50,
     /** 성 1레벨 = 마왕 10레벨 */
     lordLevelsPerCastle: 10,
