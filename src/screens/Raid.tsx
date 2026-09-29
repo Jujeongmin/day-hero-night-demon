@@ -118,6 +118,7 @@ export default function Raid(props: {
         <span className="hud-row">
           <button className="pill" onClick={() => setSpeed(nextSpeed(speed, has3x))}>{T.speed(speed)}</button>
           {!has3x && <button className="pill locked" onClick={() => buy('speed_x3')} aria-label={T.products.speed_x3[0]}>{T.speed(3)}</button>}
+          <button className="pill" onClick={() => { if (window.confirm(T.confirmGiveUp)) void finish(true); }}>{T.giveUp}</button>
         </span>
       </header>
 
@@ -130,14 +131,13 @@ export default function Raid(props: {
       </div>
     </div>
 
+    {/* 싸우는 동안은 아래 창 없이 전투 화면을 크게. 전멸했을 때만 부활 창 */}
+    {status === 'wiped' && !playing && (
     <section className="sheet raid-sheet">
       <header className="sheet-head">
-        <span>{status === 'wiped' ? T.defeat : ''}</span>
-        <button className="link" onClick={() => { if (window.confirm(T.confirmGiveUp)) void finish(true); }}>{T.giveUp}</button>
+        <span>{T.defeat}</span>
       </header>
       <div className="sheet-body">
-
-      {status === 'wiped' && !playing && (
         <div className="row">
           <button
             className="btn"
@@ -167,9 +167,9 @@ export default function Raid(props: {
           )}
           <button className="btn" onClick={() => finish(false)}>{T.toHome}</button>
         </div>
-      )}
       </div>
     </section>
+    )}
     </>
   );
 }
