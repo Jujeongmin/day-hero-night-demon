@@ -345,4 +345,14 @@ describe('siege', () => {
     expect(await fails(server.callSiegeWave())).toBe(true);
     expect((await server.getHome()).state.siege.stage).toBe(1);
   });
+
+  test('siege ranking starts at stage 1 and home shows a power number', async (server) => {
+    server.connect({ account: 't51-siege' });
+    const home = await server.getHome();
+    expect(home.power).toBeGreaterThan(0);
+    expect(home.state.siege.best).toBe(1);
+    const r = await server.getSiegeRanking();
+    expect(r.myBest).toBe(1);
+    expect(Array.isArray(r.top)).toBe(true);
+  });
 });

@@ -119,7 +119,7 @@ export interface UserState {
   skins: string[];
   lordSkin: 'base' | LordSkin | null;
   /** 스테이지형 공성: 지금 단계, 마지막으로 처리한 파도 시각, 받지 않은 공성 골드 */
-  siege: { stage: number; lastWaveAt: number; pendingGold: number };
+  siege: { stage: number; lastWaveAt: number; pendingGold: number; best: number };
 }
 
 export function isNew(raw: unknown): boolean {
@@ -169,7 +169,7 @@ export function defaultState(account: string, now: number, seasonId: string): Us
     perks: { speed3: false, premium: false },
     skins: [],
     lordSkin: null,
-    siege: { stage: 1, lastWaveAt: now, pendingGold: 0 },
+    siege: { stage: 1, lastWaveAt: now, pendingGold: 0, best: 1 },
   };
 }
 
@@ -192,7 +192,9 @@ export function withDefaults(s: UserState): UserState {
     season: { ...s.season, claimed: s.season.claimed ?? { free: 0, pass: 0 } },
     skins: s.skins ?? [],
     lordSkin: s.lordSkin ?? null,
-    siege: s.siege ?? { stage: 1, lastWaveAt: s.idle.lastClaimAt, pendingGold: 0 },
+    siege: s.siege
+      ? { ...s.siege, best: s.siege.best ?? s.siege.stage }
+      : { stage: 1, lastWaveAt: s.idle.lastClaimAt, pendingGold: 0, best: 1 },
   };
 }
 
@@ -222,5 +224,7 @@ export function resetState(s: UserState, now: number): UserState {
     perks: s.perks,
     skins: s.skins,
     lordSkin: s.lordSkin,
+    // 최고 단계는 순위·단계 보상 기준이라 초기화해도 남긴다(보상을 다시 받지 못하게)
+    siege: { ...fresh.siege, best: s.siege.best },
   };
 }

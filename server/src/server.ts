@@ -1,6 +1,6 @@
 import { BALANCE, HERO_ORDER, TACTICS, type HeroId, type Tactic } from './catalog';
 import { planRecruit, planUpgrade, validateFloor } from './castle';
-import { castlePower, idleIncome, lootAmount, npcLoot } from './economy';
+import { castlePower, displayPower, heroLootBonus, idleIncome, lootAmount, npcLoot, siegeDefenseMult } from './economy';
 import {
   DEFENSE_HONOR, honorForRaid, leagueCollection, rankBracket, seasonEndsAt, seasonIdAt, seasonRewardSoul, seasonStartOf,
 } from './league';
@@ -10,7 +10,7 @@ import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun 
 import { planAdReward } from './ads';
 import { chooseLordSkin, planPassClaim } from './pass';
 import { grantFor } from './purchases';
-import { fightWave, runSiege } from './siege';
+import { fightWave, milestoneSoul, runSiege } from './siege';
 import { rngNext, seedFrom } from './rng';
 import {
   canAdvance, dayKey, defaultState, isNew, isStage, resetState, resolveFloors, withDefaults,
@@ -82,6 +82,8 @@ function tutorialTarget(): Target {
 const NICKNAMES = 'nicknames';
 /** 광고 requestId 사용 기록. 모든 계정 통틀어 한 번만 쓴다(검증 응답이 계정을 알려주지 않아서). */
 const AD_CLAIMS = 'ad_claims';
+/** 공성 최고 단계 순위(계정당 1행, id = 계정). 원본은 사용자 상태 siege.best */
+const SIEGE_BEST = 'siege_best';
 
 async function adClaimed(requestId: string): Promise<boolean> {
   try {
@@ -276,16 +278,27 @@ async function addHonor(account: string, s: UserState, amount: number, now: numb
 }
 
 /** 자리를 비운 동안 밀린 NPC 습격(2시간당 1회, 최대 4회)을 적용한다. 락 안에서만 부른다. */
+/** 새 최고 단계면 처음 넘은 10단계 보상(영혼석)을 주고 순위표를 고친다. 락 안에서, siege 저장 뒤에 부른다. */
+async function recordSiegeBest(me: string, s: UserState, oldBest: number): Promise<number> {
+  if (s.siege.best <= oldBest) return 0;
+  const soul = milestoneSoul(oldBest, s.siege.best);
+  if (soul) await $asset.mint('soul', soul);
+  await $global.addCollectionItem(SIEGE_BEST, { account: me, nickname: s.profile.nickname, best: s.siege.best }, { id: me });
+  return soul;
+}
+
 /** 지난 공성 파도를 처리해 단계와 받지 않은 골드를 갱신한다. 방치 수입 버튼으로 함께 받는다. */
-async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[] }> {
+async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[]; soul: number }> {
   const r = runSiege({
     account: me, stage: s.siege.stage, lastWaveAt: s.siege.lastWaveAt, now,
-    castleLevel: s.castle.level, floors: resolveFloors(s),
+    castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes),
   });
-  if (r.lastWaveAt === s.siege.lastWaveAt) return { s, waves: [] };
-  const siege = { stage: r.stage, lastWaveAt: r.lastWaveAt, pendingGold: s.siege.pendingGold + r.gold };
+  if (r.lastWaveAt === s.siege.lastWaveAt) return { s, waves: [], soul: 0 };
+  const siege = { stage: r.stage, lastWaveAt: r.lastWaveAt, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.peak) };
   await save(me, { siege });
-  return { s: { ...s, siege }, waves: r.waves };
+  const next = { ...s, siege };
+  const soul = await recordSiegeBest(me, next, s.siege.best);
+  return { s: next, waves: r.waves, soul };
 }
 
 async function applyNpcRaids(me: string, s: UserState, now: number): Promise<UserState> {
@@ -369,10 +382,13 @@ export class Server {
       const now = Date.now();
       const { s } = await advanceSiege(me, await loadState(me, now), now);
       if (now - s.siege.lastWaveAt < BALANCE.siegeCallGapMs) throw new Error('SIEGE_TOO_SOON');
-      const r = fightWave({ account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s) });
-      const siege = { stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold };
+      const r = fightWave({
+        account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes),
+      });
+      const siege = { stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.stage) };
       await save(me, { siege });
-      return { wave: { at: now, won: r.won }, siege, gold: r.gold };
+      const soul = await recordSiegeBest(me, { ...s, siege }, s.siege.best);
+      return { wave: { at: now, won: r.won }, siege, gold: r.gold, soul };
     });
   }
 
@@ -476,7 +492,7 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const raided = await applyNpcRaids(me, await rollSeason(me, await loadState(me, now), now), now);
-      const { s, waves } = await advanceSiege(me, raided, now);
+      const { s, waves, soul: siegeSoul } = await advanceSiege(me, raided, now);
       return {
         state: s,
         ...(await balances(me)),
@@ -485,6 +501,9 @@ export class Server {
         // 이번에 처리된 파도 중 마지막 것만 화면에서 재생한다
         siegeLastWave: waves.length > 0 ? waves[waves.length - 1] : null,
         siegeWaveMs: BALANCE.siegeWaveMs,
+        // 자리를 비운 동안 처음 넘은 10단계 보상(영혼석). 화면에 한 번 알린다
+        siegeSoul,
+        power: displayPower(s.castle.level, resolveFloors(s), s.heroes),
         seasonEndsAt: seasonEndsAt(now),
       };
     });
@@ -641,6 +660,10 @@ export class Server {
       } else {
         loot = await settleDefender(me, s, run, won, now);
       }
+      // 용사 레벨 보너스: 상대가 잃는 양과 별개로 서버가 새로 준다
+      const bonus = won ? heroLootBonus(loot, s.heroes) : 0;
+      if (bonus) await $asset.mint('gold', bonus);
+      loot += bonus;
       const result = await finishRun(me, s, run, won, loot, now);
       if (run.target === TUTORIAL_TARGET && s.onboarding.at === 'match_sortie') {
         await save(me, { onboarding: { ...s.onboarding, at: 'end' } });
@@ -685,6 +708,17 @@ export class Server {
       await save(p.account, { ...g.patch, processedPurchases: [...s.processedPurchases, p.purchaseId].slice(-200) });
       return { success: true };
     });
+  }
+
+  /** 공성 최고 단계 순위 Top 20 + 내 최고 단계 */
+  async getSiegeRanking() {
+    const me = $sender.account;
+    const s = await loadState(me, Date.now());
+    const top = await $global.getCollectionItems(SIEGE_BEST, { orderBy: [{ field: 'best', direction: 'desc' }], limit: 20 });
+    return {
+      myBest: s.siege.best,
+      top: top.map((r: any) => ({ nickname: r.nickname, best: r.best, me: r.account === me })),
+    };
   }
 
   async getLeague() {

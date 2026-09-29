@@ -70,6 +70,11 @@ export const BALANCE = {
   siegeGoldPerKill: 1,
   /** 바로 부르기(무료 스킵, 2026-09-29 승인): 파도와 파도 사이 최소 간격 = 화면 연출 길이 */
   siegeCallGapMs: 10_000,
+  /** 처음 도달한 10단계마다 영혼석 = 그 단계 수 (2026-09-29 승인). 계정당 한 번, 초기화해도 다시 받지 않는다 */
+  siegeMilestoneEvery: 10,
+  /** 용사 레벨(3명 합 − 3) 1마다: 공략 전리품 +2%(서버가 새로 지급), 공성 방어 능력치 +5% (2026-09-29 승인) */
+  heroLootPerLevel: 0.02,
+  heroSiegePerLevel: 0.05,
   /** 20단계를 넘으면 레벨 대신 단계마다 능력치 +10% */
   siegeMultPerStage: 0.1,
   lootRate: 0.1,
