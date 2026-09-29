@@ -239,7 +239,7 @@ export default function App() {
         break;
       case 'shop':
         title = T.panels.shop;
-        body = <Shop items={shopItems} owned={ownedProducts(home.state)} />;
+        body = <Shop api={api} home={home} items={shopItems} owned={ownedProducts(home.state)} onRefresh={refresh} onToast={onError} />;
         break;
     }
   }

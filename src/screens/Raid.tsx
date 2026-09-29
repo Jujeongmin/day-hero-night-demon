@@ -3,6 +3,7 @@ import type { BattleEvent } from '../../server/src/battle';
 import { HERO_ORDER } from '../../server/src/catalog';
 import { autoTactic, runStatus, type RunStatus } from '../../server/src/raid';
 import type { Run } from '../../server/src/state';
+import AdButton from '../render/AdButton';
 import BattleCanvas from '../render/battleCanvas';
 import { floorBgId } from '../render/skins';
 import { nextSpeed, type Speed } from '../render/speed';
@@ -168,7 +169,19 @@ export default function Raid(props: {
             {T.revive(revives)}
           </button>
           {revives < 1 && !run.reviveUsed && (
-            <button className="btn" onClick={() => buy('revive')}>{T.buyRevive}</button>
+            <AdButton
+              api={api}
+              placement="revive"
+              label={T.ads.revive}
+              premium={!!home.state.perks?.premium}
+              className="btn"
+              onDone={() => call(async () => {
+                const r = await api.revive();
+                await onRefresh();
+                return r;
+              })}
+              onToast={onError}
+            />
           )}
           <button className="btn" onClick={() => finish(false)}>{T.toHome}</button>
         </div>

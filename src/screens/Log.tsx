@@ -1,4 +1,8 @@
 import { useState } from 'react';
+import { BALANCE } from '../../server/src/catalog';
+import { dayKey } from '../../server/src/state';
+import AdButton from '../render/AdButton';
+import { adsLeft } from '../services/ads';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
 
@@ -28,8 +32,19 @@ export default function Log(props: {
   }
 
   if (s.raidLog.length === 0) return <p className="muted">{T.logEmpty}</p>;
+  const now = Date.now();
+  const freeUsed = s.revengeUsed.day === dayKey(now) ? s.revengeUsed.count : 0;
+  // 무료 복수를 다 쓰고 복수권도 없으면 광고로 한 번 더
+  const needTicket = freeUsed >= BALANCE.freeRevengesPerDay && s.credits.revenge < 1;
+  const left = adsLeft(s, 'revenge', now);
   return (
     <>
+      {needTicket && (
+        <div className="line">
+          <span>{T.ads.revenge} <small>{T.ads.left(left)}</small></span>
+          <AdButton api={api} placement="revenge" label={T.ads.revenge} premium={!!s.perks?.premium} disabled={left < 1} onDone={onRefresh} onToast={onError} />
+        </div>
+      )}
       {s.raidLog.map((e) => {
         const canRevenge = !e.npc && e.attackerWon && !e.revenged && Date.now() - e.at < 24 * 3_600_000 && !s.run;
         return (

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { BALANCE, LORD, MONSTERS } from '../../server/src/catalog';
 import { floorsUnlocked } from '../../server/src/economy';
+import AdButton from '../render/AdButton';
 import Sprite from '../render/Sprite';
+import { adsLeft } from '../services/ads';
 import { lordSpriteId } from '../render/skins';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
@@ -117,6 +119,22 @@ export default function CastleScene(props: {
           +{home.idlePreview}
         </button>
       )}
+
+      {!s.run && (() => {
+        const now = Date.now();
+        const boostMin = s.idleBoost && s.idleBoost.until > now ? Math.ceil((s.idleBoost.until - now) / 60_000) : 0;
+        const left = adsLeft(s, 'idle_boost', now);
+        // 영구 2배(옛 상품)가 있으면 광고 2배는 소용없다
+        if (s.idle.mult >= 2) return null;
+        return (
+          <div className="float-boost">
+            {boostMin > 0 && <span className="pill">{T.ads.boostLeft(boostMin)}</span>}
+            {left > 0 && (
+              <AdButton api={api} placement="idle_boost" label={T.ads.boost} premium={!!s.perks?.premium} className="btn small gold" onDone={onRefresh} onToast={onError} />
+            )}
+          </div>
+        );
+      })()}
 
       {!panelOpen && <div className="scene-foot">
         {s.run ? (

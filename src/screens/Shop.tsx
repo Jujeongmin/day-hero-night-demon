@@ -1,12 +1,26 @@
 import { SHOP_PRODUCTS } from '../../server/src/purchases';
+import AdButton from '../render/AdButton';
 import { Portrait } from '../render/Sprite';
+import { adsLeft } from '../services/ads';
+import type { Api, HomeData } from '../services/api';
 import { buy, findItem, type ShopItem } from '../services/shop';
 import { T } from '../strings/ko';
 
 /** owned: 이미 효과가 켜져 있어 다시 사도 소용없는 상품 (예: 이번 시즌 패스) */
-export default function Shop(props: { items: ShopItem[]; owned: Set<string> }) {
+export default function Shop(props: {
+  api: Api; home: HomeData; items: ShopItem[]; owned: Set<string>;
+  onRefresh: () => Promise<void>; onToast: (m: string) => void;
+}) {
+  const { api, home, onRefresh, onToast } = props;
+  const supplyLeft = adsLeft(home.state, 'daily_supply', Date.now());
   return (
     <>
+      <div className="line">
+        <span className="item"><Portrait id="prod_daily_supply" label={T.ads.supply} /><span><b>{T.ads.supply}</b><br /><small>{T.ads.supplyDesc}</small></span></span>
+        {supplyLeft > 0
+          ? <AdButton api={api} placement="daily_supply" label={T.ads.receive} premium={!!home.state.perks?.premium} onDone={onRefresh} onToast={onToast} />
+          : <button className="btn small" disabled>{T.ads.tomorrow}</button>}
+      </div>
       {SHOP_PRODUCTS.map((id) => {
         const item = findItem(props.items, id);
         const [name, desc] = T.products[id];
