@@ -76,3 +76,8 @@
 
 - 프레임 받아 붙이기: `node scripts/fetch-strip.mjs <unit_anim> <…/east/ 또는 …/unknown/> <프레임 수>`
 - 이미 받은 프레임: `node scripts/stitch-strip.mjs <unit_anim> <frame0.png> …` → `public/sprites/<unit_anim>.png` + `src/render/sprites.json`.
+
+## 설정·컷신 (2026-09-29 승인)
+- 설정 아이콘 `public/ui/settings.png` = `art/ui/settings/set_b.png`(뼈 톱니 + 해골, 64px pixflux seed 902)를 내용 영역으로 자른 것. HUD 가운데 36px.
+- 음량 슬라이더: 막대는 UI 키트 `bar.png` 9조각, 손잡이 `public/ui/knob.png` = `art/ui/settings/knob_a.png`(해골, 32px seed 911). 막대 그림 후보 `track.png`는 지저분해서 쓰지 않는다.
+- 컷신 240×240 pixflux: `art/cutscene/cut1_d`(청구서 가득한 상자, seed 852) · `cut2_b`(812) · `cut3_a`(821) · `cut4_a`(831) · `cut5_a`(841) → `public/cutscene/cut1~5.png`. 제목은 5컷을 어둡게 깔고 아래쪽에 글자.

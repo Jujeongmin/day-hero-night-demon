@@ -12,10 +12,11 @@ import Upgrade from './screens/Upgrade';
 import Log from './screens/Log';
 import Shop from './screens/Shop';
 import League from './screens/League';
+import Settings from './screens/Settings';
 import Cutscene from './screens/Cutscene';
 import Nickname from './screens/Nickname';
 import { startShop, type ShopItem } from './services/shop';
-import { isMuted, playBgm, setMuted, sfx, unlockAudio } from './services/audio';
+import { playBgm, sfx, unlockAudio } from './services/audio';
 import { preloadSprites } from './render/battleCanvas';
 import { emitTut } from './tutorial/bus';
 import { isTutorialStage } from './tutorial/steps';
@@ -23,7 +24,7 @@ import TutorialOverlay from './tutorial/TutorialOverlay';
 
 type Tab = 'upgrade' | 'log' | 'league' | 'shop';
 export type Panel =
-  | { name: Tab } | { name: 'match' } | { name: 'floor'; floor: number } | { name: 'result'; result: EndResult };
+  | { name: Tab } | { name: 'match' } | { name: 'settings' } | { name: 'floor'; floor: number } | { name: 'result'; result: EndResult };
 
 const TABS: Tab[] = ['upgrade', 'log', 'league', 'shop'];
 
@@ -57,7 +58,6 @@ export default function App() {
   const [raiding, setRaiding] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [muted, setMutedState] = useState(isMuted);
 
   // 첫 입력에서 오디오를 풀고, 버튼을 누를 때마다 탭 소리
   useEffect(() => {
@@ -79,11 +79,6 @@ export default function App() {
     preloadSprites();
   }, [connected]);
 
-  const toggleMute = () => {
-    const next = !isMuted();
-    setMuted(next);
-    setMutedState(next);
-  };
 
   const onError = useCallback((msg: string) => {
     setToast(msg);
@@ -237,6 +232,10 @@ export default function App() {
         title = T.panels.league;
         body = <League api={api} onError={onError} />;
         break;
+      case 'settings':
+        title = T.panels.settings;
+        body = <Settings api={api} home={home} onRefresh={refresh} onError={onError} onToast={onError} />;
+        break;
       case 'shop':
         title = T.panels.shop;
         body = <Shop items={shopItems} owned={ownedProducts(home.state)} />;
@@ -251,8 +250,7 @@ export default function App() {
         home={home}
         selected={panel?.name === 'floor' ? panel.floor : null}
         panelOpen={!!panel}
-        muted={muted}
-        onToggleMute={toggleMute}
+        onSettings={() => toggle({ name: 'settings' })}
         onRefresh={refresh}
         onRaid={startRaid}
         onMatch={() => toggle({ name: 'match' })}
