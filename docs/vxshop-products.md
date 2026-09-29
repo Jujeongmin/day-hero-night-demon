@@ -14,7 +14,7 @@
 | `speed_x3` | 3x Speed | 300 | 999999 | 1 | — | — | `art/products/speed_x3.png` | Watch raids at 3x speed. Forever. One per account. **(새로 등록)** |
 | `premium` | Premium Pass | 500 | 999999 | 1 | — | — | `art/products/premium.png` | Get ad rewards instantly without watching ads (same daily limits). Forever. One per account. **(새로 등록)** |
 
-## 끈 상품 5개 (삭제하지 말고 Status만 끈다)
+## 없앤 상품 5개 (2026-09-29 사용자가 대시보드에서 삭제 — 정식 출시 전이라 판매 기록 없음)
 
 `daily_supply`, `revenge_ticket`, `shadow_double`, `revive`, `idle_x2` — 소모품은 광고 보상으로 옮겼다(`docs/superpowers/specs/2026-09-29-monetization-rework-design.md`). 서버는 끄기 전 결제분이 웹훅으로 와도 지급한다(`shadow_double`은 기능이 없어져 성공 처리만). 이미 `idle_x2`를 산 계정은 영구 2배가 유지된다.
 
