@@ -11,7 +11,7 @@ import Result from './screens/Result';
 import Upgrade from './screens/Upgrade';
 import Log from './screens/Log';
 import Shop from './screens/Shop';
-import League from './screens/League';
+import League, { type LeagueTab } from './screens/League';
 import Settings from './screens/Settings';
 import Cutscene from './screens/Cutscene';
 import Nickname from './screens/Nickname';
@@ -24,7 +24,7 @@ import TutorialOverlay from './tutorial/TutorialOverlay';
 
 type Tab = 'upgrade' | 'log' | 'league' | 'shop';
 export type Panel =
-  | { name: Tab } | { name: 'match' } | { name: 'settings' } | { name: 'floor'; floor: number } | { name: 'result'; result: EndResult };
+  | { name: Exclude<Tab, 'league'> } | { name: 'league'; tab?: LeagueTab } | { name: 'match' } | { name: 'settings' } | { name: 'floor'; floor: number } | { name: 'result'; result: EndResult };
 
 const TABS: Tab[] = ['upgrade', 'log', 'league', 'shop'];
 
@@ -231,7 +231,7 @@ export default function App() {
         break;
       case 'league':
         title = T.panels.league;
-        body = <League api={api} home={home} onRefresh={refresh} onError={onError} />;
+        body = <League key={panel.tab ?? 'rank'} api={api} home={home} initialTab={panel.tab} onRefresh={refresh} onError={onError} />;
         break;
       case 'settings':
         title = T.panels.settings;
@@ -257,6 +257,7 @@ export default function App() {
         onMatch={() => toggle({ name: 'match' })}
         onFloor={openFloor}
         onLocked={() => setPanel({ name: 'upgrade' })}
+        onSiegeRank={() => setPanel({ name: 'league', tab: 'siege' })}
         onError={onError}
       />
       {panel && (

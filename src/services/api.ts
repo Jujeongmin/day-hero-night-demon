@@ -17,6 +17,10 @@ export interface HomeData {
   /** 이번 조회에서 서버가 처리한 마지막 공성 파도 */
   siegeLastWave: { at: number; won: boolean } | null;
   siegeWaveMs: number;
+  /** 이번 조회에서 처음 넘은 10단계 보상(영혼석) */
+  siegeSoul?: number;
+  /** 전투력 = 성 전투력 × 용사 공성 방어 배수 */
+  power?: number;
   seasonEndsAt: number;
 }
 
@@ -32,6 +36,8 @@ export interface EndResult {
 }
 
 export interface LeagueRow { rank: number; nickname: string; honor: number; ghost: boolean; me: boolean }
+
+export interface SiegeRankData { myBest: number; top: { nickname: string; best: number; me: boolean }[] }
 
 export interface LeagueData {
   seasonId: string;
@@ -66,7 +72,8 @@ export function createApi(server: RemoteServer) {
     revive: () => call<RunResult>('revive'),
     endRaid: (abandon: boolean) => call<EndResult>('endRaid', [abandon]),
     getLeague: () => call<LeagueData>('getLeague'),
-    callSiegeWave: () => call<{ wave: { at: number; won: boolean }; gold: number }>('callSiegeWave'),
+    callSiegeWave: () => call<{ wave: { at: number; won: boolean }; gold: number; soul: number }>('callSiegeWave'),
+    getSiegeRanking: () => call<SiegeRankData>('getSiegeRanking'),
     claimPassRewards: () => call<{ gold: number; soul: number; skins: string[] }>('claimPassRewards'),
     advanceOnboarding: (to: OnboardingStage) => call<{ onboarding: OnboardingState }>('advanceOnboarding', [to]),
     setNickname: (name: string) => call<{ nickname: string; onboarding: OnboardingState; nicknameChanges: number }>('setNickname', [name]),

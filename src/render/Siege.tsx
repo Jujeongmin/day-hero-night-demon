@@ -15,6 +15,8 @@ export default function Siege(props: {
   ground: number;
   paused: boolean;
   stage: number;
+  best: number;
+  onRank: () => void;
   /** 다음 파도 시각(이 기기 시계 기준) */
   nextWaveAt: number;
   /** 서버가 마지막으로 처리한 파도 (at = 서버 시각) */
@@ -27,7 +29,7 @@ export default function Siege(props: {
   /** 바로 부르기(무료 스킵). 요청 중이면 null */
   onCall: (() => void) | null;
 }) {
-  const { ground, paused, stage, nextWaveAt, lastWave, onWaveDue, onFighting, compact, onCall } = props;
+  const { ground, paused, stage, best, onRank, nextWaveAt, lastWave, onWaveDue, onFighting, compact, onCall } = props;
   const [s, setS] = useState<SiegeState>(idleSiege);
   const [now, setNow] = useState(Date.now());
   // 재생 중에는 싸우기 전 단계를 보여 주고, 끝나면 새 단계로 바꾼다
@@ -101,9 +103,10 @@ export default function Siege(props: {
             <span style={{ width: `${(s.castleHp / SIEGE.castleMax) * 100}%` }} />
           </div>
           <div className="siege-stage">
-            <span className="pill">
+            <button className="pill" onClick={onRank}>
               {breached ? T.siege.breached : running ? T.siege.stage(shownStage) : T.siege.next(shownStage, Math.max(0, nextWaveAt - now))}
-            </span>
+              {!breached && <small> · {T.siege.best(Math.max(best, shownStage))}</small>}
+            </button>
             {!running && (
               <button className="btn small gold" disabled={!canCall} onClick={() => onCall?.()}>{T.siege.call}</button>
             )}

@@ -49,9 +49,11 @@ export default function CastleScene(props: {
   onMatch: () => void;
   onFloor: (index: number) => void;
   onLocked: () => void;
+  /** 공성 문구를 누르면 공성 순위 창 */
+  onSiegeRank: () => void;
   onError: (msg: string) => void;
 }) {
-  const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onError } = props;
+  const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onSiegeRank, onError } = props;
   const s = home.state;
   const [busy, setBusy] = useState(false);
   const [choose, setChoose] = useState(false);
@@ -71,10 +73,14 @@ export default function CastleScene(props: {
     if (calling) return;
     setCalling(true);
     api.callSiegeWave()
-      .then((r) => { setCalledWave(r.wave); return onRefresh(); })
+      .then((r) => { setCalledWave(r.wave); if (r.soul > 0) onError(T.siege.milestone(r.soul)); return onRefresh(); })
       .catch((e) => onError(errorText(e)))
       .finally(() => setCalling(false));
   }, [api, calling, onRefresh, onError]);
+  // 자리를 비운 동안 처음 넘은 10단계 보상 알림 (그 조회에서만 0보다 크다)
+  useEffect(() => {
+    if ((home.siegeSoul ?? 0) > 0) onError(T.siege.milestone(home.siegeSoul ?? 0));
+  }, [home, onError]);
   const served = home.siegeLastWave ?? null;
   const lastWave = calledWave && (!served || calledWave.at > served.at) ? calledWave : served;
   // 영구 2배(옛 상품) 계정은 광고 2배를 쓰지 않는다
@@ -105,7 +111,12 @@ export default function CastleScene(props: {
     <div className={`scene ${panelOpen ? 'panel-open' : ''}`}>
       <img className="backdrop" src="sprites/bg_night.png" alt="" draggable={false} />
       <header className="hud">
-        <span className="pill"><b>{home.gold}</b> {T.gold}</span>
+        <span className="hud-col">
+          <span className="pill"><b>{home.gold}</b> {T.gold}</span>
+          {home.power !== undefined && (
+            <span className="pill power" aria-label={T.siege.power}><img src="icons/stat_atk.png" alt="" draggable={false} /><b>{home.power.toLocaleString()}</b></span>
+          )}
+        </span>
         <button className="hud-icon" data-tut="settings" onClick={onSettings} aria-label={T.settings.title}><img src="ui/settings.png" alt="" draggable={false} /></button>
         <span className="pill"><b>{home.soul}</b> {T.soul}</span>
       </header>
@@ -146,6 +157,8 @@ export default function CastleScene(props: {
         ground={panelOpen ? 12 : 90}
         paused={!!s.run}
         stage={s.siege?.stage ?? 1}
+        best={s.siege?.best ?? s.siege?.stage ?? 1}
+        onRank={onSiegeRank}
         nextWaveAt={nextWaveAt}
         lastWave={lastWave}
         compact={panelOpen}

@@ -1,20 +1,48 @@
 import { useEffect, useState } from 'react';
-import { errorText, type Api, type HomeData, type LeagueData } from '../services/api';
+import { errorText, type Api, type HomeData, type LeagueData, type SiegeRankData } from '../services/api';
 import { T } from '../strings/ko';
 import Pass from './Pass';
 
-/** 리그 창: 순위 | 패스 두 탭 */
-export default function League(props: { api: Api; home: HomeData; onRefresh: () => Promise<void>; onError: (m: string) => void }) {
-  const [tab, setTab] = useState<'rank' | 'track'>('rank');
+export type LeagueTab = 'rank' | 'siege' | 'track';
+
+/** 리그 창: 순위 | 공성 | 패스 세 탭 */
+export default function League(props: {
+  api: Api; home: HomeData; initialTab?: LeagueTab; onRefresh: () => Promise<void>; onError: (m: string) => void;
+}) {
+  const [tab, setTab] = useState<LeagueTab>(props.initialTab ?? 'rank');
+  const tabs: [LeagueTab, string][] = [['rank', T.pass.rank], ['siege', T.siege.rankTab], ['track', T.pass.track]];
   return (
     <>
       <div className="row">
-        <button className={`btn small ${tab === 'rank' ? 'on' : ''}`} onClick={() => setTab('rank')}>{T.pass.rank}</button>
-        <button className={`btn small ${tab === 'track' ? 'on' : ''}`} onClick={() => setTab('track')}>{T.pass.track}</button>
+        {tabs.map(([id, label]) => (
+          <button key={id} className={`btn small ${tab === id ? 'on' : ''}`} onClick={() => setTab(id)}>{label}</button>
+        ))}
       </div>
-      {tab === 'rank'
-        ? <Ranking api={props.api} onError={props.onError} />
-        : <Pass api={props.api} home={props.home} onRefresh={props.onRefresh} onToast={props.onError} />}
+      {tab === 'rank' && <Ranking api={props.api} onError={props.onError} />}
+      {tab === 'siege' && <SiegeRanking api={props.api} onError={props.onError} />}
+      {tab === 'track' && <Pass api={props.api} home={props.home} onRefresh={props.onRefresh} onToast={props.onError} />}
+    </>
+  );
+}
+
+/** 공성 최고 단계 순위: 계정당 최고 기록 하나, 서버가 기록한다 */
+function SiegeRanking(props: { api: Api; onError: (m: string) => void }) {
+  const [data, setData] = useState<SiegeRankData | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    props.api.getSiegeRanking().then(setData).catch((e) => { setFailed(true); props.onError(errorText(e)); });
+  }, [props.api, props.onError]);
+  if (!data) return <p className="muted">{failed ? T.siege.rankFailed : T.loading}</p>;
+  return (
+    <>
+      <div className="line"><span>{T.siege.myBest(data.myBest)}</span><small>{T.siege.milestoneHint}</small></div>
+      {data.top.length === 0 && <span className="muted">{T.siege.noRank}</span>}
+      {data.top.map((r, i) => (
+        <div className="line" key={i} style={r.me ? { fontWeight: 700, color: 'var(--gold)' } : undefined}>
+          <span>{i + 1}. {r.nickname}</span>
+          <span>{T.siege.stage(r.best)}</span>
+        </div>
+      ))}
     </>
   );
 }

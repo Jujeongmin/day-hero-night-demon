@@ -253,6 +253,11 @@ canvas.battle {
 .look.on { color: var(--gold); filter: drop-shadow(0 0 4px #ffcf4dcc); }
 .look:disabled { cursor: default; }
 .siege-stage { position: absolute; left: 50%; bottom: 84px; translate: -50% 0; font-size: 12px; white-space: nowrap; display: flex; gap: 4px; align-items: center; }
+.siege-stage .pill { pointer-events: auto; color: var(--text); background: none; font: inherit; font-size: 12px; }
+.siege-stage .pill small { color: var(--gold); }
+.hud-col { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.pill.power { display: inline-flex; align-items: center; gap: 3px; font-size: 13px; color: var(--gold); }
+.pill.power img { width: 14px; height: 14px; image-rendering: pixelated; }
 .siege-stage .btn { pointer-events: auto; font-size: 12px; min-height: 26px; }
 .invader.leaving { opacity: 0; transition: opacity 1.2s; }
 .siege-coin { position: absolute; width: 18px; height: 18px; image-rendering: pixelated; translate: -50% 0; }

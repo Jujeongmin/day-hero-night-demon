@@ -69,7 +69,7 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
       </div>
       <h4>{T.monstersTitle}</h4>
       {(Object.keys(s.roster) as MonsterId[]).map((id, i) => row(id, MONSTERS[id].name, s.roster[id]!.level, () => api.upgrade('monster', id), i === 0, MONSTERS[id]))}
-      <h4>{T.heroesTitle}</h4>
+      <h4>{T.heroesTitle} <small className="muted">{T.siege.heroHint}</small></h4>
       {(Object.keys(s.heroes) as HeroId[]).map((id) => row(id, HEROES[id].name, s.heroes[id].level, () => api.upgrade('hero', id), false, HEROES[id]))}
       {soulMonsters.length > 0 && <h4>{T.recruitTitle}</h4>}
       {soulMonsters.map((id) => {
