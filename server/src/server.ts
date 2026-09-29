@@ -1,6 +1,6 @@
 import { BALANCE, HERO_ORDER, TACTICS, type HeroId, type Tactic } from './catalog';
 import { planRecruit, planUpgrade, validateFloor } from './castle';
-import { castlePower, idleIncome, lootAmount, npcLoot, siegeGold } from './economy';
+import { castlePower, idleIncome, lootAmount, npcLoot } from './economy';
 import {
   DEFENSE_HONOR, honorForRaid, leagueCollection, rankBracket, seasonEndsAt, seasonIdAt, seasonRewardSoul, seasonStartOf,
 } from './league';
@@ -10,6 +10,7 @@ import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun 
 import { planAdReward } from './ads';
 import { chooseLordSkin, planPassClaim } from './pass';
 import { grantFor } from './purchases';
+import { runSiege } from './siege';
 import { rngNext, seedFrom } from './rng';
 import {
   canAdvance, dayKey, defaultState, isNew, isStage, resetState, resolveFloors, withDefaults,
@@ -275,6 +276,18 @@ async function addHonor(account: string, s: UserState, amount: number, now: numb
 }
 
 /** 자리를 비운 동안 밀린 NPC 습격(2시간당 1회, 최대 4회)을 적용한다. 락 안에서만 부른다. */
+/** 지난 공성 파도를 처리해 단계와 받지 않은 골드를 갱신한다. 방치 수입 버튼으로 함께 받는다. */
+async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[] }> {
+  const r = runSiege({
+    account: me, stage: s.siege.stage, lastWaveAt: s.siege.lastWaveAt, now,
+    castleLevel: s.castle.level, floors: resolveFloors(s),
+  });
+  if (r.lastWaveAt === s.siege.lastWaveAt) return { s, waves: [] };
+  const siege = { stage: r.stage, lastWaveAt: r.lastWaveAt, pendingGold: s.siege.pendingGold + r.gold };
+  await save(me, { siege });
+  return { s: { ...s, siege }, waves: r.waves };
+}
+
 async function applyNpcRaids(me: string, s: UserState, now: number): Promise<UserState> {
   const { raids, lastRaidAt } = npcRaids({
     lastRaidAt: s.idle.lastRaidAt, now, account: me, castleLevel: s.castle.level,
@@ -337,7 +350,7 @@ export class Server {
     }
     return withLocks(id ? [me, `ad:${id}`] : [me], async () => {
       const now = Date.now();
-      const s = await loadState(me, now);
+      const { s } = await advanceSiege(me, await loadState(me, now), now);
       if (id && (await adClaimed(id))) throw new Error('AD_USED');
       const plan = planAdReward(s, placementId, now);
       if (!plan.ok) throw new Error(plan.code);
@@ -448,14 +461,16 @@ export class Server {
     const me = $sender.account;
     return withLocks([me], async () => {
       const now = Date.now();
-      const s = await applyNpcRaids(me, await rollSeason(me, await loadState(me, now), now), now);
+      const raided = await applyNpcRaids(me, await rollSeason(me, await loadState(me, now), now), now);
+      const { s, waves } = await advanceSiege(me, raided, now);
       return {
         state: s,
         ...(await balances(me)),
         now,
-        idlePreview: idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult)
-          + siegeGold(s.castle.level, castlePower(s.castle.level, resolveFloors(s)), s.idle.lastClaimAt, now).gold,
-        siegeKillsPerHour: BALANCE.siegeKillsBase + castlePower(s.castle.level, resolveFloors(s)) / BALANCE.siegePowerPerKill,
+        idlePreview: idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult) + s.siege.pendingGold,
+        // 이번에 처리된 파도 중 마지막 것만 화면에서 재생한다
+        siegeLastWave: waves.length > 0 ? waves[waves.length - 1] : null,
+        siegeWaveMs: BALANCE.siegeWaveMs,
         seasonEndsAt: seasonEndsAt(now),
       };
     });
@@ -465,12 +480,12 @@ export class Server {
     const me = $sender.account;
     return withLocks([me], async () => {
       const now = Date.now();
-      const s = await loadState(me, now);
-      const siege = siegeGold(s.castle.level, castlePower(s.castle.level, resolveFloors(s)), s.idle.lastClaimAt, now);
-      const gold = idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult) + siege.gold;
+      const { s } = await advanceSiege(me, await loadState(me, now), now);
+      const siegeGold = s.siege.pendingGold;
+      const gold = idleIncome(s.castle.level, s.idle.lastClaimAt, now, s.idle.mult) + siegeGold;
       if (gold > 0) await $asset.mint('gold', gold);
-      await save(me, { idle: { ...s.idle, lastClaimAt: now } });
-      return { gold, kills: siege.kills };
+      await save(me, { idle: { ...s.idle, lastClaimAt: now }, siege: { ...s.siege, pendingGold: 0 } });
+      return { gold, siegeGold };
     });
   }
 

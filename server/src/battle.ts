@@ -47,7 +47,7 @@ export type BattleEvent =
   | { t: 'ult'; hero: HeroId }
   | { t: 'end'; outcome: 'won' | 'lost' };
 
-export interface HeroSpec { id: HeroId; level: number; hp?: number }
+export interface HeroSpec { id: HeroId; level: number; hp?: number; mult?: number }
 export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number }
 
 function makeFighter(
@@ -67,7 +67,7 @@ export function createFloorBattle(input: {
   const fighters: Fighter[] = [];
   for (const h of input.heroes) {
     const def = HEROES[h.id];
-    let s = scaleStats(def.stats, h.level);
+    let s = scaleStats(def.stats, h.level, h.mult ?? 1);
     if (input.tactic === 'charge') s = { ...s, atk: Math.round(s.atk * 1.2), def: Math.round(s.def * 0.8) };
     if (input.tactic === 'guard') s = { ...s, def: Math.round(s.def * 1.3), spd: s.spd - 1 };
     fighters.push(makeFighter(`h:${h.id}`, 'hero', h.id, h.level, def.row, s, h.hp ?? s.hp, def.skill, def.cooldown));

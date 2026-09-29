@@ -118,6 +118,8 @@ export interface UserState {
   /** 영구 소장 마왕 외형과 고른 외형(null = 자동: 패스면 해골) */
   skins: string[];
   lordSkin: 'base' | LordSkin | null;
+  /** 스테이지형 공성: 지금 단계, 마지막으로 처리한 파도 시각, 받지 않은 공성 골드 */
+  siege: { stage: number; lastWaveAt: number; pendingGold: number };
 }
 
 export function isNew(raw: unknown): boolean {
@@ -167,6 +169,7 @@ export function defaultState(account: string, now: number, seasonId: string): Us
     perks: { speed3: false, premium: false },
     skins: [],
     lordSkin: null,
+    siege: { stage: 1, lastWaveAt: now, pendingGold: 0 },
   };
 }
 
@@ -189,6 +192,7 @@ export function withDefaults(s: UserState): UserState {
     season: { ...s.season, claimed: s.season.claimed ?? { free: 0, pass: 0 } },
     skins: s.skins ?? [],
     lordSkin: s.lordSkin ?? null,
+    siege: s.siege ?? { stage: 1, lastWaveAt: s.idle.lastClaimAt, pendingGold: 0 },
   };
 }
 

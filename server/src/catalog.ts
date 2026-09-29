@@ -65,10 +65,11 @@ export const BALANCE = {
   floorRestHeal: 0.1,
   idleGoldPerCastleLevelHour: 60,
   idleCapHours: 8,
-  /** 공성 방어(2026-09-29 승인): 시간당 처치 = siegeKillsBase + 전투력 ÷ siegePowerPerKill, 처치당 골드 = 성 레벨 × siegeGoldPerLevel */
-  siegeKillsBase: 10,
-  siegePowerPerKill: 4,
-  siegeGoldPerLevel: 2,
+  /** 스테이지형 공성(2026-09-29 승인): 2분마다 파도 1번, 막으면 단계 × siegeGoldPerKill × 3 */
+  siegeWaveMs: 2 * 60_000,
+  siegeGoldPerKill: 1,
+  /** 20단계를 넘으면 레벨 대신 단계마다 능력치 +10% */
+  siegeMultPerStage: 0.1,
   lootRate: 0.1,
   lootCapPerCastleLevel: 500,
   npcLootPerCastleLevel: 200,

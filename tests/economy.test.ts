@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  castlePower, castleUpgradeCost, floorsUnlocked, idleIncome, lootAmount, npcLoot, siegeGold, unitUpgradeCost,
+  castlePower, castleUpgradeCost, floorsUnlocked, idleIncome, lootAmount, npcLoot, unitUpgradeCost,
 } from '../server/src/economy';
 
 const H = 3_600_000;
@@ -11,16 +11,6 @@ describe('economy', () => {
     expect(idleIncome(1, 0, 20 * H, 1)).toBe(480);
     expect(idleIncome(1, 0, 20 * H, 2)).toBe(960);
     expect(idleIncome(1, 10 * H, 5 * H, 1)).toBe(0);
-  });
-
-  it('siege: kills/hour = 10 + power/4, gold per kill = castle level × 2, same 8h cap as idle', () => {
-    // 전투력 4, 성 Lv1: 시간당 11마리 × 2골드
-    expect(siegeGold(1, 4, 0, 1 * H)).toEqual({ kills: 11, gold: 22 });
-    // 중반: 전투력 82, 성 Lv5 → 시간당 30.5마리 × 10골드, 2시간
-    expect(siegeGold(5, 82, 0, 2 * H)).toEqual({ kills: 61, gold: 610 });
-    // 8시간 넘게 비워도 8시간까지만
-    expect(siegeGold(1, 4, 0, 20 * H)).toEqual(siegeGold(1, 4, 0, 8 * H));
-    expect(siegeGold(1, 4, 10 * H, 5 * H)).toEqual({ kills: 0, gold: 0 });
   });
 
   it('loot = 10% of gold, capped by 500 × castle level, never more than gold', () => {
