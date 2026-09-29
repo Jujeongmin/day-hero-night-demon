@@ -1,6 +1,6 @@
 import type { BattleEvent } from '../../server/src/battle';
 import type { RunStatus } from '../../server/src/raid';
-import type { Run, Target, UserState } from '../../server/src/state';
+import type { OnboardingStage, OnboardingState, Run, Target, UserState } from '../../server/src/state';
 import { T } from '../strings/ko';
 
 export interface RemoteServer {
@@ -62,6 +62,9 @@ export function createApi(server: RemoteServer) {
     revive: () => call<RunResult>('revive'),
     endRaid: (abandon: boolean) => call<EndResult>('endRaid', [abandon]),
     getLeague: () => call<LeagueData>('getLeague'),
+    advanceOnboarding: (to: OnboardingStage) => call<{ onboarding: OnboardingState }>('advanceOnboarding', [to]),
+    setNickname: (name: string) => call<{ nickname: string; onboarding: OnboardingState; nicknameChanges: number }>('setNickname', [name]),
+    resetProgress: (text: string) => call<{ ok: true }>('resetProgress', [text]),
   };
 }
 
