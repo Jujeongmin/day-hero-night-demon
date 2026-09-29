@@ -1,4 +1,5 @@
 /* 검은 쇠·뼈·붉은 보석 테마 (UI 그림은 PixelLab, public/ui/*.png). 글꼴 Do Hyeon */
+/* 2026-09-29: 에디터 미리보기가 예전 CSS를 들고 있어 파일을 한 번 다시 저장함(상단 HUD·마왕 체력바 규칙 포함) */
 :root {
   color-scheme: dark;
   --night: #0c0716;
