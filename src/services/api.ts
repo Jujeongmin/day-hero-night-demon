@@ -17,6 +17,8 @@ export interface HomeData {
   /** 이번 조회에서 서버가 처리한 마지막 공성 파도 */
   siegeLastWave: { at: number; won: boolean } | null;
   siegeWaveMs: number;
+  /** 자리를 비운 동안 공성 요약(10분 넘게 비웠을 때) */
+  siegeAway?: { waves: number; held: number; from: number; to: number } | null;
   /** 이번 조회에서 처음 넘은 10단계 보상(영혼석) */
   siegeSoul?: number;
   /** 전투력 = 성 전투력 × 용사 공성 방어 배수 */

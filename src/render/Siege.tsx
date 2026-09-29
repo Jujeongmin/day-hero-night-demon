@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Sprite from './Sprite';
 import { SIEGE, idleSiege, startWave, stepSiege, waveRunning, type SiegeState } from './siegeSim';
 import { BALANCE } from '../../server/src/catalog';
+import { formatNum, waveGold } from '../../server/src/growth';
 import { T } from '../strings/ko';
 
 const TICK_MS = 66;
@@ -84,6 +85,8 @@ export default function Siege(props: {
 
   if (paused) return null;
   const breached = s.held === false && s.castleHp === 0;
+  // 쓰러진 침입자 1명당 골드(파도 골드 ÷ 3) — 서버 waveGold와 같은 식
+  const perKill = formatNum(Math.round(waveGold(shownStage) / 3));
   // 직전 파도에서 서버 최소 간격이 지나야 부를 수 있다
   const canCall = !!onCall && !running && now - (nextWaveAt - BALANCE.siegeWaveMs) >= BALANCE.siegeCallGapMs;
   return (
@@ -130,8 +133,10 @@ export default function Siege(props: {
           opacity = 1 - k;
         }
         return (
-          <img key={c.id} className="siege-coin" src="icons/gold.png" alt="" draggable={false}
-            style={{ left: `${c.x}%`, bottom, opacity, scale: String(scale) }} />
+          <span key={c.id} className="siege-coin" style={{ left: `${c.x}%`, bottom, opacity, scale: String(scale) }}>
+            <img src="icons/gold.png" alt="" draggable={false} />
+            <b>+{perKill}</b>
+          </span>
         );
       })}
     </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { errorText, type Api, type HomeData, type LeagueData, type SiegeRankData } from '../services/api';
 import { T } from '../strings/ko';
 import Pass from './Pass';
+import { seasonRewardSoul } from '../../server/src/league';
 
 export type LeagueTab = 'rank' | 'siege' | 'track';
 
@@ -59,6 +60,11 @@ function Ranking(props: { api: Api; onError: (m: string) => void }) {
         <span>{T.leagueTitle(data.seasonId)} · {T.myHonor(data.myHonor)}</span>
         <span>{T.endsIn(data.endsAt - Date.now())}</span>
       </div>
+      <small className="muted league-info">
+        {T.seasonReward(seasonRewardSoul(1), seasonRewardSoul(2), seasonRewardSoul(4), seasonRewardSoul(11))}
+        <br />
+        {T.honorHow}
+      </small>
       <h4>{T.bracketTitle}</h4>
       {data.bracket.length === 0 && <span>{T.noBracket}</span>}
       {data.bracket.map((r, i) => (

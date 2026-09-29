@@ -70,6 +70,8 @@ export const T = {
   endsIn: (ms: number) => `종료까지 ${Math.max(0, Math.floor(ms / 86_400_000))}일 ${Math.max(0, Math.floor((ms % 86_400_000) / 3_600_000))}시간`,
   myHonor: (h: number) => `내 명예 ${h}`,
   bracketTitle: '내 브래킷 (30명)',
+  seasonReward: (a: number, b: number, c: number, d: number) => `시즌 끝 보상(브래킷 순위): 1위 영혼석 ${a} · 2~3위 ${b} · 4~10위 ${c} · 그 밖 ${d}`,
+  honorHow: '명예: 공략 승리 10 · 마왕 처치 +5 · 복수 2배 · 방어 성공 3',
   topTitle: '전체 상위 20',
   noBracket: '첫 공략에서 이기면 브래킷에 들어간다',
   stats: { hp: '체력', atk: '공격', def: '방어', spd: '속도' },
@@ -141,6 +143,13 @@ export const T = {
     claimAll: '모두 받기',
     got: (gold: number, soul: number, skin: boolean) =>
       `받았다! ${[gold ? `골드 ${F(gold)}` : '', soul ? `영혼석 ${soul}` : '', skin ? '흑룡 외형' : ''].filter(Boolean).join(' · ')}`,
+  },
+  away: {
+    title: '자리를 비운 동안',
+    waves: (n: number, held: number) => `침입 ${n}번 · 막음 ${held}번`,
+    stage: (from: number, to: number) => `공성 ${from}단계 → ${to}단계`,
+    gold: (g: number) => `쌓인 골드 +${F(g)}`,
+    later: '나중에',
   },
   siege: {
     stage: (n: number) => `공성 ${n}단계`,

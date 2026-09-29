@@ -85,6 +85,11 @@ export default function CastleScene(props: {
   useEffect(() => {
     if ((home.siegeSoul ?? 0) > 0) onError(T.siege.milestone(home.siegeSoul ?? 0));
   }, [home, onError]);
+  // 돌아왔을 때 요약 카드: 서버가 10분 넘게 밀린 파도를 처리한 응답에서 한 번만 띄운다
+  const [away, setAway] = useState<NonNullable<HomeData['siegeAway']> | null>(null);
+  useEffect(() => {
+    if (home.siegeAway && (home.state.onboarding?.at ?? 'done') === 'done') setAway(home.siegeAway);
+  }, [home]);
   const served = home.siegeLastWave ?? null;
   const lastWave = calledWave && (!served || calledWave.at > served.at) ? calledWave : served;
   // 영구 2배(옛 상품) 계정은 광고 2배를 쓰지 않는다
@@ -130,7 +135,8 @@ export default function CastleScene(props: {
 
         <div className={`unit-at lord-at ${lordSkin ? 'aura' : ''}`} style={at(50, THRONE.stand)}>
           {!s.run && <span className="lord-hp"><span style={{ width: `${lordHp * 100}%` }} /></span>}
-          <Sprite id={lordSpriteId(lordSkin)} label={LORD.name} scale={unitScale} />
+          {/* 공성 중(침입자와 싸우는 동안)에는 마왕도 공격 동작 */}
+          <Sprite id={lordSpriteId(lordSkin)} anim={defending ? 'attack' : 'idle'} label={LORD.name} scale={unitScale} />
         </div>
 
         {TIERS.map((tier, i) => {
@@ -181,6 +187,38 @@ export default function CastleScene(props: {
         >
           +{formatNum(home.idlePreview)}
         </button>
+      )}
+
+      {away && !s.run && !panelOpen && (
+        <div className="away-card">
+          <b>{T.away.title}</b>
+          <span>{T.away.waves(away.waves, away.held)}</span>
+          <span>{T.away.stage(away.from, away.to)}</span>
+          {home.idlePreview > 0 && <span className="gold-text">{T.away.gold(home.idlePreview)}</span>}
+          <div className="row">
+            {home.idlePreview > 0 ? (
+              <>
+                <button className="btn small" disabled={busy} onClick={() => { setAway(null); void act(() => api.claimIdle()); }}>
+                  {T.ads.plain(home.idlePreview)}
+                </button>
+                {doubleLeft > 0 && (
+                  <AdButton
+                    api={api}
+                    placement="idle_double"
+                    label={T.ads.double(home.idlePreview * 2)}
+                    premium={!!s.perks?.premium}
+                    className="btn small gold"
+                    onDone={async () => { setAway(null); await onRefresh(); }}
+                    onToast={onError}
+                  />
+                )}
+              </>
+            ) : (
+              <button className="btn small" onClick={() => setAway(null)}>{T.ok}</button>
+            )}
+          </div>
+          {home.idlePreview > 0 && <button className="link" onClick={() => setAway(null)}>{T.away.later}</button>}
+        </div>
       )}
 
       {/* 방치 수입: 그냥 받기 / 광고 보고 두 배 받기 */}

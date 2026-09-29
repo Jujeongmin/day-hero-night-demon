@@ -54,6 +54,13 @@ select { font: inherit; }
 .tier.locked { background: #0007; }
 .tier.locked:hover { border-color: var(--bone); }
 
+.away-card {
+  position: absolute; left: 50%; top: 30%; translate: -50% 0; z-index: 8; width: min(86%, 340px); display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated; font-size: 15px;
+}
+.away-card b { font-size: 19px; color: var(--bone); }
+.away-card .gold-text { color: var(--gold); font-size: 17px; }
+.away-card .row { width: 100%; }
 .idle-choice {
   position: absolute; right: 8px; top: 132px; z-index: 4; display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 150px;
   border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated;
@@ -248,6 +255,7 @@ canvas.battle {
 /* 유료 마왕 외형 빛 테두리 (battleCanvas와 같은 값: skins.ts AURA) */
 .aura { animation: aura 1.6s ease-in-out infinite; }
 @keyframes aura { 0%, 100% { filter: drop-shadow(0 0 3px #b04dff) drop-shadow(0 0 1px #ff4de0); } 50% { filter: drop-shadow(0 0 9px #b04dff) drop-shadow(0 0 3px #ff4de0); } }
+.league-info { font-size: 11px; line-height: 1.4; }
 .looks { display: flex; gap: 8px; }
 .look { background: none; border: 0; padding: 2px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--muted); }
 .look.on { color: var(--gold); filter: drop-shadow(0 0 4px #ffcf4dcc); }
@@ -260,6 +268,8 @@ canvas.battle {
 .pill.power img { width: 14px; height: 14px; image-rendering: pixelated; }
 .siege-stage .btn { pointer-events: auto; font-size: 12px; min-height: 26px; }
 .invader.leaving { opacity: 0; transition: opacity 1.2s; }
-.siege-coin { position: absolute; width: 18px; height: 18px; image-rendering: pixelated; translate: -50% 0; }
+.siege-coin { position: absolute; translate: -50% 0; display: flex; align-items: center; gap: 1px; white-space: nowrap; }
+.siege-coin img { width: 18px; height: 18px; image-rendering: pixelated; }
+.siege-coin b { color: var(--gold); font-size: 13px; text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000; }
 /* 편성 중인 칸: 칸 전체를 금빛으로 물들인다 (2026-09-29 승인 A안) */
 .btn.slot.on { filter: sepia(1) saturate(2.6) hue-rotate(-12deg) brightness(1.15); }
