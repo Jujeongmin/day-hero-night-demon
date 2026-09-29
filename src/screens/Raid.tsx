@@ -4,6 +4,7 @@ import { HERO_ORDER } from '../../server/src/catalog';
 import { autoTactic, runStatus, type RunStatus } from '../../server/src/raid';
 import type { Run } from '../../server/src/state';
 import BattleCanvas from '../render/battleCanvas';
+import { floorBgId } from '../render/skins';
 import { playBgm, sfx } from '../services/audio';
 import { buy } from '../services/shop';
 import { errorText, type Api, type EndResult, type HomeData, type RunResult } from '../services/api';
@@ -113,7 +114,7 @@ export default function Raid(props: {
         <button className="pill" onClick={() => setSpeed(speed === 1 ? 2 : 1)}>{T.speed(speed)}</button>
       </header>
 
-      <BattleCanvas battle={b} events={events} speed={speed} lordSkin={run.snapshot.lordSkin} onDone={() => setPlaying(false)} />
+      <BattleCanvas battle={b} events={events} speed={speed} lordSkin={run.snapshot.lordSkin} bg={floorBgId(run.floor, run.snapshot.floors.length)} onDone={() => setPlaying(false)} />
 
       <div className="scene-foot progress">
         {stages.map((label, i) => (

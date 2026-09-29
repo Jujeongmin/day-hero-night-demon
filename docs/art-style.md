@@ -27,6 +27,9 @@
 - 240×112, `view`: `side`, `detail`: `highly detailed`, `shading`: `detailed shading`, `no_background`: false
 - 1층 설명문: "side view cross-section of one room inside a demon lord castle, stone brick walls, two wall torches, wooden plank floor, empty room, no characters, no text"
 - 다른 층은 같은 문장에 색·소품만 바꾼다(예: 2층 이끼·녹색 횃불, 3층 뼈 장식·보라빛, 옥좌층 붉은 카펫과 옥좌).
+- 전투 캔버스(240×200)는 배경을 세로에 맞춰 늘리고 좌우를 잘라 **가운데 약 134px만** 보인다. 중요한 소품(옥좌 등)은 가운데에 두라고 문장에 쓴다.
+- 승인(2026-09-29): 2층 `art/bg/floor2_a.png`(이끼 초록 벽, seed 201), 3층 `art/bg/floor3_b.png`(해골 기둥·큰 문·보라 횃불, seed 302), 옥좌층 `art/bg/throne_d.png`(뿔 달린 검은 옥좌를 가운데, seed 412, 문장에 "in the center of the room on a raised stone dais"). 탈락 후보도 `art/bg/`에 둔다.
+- 게임용: `public/sprites/bg_floor1~3.png`, `bg_throne.png`. 층 번호 → 시트 이름은 `src/render/skins.ts` `floorBgId`.
 
 ## 비인간형 (슬라임·거미·새끼 용)
 

@@ -79,11 +79,11 @@ function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, sprite: string, ani
   ctx.restore();
 }
 
-interface View { hp: Record<string, number>; fx: Fx | null; fxAt: number; downAt: Record<string, number>; step: number; lordSkin?: LordSkin }
+interface View { hp: Record<string, number>; fx: Fx | null; fxAt: number; downAt: Record<string, number>; step: number; lordSkin?: LordSkin; bg: string }
 
 function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: number) {
   ctx.clearRect(0, 0, W, H);
-  const bg = image('bg_floor1');
+  const bg = image(v.bg) ?? image('bg_floor1');
   if (bg) {
     const sc = H / bg.naturalHeight;
     const bw = bg.naturalWidth * sc;
@@ -145,6 +145,8 @@ export default function BattleCanvas(props: {
   events: BattleEvent[];
   speed: 1 | 2;
   lordSkin?: LordSkin;
+  /** 배경 시트 이름(`floorBgId`) */
+  bg: string;
   onDone: () => void;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -168,7 +170,7 @@ export default function BattleCanvas(props: {
     // 이미 쓰러져 있던 캐릭터는 쓰러진 마지막 프레임으로 둔다
     const downAt: Record<string, number> = Object.fromEntries(b.fighters.map((f) => [f.key, start - 10_000]));
     const step = STEP_MS / props.speed;
-    const view: View = { hp: hp0, fx: null, fxAt: start, downAt, step, lordSkin: props.lordSkin };
+    const view: View = { hp: hp0, fx: null, fxAt: start, downAt, step, lordSkin: props.lordSkin, bg: props.bg };
 
     let i = 0;
     if (frames.length === 0) done.current();
@@ -198,7 +200,7 @@ export default function BattleCanvas(props: {
       window.clearInterval(timer);
       cancelAnimationFrame(raf);
     };
-  }, [props.battle, props.events, props.speed, props.lordSkin]);
+  }, [props.battle, props.events, props.speed, props.lordSkin, props.bg]);
 
   return <canvas ref={ref} className="battle" width={W} height={H} />;
 }
