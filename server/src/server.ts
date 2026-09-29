@@ -84,6 +84,7 @@ const NICKNAMES = 'nicknames';
 const AD_CLAIMS = 'ad_claims';
 /** 공성 최고 단계 순위(계정당 1행, id = 계정). 원본은 사용자 상태 siege.best */
 const SIEGE_BEST = 'siege_best';
+const CASTLE_SYNC_V = 2;
 
 async function adClaimed(requestId: string): Promise<boolean> {
   try {
@@ -493,6 +494,11 @@ export class Server {
       const now = Date.now();
       const raided = await applyNpcRaids(me, await rollSeason(me, await loadState(me, now), now), now);
       const { s, waves, soul: siegeSoul } = await advanceSiege(me, raided, now);
+      // 전투력 단위가 바뀐 뒤 처음 접속하면 매칭용 정보를 한 번 새로 쓴다(그 전 값은 옛 단위라 매칭에서 빠진다)
+      if ((s.castleSyncV ?? 0) < CASTLE_SYNC_V && !isNew(await $global.getUserState(me))) {
+        await syncCastle(me, s);
+        await save(me, { castleSyncV: CASTLE_SYNC_V });
+      }
       return {
         state: s,
         ...(await balances(me)),

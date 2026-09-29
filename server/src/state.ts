@@ -123,6 +123,8 @@ export interface UserState {
   lordSkin: 'base' | LordSkin | null;
   /** 스테이지형 공성: 지금 단계, 마지막으로 처리한 파도 시각, 받지 않은 공성 골드 */
   siege: { stage: number; lastWaveAt: number; pendingGold: number; best: number };
+  /** 매칭용 공개 정보(castles 컬렉션)를 새 전투력 단위로 다시 쓴 판. 2 = 큰 숫자 성장(2026-09-29) */
+  castleSyncV?: number;
 }
 
 export function isNew(raw: unknown): boolean {
