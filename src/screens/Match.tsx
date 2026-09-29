@@ -1,3 +1,4 @@
+import { formatNum } from '../../server/src/growth';
 import { useEffect, useState } from 'react';
 import type { Target } from '../../server/src/state';
 import { errorText, type Api, type HomeData } from '../services/api';
@@ -33,7 +34,7 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
           <span>
             <b>{t.nickname}</b> {t.npc && <span className="badge">{T.npcTag}</span>}
             <br />
-            <small>{T.power} {t.power} · {T.estLoot} {t.estLoot}</small>
+            <small>{T.power} {formatNum(t.power)} · {T.estLoot} {formatNum(t.estLoot)}</small>
           </span>
           <button className="btn small" data-tut={i === 0 ? 'match-first' : undefined} disabled={busy} onClick={() => start(t.id)}>{T.sortie}</button>
         </div>

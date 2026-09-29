@@ -46,10 +46,10 @@ export function avgHeroLevel(heroes: Record<string, { level: number }>): number 
   return Math.max(1, Math.round(lv.reduce((a, b) => a + b, 0) / lv.length));
 }
 
-/** 출정 NPC 목록: 용사 평균 레벨 −1(쉬움) / 같음(보통) / +1(어려움) 등급 */
+/** 출정 NPC 목록: 용사 평균 레벨 −1(쉬움) / 같음(보통) / +1(어려움) 등급. 1단 아래는 없으니 겹치지 않게 민다 */
 export function npcTiersFor(heroes: Record<string, { level: number }>): number[] {
-  const a = avgHeroLevel(heroes);
-  return [Math.max(1, a - 1), a, a + 1];
+  const start = Math.max(1, avgHeroLevel(heroes) - 1);
+  return [start, start + 1, start + 2];
 }
 
 export function npcRaids(p: {

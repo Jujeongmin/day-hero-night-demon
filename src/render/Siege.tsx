@@ -24,12 +24,14 @@ export default function Siege(props: {
   /** 다음 파도 시각이 지나면 서버에 결과를 물어본다 */
   onWaveDue: () => void;
   onFighting: (fighting: boolean) => void;
+  /** 마왕 체력(0~1): 탑 꼭대기 마왕 위 막대로 그린다 */
+  onLordHp: (ratio: number) => void;
   /** 아래 창이 열려 있으면 단계 표시·부르기 버튼을 숨긴다(1층을 가리지 않게) */
   compact: boolean;
   /** 바로 부르기(무료 스킵). 요청 중이면 null */
   onCall: (() => void) | null;
 }) {
-  const { ground, paused, stage, best, onRank, nextWaveAt, lastWave, onWaveDue, onFighting, compact, onCall } = props;
+  const { ground, paused, stage, best, onRank, nextWaveAt, lastWave, onWaveDue, onFighting, onLordHp, compact, onCall } = props;
   const [s, setS] = useState<SiegeState>(idleSiege);
   const [now, setNow] = useState(Date.now());
   // 재생 중에는 싸우기 전 단계를 보여 주고, 끝나면 새 단계로 바꾼다
@@ -68,6 +70,10 @@ export default function Siege(props: {
     onWaveDue();
   }, [paused, now, nextWaveAt, onWaveDue]);
 
+  // 1% 단위로만 알려 다시 그리기를 줄인다
+  const hpPct = Math.round((s.castleHp / SIEGE.castleMax) * 100);
+  useEffect(() => { onLordHp(hpPct / 100); }, [hpPct, onLordHp]);
+
   const fighting = s.invaders.some((v) => v.state === 'fight');
   useEffect(() => {
     if (fighting !== fightingRef.current) {
@@ -99,9 +105,6 @@ export default function Siege(props: {
       ))}
       {!compact && (
         <>
-          <div className="castle-hp" style={{ left: '50%' }}>
-            <span style={{ width: `${(s.castleHp / SIEGE.castleMax) * 100}%` }} />
-          </div>
           <div className="siege-stage">
             <button className="pill" onClick={onRank}>
               {breached ? T.siege.breached : running ? T.siege.stage(shownStage) : T.siege.next(shownStage, Math.max(0, nextWaveAt - now))}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BALANCE, type PassReward } from '../../server/src/catalog';
+import { formatNum, scaledGold } from '../../server/src/growth';
 import { passTier, planPassClaim } from '../../server/src/pass';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { buy } from '../services/shop';
@@ -7,10 +8,11 @@ import { T } from '../strings/ko';
 
 const PAGE = 4;
 
-function Reward(props: { r: PassReward; state: 'got' | 'ready' | 'later' | 'locked'; onLocked?: () => void }) {
-  const { r, state, onLocked } = props;
+function Reward(props: { r: PassReward; best: number; state: 'got' | 'ready' | 'later' | 'locked'; onLocked?: () => void }) {
+  const { r, best, state, onLocked } = props;
   const icon = r.skin ? 'icons/skin_dragon.png' : r.gold ? 'icons/gold.png' : 'icons/soul.png';
-  const amount = r.skin ? `${T.pass.dragon}+${r.soul ?? 0}` : (r.gold ?? r.soul ?? 0).toLocaleString();
+  // 골드는 공성 최고 단계에 맞춰 커진다(서버 planPassClaim과 같은 식)
+  const amount = r.skin ? `${T.pass.dragon}+${r.soul ?? 0}` : r.gold ? formatNum(scaledGold(r.gold, best)) : formatNum(r.soul ?? 0);
   const cls = { got: 'got', ready: 'glow', later: '', locked: 'dim' }[state];
   return (
     <button className={`pass-cell ${cls} ${r.skin ? 'skin' : ''}`} disabled={state !== 'locked'} onClick={onLocked}>
@@ -29,7 +31,8 @@ export default function Pass(props: { api: Api; home: HomeData; onRefresh: () =>
   const max = BALANCE.passTiers.length;
   const [page, setPage] = useState(Math.floor(Math.min(tier, max - 1) / PAGE));
   const [busy, setBusy] = useState(false);
-  const plan = planPassClaim(season);
+  const best = home.state.siege?.best ?? 1;
+  const plan = planPassClaim(season, best);
   const ready = plan.gold > 0 || plan.soul > 0 || plan.skins.length > 0;
   const pages = Math.ceil(max / PAGE);
   const into = season.honor % BALANCE.passTierHonor;
@@ -70,8 +73,8 @@ export default function Pass(props: { api: Api; home: HomeData; onRefresh: () =>
             return (
               <div className="pass-card" key={t}>
                 <span className={`pass-no ${t < tier ? 'reached' : ''}`}>{t + 1}</span>
-                <Reward r={row.free} state={cellState(t, season.claimed.free, true)} />
-                <Reward r={row.pass} state={cellState(t, season.claimed.pass, season.pass)} onLocked={() => buy('season_pass')} />
+                <Reward r={row.free} best={best} state={cellState(t, season.claimed.free, true)} />
+                <Reward r={row.pass} best={best} state={cellState(t, season.claimed.pass, season.pass)} onLocked={() => buy('season_pass')} />
               </div>
             );
           })}

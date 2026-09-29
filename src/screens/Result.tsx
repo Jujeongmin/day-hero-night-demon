@@ -1,3 +1,4 @@
+import { formatNum } from '../../server/src/growth';
 import type { EndResult } from '../services/api';
 import { buy } from '../services/shop';
 import { T } from '../strings/ko';
@@ -7,7 +8,7 @@ export default function Result(props: { result: EndResult; onClose: () => void }
   return (
     <>
       <div className="line">
-        <span>{T.loot} +{r.loot}</span>
+        <span>{T.loot} +{formatNum(r.loot)}</span>
         {r.honor !== undefined && <span>{T.honor} +{r.honor}</span>}
         {r.soul > 0 && <span>{T.soul} +{r.soul}</span>}
       </div>

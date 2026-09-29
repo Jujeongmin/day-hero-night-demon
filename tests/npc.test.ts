@@ -31,7 +31,7 @@ describe('npc', () => {
   });
 
   it('the raid list offers tiers around the average hero level: easy, normal, hard', () => {
-    expect(npcTiersFor({ knight: { level: 1 }, archer: { level: 1 }, priest: { level: 1 } })).toEqual([1, 1, 2]);
+    expect(npcTiersFor({ knight: { level: 1 }, archer: { level: 1 }, priest: { level: 1 } })).toEqual([1, 2, 3]);
     expect(npcTiersFor({ knight: { level: 10 }, archer: { level: 8 }, priest: { level: 12 } })).toEqual([9, 10, 11]);
   });
 

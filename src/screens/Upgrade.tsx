@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { HEROES, MONSTERS, type HeroId, type MonsterId, type SkillId, type Stats } from '../../server/src/catalog';
 import { castleUpgradeCost, unitUpgradeCost } from '../../server/src/economy';
+import { formatNum, lordLevel } from '../../server/src/growth';
 import { Portrait } from '../render/Sprite';
 import { skillText, unitStats } from '../render/unitStats';
 import { errorText, type Api, type HomeData } from '../services/api';
@@ -35,7 +36,7 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
     const stat = (k: keyof Stats) => (
       <span className="stat" key={k}>
         <img src={`icons/stat_${k}.png`} alt={T.stats[k]} draggable={false} />
-        {now[k]}{gain && gain[k] > 0 && <em>+{gain[k]}</em>}
+        {formatNum(now[k])}{gain && gain[k] > 0 && <em>+{formatNum(gain[k])}</em>}
       </span>
     );
     return (
@@ -55,14 +56,15 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
     );
   };
 
+  const castleCost = castleUpgradeCost(s.castle.level);
   const soulMonsters = (Object.keys(MONSTERS) as MonsterId[]).filter((id) => 'soul' in MONSTERS[id].unlock && !s.roster[id]);
 
   return (
     <>
       <div className="line">
-        <span className="item"><Portrait id="castle" label={T.throne} />{T.castleLevel(s.castle.level)}</span>
-        <button className="btn small" disabled={busy || home.gold < castleUpgradeCost(s.castle.level)} onClick={() => act(() => api.upgrade('castle', null))}>
-          {T.upgradeBtn(castleUpgradeCost(s.castle.level))}
+        <span className="item"><Portrait id="castle" label={T.throne} />{T.castleLevel(s.castle.level)} <small className="muted">{T.lordLevel(lordLevel(s.castle.level))}</small></span>
+        <button className="btn small" disabled={busy || castleCost === null || home.gold < castleCost} onClick={() => act(() => api.upgrade('castle', null))}>
+          {castleCost === null ? T.maxLevel : T.upgradeBtn(castleCost)}
         </button>
       </div>
       <h4>{T.monstersTitle}</h4>

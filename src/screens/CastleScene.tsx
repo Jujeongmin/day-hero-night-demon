@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { BALANCE, LORD, MONSTERS } from '../../server/src/catalog';
 import { floorsUnlocked } from '../../server/src/economy';
+import { formatNum } from '../../server/src/growth';
 import AdButton from '../render/AdButton';
 import Siege from '../render/Siege';
 import Sprite from '../render/Sprite';
@@ -60,6 +61,9 @@ export default function CastleScene(props: {
   // 공성 연출: 성문 앞에서 싸우는 동안 1층 몬스터가 공격 동작
   const [defending, setDefending] = useState(false);
   const onDefending = useCallback((f: boolean) => setDefending(f), []);
+  // 공성 중 마왕 체력(0이 되면 이번 파도를 못 막은 것)
+  const [lordHp, setLordHp] = useState(1);
+  const onLordHp = useCallback((r: number) => setLordHp(r), []);
   // 다음 공성 파도 시각: 서버 시각을 이 기기 시계로 옮긴다
   const nextWaveAt = useMemo(
     () => (s.siege?.lastWaveAt ?? home.now) + (home.siegeWaveMs ?? 120_000) + (Date.now() - home.now),
@@ -112,19 +116,20 @@ export default function CastleScene(props: {
       <img className="backdrop" src="sprites/bg_night.png" alt="" draggable={false} />
       <header className="hud">
         <span className="hud-col">
-          <span className="pill"><b>{home.gold}</b> {T.gold}</span>
+          <span className="pill"><b>{formatNum(home.gold)}</b> {T.gold}</span>
           {home.power !== undefined && (
-            <span className="pill power" aria-label={T.siege.power}><img src="icons/stat_atk.png" alt="" draggable={false} />{T.siege.power} <b>{home.power.toLocaleString()}</b></span>
+            <span className="pill power" aria-label={T.siege.power}><img src="icons/stat_atk.png" alt="" draggable={false} />{T.siege.power} <b>{formatNum(home.power)}</b></span>
           )}
         </span>
         <button className="hud-icon" data-tut="settings" onClick={onSettings} aria-label={T.settings.title}><img src="ui/settings.png" alt="" draggable={false} /></button>
-        <span className="pill"><b>{home.soul}</b> {T.soul}</span>
+        <span className="pill"><b>{formatNum(home.soul)}</b> {T.soul}</span>
       </header>
 
       <div className="tower" ref={towerRef}>
         <img src="sprites/tower.png" alt="" draggable={false} />
 
-        <div className={`unit-at ${lordSkin ? 'aura' : ''}`} style={at(50, THRONE.stand)}>
+        <div className={`unit-at lord-at ${lordSkin ? 'aura' : ''}`} style={at(50, THRONE.stand)}>
+          {!s.run && <span className="lord-hp"><span style={{ width: `${lordHp * 100}%` }} /></span>}
           <Sprite id={lordSpriteId(lordSkin)} label={LORD.name} scale={unitScale} />
         </div>
 
@@ -165,6 +170,7 @@ export default function CastleScene(props: {
         onCall={calling ? null : callWave}
         onWaveDue={onWaveDue}
         onFighting={onDefending}
+        onLordHp={onLordHp}
       />
 
       {home.idlePreview > 0 && (
@@ -173,7 +179,7 @@ export default function CastleScene(props: {
           disabled={busy}
           onClick={() => (doubleLeft > 0 ? setChoose(!choose) : act(() => api.claimIdle()))}
         >
-          +{home.idlePreview}
+          +{formatNum(home.idlePreview)}
         </button>
       )}
 
