@@ -11,7 +11,7 @@
 | `starter_pack` | Starter Pack | 100 | 999999 | 1 | — | — | `art/products/starter_pack.png` | 네크로맨서 + 골드 + 영혼석 30. 골드는 공성 최고 단계에 맞춰 늘어난다(처음 5,000부터). 계정당 1회. |
 | `recruit_dragon` | Baby Dragon | 300 | 999999 | 1 | — | — | `art/products/recruit_dragon.png` | Recruit the baby dragon (breathes fire on every enemy). One per account. |
 | `season_pass` | Season Pass | 400 | 999999 | — | — | — (아래 참고) | `art/products/season_pass.png` | 이번 시즌(2주) 보상 트랙의 패스 줄을 연다. 골드는 공성 단계에 맞춰 늘어나고, 10단계에서 흑룡 마왕 외형을 영구 소장. 시즌 동안 해골 군주 외형. |
-| `speed_x3` | 3x Speed | 300 | 999999 | 1 | — | — | `art/products/speed_x3.png` | Watch raids at 3x speed. Forever. One per account. |
+| `speed_x3` | 3x Speed | 300 | 999999 | 1 | — | — | `art/products/speed_x3.png` | Watch raids and sieges at 3x speed. Forever. One per account. |
 | `premium` | Premium Pass | 500 | 999999 | 1 | — | — | `art/products/premium.png` | Get ad rewards instantly without watching ads (same daily limits). Forever. One per account. |
 
 ## 없앤 상품 5개 (2026-09-29 사용자가 대시보드에서 삭제 — 정식 출시 전이라 판매 기록 없음)
@@ -25,6 +25,7 @@
 - 최저가는 100 VX(사용자 결정, 2026-09-29: 100 VX 미만 상품은 두지 않는다). 8개 합계 1,700 VX.
 - 지급량은 `BALANCE`(`starterGold`, `dailySupplyGold` 등)에 있다. **2026-09-29 큰 숫자 성장:** 골드 보상은 공성 최고 10단계까지 그대로, 그 뒤 단계마다 ×1.2(`growth.ts` `scaledGold`). 그래서 대시보드 설명에는 고정 골드 숫자를 쓰지 않는다. 게임 안 상점은 그 계정이 실제로 받을 금액을 보여 준다.
 - 대시보드 설명 교체(2026-09-30 완료, 사용자): `starter_pack`, `season_pass` 2개 — 위 표의 한글 문구로.
+- 대시보드 설명 교체 필요(2026-09-30): `speed_x3` — 공성에도 3배속이 붙었다. 위 표 문구로.
 - 가격은 `BALANCE`와 무관하다(VX 가격은 대시보드가 진실). 클라이언트는 `VXShop.getItems()`의 `price`를 그대로 표시한다.
 
 ### season_pass 판매 기간
