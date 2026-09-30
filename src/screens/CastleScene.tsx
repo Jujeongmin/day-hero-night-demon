@@ -137,16 +137,16 @@ export default function CastleScene(props: {
         <span className="hud-col">
           {/* 공성 배속은 골드 오른쪽 (2026-09-30 사용자 결정) */}
           <span className="hud-row">
-            <span className="pill"><b>{formatNum(home.gold)}</b> {T.gold}</span>
+            <span className="pill cur" aria-label={T.gold}><img src="icons/gold.png" alt="" draggable={false} /><b>{formatNum(home.gold)}</b></span>
             <button className="pill speed" onClick={cycleSpeed}>{T.speed(speed)}</button>
             {!has3x && <button className="pill speed locked" onClick={() => buy('speed_x3')} aria-label={T.products.speed_x3[0]}>{T.speed(3)}</button>}
           </span>
           {home.power !== undefined && (
-            <span className="pill power" aria-label={T.siege.power}><img src="icons/stat_atk.png" alt="" draggable={false} />{T.siege.power} <b>{formatNum(home.power)}</b></span>
+            <span className="pill cur" aria-label={T.siege.power}><img src="icons/stat_atk.png" alt="" draggable={false} /><b>{formatNum(home.power)}</b></span>
           )}
         </span>
         <button className="hud-icon" data-tut="settings" onClick={onSettings} aria-label={T.settings.title}><img src="ui/settings.png" alt="" draggable={false} /></button>
-        <span className="pill"><b>{formatNum(home.soul)}</b> {T.soul}</span>
+        <span className="pill cur" aria-label={T.soul}><img src="icons/soul.png" alt="" draggable={false} /><b>{formatNum(home.soul)}</b></span>
       </header>
 
       <div className="tower" ref={towerRef}>

@@ -107,3 +107,7 @@
 ## 언어 (2026-09-30)
 - 한국어·영어·일본어·번체·간체. 사전 `src/strings/{ko,en,ja,zhHant,zhHans}.ts`, 전환 `src/strings/i18n.ts`. 고른 언어는 기기 localStorage.
 - 글꼴: 한글·라틴 Do Hyeon, 일본어 DotGothic16(도트), 중국어 Noto Sans TC/SC 700.
+
+## 홈 윗줄 (2026-09-30 승인 B안)
+- 골드·영혼석·전투력은 이름 없이 큰 아이콘(`icons/gold.png`·`soul.png`·`stat_atk.png`, 34px)이 필 왼쪽에 걸쳐 튀어나오고 숫자만. 후보: https://claude.ai/artifact/8pDMj5ji1p6yVYZTZwuXjB
+- 설정 톱니는 줄어들지 않는다(`flex: none`). 홈 장면 폭 360px 이하·320px 이하에서 윗줄 전체가 단계적으로 작아진다(`@container`). 280~375px에서 골드 "12.34M"로 겹침 없음 확인.
