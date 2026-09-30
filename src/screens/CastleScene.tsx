@@ -7,7 +7,7 @@ import Siege from '../render/Siege';
 import { useSiegeReplay, type RUnit } from '../render/siegeReplay';
 import Sprite from '../render/Sprite';
 import { adsLeft } from '../services/ads';
-import { chooseLordSkin } from '../../server/src/pass';
+import { chooseLordSkin, passTier, planPassClaim } from '../../server/src/pass';
 import { lordSpriteId } from '../render/skins';
 import { nextSpeed, type Speed } from '../render/speed';
 import { errorText, type Api, type HomeData, type SiegeWave } from '../services/api';
@@ -69,9 +69,11 @@ export default function CastleScene(props: {
   onLocked: () => void;
   /** 공성 문구를 누르면 공성 순위 창 */
   onSiegeRank: () => void;
+  /** 시즌 패스 탭 열기(윗줄 패스 버튼) */
+  onPass: () => void;
   onError: (msg: string) => void;
 }) {
-  const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onSiegeRank, onError } = props;
+  const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onSiegeRank, onPass, onError } = props;
   const s = home.state;
   const [busy, setBusy] = useState(false);
   const [choose, setChoose] = useState(false);
@@ -143,6 +145,9 @@ export default function CastleScene(props: {
   const lordSkin = chooseLordSkin(s.lordSkin ?? null, s.skins ?? [], s.season.pass, vipOf(s));
   // VIP 10: 마왕 테두리가 루비색으로 빛난다(외형과 상관없이)
   const rubyAura = vipOf(s) >= BALANCE.vip.rubyAura;
+  // 시즌 패스: 지금 받을 수 있는 보상이 있나(서버 planPassClaim과 같은 계산)
+  const passPlan = planPassClaim(s.season, s.siege?.best ?? 1);
+  const passReady = passPlan.gold > 0 || passPlan.soul > 0 || passPlan.skins.length > 0;
 
   async function act(fn: () => Promise<unknown>, after?: () => void) {
     if (busy) return;
@@ -277,15 +282,25 @@ export default function CastleScene(props: {
         onLordHp={onLordHp}
       />
 
-      {home.idlePreview > 0 && (
-        <button
-          className="btn gold float-idle"
-          disabled={busy}
-          onClick={() => (doubleLeft > 0 ? setChoose(!choose) : act(() => api.claimIdle()))}
-        >
-          +{formatNum(home.idlePreview)}
-        </button>
-      )}
+      {/* 오른쪽 위: 방치 수입 받기, 그 아래 시즌 패스(2026-09-30 승인 A안: 단계 표시, 받을 보상이 있으면 빨간 점·빛) */}
+      <div className="float-right">
+        {home.idlePreview > 0 && (
+          <button
+            className="btn gold float-idle"
+            disabled={busy}
+            onClick={() => (doubleLeft > 0 ? setChoose(!choose) : act(() => api.claimIdle()))}
+          >
+            +{formatNum(home.idlePreview)}
+          </button>
+        )}
+        {(s.onboarding?.at ?? 'done') === 'done' && (
+          <button className={`pill pass-btn ${passReady ? 'ready' : ''}`} onClick={onPass} aria-label={T.products.season_pass[0]}>
+            <img src="icons/prod_season_pass.png" alt="" draggable={false} />
+            <b>{passTier(s.season.honor)}/{BALANCE.passTiers.length}</b>
+            {passReady && <i className="dot" />}
+          </button>
+        )}
+      </div>
 
       {away && !s.run && !panelOpen && (
         <div className="away-card">

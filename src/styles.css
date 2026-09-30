@@ -75,7 +75,15 @@ select { font: inherit; }
 .idle-choice small { text-align: center; font-size: 11px; }
 .hud-row { display: flex; gap: 4px; }
 .pill.locked { filter: grayscale(.7) brightness(.75); }
-.float-idle { position: absolute; right: 8px; top: 48px; z-index: 3; animation: bob 1.4s ease-in-out infinite; }
+.float-right { position: absolute; right: 8px; top: 48px; z-index: 3; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.float-idle { animation: bob 1.4s ease-in-out infinite; }
+/* 시즌 패스 버튼: 아이콘 + 단계. 받을 보상이 있으면 빛나고 빨간 점 */
+.pass-btn { position: relative; display: inline-flex; align-items: center; gap: 2px; background: none; font: inherit; color: var(--text); font-size: 13px; }
+.pass-btn img { width: 20px; height: 20px; image-rendering: pixelated; }
+.pass-btn b { color: var(--gold); font-weight: 400; }
+.pass-btn.ready { animation: passGlow 1.6s ease-in-out infinite; }
+@keyframes passGlow { 50% { filter: brightness(1.35) drop-shadow(0 0 5px #ffcf4d); } }
+.pass-btn .dot { position: absolute; right: -4px; top: -4px; width: 9px; height: 9px; background: var(--ruby); border: 1px solid #000; border-radius: 50%; }
 .scene-foot { position: absolute; left: 0; right: 0; bottom: 10px; z-index: 3; display: flex; justify-content: center; padding-inline: 12px; }
 .scene-foot .btn.big { min-width: 62%; }
 

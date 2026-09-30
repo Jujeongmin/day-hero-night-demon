@@ -285,6 +285,7 @@ export default function App() {
         onFloor={openFloor}
         onLocked={() => setPanel({ name: 'upgrade' })}
         onSiegeRank={() => setPanel({ name: 'league', tab: 'siege' })}
+        onPass={() => setPanel({ name: 'league', tab: 'track' })}
         onError={onError}
       />
       {panel && (
