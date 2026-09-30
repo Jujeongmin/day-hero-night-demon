@@ -20,7 +20,7 @@ export const ko = {
   logRobbed: (name: string, g: number) => (g > 0 ? `${name}에게 털렸다 (−${F(g)})` : `${name}에게 털렸다`),
   ult: { knight: '방패 돌진', archer: '화살비', priest: '축복' } as Record<string, string>,
   giveUp: '포기',
-  confirmGiveUp: '공략을 포기할까? 전리품은 없다.',
+  confirmGiveUp: '공략을 포기할까? 약탈 골드는 없다.',
   revive: (n: number) => `부활 (보유 ${n})`,
   victory: '함락!',
   defeat: '전멸',
@@ -168,7 +168,9 @@ export const ko = {
     rankFailed: '순위를 불러오지 못했다',
     milestone: (soul: number) => `공성 단계 첫 돌파! 영혼석 +${soul}`,
     power: '전투력',
-    heroHint: '용사 레벨 1마다 전리품 +1% · 공성 방어 +1%',
+    heroHint: '공략 때 싸우는 내 파티다. 강할수록 남의 성을 쉽게 턴다',
+    heroBonus: (p: number) => `지금 약탈 골드 +${p}% · 공성 방어 +${p}%`,
+    heroNext: (p: number) => `강화하면 약탈 골드·공성 방어 +${p}% → +${p + 1}%`,
   },
   ads: {
     watch: (label: string) => `${label} (광고)`,
@@ -250,7 +252,7 @@ export const ko = {
     tips: [
       '팁: 공성은 자리를 비워도 계속된다',
       '팁: 복수하면 명예가 2배다',
-      '팁: 용사 레벨 1마다 전리품 +1%',
+      '팁: 용사를 강화할 때마다 약탈 골드 +1%',
       '팁: 공성 10단계마다 처음 넘으면 영혼석',
     ],
   },

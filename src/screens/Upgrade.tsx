@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { HEROES, MONSTERS, type HeroId, type MonsterId, type SkillId, type Stats } from '../../server/src/catalog';
-import { castleUpgradeCost, unitUpgradeCost } from '../../server/src/economy';
+import { BALANCE, HEROES, MONSTERS, type HeroId, type MonsterId, type SkillId, type Stats } from '../../server/src/catalog';
+import { castleUpgradeCost, heroBonusLevels, unitUpgradeCost } from '../../server/src/economy';
 import { formatNum, lordLevel } from '../../server/src/growth';
 import { Portrait } from '../render/Sprite';
 import { skillText, unitStats } from '../render/unitStats';
@@ -29,7 +29,7 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
 
   const row = (
     id: string, label: string, level: number, onUp: () => Promise<unknown>, first: boolean,
-    unit: { stats: Stats; skill: SkillId; cooldown: number },
+    unit: { stats: Stats; skill: SkillId; cooldown: number }, note?: string,
   ) => {
     const cost = unitUpgradeCost(level);
     const { now, gain } = unitStats(unit.stats, level);
@@ -47,6 +47,7 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
             {label} {T.level(level)}
             <span className="stats">{(['hp', 'atk', 'def'] as const).map(stat)}</span>
             <small className="skill">{skillText(unit.skill, unit.cooldown)}</small>
+            {note && <small className="hero-next">{note}</small>}
           </span>
         </span>
         <button className="btn small" data-tut={first ? 'upgrade-first' : undefined} disabled={busy || cost === null || home.gold < cost} onClick={() => act(onUp)}>
@@ -57,6 +58,8 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
   };
 
   const castleCost = castleUpgradeCost(s.castle.level);
+  // 약탈 골드·공성 방어 보너스(%). 둘 다 레벨당 1%(BALANCE.heroLootPerLevel = heroSiegePerLevel)
+  const heroPct = Math.round(heroBonusLevels(s.heroes) * BALANCE.heroLootPerLevel * 100);
   const soulMonsters = (Object.keys(MONSTERS) as MonsterId[]).filter((id) => 'soul' in MONSTERS[id].unlock && !s.roster[id]);
 
   return (
@@ -69,8 +72,10 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
       </div>
       <h4>{T.monstersTitle}</h4>
       {(Object.keys(s.roster) as MonsterId[]).map((id, i) => row(id, T.units[id], s.roster[id]!.level, () => api.upgrade('monster', id), i === 0, MONSTERS[id]))}
-      <h4>{T.heroesTitle} <small className="muted">{T.siege.heroHint}</small></h4>
-      {(Object.keys(s.heroes) as HeroId[]).map((id) => row(id, T.units[id], s.heroes[id].level, () => api.upgrade('hero', id), false, HEROES[id]))}
+      {/* 용사: 공략 파티. 누구를 강화하든 약탈 골드·공성 방어가 1%씩(용사 레벨 합 − 3). 지금 값과 강화 뒤 값을 숫자로 보여 준다 */}
+      <h4>{T.heroesTitle}</h4>
+      <p className="hero-desc">{T.siege.heroHint}<br /><b>{T.siege.heroBonus(heroPct)}</b></p>
+      {(Object.keys(s.heroes) as HeroId[]).map((id) => row(id, T.units[id], s.heroes[id].level, () => api.upgrade('hero', id), false, HEROES[id], unitUpgradeCost(s.heroes[id].level) === null ? undefined : T.siege.heroNext(heroPct)))}
       {soulMonsters.length > 0 && <h4>{T.recruitTitle}</h4>}
       {soulMonsters.map((id) => {
         const unlock = MONSTERS[id].unlock as { soul: number };

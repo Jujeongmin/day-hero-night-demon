@@ -21,7 +21,7 @@ export const zhHant: Strings = {
   logRobbed: (name: string, g: number) => (g > 0 ? `被${name}搶了 (−${F(g)})` : `被${name}搶了`),
   ult: { knight: '盾牌衝鋒', archer: '箭雨', priest: '祝福' } as Record<string, string>,
   giveUp: '放棄',
-  confirmGiveUp: '要放棄攻略嗎？沒有戰利品。',
+  confirmGiveUp: '要放棄攻略嗎？沒有掠奪金幣。',
   revive: (n: number) => `復活 (持有 ${n})`,
   victory: '攻陷！',
   defeat: '全滅',
@@ -167,7 +167,9 @@ export const zhHant: Strings = {
     rankFailed: '無法載入排名',
     milestone: (soul: number) => `攻城階段首次突破！魂石 +${soul}`,
     power: '戰力',
-    heroHint: '勇者每1級 戰利品 +1% · 攻城防守 +1%',
+    heroHint: '攻略時出戰的我方隊伍。越強越容易搶下別人的城堡',
+    heroBonus: (p: number) => `目前 掠奪金幣 +${p}% · 攻城防守 +${p}%`,
+    heroNext: (p: number) => `強化後 掠奪金幣・攻城防守 +${p}% → +${p + 1}%`,
   },
   ads: {
     watch: (label: string) => `${label} (廣告)`,
@@ -243,7 +245,7 @@ export const zhHant: Strings = {
     tips: [
       '提示: 離開時攻城也會繼續',
       '提示: 復仇可得2倍榮譽',
-      '提示: 勇者每升1級 戰利品 +1%',
+      '提示: 每強化一次勇者 掠奪金幣 +1%',
       '提示: 攻城每10階首次突破可得魂石',
     ],
   },

@@ -357,3 +357,8 @@ button[lang='zh-Hans'] { font-family: 'Noto Sans SC', sans-serif; }
 .loading-embers i { position: absolute; bottom: -6px; left: var(--x); width: 3px; height: 3px; background: #ff9a4a; box-shadow: 0 0 6px #ff4a1e; opacity: 0; animation: ember var(--t) linear var(--d) infinite; }
 @keyframes ember { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translate(18px, -90vh); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .loading-title, .loading-embers i { animation: none; } }
+
+/* 강화 창 용사 설명: 파티 역할 + 지금 보너스, 줄마다 강화 뒤 값 (2026-09-30) */
+.hero-desc { margin: 0 0 4px; font-size: 13px; color: var(--muted); line-height: 1.4; }
+.hero-desc b { color: var(--gold); font-weight: 400; }
+.hero-next { display: block; color: var(--gold); font-size: 11px; margin-top: 1px; }

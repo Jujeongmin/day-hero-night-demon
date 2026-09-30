@@ -21,7 +21,7 @@ export const en: Strings = {
   logRobbed: (name: string, g: number) => (g > 0 ? `Robbed by ${name} (−${F(g)})` : `Robbed by ${name}`),
   ult: { knight: 'Shield Charge', archer: 'Arrow Rain', priest: 'Blessing' } as Record<string, string>,
   giveUp: 'Give up',
-  confirmGiveUp: 'Give up this raid? You get no loot.',
+  confirmGiveUp: 'Give up this raid? You get no loot gold.',
   revive: (n: number) => `Revive (${n} left)`,
   victory: 'Conquered!',
   defeat: 'Wiped out',
@@ -167,7 +167,9 @@ export const en: Strings = {
     rankFailed: "Couldn't load the ranking",
     milestone: (soul: number) => `New siege milestone! +${soul} soulstones`,
     power: 'Power',
-    heroHint: 'Each hero level: +1% loot · +1% siege defense',
+    heroHint: 'Your raiding party. Stronger heroes rob castles more easily',
+    heroBonus: (p: number) => `Now: loot gold +${p}% · siege defense +${p}%`,
+    heroNext: (p: number) => `Upgrade: loot gold & siege defense +${p}% → +${p + 1}%`,
   },
   ads: {
     watch: (label: string) => `${label} (ad)`,
@@ -243,7 +245,7 @@ export const en: Strings = {
     tips: [
       'Tip: sieges keep going while you are away',
       'Tip: revenge wins give double honor',
-      'Tip: each hero level adds +1% loot',
+      'Tip: every hero upgrade adds +1% loot gold',
       'Tip: every 10th siege stage pays soulstones the first time',
     ],
   },

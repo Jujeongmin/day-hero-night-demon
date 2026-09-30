@@ -21,7 +21,7 @@ export const ja: Strings = {
   logRobbed: (name: string, g: number) => (g > 0 ? `${name}に奪われた (−${F(g)})` : `${name}に奪われた`),
   ult: { knight: 'シールドチャージ', archer: '矢の雨', priest: '祝福' } as Record<string, string>,
   giveUp: '撤退',
-  confirmGiveUp: '攻略をあきらめる？戦利品はない。',
+  confirmGiveUp: '攻略をあきらめる？略奪ゴールドはない。',
   revive: (n: number) => `復活 (所持 ${n})`,
   victory: '陥落！',
   defeat: '全滅',
@@ -167,7 +167,9 @@ export const ja: Strings = {
     rankFailed: '順位を読み込めなかった',
     milestone: (soul: number) => `攻城段階を初突破！魂石 +${soul}`,
     power: '戦闘力',
-    heroHint: '勇者レベル1ごとに戦利品 +1% · 攻城防衛 +1%',
+    heroHint: '攻略で戦う自分のパーティー。強いほど他人の城を楽に襲える',
+    heroBonus: (p: number) => `現在 略奪ゴールド +${p}% · 攻城防衛 +${p}%`,
+    heroNext: (p: number) => `強化すると 略奪ゴールド・攻城防衛 +${p}% → +${p + 1}%`,
   },
   ads: {
     watch: (label: string) => `${label} (広告)`,
@@ -243,7 +245,7 @@ export const ja: Strings = {
     tips: [
       'ヒント: 攻城は留守の間も続く',
       'ヒント: 復讐すると名誉が2倍',
-      'ヒント: 勇者レベル1ごとに戦利品 +1%',
+      'ヒント: 勇者を強化するたびに略奪ゴールド +1%',
       'ヒント: 攻城10段階ごとに初突破で魂石',
     ],
   },

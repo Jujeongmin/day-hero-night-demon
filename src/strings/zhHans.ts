@@ -21,7 +21,7 @@ export const zhHans: Strings = {
   logRobbed: (name: string, g: number) => (g > 0 ? `被${name}抢了 (−${F(g)})` : `被${name}抢了`),
   ult: { knight: '盾牌冲锋', archer: '箭雨', priest: '祝福' } as Record<string, string>,
   giveUp: '放弃',
-  confirmGiveUp: '要放弃攻略吗？没有战利品。',
+  confirmGiveUp: '要放弃攻略吗？没有掠夺金币。',
   revive: (n: number) => `复活 (持有 ${n})`,
   victory: '攻陷！',
   defeat: '全灭',
@@ -167,7 +167,9 @@ export const zhHans: Strings = {
     rankFailed: '无法加载排名',
     milestone: (soul: number) => `攻城阶段首次突破！魂石 +${soul}`,
     power: '战力',
-    heroHint: '勇者每1级 战利品 +1% · 攻城防守 +1%',
+    heroHint: '攻略时出战的我方队伍。越强越容易抢下别人的城堡',
+    heroBonus: (p: number) => `当前 掠夺金币 +${p}% · 攻城防守 +${p}%`,
+    heroNext: (p: number) => `强化后 掠夺金币・攻城防守 +${p}% → +${p + 1}%`,
   },
   ads: {
     watch: (label: string) => `${label} (广告)`,
@@ -243,7 +245,7 @@ export const zhHans: Strings = {
     tips: [
       '提示: 离开时攻城也会继续',
       '提示: 复仇可得2倍荣誉',
-      '提示: 勇者每升1级 战利品 +1%',
+      '提示: 每强化一次勇者 掠夺金币 +1%',
       '提示: 攻城每10阶首次突破可得魂石',
     ],
   },
