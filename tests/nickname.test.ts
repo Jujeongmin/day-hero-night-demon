@@ -17,7 +17,8 @@ describe('checkNickname', () => {
   it('rejects spaces inside, symbols and lone jamo', () => {
     expect(checkNickname('마 왕')).toEqual({ ok: false, code: 'NICK_CHARS' });
     expect(checkNickname('마왕!')).toEqual({ ok: false, code: 'NICK_CHARS' });
-    expect(checkNickname('ㅋㅋㅋ')).toEqual({ ok: false, code: 'NICK_CHARS' });
+    expect(checkNickname('ㅋㅋㅋ')).toEqual({ ok: false, code: 'NICK_JAMO' });
+    expect(checkNickname('마왕ㅋ')).toEqual({ ok: false, code: 'NICK_JAMO' });
   });
 
   it('rejects banned words in any case', () => {

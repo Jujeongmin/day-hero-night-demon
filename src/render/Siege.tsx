@@ -35,13 +35,10 @@ export default function Siege(props: {
   onCall: (() => void) | null;
   /** 서버가 기록한 마지막 파도 결과(뚫렸으면 false → 언제든 부를 수 있다) */
   lastWon: boolean | undefined;
-  /** 재생 배속. 3×는 상품 보유자만(has3x), 아니면 잠금 버튼 → 구매 창 */
+  /** 재생 배속. 배속 버튼은 화면 위 HUD(골드 오른쪽)에 있다 */
   speed: Speed;
-  has3x: boolean;
-  onSpeed: () => void;
-  onBuy3x: () => void;
 }) {
-  const { ground, paused, stage, best, onRank, nextWaveAt, lastWave, onWaveDue, onFighting, onLordHp, compact, onCall, lastWon, speed, has3x, onSpeed, onBuy3x } = props;
+  const { ground, paused, stage, best, onRank, nextWaveAt, lastWave, onWaveDue, onFighting, onLordHp, compact, onCall, lastWon, speed } = props;
   const [s, setS] = useState<SiegeState>(idleSiege);
   const [now, setNow] = useState(Date.now());
   // 재생 중에는 싸우기 전 단계를 보여 주고, 끝나면 새 단계로 바꾼다
@@ -122,8 +119,6 @@ export default function Siege(props: {
               {breached ? T.siege.breached : running ? T.siege.stage(shownStage) : T.siege.next(shownStage, Math.max(0, nextWaveAt - now))}
               {!breached && <small> · {T.siege.best(Math.max(best, shownStage))}</small>}
             </button>
-            <button className="pill speed" onClick={onSpeed}>{T.speed(speed)}</button>
-            {!has3x && <button className="pill speed locked" onClick={onBuy3x} aria-label={T.products.speed_x3[0]}>{T.speed(3)}</button>}
             {!running && (
               <button className="btn small gold" disabled={!canCall} onClick={() => onCall?.()}>{T.siege.call}</button>
             )}

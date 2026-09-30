@@ -190,6 +190,7 @@ export const T = {
     AD_USED: '이미 받은 광고다',
     NICK_LENGTH: '이름은 2~8자로 정해줘',
     NICK_CHARS: '한글·영문·숫자만 쓸 수 있다',
+    NICK_JAMO: 'ㄱ·ㅏ처럼 낱자만은 안 된다. 완성된 글자로 써줘',
     NICK_BANNED: '쓸 수 없는 이름이다',
     NICK_TAKEN: '이미 누가 쓰는 이름이다',
     NICK_NO_CHANGES: '무료 변경을 이미 썼다',

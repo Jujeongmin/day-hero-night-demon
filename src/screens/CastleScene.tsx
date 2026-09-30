@@ -135,7 +135,12 @@ export default function CastleScene(props: {
       <img className="backdrop" src="sprites/bg_night.png" alt="" draggable={false} />
       <header className="hud">
         <span className="hud-col">
-          <span className="pill"><b>{formatNum(home.gold)}</b> {T.gold}</span>
+          {/* 공성 배속은 골드 오른쪽 (2026-09-30 사용자 결정) */}
+          <span className="hud-row">
+            <span className="pill"><b>{formatNum(home.gold)}</b> {T.gold}</span>
+            <button className="pill speed" onClick={cycleSpeed}>{T.speed(speed)}</button>
+            {!has3x && <button className="pill speed locked" onClick={() => buy('speed_x3')} aria-label={T.products.speed_x3[0]}>{T.speed(3)}</button>}
+          </span>
           {home.power !== undefined && (
             <span className="pill power" aria-label={T.siege.power}><img src="icons/stat_atk.png" alt="" draggable={false} />{T.siege.power} <b>{formatNum(home.power)}</b></span>
           )}
@@ -190,9 +195,6 @@ export default function CastleScene(props: {
         onCall={calling ? null : callWave}
         lastWon={s.siege?.lastWon}
         speed={speed}
-        has3x={has3x}
-        onSpeed={cycleSpeed}
-        onBuy3x={() => buy('speed_x3')}
         onWaveDue={onWaveDue}
         onFighting={onDefending}
         onLordHp={onLordHp}
