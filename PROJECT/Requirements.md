@@ -14,4 +14,4 @@
 - 단일 파일/IIFE 빌드 금지 (`import.meta.env`가 사라져 verse가 "default"가 된다).
 - Verse8 문서에 `$onItemPurchased` 재시도 정책과 환불 콜백이 없다. 같은 `purchaseId`는 한 번만 지급하도록 서버가 막는다(`processedPurchases`).
 - 시즌 패스는 대시보드 기간 제한이 없어(시즌 단위 옵션 없음) 클라이언트가 보유 중이면 구매 버튼을 막는다.
-- BGM은 원곡 그대로(약 3.3MB씩)라 첫 재생이 느릴 수 있다. ffmpeg가 없어 잘라 넣지 못했다.
+- BGM이 커서(홈 2.3MB, 전투 3.3MB) 첫 재생이 느릴 수 있다. 음원 편집은 Python `imageio_ffmpeg` 패키지의 ffmpeg(`imageio_ffmpeg.get_ffmpeg_exe()`)로 한다.
