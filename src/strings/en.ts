@@ -234,5 +234,18 @@ export const en: Strings = {
     ghost: (n: number) => `Shadow Lord ${n}`,
     lordTag: (tag: string) => `Demon Lord #${tag}`,
   },
+  load: {
+    top: 'Hero by Day,',
+    main: 'Demon Lord by Night',
+    connect: 'Connecting to the server…',
+    home: 'Loading your castle…',
+    assets: 'Opening the gates…',
+    tips: [
+      'Tip: sieges keep going while you are away',
+      'Tip: revenge wins give double honor',
+      'Tip: each hero level adds +1% loot',
+      'Tip: every 10th siege stage pays soulstones the first time',
+    ],
+  },
   lang: { title: 'Language', pick: 'Choose your language', go: 'Start' },
 };

@@ -311,3 +311,24 @@ button[lang='zh-Hans'] { font-family: 'Noto Sans SC', sans-serif; }
 }
 .lang-box h2 { margin: 0 0 4px; font-weight: 400; font-size: 20px; color: var(--gold); }
 .lang-btn { min-height: 48px; font-size: 20px; }
+
+/* 로딩 화면 (2026-09-30 승인 B안). 키아트 위에 제목, 아래 막대(음량 막대와 같은 직사각형 + 붉은 채움 + 해골 손잡이) */
+.loading { position: relative; height: 100%; overflow: hidden; background: #000 url(/loading/key.png) center / cover no-repeat; image-rendering: pixelated; }
+.loading::after { content: ''; position: absolute; inset: 0; background: linear-gradient(#000a 0%, #0000 30%, #0000 62%, #000d 100%); pointer-events: none; }
+.loading-title {
+  position: absolute; z-index: 2; left: 0; right: 0; top: 7%; margin: 0; padding-inline: 12px; text-align: center; font-weight: 400; font-size: clamp(34px, 11vw, 52px); line-height: 1.05; color: #ffe08a;
+  text-shadow: 0 3px 0 #7a1020, 3px 0 0 #2a0610, -3px 0 0 #2a0610, 0 -3px 0 #2a0610, 0 6px 12px #000; animation: loadglow 2.4s ease-in-out infinite; text-wrap: balance;
+}
+.loading-title small { display: block; font-size: 0.55em; color: var(--text); margin-bottom: 6px; text-shadow: 0 2px 0 #2a0610, 2px 0 0 #2a0610, -2px 0 0 #2a0610, 0 -2px 0 #2a0610; }
+@keyframes loadglow { 50% { filter: drop-shadow(0 0 8px #ff4a5e99); } }
+.loading-foot { position: absolute; z-index: 2; left: 8%; right: 8%; bottom: 6%; display: flex; flex-direction: column; gap: 6px; align-items: center; text-align: center; }
+.loading-bar { position: relative; width: 100%; max-width: 420px; height: 14px; background: #1a0810; border: 2px solid #05030a; box-shadow: 0 0 0 2px #6b2a3a; }
+.loading-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ruby); box-shadow: inset 0 -3px 0 #b3203a, inset 0 2px 0 #ff8a96; transition: width .5s ease-out; }
+.loading-knob { position: absolute; top: 50%; width: 26px; height: 26px; translate: -50% -50%; image-rendering: pixelated; transition: left .5s ease-out; }
+.loading-status { margin: 0; font-size: 17px; color: var(--bone); text-shadow: 0 2px 0 #000; }
+.loading-status b { color: var(--gold); font-weight: 400; }
+.loading-tip { margin: 0; min-height: 1.4em; font-size: 14px; color: var(--muted); text-shadow: 0 2px 0 #000; }
+.loading-embers { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.loading-embers i { position: absolute; bottom: -6px; left: var(--x); width: 3px; height: 3px; background: #ff9a4a; box-shadow: 0 0 6px #ff4a1e; opacity: 0; animation: ember var(--t) linear var(--d) infinite; }
+@keyframes ember { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translate(18px, -90vh); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .loading-title, .loading-embers i { animation: none; } }

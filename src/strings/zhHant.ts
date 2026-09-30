@@ -234,5 +234,18 @@ export const zhHant: Strings = {
     ghost: (n: number) => `暗影魔王 ${n}`,
     lordTag: (tag: string) => `魔王 #${tag}`,
   },
+  load: {
+    top: '白天是勇者，',
+    main: '晚上是魔王',
+    connect: '正在連線到伺服器…',
+    home: '正在載入城堡…',
+    assets: '正在打開城門…',
+    tips: [
+      '提示: 離開時攻城也會繼續',
+      '提示: 復仇可得2倍榮譽',
+      '提示: 勇者每升1級 戰利品 +1%',
+      '提示: 攻城每10階首次突破可得魂石',
+    ],
+  },
   lang: { title: '語言', pick: '請選擇語言', go: '開始' },
 };

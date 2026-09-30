@@ -5,6 +5,8 @@ import { createApi, errorText, type EndResult, type HomeData } from './services/
 import { T } from './strings/ko';
 import { displayName, savedLang } from './strings/i18n';
 import LanguagePick from './screens/LanguagePick';
+import Loading from './screens/Loading';
+import { preloadFirstScreen } from './services/preload';
 import CastleScene from './screens/CastleScene';
 import CastleEdit from './screens/CastleEdit';
 import Match from './screens/Match';
@@ -54,6 +56,9 @@ function purchasedSomething(a: HomeData, b: HomeData): boolean {
     || Object.keys(b.state.roster).length > Object.keys(a.state.roster).length;
 }
 
+/** 로딩 화면을 적어도 이만큼은 보여 준다(빠른 회선에서 번쩍이지 않게) */
+const MIN_LOADING_MS = 1200;
+
 export default function App() {
   const { connected, server } = useServer();
   const api = useMemo(() => (server ? createApi(server) : null), [server]);
@@ -63,6 +68,15 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   // 이 기기에서 언어를 고른 적이 있나(처음이면 컷신 전에 고르는 화면)
   const [langPicked, setLangPicked] = useState(() => savedLang() !== null);
+  // 로딩 화면: 첫 화면 그림 미리 받기(0~1)와, 너무 빨리 끝나 번쩍이지 않게 최소 표시 시간
+  const [assets, setAssets] = useState(0);
+  const [assetsDone, setAssetsDone] = useState(false);
+  const [minShown, setMinShown] = useState(false);
+  useEffect(() => {
+    void preloadFirstScreen((done, total) => setAssets(done / total)).then(() => setAssetsDone(true));
+    const id = window.setTimeout(() => setMinShown(true), MIN_LOADING_MS);
+    return () => window.clearTimeout(id);
+  }, []);
 
   // 첫 입력에서 오디오를 풀고, 버튼을 누를 때마다 탭 소리
   useEffect(() => {
@@ -146,8 +160,10 @@ export default function App() {
     if (onboardingAt === 'raid_sortie') setPanel(null);
   }, [onboardingAt]);
 
-  if (!connected || !api) return <div className="center">{T.connecting}</div>;
-  if (!home) return <div className="center">{T.loading}</div>;
+  // 막대: 연결 0~30%, 성 불러오기 30~60%, 그림 60~100%
+  if (!connected || !api) return <Loading progress={0.12} label={T.load.connect} />;
+  if (!home) return <Loading progress={0.4} label={T.load.home} />;
+  if (!assetsDone || !minShown) return <Loading progress={0.6 + 0.4 * assets} label={T.load.assets} />;
   if (!langPicked) return <div className="app"><LanguagePick onDone={() => setLangPicked(true)} /></div>;
 
   // 서버가 아직 옛 버전이면(배포 사이) 온보딩 칸이 없다. 그때는 평소 화면을 그린다

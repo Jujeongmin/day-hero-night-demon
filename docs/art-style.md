@@ -97,3 +97,13 @@
 
 ## 음량 슬라이더 (2026-09-30 사용자 요청)
 - UI 키트 `bar.png` 막대는 가장자리가 흐려 보여서 버렸다. 반듯한 직사각형(검은 테두리)에 채워진 만큼 붉은 보석색(`--ruby`)을 칠한다. 손잡이 해골은 그대로.
+
+## 로딩 화면 · 언어 선택 (2026-09-30 승인 B안)
+- 후보: https://claude.ai/artifact/8UXvfzATr5UoQ3jWPNFUSF — 키아트 원본 `art/loading/key_a~c.png`(pixflux 240×400, seed 1401~1403).
+- 채택 `key_b`(탑 위의 마왕·임프, 붉은 보름달) → `public/loading/key.png`. 로딩 화면 전체 배경, 언어 선택 화면(어둡게), `index.html` 부팅 배경.
+- 로딩: 위에 게임 제목 두 줄(금색 + 검붉은 외곽, 붉게 숨 쉼), 아래 진행 막대(음량 막대와 같은 직사각형 + 붉은 채움 + 해골 손잡이), 단계 문구, 3.5초마다 바뀌는 팁, 올라가는 불티.
+- 막대는 실제 단계를 따른다: 서버 연결 → 성 불러오기 → 첫 화면 그림 미리 받기(`src/services/preload.ts`). 최소 1.2초 보인다.
+
+## 언어 (2026-09-30)
+- 한국어·영어·일본어·번체·간체. 사전 `src/strings/{ko,en,ja,zhHant,zhHans}.ts`, 전환 `src/strings/i18n.ts`. 고른 언어는 기기 localStorage.
+- 글꼴: 한글·라틴 Do Hyeon, 일본어 DotGothic16(도트), 중국어 Noto Sans TC/SC 700.
