@@ -58,6 +58,7 @@ async function syncCastle(account: string, s: UserState): Promise<void> {
     power: castlePower(s.castle.level, floors),
     floors,
     shieldUntil: s.shieldUntil,
+    vip: vipOf(s),
   }, { id: account });
 }
 
@@ -196,7 +197,7 @@ async function realTargets(me: string, s: UserState, now: number): Promise<Targe
     const gold = await $asset.get('gold', r.account);
     out.push({
       id: r.account, nickname: r.nickname, power: r.power, castleLevel: r.castleLevel,
-      estLoot: lootAmount(gold, pvpLootCap(r.floors ?? [])), npc: false,
+      estLoot: lootAmount(gold, pvpLootCap(r.floors ?? [])), npc: false, vip: r.vip ?? 0,
     });
   }
   return out;
@@ -226,7 +227,7 @@ async function settleDefender(me: string, s: UserState, run: Run, won: boolean, 
   }
   const entry: RaidLogEntry = {
     id: `${me}-${now}`, at: now, attacker: me, attackerName: s.profile.nickname,
-    attackerWon: won, goldLost: loot, npc: false, revenged: false,
+    attackerWon: won, goldLost: loot, npc: false, revenged: false, attackerVip: vipOf(s),
   };
   const patch: Partial<UserState> = { raidLog: [entry, ...d.raidLog].slice(0, 20) };
   if (won) patch.shieldUntil = now + BALANCE.shieldMs;
@@ -280,7 +281,7 @@ async function addHonor(account: string, s: UserState, amount: number, now: numb
   await save(account, { season });
   await $global.addCollectionItem(
     leagueCollection(season.id),
-    { account, nickname: s.profile.nickname, bracketId: season.bracketId, honor: season.honor },
+    { account, nickname: s.profile.nickname, bracketId: season.bracketId, honor: season.honor, vip: vipOf(s) },
     { id: account },
   );
   return { ...rolled, season };
@@ -292,7 +293,7 @@ async function recordSiegeBest(me: string, s: UserState, oldBest: number): Promi
   if (s.siege.best <= oldBest) return 0;
   const soul = milestoneSoul(oldBest, s.siege.best);
   if (soul) await $asset.mint('soul', soul);
-  await $global.addCollectionItem(SIEGE_BEST, { account: me, nickname: s.profile.nickname, best: s.siege.best }, { id: me });
+  await $global.addCollectionItem(SIEGE_BEST, { account: me, nickname: s.profile.nickname, best: s.siege.best, vip: vipOf(s) }, { id: me });
   return soul;
 }
 
@@ -492,7 +493,7 @@ export class Server {
       if (s.season.bracketId) {
         await $global.addCollectionItem(
           leagueCollection(s.season.id),
-          { account: me, nickname: check.name, bracketId: s.season.bracketId, honor: s.season.honor },
+          { account: me, nickname: check.name, bracketId: s.season.bracketId, honor: s.season.honor, vip: vipOf(s) },
           { id: me },
         );
       }
@@ -731,6 +732,17 @@ export class Server {
       // VIP 누적: 웹훅에 가격이 없어 서버 가격표(BALANCE.productVx)로 더한다
       const vip = { spent: (s.vip?.spent ?? 0) + spendFor(p.productId, p.quantity) };
       await save(p.account, { ...g.patch, vip, processedPurchases: [...s.processedPurchases, p.purchaseId].slice(-200) });
+      // 등급이 오르면 다른 플레이어에게 보이는 곳(매칭 성·리그·공성 순위)의 배지를 바로 고친다
+      const next = { ...s, ...g.patch, vip };
+      if (vipOf(next) !== vipOf(s)) {
+        await syncCastle(p.account, next);
+        if (s.season.bracketId) {
+          await $global.addCollectionItem(leagueCollection(s.season.id), { account: p.account, nickname: s.profile.nickname, bracketId: s.season.bracketId, honor: s.season.honor, vip: vipOf(next) }, { id: p.account });
+        }
+        if (s.siege.best > 1) {
+          await $global.addCollectionItem(SIEGE_BEST, { account: p.account, nickname: s.profile.nickname, best: s.siege.best, vip: vipOf(next) }, { id: p.account });
+        }
+      }
       return { success: true };
     });
   }
@@ -742,7 +754,7 @@ export class Server {
     const top = await $global.getCollectionItems(SIEGE_BEST, { orderBy: [{ field: 'best', direction: 'desc' }], limit: 20 });
     return {
       myBest: s.siege.best,
-      top: top.map((r: any) => ({ nickname: r.nickname, best: r.best, me: r.account === me })),
+      top: top.map((r: any) => ({ nickname: r.nickname, best: r.best, me: r.account === me, vip: r.vip ?? 0 })),
     };
   }
 
@@ -757,15 +769,15 @@ export class Server {
         ? await $global.getCollectionItems(col, { filters: [{ field: 'bracketId', operator: '==', value: s.season.bracketId }], limit: 100 })
         : [];
       const bracket = s.season.bracketId
-        ? rankBracket(rows.map((r: any) => ({ id: r.account, nickname: r.nickname, honor: r.honor })), s.season.bracketId, start, now)
+        ? rankBracket(rows.map((r: any) => ({ id: r.account, nickname: r.nickname, honor: r.honor, vip: r.vip ?? 0 })), s.season.bracketId, start, now)
         : [];
       const top = await $global.getCollectionItems(col, { orderBy: [{ field: 'honor', direction: 'desc' }], limit: 20 });
       return {
         seasonId: s.season.id,
         endsAt: seasonEndsAt(now),
         myHonor: s.season.honor,
-        bracket: bracket.map((r) => ({ rank: r.rank, nickname: r.nickname, honor: r.honor, ghost: r.ghost, me: r.id === me })),
-        top: top.map((r: any) => ({ nickname: r.nickname, honor: r.honor, me: r.account === me })),
+        bracket: bracket.map((r) => ({ rank: r.rank, nickname: r.nickname, honor: r.honor, ghost: r.ghost, me: r.id === me, vip: r.vip ?? 0 })),
+        top: top.map((r: any) => ({ nickname: r.nickname, honor: r.honor, me: r.account === me, vip: r.vip ?? 0 })),
       };
     });
   }

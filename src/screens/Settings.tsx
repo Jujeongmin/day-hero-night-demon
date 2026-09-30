@@ -5,6 +5,7 @@ import { Portrait } from '../render/Sprite';
 import { lordSpriteId } from '../render/skins';
 import { getAudioPrefs, setAudioPrefs, type AudioPrefs } from '../services/audio';
 import { T } from '../strings/ko';
+import { VipPanel } from '../render/Vip';
 import { vipOf, vipPerks } from '../../server/src/vip';
 import { chooseLang, currentLang, displayName, LANGS } from '../strings/i18n';
 
@@ -144,6 +145,8 @@ export default function Settings(props: {
           </div>
         </>
       )}
+
+      <VipPanel spent={home.state.vip?.spent ?? 0} compact />
 
       <h4>{T.settings.nickname} · {displayName(home.state.profile.nickname)}</h4>
       <div className="line">

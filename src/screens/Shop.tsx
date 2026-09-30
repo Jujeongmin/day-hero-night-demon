@@ -7,6 +7,7 @@ import { adsLeft } from '../services/ads';
 import type { Api, HomeData } from '../services/api';
 import { buy, findItem, type ShopItem } from '../services/shop';
 import { T } from '../strings/ko';
+import { VipPanel } from '../render/Vip';
 import { vipOf, vipPerks } from '../../server/src/vip';
 
 /** owned: 이미 효과가 켜져 있어 다시 사도 소용없는 상품 (예: 이번 시즌 패스) */
@@ -20,6 +21,8 @@ export default function Shop(props: {
   const avgLevel = avgMonsterLevel(home.state.roster);
   return (
     <>
+      {/* VIP: 누적 결제 등급, 다음 등급까지 남은 VX, 다음 등급 혜택 */}
+      <VipPanel spent={home.state.vip?.spent ?? 0} />
       <div className="line">
         <span className="item"><Portrait id="prod_daily_supply" label={T.ads.supply} /><span><b>{T.ads.supply}</b><br /><small>{T.ads.supplyDesc(scaledGold(BALANCE.adSupplyGold, best), BALANCE.adSupplySoul)}</small></span></span>
         {supplyLeft > 0

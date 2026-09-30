@@ -5,6 +5,7 @@ import AdButton from '../render/AdButton';
 import { adsLeft } from '../services/ads';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
+import { VipBadge } from '../render/Vip';
 import { vipOf, vipPerks } from '../../server/src/vip';
 import { displayName } from '../strings/i18n';
 
@@ -51,7 +52,7 @@ export default function Log(props: {
         const canRevenge = !e.npc && e.attackerWon && !e.revenged && Date.now() - e.at < 24 * 3_600_000 && !s.run;
         return (
           <div className="line" key={e.id}>
-            <span>{e.attackerWon ? T.logRobbed(displayName(e.attackerName), e.goldLost) : T.logDefended(displayName(e.attackerName))}</span>
+            <span><VipBadge level={e.attackerVip} /> {e.attackerWon ? T.logRobbed(displayName(e.attackerName), e.goldLost) : T.logDefended(displayName(e.attackerName))}</span>
             {canRevenge && (
               <button className="btn small" disabled={busy} onClick={() => revenge(e.id)}>{T.revengeBtn}</button>
             )}

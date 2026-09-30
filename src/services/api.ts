@@ -42,16 +42,16 @@ export interface EndResult {
   honor?: number;
 }
 
-export interface LeagueRow { rank: number; nickname: string; honor: number; ghost: boolean; me: boolean }
+export interface LeagueRow { rank: number; nickname: string; honor: number; ghost: boolean; me: boolean; vip?: number }
 
-export interface SiegeRankData { myBest: number; top: { nickname: string; best: number; me: boolean }[] }
+export interface SiegeRankData { myBest: number; top: { nickname: string; best: number; me: boolean; vip?: number }[] }
 
 export interface LeagueData {
   seasonId: string;
   endsAt: number;
   myHonor: number;
   bracket: LeagueRow[];
-  top: { nickname: string; honor: number; me: boolean }[];
+  top: { nickname: string; honor: number; me: boolean; vip?: number }[];
 }
 
 export function createApi(server: RemoteServer) {

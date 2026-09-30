@@ -38,10 +38,10 @@ export function ghostHonor(bracketId: string, index: number, seasonStart: number
   return Math.floor(rate * hours);
 }
 
-export interface Ranked { id: string; nickname: string; honor: number; ghost: boolean; rank: number }
+export interface Ranked { id: string; nickname: string; honor: number; ghost: boolean; rank: number; vip?: number }
 
 export function rankBracket(
-  entries: { id: string; nickname: string; honor: number }[],
+  entries: { id: string; nickname: string; honor: number; vip?: number }[],
   bracketId: string, seasonStart: number, at: number,
 ): Ranked[] {
   const rows = entries.map((e) => ({ ...e, ghost: false }));

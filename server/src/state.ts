@@ -49,6 +49,8 @@ export interface RaidLogEntry {
   goldLost: number;
   npc: boolean;
   revenged: boolean;
+  /** 털러 온 사람의 VIP 등급(배지 표시) */
+  attackerVip?: number;
 }
 
 export interface Target {
@@ -58,6 +60,8 @@ export interface Target {
   castleLevel: number;
   estLoot: number;
   npc: boolean;
+  /** 상대 VIP 등급(배지 표시) */
+  vip?: number;
 }
 
 export interface SeasonState {

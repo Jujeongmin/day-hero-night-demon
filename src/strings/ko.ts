@@ -262,6 +262,24 @@ export const ko = {
       '팁: 공성 10단계마다 처음 넘으면 영혼석',
     ],
   },
+  /** VIP (누적 결제). 다음 등급에서 달라지는 것만 한 줄씩 */
+  vip: {
+    level: (n: number) => `VIP ${n}`,
+    none: 'VIP 아님',
+    toNext: (vx: number, n: number) => `VIP ${n}까지 ${vx.toLocaleString()} VX`,
+    max: '최고 등급',
+    nextTitle: '다음 등급 혜택',
+    idle: (p: number) => `방치 수입 +${p}%`,
+    away: (m: number) => `자리 비운 공성 골드 ×${m}`,
+    cap: (h: number) => `방치 최대 ${h}시간`,
+    pack: (p: number) => `골드 묶음 +${p}%`,
+    idleAd: (n: number) => `광고 1.5배 하루 ${n}번`,
+    revenge: (n: number) => `무료 복수 하루 ${n}번`,
+    nickname: '닉네임 무료 변경 +1',
+    skin: (name: string) => `전용 외형: ${name}`,
+    aura: '루비 오라',
+    skins: { lava: '용암 마왕', demon: '보라 날개 악마' } as Record<string, string>,
+  },
   lang: { title: '언어', pick: '언어를 고르세요', go: '시작' },
 };
 
