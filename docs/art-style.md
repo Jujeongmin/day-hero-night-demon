@@ -86,3 +86,13 @@
 ## 능력치 아이콘 (2026-09-29 승인)
 - `art/ui/stats/set.png`(pixflux 128×32 한 벌, seed 1101)을 4칸으로 잘라 `public/icons/stat_{hp,atk,def,spd}.png`. 강화 창 줄에 13px로.
 - 닫기 X(`public/ui/close_x.png`, 옛 캐시를 피하려고 이름을 바꿈)는 검은 테두리까지 지운 붉은 X만(`art/ui/close/close_x_clean.png`) — 테두리가 창 위에서 그림자처럼 보였다.
+
+## 튜토리얼 임프·말풍선, 컷3 교체 (2026-09-30 승인)
+- 후보 비교: https://claude.ai/artifact/CxuRCu5hjEcWbvrd91FVbB — 원본·탈락 후보는 `art/tutorial/`, `art/cutscene/cut3_c~e.png`.
+- 정면 임프: `art/tutorial/imp_c.png`(pixflux 96px, seed 1304, 손가락으로 가리키는 전신)를 그림 영역으로 자른 `public/ui/imp_front.png`(86×79). 화면 폭 104px.
+- 말풍선: `art/tutorial/bub_d.png`(뼈색 + 해골 장식, seed 1314)에서 꼬리를 떼어 두 조각으로 나눴다.
+  - `public/ui/bubble.png`(123×58): 꼬리 구멍을 아래 테두리로 메운 몸통. 9조각 `21 22 16 28`, 2배로 그린다.
+  - `public/ui/bubble_tail.png`(18×21): 아래로 난 꼬리를 대각선 뒤집기(TRANSVERSE)로 왼쪽을 향하게. 오른쪽 4칸이 몸통 왼쪽 테두리에 겹친다.
+  - 꼬리 끝이 임프 입 오른쪽에 오게 맞췄다(값은 `styles.css` `.tut-talk` 주석).
+- 컷3(컷신·닉네임 화면): 옛 그림(불꽃 뿔 괴물 얼굴)이 너무 무섭다 → 컷4 팔레트로 다시 그린 `art/cutscene/cut3_d.png`(옥좌 위 전구, seed 1322). 옛 캐시를 피하려고 코드에서 `?v=2`.
+- 출정 버튼 `public/ui/button_big.png`: 안쪽 투명 구멍 210칸(배경이 파란 점으로 비쳤다)을 주변 색으로 메웠다. 원본 `art/ui/button_big_holes.png`. CSS에서 `?v=2`.

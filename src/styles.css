@@ -82,7 +82,7 @@ select { font: inherit; }
 .btn:hover:not(:disabled) { filter: brightness(1.25); }
 .btn:active:not(:disabled) { transform: translateY(1px); }
 .btn:disabled { filter: grayscale(.8) brightness(.7); }
-.btn.big { border-width: 20px; border-image: url(/ui/button_big.png) 20 fill / 20px stretch; font-size: 24px; padding: 0 16px; color: var(--bone); }
+.btn.big { border-width: 20px; border-image: url(/ui/button_big.png?v=2) 20 fill / 20px stretch; font-size: 24px; padding: 0 16px; color: var(--bone); }
 .btn.small { white-space: nowrap; font-size: 13px; min-height: 30px; border-width: 8px; border-image-width: 8px; padding: 0 2px; }
 .btn.gold { color: var(--gold); }
 .btn.ghost { filter: brightness(.8); }
@@ -202,11 +202,19 @@ canvas.battle {
 .tut-dim { position: absolute; inset: 0; background: #000a; }
 .tut-hole { position: absolute; border-radius: 8px; box-shadow: 0 0 0 9999px #000a; outline: 2px solid var(--gold); animation: tutpulse 1s ease-in-out infinite; pointer-events: none; }
 @keyframes tutpulse { 50% { outline-color: #ffcf4d55; } }
-.tut-talk {
-  position: absolute; left: 8px; right: 8px; top: 52px; max-width: 464px; margin: 0 auto; display: flex; gap: 8px; align-items: center;
-  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated;
+/* 말풍선: 틀 없이 정면 임프(public/ui/imp_front.png) + 해골 말풍선. 그림은 art/tutorial/ (2026-09-30 승인) */
+/* 꼬리 끝(말풍선 왼쪽 -16px, 위 40+39px)이 임프 입 오른쪽(임프 그림 70, 56px)에 오도록 맞춘 값: 임프를 23px 내리고 말풍선을 18px 당긴다 */
+.tut-talk { position: absolute; left: 8px; right: 8px; top: 52px; max-width: 464px; margin: 0 auto; display: flex; align-items: flex-start; }
+.tut-imp { flex: none; width: 104px; margin-top: 23px; image-rendering: pixelated; filter: drop-shadow(0 2px 6px #000c); }
+/* bubble.png(123×58)를 2배로 9조각. 왼쪽 위 해골을 피해 글은 안쪽으로 */
+.tut-bubble {
+  position: relative; flex: 1; min-width: 0; min-height: 84px; margin-left: -18px; display: flex; align-items: center;
+  border: 1px solid transparent; border-image: url(/ui/bubble.png) 21 22 16 28 fill / 42px 44px 32px 56px round;
+  padding: 12px 18px 12px 38px; image-rendering: pixelated; filter: drop-shadow(0 2px 6px #000c);
 }
-.tut-talk p { margin: 0; font-size: 16px; line-height: 1.35; color: var(--bone); }
+/* 꼬리(18×21 → 2배): 오른쪽 4칸이 말풍선 왼쪽 테두리에 겹친다 */
+.tut-tail { position: absolute; left: -18px; top: 40px; width: 36px; height: 42px; image-rendering: pixelated; }
+.tut-bubble p { margin: 0; font-size: 16px; line-height: 1.35; color: #3a1c14; word-break: keep-all; }
 
 /* 설정 */
 /* 설정 아이콘: 재화 표시와 같은 판 위에 올려 붉은 달에 묻히지 않게 */

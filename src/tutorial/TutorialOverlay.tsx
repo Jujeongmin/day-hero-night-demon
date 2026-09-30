@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import type { OnboardingStage } from '../../server/src/state';
-import { Portrait } from '../render/Sprite';
 import { onTut } from './bus';
 import { nextStage, TUT_STEPS } from './steps';
 
@@ -20,6 +19,19 @@ function findTarget(targets: string[]): HTMLElement | null {
 function sameBox(a: Box | null, b: Box | null): boolean {
   if (!a || !b) return a === b;
   return a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height && a.sheetTop === b.sheetTop;
+}
+
+/** 정면 임프 + 해골 말풍선 (2026-09-30 승인: 임프 C안, 말풍선 C안). 꼬리는 말풍선 왼쪽에서 임프 쪽으로 */
+function TalkBody(props: { line: string }) {
+  return (
+    <>
+      <img className="tut-imp" src="ui/imp_front.png" alt="임프" draggable={false} />
+      <div className="tut-bubble">
+        <img className="tut-tail" src="ui/bubble_tail.png" alt="" draggable={false} />
+        <p>{props.line}</p>
+      </div>
+    </>
+  );
 }
 
 /** 대상 하나만 밝게, 나머지는 어둡게. 화면 어디를 눌러도 대상이 눌린다. */
@@ -71,8 +83,7 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
     return (
       <div className="tut passive">
         <div className="tut-talk">
-          <Portrait id="imp" label="임프" />
-          <p>{step.line}</p>
+          <TalkBody line={step.line} />
         </div>
       </div>
     );
@@ -107,8 +118,7 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
         ? <div className="tut-hole" style={{ left: box.left - pad, top: box.top - pad, width: box.width + pad * 2, height: box.height + pad * 2 }} />
         : <div className="tut-dim" />}
       <div className="tut-talk" ref={talkRef} style={talkStyle}>
-        <Portrait id="imp" label="임프" />
-        <p>{step.line}</p>
+        <TalkBody line={step.line} />
       </div>
     </div>
   );

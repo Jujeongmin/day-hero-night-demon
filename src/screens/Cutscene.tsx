@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { T } from '../strings/ko';
 
-const CUTS = T.cutscene.lines.map((line, i) => ({ img: `cutscene/cut${i + 1}.png`, line }));
+// ?v=2: 컷3을 덜 무서운 그림으로 바꿈(2026-09-30). 옛 캐시를 피한다
+const CUTS = T.cutscene.lines.map((line, i) => ({ img: `cutscene/cut${i + 1}.png?v=2`, line }));
 
 /** 화면 아무 데나 누르면 다음 장. 마지막 장 다음에 제목을 한 번 보여주고 끝낸다. */
 export default function Cutscene(props: { onDone: () => void }) {
