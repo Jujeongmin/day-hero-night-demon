@@ -37,4 +37,12 @@ describe('siegeCallBlock', () => {
     expect(siegeCallBlock({ ...base, speed: 3, now: T0 + 3_334 })).toBe(null);
     expect(siegeCallBlock({ ...base, speed: 3, now: T0 + 3_000 })).toBe('SIEGE_TOO_SOON');
   });
+
+  it('speed shortens the wave period while playing: 2× = 1 min, 3× = 40 s (call window still the last 20 s)', () => {
+    const base = { lastWaveAt: T0, lastWon: true };
+    expect(siegeCallBlock({ ...base, speed: 2, now: T0 + W / 2 - 20_001 })).toBe('SIEGE_TOO_SOON');
+    expect(siegeCallBlock({ ...base, speed: 2, now: T0 + W / 2 - 20_000 })).toBe(null);
+    expect(siegeCallBlock({ ...base, speed: 3, now: T0 + W / 3 - 20_001 })).toBe('SIEGE_TOO_SOON');
+    expect(siegeCallBlock({ ...base, speed: 3, now: T0 + W / 3 })).toBe(null);
+  });
 });

@@ -31,6 +31,11 @@ export function milestoneSoul(oldBest: number, newBest: number): number {
 
 export type SiegeSpeed = 1 | 2 | 3;
 
+/** 게임을 켜 둔 동안의 파도 주기(ms) */
+export function siegePeriod(speed: SiegeSpeed): number {
+  return BALANCE.siegeWaveMs / speed;
+}
+
 /** 공성 재생 배속. 1×·2×는 모두, 3×는 3배속 상품(perks.speed3) 보유자만(아니면 null). 모르는 값은 1× */
 export function siegeSpeed(requested: unknown, has3x: boolean): SiegeSpeed | null {
   const n = Number(requested);
@@ -42,11 +47,13 @@ export function siegeSpeed(requested: unknown, has3x: boolean): SiegeSpeed | nul
  * 바로 부르기를 막는 이유(되면 null).
  * - 직전 파도 연출이 끝나야 한다: 1× 10초, 배속이면 그만큼 짧다
  * - 직전 파도를 막았으면 다음 파도까지 20초 이하 남았을 때만. 뚫렸으면 언제든
+ * - 게임을 켜 둔 동안 배속이면 파도 주기가 짧아진다(2분 ÷ 배속: 2× 1분, 3× 40초). 화면이 그 시각에 부른다.
+ *   자리를 비운 동안은 부르는 쪽이 없으니 runSiege의 2분 주기 그대로다 (2026-09-30 사용자 결정: 접속 중에만)
  */
 export function siegeCallBlock(p: { lastWaveAt: number; lastWon: boolean | undefined; speed: SiegeSpeed; now: number }): 'SIEGE_TOO_SOON' | null {
   const since = p.now - p.lastWaveAt;
   if (since < BALANCE.siegeCallGapMs / p.speed) return 'SIEGE_TOO_SOON';
-  if (p.lastWon !== false && BALANCE.siegeWaveMs - since > BALANCE.siegeCallWindowMs) return 'SIEGE_TOO_SOON';
+  if (p.lastWon !== false && siegePeriod(p.speed) - since > BALANCE.siegeCallWindowMs) return 'SIEGE_TOO_SOON';
   return null;
 }
 

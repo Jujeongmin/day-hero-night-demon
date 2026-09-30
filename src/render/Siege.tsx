@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import Sprite from './Sprite';
 import { SIEGE, idleSiege, startWave, stepSiege, waveRunning, type SiegeState } from './siegeSim';
-import { BALANCE } from '../../server/src/catalog';
 import { formatNum, waveGold } from '../../server/src/growth';
-import { siegeCallBlock } from '../../server/src/siege';
+import { siegeCallBlock, siegePeriod } from '../../server/src/siege';
 import type { Speed } from './speed';
 import { T } from '../strings/ko';
 
@@ -94,7 +93,7 @@ export default function Siege(props: {
   // 쓰러진 침입자 1명당 골드(파도 골드 ÷ 3) — 서버 waveGold와 같은 식
   const perKill = formatNum(Math.round(waveGold(shownStage) / 3));
   // 서버와 같은 규칙: 다음 파도 20초 전부터, 직전 파도가 뚫렸으면 연출이 끝난 뒤 언제든
-  const canCall = !!onCall && !running && siegeCallBlock({ lastWaveAt: nextWaveAt - BALANCE.siegeWaveMs, lastWon, speed, now }) === null;
+  const canCall = !!onCall && !running && siegeCallBlock({ lastWaveAt: nextWaveAt - siegePeriod(speed), lastWon, speed, now }) === null;
   return (
     <div className="siege" style={{ bottom: ground, '--spd': speed } as CSSProperties} aria-hidden>
       {s.invaders.map((v) => (

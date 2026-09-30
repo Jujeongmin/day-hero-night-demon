@@ -67,15 +67,6 @@ export default function CastleScene(props: {
   // 공성 중 마왕 체력(0이 되면 이번 파도를 못 막은 것)
   const [lordHp, setLordHp] = useState(1);
   const onLordHp = useCallback((r: number) => setLordHp(r), []);
-  // 다음 공성 파도 시각: 서버 시각을 이 기기 시계로 옮긴다
-  const nextWaveAt = useMemo(
-    () => (s.siege?.lastWaveAt ?? home.now) + (home.siegeWaveMs ?? 120_000) + (Date.now() - home.now),
-    [s.siege?.lastWaveAt, home.siegeWaveMs, home.now],
-  );
-  const onWaveDue = useCallback(() => { onRefresh().catch(() => undefined); }, [onRefresh]);
-  // 바로 부른 파도: getHome은 그 결과를 다시 주지 않으므로 여기서 들고 있다가 재생한다
-  const [calledWave, setCalledWave] = useState<{ at: number; won: boolean } | null>(null);
-  const [calling, setCalling] = useState(false);
   // 공성 재생 배속(1×·2× 무료, 3×는 상품). 이 기기에만 기억한다
   const has3x = s.perks?.speed3 === true;
   const [siegeSpd, setSiegeSpd] = useState<Speed>(() => {
@@ -87,6 +78,14 @@ export default function CastleScene(props: {
     setSiegeSpd(next);
     try { localStorage.setItem(SIEGE_SPEED_KEY, String(next)); } catch { /* 저장 못 해도 이번 화면에서는 쓴다 */ }
   }, [speed, has3x]);
+  // 다음 공성 파도 시각: 서버 시각을 이 기기 시계로 옮긴다. 배속이면 주기가 짧다(2분 ÷ 배속, 게임을 켜 둔 동안만)
+  const nextWaveAt = useMemo(
+    () => (s.siege?.lastWaveAt ?? home.now) + (home.siegeWaveMs ?? 120_000) / speed + (Date.now() - home.now),
+    [s.siege?.lastWaveAt, home.siegeWaveMs, home.now, speed],
+  );
+  // 바로 부른 파도: getHome은 그 결과를 다시 주지 않으므로 여기서 들고 있다가 재생한다
+  const [calledWave, setCalledWave] = useState<{ at: number; won: boolean } | null>(null);
+  const [calling, setCalling] = useState(false);
   const callWave = useCallback(() => {
     if (calling) return;
     setCalling(true);
@@ -95,6 +94,13 @@ export default function CastleScene(props: {
       .catch((e) => onError(errorText(e)))
       .finally(() => setCalling(false));
   }, [api, calling, speed, onRefresh, onError]);
+  // 파도 시각이 됐을 때: 1×는 서버 시간표대로 새로 받고, 배속이면 화면이 직접 부른다(실패해도 알림 없이 새로 받기만)
+  const onWaveDue = useCallback(() => {
+    if (speed === 1) { onRefresh().catch(() => undefined); return; }
+    api.callSiegeWave(speed)
+      .then((r) => { setCalledWave(r.wave); if (r.soul > 0) onError(T.siege.milestone(r.soul)); return onRefresh(); })
+      .catch(() => onRefresh().catch(() => undefined));
+  }, [api, speed, onRefresh, onError]);
   // 자리를 비운 동안 처음 넘은 10단계 보상 알림 (그 조회에서만 0보다 크다)
   useEffect(() => {
     if ((home.siegeSoul ?? 0) > 0) onError(T.siege.milestone(home.siegeSoul ?? 0));
