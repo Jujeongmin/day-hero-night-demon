@@ -8,7 +8,7 @@ import { T } from '../strings/ko';
 
 const RESET_WORD = '초기화';
 
-/** 음량 막대: UI 키트 막대 + 해골 손잡이. 끌거나 눌러서, 방향키로도 바꾼다. */
+/** 음량 막대: 반듯한 직사각형 + 채운 만큼 붉은색 + 해골 손잡이. 끌거나 눌러서, 방향키로도 바꾼다. */
 function Slider(props: { value: number; disabled: boolean; label: string; onChange: (v: number) => void }) {
   const { value, disabled, label, onChange } = props;
   const ref = useRef<HTMLDivElement>(null);
@@ -46,6 +46,7 @@ function Slider(props: { value: number; disabled: boolean; label: string; onChan
       onKeyDown={key}
     >
       <span className="slider-track" />
+      <span className="slider-fill" style={{ width: `${value * 100}%` }} />
       <img className="slider-knob" src="ui/knob.png" alt="" draggable={false} style={{ left: `${value * 100}%` }} />
     </div>
   );

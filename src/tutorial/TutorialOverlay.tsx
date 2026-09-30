@@ -21,15 +21,14 @@ function sameBox(a: Box | null, b: Box | null): boolean {
   return a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height && a.sheetTop === b.sheetTop;
 }
 
-/** 정면 임프 + 해골 말풍선 (2026-09-30 승인: 임프 C안, 말풍선 C안). 꼬리는 말풍선 왼쪽에서 임프 쪽으로 */
+/** 정면 임프 + 해골 말풍선 (2026-09-30 승인: 임프 C안, 말풍선 C안). 말풍선(꼬리 없음)은 임프 머리 오른쪽 위 */
 function TalkBody(props: { line: string }) {
   return (
     <>
-      <img className="tut-imp" src="ui/imp_front.png" alt="임프" draggable={false} />
       <div className="tut-bubble">
-        <img className="tut-tail" src="ui/bubble_tail.png" alt="" draggable={false} />
         <p>{props.line}</p>
       </div>
+      <img className="tut-imp" src="ui/imp_front.png" alt="임프" draggable={false} />
     </>
   );
 }

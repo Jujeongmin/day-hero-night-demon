@@ -203,17 +203,15 @@ canvas.battle {
 .tut-hole { position: absolute; border-radius: 8px; box-shadow: 0 0 0 9999px #000a; outline: 2px solid var(--gold); animation: tutpulse 1s ease-in-out infinite; pointer-events: none; }
 @keyframes tutpulse { 50% { outline-color: #ffcf4d55; } }
 /* 말풍선: 틀 없이 정면 임프(public/ui/imp_front.png) + 해골 말풍선. 그림은 art/tutorial/ (2026-09-30 승인) */
-/* 꼬리 끝(말풍선 왼쪽 -16px, 위 40+39px)이 임프 입 오른쪽(임프 그림 70, 56px)에 오도록 맞춘 값: 임프를 23px 내리고 말풍선을 18px 당긴다 */
-.tut-talk { position: absolute; left: 8px; right: 8px; top: 52px; max-width: 464px; margin: 0 auto; display: flex; align-items: flex-start; }
-.tut-imp { flex: none; width: 104px; margin-top: 23px; image-rendering: pixelated; filter: drop-shadow(0 2px 6px #000c); }
-/* bubble.png(123×58)를 2배로 9조각. 왼쪽 위 해골을 피해 글은 안쪽으로 */
+/* 말풍선은 꼬리 없이 임프 머리 오른쪽 위에 뜬다 (2026-09-30 사용자 요청) */
+.tut-talk { position: absolute; left: 8px; right: 8px; top: 52px; max-width: 464px; margin: 0 auto; display: flex; flex-direction: column; align-items: flex-start; }
+.tut-imp { flex: none; width: 104px; margin-top: 2px; image-rendering: pixelated; filter: drop-shadow(0 2px 6px #000c); }
+/* bubble.png(123×58)를 2배로 9조각. 폭은 글 길이만큼(모서리 조각 합 100px 이상). 왼쪽 위 해골을 피해 글은 안쪽으로 */
 .tut-bubble {
-  position: relative; flex: 1; min-width: 0; min-height: 84px; margin-left: -18px; display: flex; align-items: center;
+  position: relative; margin-left: 38px; max-width: calc(100% - 38px); min-width: 100px; min-height: 74px; display: flex; align-items: center;
   border: 1px solid transparent; border-image: url(/ui/bubble.png) 21 22 16 28 fill / 42px 44px 32px 56px round;
   padding: 12px 18px 12px 38px; image-rendering: pixelated; filter: drop-shadow(0 2px 6px #000c);
 }
-/* 꼬리(18×21 → 2배): 오른쪽 4칸이 말풍선 왼쪽 테두리에 겹친다 */
-.tut-tail { position: absolute; left: -18px; top: 40px; width: 36px; height: 42px; image-rendering: pixelated; }
 .tut-bubble p { margin: 0; font-size: 16px; line-height: 1.35; color: #3a1c14; word-break: keep-all; }
 
 /* 설정 */
@@ -224,7 +222,10 @@ canvas.battle {
 .set-label { flex: none; }
 .slider { position: relative; flex: 1; min-width: 0; height: 30px; margin: 0 12px; touch-action: none; cursor: pointer; }
 .slider.off { filter: grayscale(.8) brightness(.6); cursor: default; }
-.slider-track { position: absolute; left: -8px; right: -8px; top: 9px; height: 12px; border: 6px solid transparent; border-image: url(/ui/bar.png) 10 fill / 6px stretch; image-rendering: pixelated; }
+/* 막대: 사용자 요청(2026-09-30)으로 그림 대신 반듯한 직사각형. 가장자리를 흐리지 않고, 채워진 만큼 붉은 보석색 */
+.slider-track, .slider-fill { position: absolute; top: 9px; height: 12px; }
+.slider-track { left: 0; right: 0; background: #1a0810; border: 2px solid #05030a; }
+.slider-fill { left: 0; background: var(--ruby); border: 2px solid #05030a; border-right: 0; box-shadow: inset 0 -3px 0 #b3203a, inset 0 2px 0 #ff8a96; }
 .slider-knob { position: absolute; top: 1px; width: 28px; height: 28px; translate: -50% 0; image-rendering: pixelated; pointer-events: none; }
 .nick-input.small { font-size: 15px; flex: 1; min-width: 0; }
 

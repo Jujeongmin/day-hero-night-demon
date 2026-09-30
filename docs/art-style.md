@@ -90,9 +90,10 @@
 ## 튜토리얼 임프·말풍선, 컷3 교체 (2026-09-30 승인)
 - 후보 비교: https://claude.ai/artifact/CxuRCu5hjEcWbvrd91FVbB — 원본·탈락 후보는 `art/tutorial/`, `art/cutscene/cut3_c~e.png`.
 - 정면 임프: `art/tutorial/imp_c.png`(pixflux 96px, seed 1304, 손가락으로 가리키는 전신)를 그림 영역으로 자른 `public/ui/imp_front.png`(86×79). 화면 폭 104px.
-- 말풍선: `art/tutorial/bub_d.png`(뼈색 + 해골 장식, seed 1314)에서 꼬리를 떼어 두 조각으로 나눴다.
-  - `public/ui/bubble.png`(123×58): 꼬리 구멍을 아래 테두리로 메운 몸통. 9조각 `21 22 16 28`, 2배로 그린다.
-  - `public/ui/bubble_tail.png`(18×21): 아래로 난 꼬리를 대각선 뒤집기(TRANSVERSE)로 왼쪽을 향하게. 오른쪽 4칸이 몸통 왼쪽 테두리에 겹친다.
-  - 꼬리 끝이 임프 입 오른쪽에 오게 맞췄다(값은 `styles.css` `.tut-talk` 주석).
+- 말풍선: `art/tutorial/bub_d.png`(뼈색 + 해골 장식, seed 1314)에서 꼬리를 떼고 구멍을 아래 테두리로 메운 몸통 `public/ui/bubble.png`(123×58). 9조각 `21 22 16 28`, 2배로 그린다.
+  - 꼬리는 쓰지 않는다(사용자 결정). 말풍선은 임프 머리 오른쪽 위에 뜨고, 폭은 대사 길이만큼 줄어든다.
 - 컷3(컷신·닉네임 화면): 옛 그림(불꽃 뿔 괴물 얼굴)이 너무 무섭다 → 컷4 팔레트로 다시 그린 `art/cutscene/cut3_d.png`(옥좌 위 전구, seed 1322). 옛 캐시를 피하려고 코드에서 `?v=2`.
 - 출정 버튼 `public/ui/button_big.png`: 안쪽 투명 구멍 210칸(배경이 파란 점으로 비쳤다)을 주변 색으로 메웠다. 원본 `art/ui/button_big_holes.png`. CSS에서 `?v=2`.
+
+## 음량 슬라이더 (2026-09-30 사용자 요청)
+- UI 키트 `bar.png` 막대는 가장자리가 흐려 보여서 버렸다. 반듯한 직사각형(검은 테두리)에 채워진 만큼 붉은 보석색(`--ruby`)을 칠한다. 손잡이 해골은 그대로.
