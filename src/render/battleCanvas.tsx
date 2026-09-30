@@ -218,5 +218,5 @@ export default function BattleCanvas(props: {
     };
   }, [props.battle, props.events, props.speed, props.lordSkin, props.bg]);
 
-  return <canvas ref={ref} className="battle" width={W} height={H} />;
+  return <canvas ref={ref} className="battle" data-tut="raid-field" width={W} height={H} />;
 }

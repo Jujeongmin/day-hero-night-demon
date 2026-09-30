@@ -6,12 +6,12 @@ export type TutEvent =
   | 'floor_opened' | 'floor_saved' | 'upgrade_opened' | 'upgraded' | 'tapped';
 
 /** targets: 빛낼 대상의 data-tut 값. 앞에서부터 화면에 있는 첫 번째를 쓴다. */
-/** passive: 덮개 없이 말풍선만 띄우고 누르기를 막지 않는다(저절로 진행되는 장면) */
-export interface TutStep { targets: string[]; line: string; passive?: boolean }
+/** passive: 덮개 없이 말풍선만 띄우고 누르기를 막지 않는다(저절로 진행되는 장면). near: 말풍선을 이것 바로 아래에 둔다 */
+export interface TutStep { targets: string[]; line: string; passive?: boolean; near?: string[] }
 
 export const TUT_STEPS: Partial<Record<OnboardingStage, TutStep>> = {
   raid_sortie: { targets: ['sortie'], line: T.tut.raidSortie },
-  raid_ult: { targets: [], line: T.tut.raidUlt, passive: true },
+  raid_ult: { targets: [], line: T.tut.raidUlt, passive: true, near: ['raid-field'] }, // 위 줄(속도·포기)을 가리지 않게 전투 화면 아래
   raid_result: { targets: ['result-ok'], line: T.tut.raidResult },
   place_floor: { targets: ['floor-0'], line: T.tut.placeFloor },
   place_slot: { targets: ['pick-first'], line: T.tut.placeSlot },

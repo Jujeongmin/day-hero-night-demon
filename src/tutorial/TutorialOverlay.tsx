@@ -53,7 +53,8 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
 
   useEffect(() => {
     setGaveUp(false);
-    if (!step || step.targets.length === 0) {
+    const anchors = step ? (step.targets.length > 0 ? step.targets : step.near ?? []) : [];
+    if (!step || anchors.length === 0) {
       boxRef.current = null;
       setBox(null);
       return;
@@ -61,7 +62,7 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
     let missingSince = performance.now();
     let raf = 0;
     const tick = (now: number) => {
-      const el = findTarget(step.targets);
+      const el = findTarget(anchors);
       const r = el?.getBoundingClientRect();
       const sheet = el?.closest('.sheet')?.getBoundingClientRect();
       const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height, ...(sheet ? { sheetTop: sheet.top } : {}) } : null;
@@ -77,16 +78,23 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
     return () => cancelAnimationFrame(raf);
   }, [step]);
 
-  if (!step || gaveUp) return null;
+  if (!step) return null;
   if (step.passive) {
+    // near 대상 바로 아래. 대상이 없거나 화면 아래가 모자라면 화면 안으로 당긴다
+    const vh = window.innerHeight;
+    const style: CSSProperties | undefined = box && talkH > 0
+      ? { top: Math.max(8, Math.min(vh - talkH - 8, box.top + box.height + 10)) }
+      : undefined;
     return (
       <div className="tut passive">
-        <div className="tut-talk">
+        <div className="tut-talk" ref={talkRef} style={style}>
           <TalkBody line={step.line} />
         </div>
       </div>
     );
   }
+
+  if (gaveUp) return null;
 
   const press = () => {
     if (step.targets.length === 0) {
