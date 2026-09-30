@@ -70,8 +70,8 @@ export const BALANCE = {
     castleCostFactor: 3,
     /** 공성 침입자 1명을 막을 때 골드(1단계 기준) */
     goldPerInvader: 5,
-    /** 방치 수입(시간당) = 공성 최고 단계 파도 골드 × 5 */
-    idleWavesPerHour: 5,
+    /** 방치 수입(시간당) = 공성 최고 단계 파도 골드 × 2 (2026-09-30 사용자 승인: 5 → 2, 자리 비운 보상이 너무 컸다) */
+    idleWavesPerHour: 2,
     /** NPC 공략 전리품 = 파도 5번 값 */
     raidLootWaves: 5,
     /** 실제 플레이어 약탈 상한 = NPC 전리품 × 3 */
@@ -95,6 +95,10 @@ export const BALANCE = {
   /** 층을 넘어갈 때 살아 있는 용사가 회복하는 최대 체력 비율 */
   floorRestHeal: 0.1,
   idleCapHours: 8,
+  /** 자리 비운 동안 막은 공성 파도의 골드 배수(2026-09-30 사용자 승인). 도착한 지 awayGraceMs 넘게 지나 처리된 파도 = 자리 비운 동안 */
+  awaySiegeGoldMult: 0.5,
+  /** 게임을 켜 두면 1× 파도도 도착 후 15초 안에 처리된다. 그보다 넉넉히 1분 */
+  awayGraceMs: 60_000,
   /** 스테이지형 공성(2026-09-29 승인): 2분마다 파도 1번, 막으면 growth.ts waveGold(단계) */
   siegeWaveMs: 2 * 60_000,
   /** 바로 부르기(무료 스킵, 2026-09-29 승인): 파도와 파도 사이 최소 간격 = 1× 화면 연출 길이(배속이면 그만큼 짧다) */

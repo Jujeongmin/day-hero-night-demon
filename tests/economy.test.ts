@@ -36,9 +36,10 @@ describe('growth curve', () => {
 
 describe('economy', () => {
   it('idle income follows the best siege stage, capped at 8h, doubled by x2', () => {
-    expect(idleIncome(1, 0, 2 * H, 1)).toBe(2 * 5 * waveGold(1));
-    expect(idleIncome(1, 0, 20 * H, 1)).toBe(8 * 5 * waveGold(1));
-    expect(idleIncome(1, 0, 20 * H, 2)).toBe(2 * 8 * 5 * waveGold(1));
+    // 시간당 파도 골드 × 2 (2026-09-30: 5 → 2)
+    expect(idleIncome(1, 0, 2 * H, 1)).toBe(2 * 2 * waveGold(1));
+    expect(idleIncome(1, 0, 20 * H, 1)).toBe(8 * 2 * waveGold(1));
+    expect(idleIncome(1, 0, 20 * H, 2)).toBe(2 * 8 * 2 * waveGold(1));
     expect(idleIncome(1, 10 * H, 5 * H, 1)).toBe(0);
   });
 

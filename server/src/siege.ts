@@ -68,7 +68,7 @@ export function fightWave(p: { account: string; stage: number; at: number; castl
   return raid.log ? { ...r, log: raid.log } : r;
 }
 
-/** 마지막 처리 이후 도착한 파도를 순서대로 싸운다. 막으면 단계 +1·골드, 뚫리면 단계 −1. 최대 8시간치. */
+/** 마지막 처리 이후 도착한 파도를 순서대로 싸운다. 막으면 단계 +1·골드(자리 비운 동안 도착한 파도는 절반), 뚫리면 단계 −1. 최대 8시간치. */
 export function runSiege(p: {
   account: string; stage: number; lastWaveAt: number; now: number; castleLevel: number; floors: ResolvedFloor[]; mult?: number;
 }): { stage: number; peak: number; lastWaveAt: number; gold: number; waves: { at: number; won: boolean }[]; lastLog?: FloorLog[] } {
@@ -86,7 +86,8 @@ export function runSiege(p: {
     // 마지막 파도만 전투 기록을 남긴다(홈 화면이 재생한다)
     const r = fightWave({ account: p.account, stage, at, castleLevel: p.castleLevel, floors: p.floors, mult: p.mult, record: i === total });
     waves.push({ at, won: r.won });
-    gold += r.gold;
+    // 도착한 지 오래 지나 처리된 파도(자리 비운 동안)는 골드 절반
+    gold += p.now - at > BALANCE.awayGraceMs ? Math.floor(r.gold * BALANCE.awaySiegeGoldMult) : r.gold;
     stage = r.stage;
     peak = Math.max(peak, stage);
     if (r.log) lastLog = r.log;

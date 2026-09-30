@@ -65,3 +65,15 @@ describe('siege battle log (real fight replayed on the home screen)', () => {
     expect(none.lastLog).toBeUndefined();
   });
 });
+
+describe('away rewards (2026-09-30: siege gold halved while away)', () => {
+  it('waves that arrived more than the grace time ago pay half; the wave just due pays full', () => {
+    // 한 파도만: 방금 도착(유예 안) → 제값
+    const fresh = runSiege({ account: 'g', stage: 1, lastWaveAt: 0, now: W + 1000, castleLevel: 3, floors });
+    const freshFull = fightWave({ account: 'g', stage: 1, at: W, castleLevel: 3, floors });
+    expect(fresh.gold).toBe(freshFull.gold);
+    // 같은 파도가 유예를 넘겨 처리되면 절반
+    const late = runSiege({ account: 'g', stage: 1, lastWaveAt: 0, now: W + BALANCE.awayGraceMs + 1, castleLevel: 3, floors });
+    expect(late.gold).toBe(Math.floor(freshFull.gold * BALANCE.awaySiegeGoldMult));
+  });
+});
