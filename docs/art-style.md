@@ -117,3 +117,8 @@
 - 배지: `public/ui/vip_{bronze,silver,gold,ruby}.png`(pixflux 32px, seed 1601~1604, 원본 `art/ui/vip/`). 1~3 청동, 4~6 은, 7~9 금, 10 루비 왕관.
 - 전용 외형: VIP 5 용암 마왕 `lord_lava_*`(object 7437326d, v3 idle 4·attack 7·death 7), VIP 8 보라 날개 악마 `lord_demon_*`(character b709de8d, idle·death 템플릿, attack v3 두 번째 판 attack2). 악마 공격은 한 프레임 섬광과 몸통 굵기 변화가 있어 다시 뽑을 수 있다(첫 판 프레임 `art/frames/lord_demon_attack_v1`).
 - VIP 10 루비 오라: `.aura.ruby`(홈 탑 마왕 테두리). 전투 캔버스는 아직 보라 오라(외형이 있을 때만).
+
+## 상품 이미지 고급화 (2026-09-30)
+- VX Shop 대시보드용 512×512: pixflux 256×256 `highly detailed`, 문장 틀 "dark fantasy game shop item art, centered: <상품>, dark purple background with soft vignette glow, no text" → NEAREST 2배.
+- 시즌 패스는 두루마리 판(`hq/season_pass_scroll.png`)이 비어 보여 흑룡 + 해골 메달 판으로, 새끼 용은 검은 판(`hq/recruit_dragon_black.png`)이 흑룡 외형과 헷갈려 게임 속 빨간 새끼 용으로 다시 뽑음. 스타터팩 오른쪽 아래 흔적은 배경색으로 덮음.
+- 게임 안 상점 아이콘(`public/icons/prod_*.png`, 64px)은 그대로.
