@@ -148,6 +148,30 @@ export const BALANCE = {
     gold_coffer: { vx: 1500, hours: 40, upgrades: 100 },
     gold_vault: { vx: 5000, hours: 150, upgrades: 375 },
   },
+  /**
+   * VIP (2026-09-30 사용자 승인, 후보표 https://claude.ai/artifact/PKHH6cZBjthFcSDgxK4qyL 그대로).
+   * 누적 결제 VX로 1~10. 배열은 등급 1~10의 값(0번 칸 없음, VIP 0은 기존 값). 시간 단축·편의·지위만, 전투 능력치·명예는 없다
+   */
+  vip: {
+    thresholds: [100, 500, 1500, 3000, 6000, 10000, 20000, 35000, 60000, 100000],
+    idleBonus: [0.1, 0.1, 0.2, 0.2, 0.3, 0.3, 0.4, 0.4, 0.4, 0.5],
+    awayMult: [0.5, 0.6, 0.6, 0.7, 0.7, 0.8, 0.8, 0.9, 0.9, 1],
+    capHours: [8, 8, 10, 10, 12, 12, 16, 16, 24, 24],
+    packBonus: [0, 0.05, 0.05, 0.1, 0.1, 0.15, 0.15, 0.2, 0.2, 0.25],
+    idleDoubleExtra: [0, 0, 1, 1, 1, 2, 2, 2, 2, 2],
+    revengeExtra: [0, 0, 0, 1, 1, 1, 1, 2, 2, 2],
+    nicknameExtra: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    /** 전용 마왕 외형이 열리는 등급 */
+    skins: { lava: 5, demon: 8 } as Record<string, number>,
+    /** 루비 오라(마왕 테두리)가 켜지는 등급 */
+    rubyAura: 10,
+  },
+  /** 누적 VX 계산용 상품 가격. 결제 웹훅에 가격이 없어서 서버가 들고 있다 — 대시보드 가격을 바꾸면 여기도 같이 바꾼다 */
+  productVx: {
+    starter_pack: 100, recruit_dragon: 300, season_pass: 400, speed_x3: 300, premium: 500,
+    gold_pouch: 100, gold_chest: 500, gold_coffer: 1500, gold_vault: 5000,
+    idle_x2: 500, revive: 100, shadow_double: 100, revenge_ticket: 100, daily_supply: 100,
+  } as Record<string, number>,
   /** 골드 묶음의 "켜 둔 공성 1시간" = 파도 골드 × 15 (1×로 평형 단계에서 30번 중 약 15번 막음) */
   goldPackHourWaves: 15,
   starterSoul: 30,

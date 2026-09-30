@@ -5,6 +5,7 @@ import AdButton from '../render/AdButton';
 import { adsLeft } from '../services/ads';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
+import { vipOf, vipPerks } from '../../server/src/vip';
 import { displayName } from '../strings/i18n';
 
 export default function Log(props: {
@@ -36,7 +37,7 @@ export default function Log(props: {
   const now = Date.now();
   const freeUsed = s.revengeUsed.day === dayKey(now) ? s.revengeUsed.count : 0;
   // 무료 복수를 다 쓰고 복수권도 없으면 광고로 한 번 더
-  const needTicket = freeUsed >= BALANCE.freeRevengesPerDay && s.credits.revenge < 1;
+  const needTicket = freeUsed >= BALANCE.freeRevengesPerDay + vipPerks(vipOf(s)).revengeExtra && s.credits.revenge < 1;
   const left = adsLeft(s, 'revenge', now);
   return (
     <>

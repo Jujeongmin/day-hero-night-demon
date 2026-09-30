@@ -5,6 +5,7 @@ import { Portrait } from '../render/Sprite';
 import { lordSpriteId } from '../render/skins';
 import { getAudioPrefs, setAudioPrefs, type AudioPrefs } from '../services/audio';
 import { T } from '../strings/ko';
+import { vipOf, vipPerks } from '../../server/src/vip';
 import { chooseLang, currentLang, displayName, LANGS } from '../strings/i18n';
 
 /** 음량 막대: 반듯한 직사각형 + 채운 만큼 붉은색 + 해골 손잡이. 끌거나 눌러서, 방향키로도 바꾼다. */
@@ -65,7 +66,7 @@ export default function Settings(props: {
   const [confirm, setConfirm] = useState('');
   const [askReset, setAskReset] = useState(false);
   const [busy, setBusy] = useState(false);
-  const left = Math.max(0, 1 - (home.state.profile.nicknameChanges ?? 0));
+  const left = Math.max(0, 1 + vipPerks(vipOf(home.state)).nicknameExtra - (home.state.profile.nicknameChanges ?? 0));
   // 마왕 외형: 기본 + 이번 시즌 패스(해골) + 영구 소장(흑룡). 기본만 있으면 칸을 숨긴다
   const st = home.state;
   const looks: ('base' | 'skull' | 'dragon')[] = ['base'];

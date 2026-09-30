@@ -7,6 +7,7 @@ import { adsLeft } from '../services/ads';
 import type { Api, HomeData } from '../services/api';
 import { buy, findItem, type ShopItem } from '../services/shop';
 import { T } from '../strings/ko';
+import { vipOf, vipPerks } from '../../server/src/vip';
 
 /** owned: 이미 효과가 켜져 있어 다시 사도 소용없는 상품 (예: 이번 시즌 패스) */
 export default function Shop(props: {
@@ -30,8 +31,10 @@ export default function Shop(props: {
         const [name, fixedDesc] = T.products[id];
         // 골드 묶음: 이 계정이 실제로 받을 골드(서버 지급과 같은 식)와 100 VX 대비 VX당 더 주는 비율
         const pack = id in BALANCE.goldPacks ? BALANCE.goldPacks[id as GoldPackId] : null;
-        const packGold = pack ? goldPackAmount(id as GoldPackId, best, avgLevel) : 0;
-        const bonus = pack ? Math.round(((packGold / pack.vx) / (goldPackAmount('gold_pouch', best, avgLevel) / BALANCE.goldPacks.gold_pouch.vx) - 1) * 100) : 0;
+        const packBase = pack ? goldPackAmount(id as GoldPackId, best, avgLevel) : 0;
+        // VIP 골드 묶음 추가 지급까지 더한 실제 금액. "N% 더"는 VIP와 상관없이 주머니 대비 VX당 비율
+        const packGold = Math.floor(packBase * (1 + vipPerks(vipOf(home.state)).packBonus));
+        const bonus = pack ? Math.round(((packBase / pack.vx) / (goldPackAmount('gold_pouch', best, avgLevel) / BALANCE.goldPacks.gold_pouch.vx) - 1) * 100) : 0;
         const desc = id === 'starter_pack' ? T.starterDesc(scaledGold(BALANCE.starterGold, best)) : pack ? T.goldPackDesc(packGold, bonus) : fixedDesc;
         const owned = props.owned.has(id) || !!item?.purchaseLimitReached;
         const blocked = owned || !item || !item.purchasable;

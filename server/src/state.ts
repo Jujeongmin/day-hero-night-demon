@@ -123,6 +123,8 @@ export interface UserState {
   lordSkin: 'base' | LordSkin | null;
   /** 스테이지형 공성: 지금 단계, 마지막으로 처리한 파도 시각, 받지 않은 공성 골드. lastWon = 마지막 파도를 막았는가(없으면 막은 것으로 본다) */
   siege: { stage: number; lastWaveAt: number; pendingGold: number; best: number; lastWon?: boolean };
+  /** VIP: 누적 결제 VX(결제 웹훅이 서버 가격표로 더한다). 등급은 vip.ts vipLevel */
+  vip: { spent: number };
   /** 매칭용 공개 정보(castles 컬렉션)를 새 전투력 단위로 다시 쓴 판. 2 = 큰 숫자 성장(2026-09-29) */
   castleSyncV?: number;
 }
@@ -169,6 +171,7 @@ export function defaultState(account: string, now: number, seasonId: string): Us
     firstWinDay: null,
     starterOffered: false,
     processedPurchases: [],
+    vip: { spent: 0 },
     onboarding: { at: 'cutscene', nicknameSet: false },
     ads: { day: '', counts: {} },
     perks: { speed3: false, premium: false },
@@ -197,6 +200,7 @@ export function withDefaults(s: UserState): UserState {
     season: { ...s.season, claimed: s.season.claimed ?? { free: 0, pass: 0 } },
     skins: s.skins ?? [],
     lordSkin: s.lordSkin ?? null,
+    vip: s.vip ?? { spent: 0 },
     siege: s.siege
       ? { ...s.siege, best: s.siege.best ?? s.siege.stage }
       : { stage: 1, lastWaveAt: s.idle.lastClaimAt, pendingGold: 0, best: 1 },
@@ -224,6 +228,8 @@ export function resetState(s: UserState, now: number): UserState {
     introDone: false,
     starterOffered: s.starterOffered,
     processedPurchases: s.processedPurchases,
+    // VIP 누적은 결제라 초기화해도 남긴다
+    vip: s.vip,
     onboarding: { at: 'raid_sortie', nicknameSet: s.onboarding.nicknameSet },
     // 오늘 광고 횟수는 초기화로 다시 받지 못하게, 영구 상품은 결제라 남긴다
     ads: s.ads,

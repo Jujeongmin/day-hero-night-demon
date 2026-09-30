@@ -3,6 +3,7 @@ import { BALANCE, HERO_ORDER } from './catalog';
 import { lordLevel, waveGold } from './growth';
 import { seedFrom } from './rng';
 import type { ResolvedFloor } from './state';
+import { vipPerks } from './vip';
 
 /** 공성 단계의 침입 파도: 기사·궁수·성직자, 레벨 = 단계, 능력치 ×0.5. 최대 레벨을 넘으면 단계마다 ×1.15 더 */
 export function siegeWave(stage: number): HeroSpec[] {
@@ -71,10 +72,13 @@ export function fightWave(p: { account: string; stage: number; at: number; castl
 /** 마지막 처리 이후 도착한 파도를 순서대로 싸운다. 막으면 단계 +1·골드(자리 비운 동안 도착한 파도는 절반), 뚫리면 단계 −1. 최대 8시간치. */
 export function runSiege(p: {
   account: string; stage: number; lastWaveAt: number; now: number; castleLevel: number; floors: ResolvedFloor[]; mult?: number;
+  /** VIP 등급: 자리 비운 공성 골드 배수와 최대 시간 */
+  vip?: number;
 }): { stage: number; peak: number; lastWaveAt: number; gold: number; waves: { at: number; won: boolean }[]; lastLog?: FloorLog[] } {
   const W = BALANCE.siegeWaveMs;
   const total = Math.max(0, Math.floor((p.now - p.lastWaveAt) / W));
-  const cap = Math.floor((BALANCE.idleCapHours * 3_600_000) / W);
+  const perks = vipPerks(p.vip ?? 0);
+  const cap = Math.floor((perks.capHours * 3_600_000) / W);
   const skip = Math.max(0, total - cap);
   let stage = Math.max(1, p.stage);
   let peak = stage;
@@ -87,7 +91,7 @@ export function runSiege(p: {
     const r = fightWave({ account: p.account, stage, at, castleLevel: p.castleLevel, floors: p.floors, mult: p.mult, record: i === total });
     waves.push({ at, won: r.won });
     // 도착한 지 오래 지나 처리된 파도(자리 비운 동안)는 골드 절반
-    gold += p.now - at > BALANCE.awayGraceMs ? Math.floor(r.gold * BALANCE.awaySiegeGoldMult) : r.gold;
+    gold += p.now - at > BALANCE.awayGraceMs ? Math.floor(r.gold * perks.awayMult) : r.gold;
     stage = r.stage;
     peak = Math.max(peak, stage);
     if (r.log) lastLog = r.log;

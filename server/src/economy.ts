@@ -1,15 +1,17 @@
 import { BALANCE, LORD, MONSTERS, scaleStats } from './catalog';
 import { idlePerHour, lordLevel, npcLoot, unitPower } from './growth';
 import type { CastleSnapshot, ResolvedFloor } from './state';
+import { vipPerks } from './vip';
 
 export { castleUpgradeCost, npcLoot, unitUpgradeCost } from './growth';
 
 const HOUR = 3_600_000;
 
-/** 방치 수입: 공성 최고 단계에 따라 시간당 금액이 정해지고 최대 8시간치 */
-export function idleIncome(bestStage: number, lastClaimAt: number, now: number, mult: 1 | 2): number {
-  const elapsed = Math.max(0, Math.min(now - lastClaimAt, BALANCE.idleCapHours * HOUR));
-  return Math.floor((elapsed / HOUR) * idlePerHour(bestStage) * mult);
+/** 방치 수입: 공성 최고 단계에 따라 시간당 금액이 정해지고 최대 8시간치(VIP면 더 길고 +%) */
+export function idleIncome(bestStage: number, lastClaimAt: number, now: number, mult: 1 | 2, vip = 0): number {
+  const perks = vipPerks(vip);
+  const elapsed = Math.max(0, Math.min(now - lastClaimAt, perks.capHours * HOUR));
+  return Math.floor((elapsed / HOUR) * idlePerHour(bestStage) * mult * (1 + perks.idleBonus));
 }
 
 /** 실제 플레이어 약탈: 상대 골드의 10%, 상한 cap, 가진 것보다 많이 가져가지 않는다 */

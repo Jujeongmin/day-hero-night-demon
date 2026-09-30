@@ -1,6 +1,7 @@
 import { BALANCE } from './catalog';
 import { avgMonsterLevel, goldPackAmount, scaledGold } from './growth';
 import type { UserState } from './state';
+import { vipOf, vipPerks } from './vip';
 
 /** 웹훅이 지급할 수 있는 모든 상품. 폐기 상품(대시보드에서 끔)도 끄기 전 결제분을 위해 남긴다. */
 export const PRODUCTS = [
@@ -52,7 +53,7 @@ export function grantFor(productId: string, quantity: number, s: UserState): Gra
     case 'gold_coffer':
     case 'gold_vault':
       // 결제한 사람의 공성 최고 단계와 몬스터 평균 레벨로 계산한다(상점에 보인 금액과 같다)
-      return { patch: {}, gold: goldPackAmount(productId, s.siege?.best ?? 1, avgMonsterLevel(s.roster)) * q, soul: 0 };
+      return { patch: {}, gold: Math.floor(goldPackAmount(productId, s.siege?.best ?? 1, avgMonsterLevel(s.roster)) * (1 + vipPerks(vipOf(s)).packBonus)) * q, soul: 0 };
     default:
       throw new Error(`unknown product: ${productId}`);
   }

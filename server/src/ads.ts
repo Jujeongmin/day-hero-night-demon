@@ -3,6 +3,7 @@ import { idleIncome } from './economy';
 import { scaledGold } from './growth';
 import { runStatus } from './raid';
 import { dayKey, type UserState } from './state';
+import { vipOf, vipPerks } from './vip';
 
 /** 광고 보상 자리. 클라이언트가 보내는 placementId는 이 목록만 받는다. */
 export type Placement = 'daily_supply' | 'revenge' | 'revive' | 'idle_double';
@@ -11,6 +12,12 @@ const PLACEMENTS: Placement[] = ['daily_supply', 'revenge', 'revive', 'idle_doub
 export type AdPlan =
   | { ok: true; patch: Partial<UserState>; gold: number; soul: number }
   | { ok: false; code: 'AD_PLACEMENT' | 'AD_LIMIT' | 'AD_NOT_NOW' };
+
+/** 하루 광고 한도. 방치 1.5배는 VIP 3·6에서 +1씩 */
+export function adLimit(p: Exclude<Placement, 'revive'> | Placement, vip: number): number {
+  const base = (BALANCE.adLimits as Record<string, number>)[p] ?? 0;
+  return p === 'idle_double' ? base + vipPerks(vip).idleDoubleExtra : base;
+}
 
 /** 광고 한 번에 줄 보상과 저장할 변경. 한도·조건은 여기서만 판정한다. */
 export function planAdReward(s: UserState, placement: string, now: number): AdPlan {
@@ -24,12 +31,12 @@ export function planAdReward(s: UserState, placement: string, now: number): AdPl
     if (!s.run || runStatus(s.run) !== 'wiped' || s.run.reviveUsed) return { ok: false, code: 'AD_NOT_NOW' };
     return { ok: true, patch: { ads, credits: { ...s.credits, revive: s.credits.revive + 1 } }, gold: 0, soul: 0 };
   }
-  if (used >= BALANCE.adLimits[p]) return { ok: false, code: 'AD_LIMIT' };
+  if (used >= adLimit(p, vipOf(s))) return { ok: false, code: 'AD_LIMIT' };
   if (p === 'daily_supply') return { ok: true, patch: { ads }, gold: scaledGold(BALANCE.adSupplyGold, s.siege.best), soul: BALANCE.adSupplySoul };
   if (p === 'revenge') return { ok: true, patch: { ads, credits: { ...s.credits, revenge: s.credits.revenge + 1 } }, gold: 0, soul: 0 };
   // 방치 수입을 지금 adIdleMult배로 받는다 (그냥 받기는 claimIdle)
   // 방치 수입 + 쌓인 공성 골드 (공성 파도는 호출 전에 서버가 처리해 둔다)
-  const income = idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult) + s.siege.pendingGold;
+  const income = idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult, vipOf(s)) + s.siege.pendingGold;
   if (income <= 0) return { ok: false, code: 'AD_NOT_NOW' };
   return { ok: true, patch: { ads, idle: { ...s.idle, lastClaimAt: now }, siege: { ...s.siege, pendingGold: 0 } }, gold: Math.floor(income * BALANCE.adIdleMult), soul: 0 };
 }

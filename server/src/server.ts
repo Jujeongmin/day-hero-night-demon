@@ -11,6 +11,7 @@ import { npcCastle, npcRaids, npcTiersFor, TUTORIAL_TARGET, tutorialCastle } fro
 import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun } from './raid';
 import { planAdReward } from './ads';
 import type { FloorLog } from './battle';
+import { spendFor, vipOf, vipPerks } from './vip';
 import { chooseLordSkin, planPassClaim } from './pass';
 import { grantFor } from './purchases';
 import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from './siege';
@@ -299,7 +300,7 @@ async function recordSiegeBest(me: string, s: UserState, oldBest: number): Promi
 async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[]; soul: number; lastLog?: FloorLog[] }> {
   const r = runSiege({
     account: me, stage: s.siege.stage, lastWaveAt: s.siege.lastWaveAt, now,
-    castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes),
+    castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes), vip: vipOf(s),
   });
   if (r.lastWaveAt === s.siege.lastWaveAt) return { s, waves: [], soul: 0 };
   const last = r.waves[r.waves.length - 1];
@@ -470,7 +471,7 @@ export class Server {
       const now = Date.now();
       const s = await loadState(me, now);
       const first = !s.onboarding.nicknameSet;
-      if (!first && s.profile.nicknameChanges >= 1) throw new Error('NICK_NO_CHANGES');
+      if (!first && s.profile.nicknameChanges >= 1 + vipPerks(vipOf(s)).nicknameExtra) throw new Error('NICK_NO_CHANGES');
       const owner = await nicknameOwner(key);
       if (owner && owner !== me) throw new Error('NICK_TAKEN');
       await $global.addCollectionItem(NICKNAMES, { account: me, name: check.name }, { id: key });
@@ -514,7 +515,7 @@ export class Server {
         state: s,
         ...(await balances(me)),
         now,
-        idlePreview: idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult) + s.siege.pendingGold,
+        idlePreview: idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult, vipOf(s)) + s.siege.pendingGold,
         // 이번에 처리된 파도 중 마지막 것만 화면에서 재생한다
         // 마지막 파도는 실제 전투 기록(log)과 함께 — 홈 화면이 그대로 재생한다
         siegeLastWave: waves.length > 0 ? { ...waves[waves.length - 1], log: lastLog } : null,
@@ -537,7 +538,7 @@ export class Server {
       const now = Date.now();
       const { s } = await advanceSiege(me, await loadState(me, now), now);
       const siegeGold = s.siege.pendingGold;
-      const gold = idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult) + siegeGold;
+      const gold = idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult, vipOf(s)) + siegeGold;
       if (gold > 0) await $asset.mint('gold', gold);
       await save(me, { idle: { ...s.idle, lastClaimAt: now }, siege: { ...s.siege, pendingGold: 0 } });
       return { gold, siegeGold };
@@ -705,7 +706,7 @@ export class Server {
       const today = dayKey(now);
       const used = s.revengeUsed.day === today ? s.revengeUsed.count : 0;
       const extra: Partial<UserState> = { revengeUsed: { day: today, count: used + 1 } };
-      if (used >= BALANCE.freeRevengesPerDay) {
+      if (used >= BALANCE.freeRevengesPerDay + vipPerks(vipOf(s)).revengeExtra) {
         if (s.credits.revenge < 1) throw new Error('NO_REVENGE_CREDIT');
         extra.credits = { ...s.credits, revenge: s.credits.revenge - 1 };
       }
@@ -727,7 +728,9 @@ export class Server {
       }
       if (g.gold) await $asset.mint('gold', g.gold, p.account);
       if (g.soul) await $asset.mint('soul', g.soul, p.account);
-      await save(p.account, { ...g.patch, processedPurchases: [...s.processedPurchases, p.purchaseId].slice(-200) });
+      // VIP 누적: 웹훅에 가격이 없어 서버 가격표(BALANCE.productVx)로 더한다
+      const vip = { spent: (s.vip?.spent ?? 0) + spendFor(p.productId, p.quantity) };
+      await save(p.account, { ...g.patch, vip, processedPurchases: [...s.processedPurchases, p.purchaseId].slice(-200) });
       return { success: true };
     });
   }
