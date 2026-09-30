@@ -44,7 +44,7 @@
 
 - Product ID는 `server/src/purchases.ts`의 `PRODUCTS`와 **글자까지 같아야** 한다. 서버는 모르는 ID를 받으면 `{ success: false }`를 돌려준다.
 - Stock Quantity는 문서대로 "무제한이면 높은 숫자".
-- Image: 512×512 PNG (`art/products/`). 2026-09-30 고급화: 판매 중 9개를 pixflux 256×256(배경 있는 상점 그림, seed 1701~1709·1717·1726)으로 새로 그려 정확히 2배. 원본 `art/products/hq/`, 이전 그림(64px 8배) `art/products/v1/`. **대시보드 이미지 교체 필요(사용자).**
+- Image: 512×512 PNG (`art/products/`). 2026-09-30 고급화: 판매 중 9개를 pixflux 256×256(배경 있는 상점 그림, seed 1701~1709·1717·1726)으로 새로 그려 정확히 2배. 원본 `art/products/hq/`, 이전 그림(64px 8배) `art/products/v1/`. 대시보드 이미지 교체 완료: 2026-09-30 (사용자).
 - Metadata(JSON)는 비워 둔다. 서버가 쓰지 않는다.
 - 최저가는 100 VX(사용자 결정, 2026-09-29: 100 VX 미만 상품은 두지 않는다). 8개 합계 1,700 VX.
 - 지급량은 `BALANCE`(`starterGold`, `dailySupplyGold` 등)에 있다. **2026-09-29 큰 숫자 성장:** 골드 보상은 공성 최고 10단계까지 그대로, 그 뒤 단계마다 ×1.2(`growth.ts` `scaledGold`). 그래서 대시보드 설명에는 고정 골드 숫자를 쓰지 않는다. 게임 안 상점은 그 계정이 실제로 받을 금액을 보여 준다.
