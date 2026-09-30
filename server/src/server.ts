@@ -11,7 +11,7 @@ import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun 
 import { planAdReward } from './ads';
 import { chooseLordSkin, planPassClaim } from './pass';
 import { grantFor } from './purchases';
-import { fightWave, milestoneSoul, runSiege } from './siege';
+import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from './siege';
 import { rngNext, seedFrom } from './rng';
 import {
   canAdvance, dayKey, defaultState, isNew, isStage, resetState, resolveFloors, withDefaults,
@@ -297,7 +297,8 @@ async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s:
     castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes),
   });
   if (r.lastWaveAt === s.siege.lastWaveAt) return { s, waves: [], soul: 0 };
-  const siege = { stage: r.stage, lastWaveAt: r.lastWaveAt, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.peak) };
+  const last = r.waves[r.waves.length - 1];
+  const siege = { stage: r.stage, lastWaveAt: r.lastWaveAt, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.peak), lastWon: last ? last.won : s.siege.lastWon };
   await save(me, { siege });
   const next = { ...s, siege };
   const soul = await recordSiegeBest(me, next, s.siege.best);
@@ -378,17 +379,20 @@ export class Server {
     });
   }
 
-  /** 공성 파도를 지금 바로 부른다(무료). 직전 파도에서 BALANCE.siegeCallGapMs가 지나야 한다. */
-  async callSiegeWave() {
+  /** 공성 파도를 지금 바로 부른다(무료). 다음 파도까지 20초 이하 남았거나 직전 파도가 뚫렸을 때만(siegeCallBlock). speed = 화면 배속 */
+  async callSiegeWave(speed?: number) {
     const me = $sender.account;
     return withLocks([me], async () => {
       const now = Date.now();
       const { s } = await advanceSiege(me, await loadState(me, now), now);
-      if (now - s.siege.lastWaveAt < BALANCE.siegeCallGapMs) throw new Error('SIEGE_TOO_SOON');
+      const sp = siegeSpeed(speed, s.perks?.speed3 === true);
+      if (sp === null) throw new Error('NO_SPEED3');
+      const block = siegeCallBlock({ lastWaveAt: s.siege.lastWaveAt, lastWon: s.siege.lastWon, speed: sp, now });
+      if (block) throw new Error(block);
       const r = fightWave({
         account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes),
       });
-      const siege = { stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.stage) };
+      const siege = { stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.stage), lastWon: r.won };
       await save(me, { siege });
       const soul = await recordSiegeBest(me, { ...s, siege }, s.siege.best);
       return { wave: { at: now, won: r.won }, siege, gold: r.gold, soul };

@@ -121,8 +121,8 @@ export interface UserState {
   /** 영구 소장 마왕 외형과 고른 외형(null = 자동: 패스면 해골) */
   skins: string[];
   lordSkin: 'base' | LordSkin | null;
-  /** 스테이지형 공성: 지금 단계, 마지막으로 처리한 파도 시각, 받지 않은 공성 골드 */
-  siege: { stage: number; lastWaveAt: number; pendingGold: number; best: number };
+  /** 스테이지형 공성: 지금 단계, 마지막으로 처리한 파도 시각, 받지 않은 공성 골드. lastWon = 마지막 파도를 막았는가(없으면 막은 것으로 본다) */
+  siege: { stage: number; lastWaveAt: number; pendingGold: number; best: number; lastWon?: boolean };
   /** 매칭용 공개 정보(castles 컬렉션)를 새 전투력 단위로 다시 쓴 판. 2 = 큰 숫자 성장(2026-09-29) */
   castleSyncV?: number;
 }

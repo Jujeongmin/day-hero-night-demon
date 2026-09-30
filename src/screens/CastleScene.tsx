@@ -8,7 +8,9 @@ import Sprite from '../render/Sprite';
 import { adsLeft } from '../services/ads';
 import { chooseLordSkin } from '../../server/src/pass';
 import { lordSpriteId } from '../render/skins';
+import { nextSpeed, type Speed } from '../render/speed';
 import { errorText, type Api, type HomeData } from '../services/api';
+import { buy } from '../services/shop';
 import { T } from '../strings/ko';
 
 /** tower.png(224×400) 안에서 몬스터가 딛는 선(%). 누르는 영역은 그 선 위 몬스터 키만큼. */
@@ -17,6 +19,7 @@ const THRONE = { stand: 10.5 };
 const TIERS = [[76, 23.5], [53.5, 28], [31, 31.5]].map(([stand, inset]) => ({ stand, inset, top: stand - 13, bottom: stand + 4 })); // 1층, 2층, 3층
 const SLOT_X = [36, 50, 64];
 const TOWER_H = 400;
+const SIEGE_SPEED_KEY = 'siegeSpeed';
 
 /** index번째 층이 열리는 성 레벨 */
 function levelFor(index: number): number {
@@ -73,14 +76,25 @@ export default function CastleScene(props: {
   // 바로 부른 파도: getHome은 그 결과를 다시 주지 않으므로 여기서 들고 있다가 재생한다
   const [calledWave, setCalledWave] = useState<{ at: number; won: boolean } | null>(null);
   const [calling, setCalling] = useState(false);
+  // 공성 재생 배속(1×·2× 무료, 3×는 상품). 이 기기에만 기억한다
+  const has3x = s.perks?.speed3 === true;
+  const [siegeSpd, setSiegeSpd] = useState<Speed>(() => {
+    try { const v = Number(localStorage.getItem(SIEGE_SPEED_KEY)); return v === 2 || v === 3 ? v : 1; } catch { return 1; }
+  });
+  const speed: Speed = siegeSpd === 3 && !has3x ? 1 : siegeSpd;
+  const cycleSpeed = useCallback(() => {
+    const next = nextSpeed(speed, has3x);
+    setSiegeSpd(next);
+    try { localStorage.setItem(SIEGE_SPEED_KEY, String(next)); } catch { /* 저장 못 해도 이번 화면에서는 쓴다 */ }
+  }, [speed, has3x]);
   const callWave = useCallback(() => {
     if (calling) return;
     setCalling(true);
-    api.callSiegeWave()
+    api.callSiegeWave(speed)
       .then((r) => { setCalledWave(r.wave); if (r.soul > 0) onError(T.siege.milestone(r.soul)); return onRefresh(); })
       .catch((e) => onError(errorText(e)))
       .finally(() => setCalling(false));
-  }, [api, calling, onRefresh, onError]);
+  }, [api, calling, speed, onRefresh, onError]);
   // 자리를 비운 동안 처음 넘은 10단계 보상 알림 (그 조회에서만 0보다 크다)
   useEffect(() => {
     if ((home.siegeSoul ?? 0) > 0) onError(T.siege.milestone(home.siegeSoul ?? 0));
@@ -174,6 +188,11 @@ export default function CastleScene(props: {
         lastWave={lastWave}
         compact={panelOpen}
         onCall={calling ? null : callWave}
+        lastWon={s.siege?.lastWon}
+        speed={speed}
+        has3x={has3x}
+        onSpeed={cycleSpeed}
+        onBuy3x={() => buy('speed_x3')}
         onWaveDue={onWaveDue}
         onFighting={onDefending}
         onLordHp={onLordHp}
@@ -205,7 +224,7 @@ export default function CastleScene(props: {
                   <AdButton
                     api={api}
                     placement="idle_double"
-                    label={T.ads.double(home.idlePreview * 2)}
+                    label={T.ads.double(BALANCE.adIdleMult, Math.floor(home.idlePreview * BALANCE.adIdleMult))}
                     premium={!!s.perks?.premium}
                     className="btn small gold"
                     onDone={async () => { setAway(null); await onRefresh(); }}
@@ -221,7 +240,7 @@ export default function CastleScene(props: {
         </div>
       )}
 
-      {/* 방치 수입: 그냥 받기 / 광고 보고 두 배 받기 */}
+      {/* 방치 수입: 그냥 받기 / 광고 보고 1.5배 받기 */}
       {choose && home.idlePreview > 0 && (
         <div className="idle-choice">
           <button className="btn small" disabled={busy} onClick={() => { setChoose(false); void act(() => api.claimIdle()); }}>
@@ -230,7 +249,7 @@ export default function CastleScene(props: {
           <AdButton
             api={api}
             placement="idle_double"
-            label={T.ads.double(home.idlePreview * 2)}
+            label={T.ads.double(BALANCE.adIdleMult, Math.floor(home.idlePreview * BALANCE.adIdleMult))}
             premium={!!s.perks?.premium}
             className="btn small gold"
             onDone={async () => { setChoose(false); await onRefresh(); }}

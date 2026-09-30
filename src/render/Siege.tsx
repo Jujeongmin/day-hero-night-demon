@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import Sprite from './Sprite';
 import { SIEGE, idleSiege, startWave, stepSiege, waveRunning, type SiegeState } from './siegeSim';
 import { BALANCE } from '../../server/src/catalog';
 import { formatNum, waveGold } from '../../server/src/growth';
+import { siegeCallBlock } from '../../server/src/siege';
+import type { Speed } from './speed';
 import { T } from '../strings/ko';
 
 const TICK_MS = 66;
@@ -31,8 +33,15 @@ export default function Siege(props: {
   compact: boolean;
   /** 바로 부르기(무료 스킵). 요청 중이면 null */
   onCall: (() => void) | null;
+  /** 서버가 기록한 마지막 파도 결과(뚫렸으면 false → 언제든 부를 수 있다) */
+  lastWon: boolean | undefined;
+  /** 재생 배속. 3×는 상품 보유자만(has3x), 아니면 잠금 버튼 → 구매 창 */
+  speed: Speed;
+  has3x: boolean;
+  onSpeed: () => void;
+  onBuy3x: () => void;
 }) {
-  const { ground, paused, stage, best, onRank, nextWaveAt, lastWave, onWaveDue, onFighting, onLordHp, compact, onCall } = props;
+  const { ground, paused, stage, best, onRank, nextWaveAt, lastWave, onWaveDue, onFighting, onLordHp, compact, onCall, lastWon, speed, has3x, onSpeed, onBuy3x } = props;
   const [s, setS] = useState<SiegeState>(idleSiege);
   const [now, setNow] = useState(Date.now());
   // 재생 중에는 싸우기 전 단계를 보여 주고, 끝나면 새 단계로 바꾼다
@@ -58,11 +67,11 @@ export default function Siege(props: {
     if (paused) return;
     const id = window.setInterval(() => {
       if (document.hidden) return;
-      setS((prev) => stepSiege(prev, TICK_MS / 1000));
+      setS((prev) => stepSiege(prev, (TICK_MS / 1000) * speed));
       setNow(Date.now());
     }, TICK_MS);
     return () => window.clearInterval(id);
-  }, [paused]);
+  }, [paused, speed]);
 
   // 다음 파도 시각이 지나면 서버에 물어본다. 실패하거나 아직 처리 전이면 15초 뒤 다시(연속 호출 방지)
   useEffect(() => {
@@ -87,10 +96,10 @@ export default function Siege(props: {
   const breached = s.held === false && s.castleHp === 0;
   // 쓰러진 침입자 1명당 골드(파도 골드 ÷ 3) — 서버 waveGold와 같은 식
   const perKill = formatNum(Math.round(waveGold(shownStage) / 3));
-  // 직전 파도에서 서버 최소 간격이 지나야 부를 수 있다
-  const canCall = !!onCall && !running && now - (nextWaveAt - BALANCE.siegeWaveMs) >= BALANCE.siegeCallGapMs;
+  // 서버와 같은 규칙: 다음 파도 20초 전부터, 직전 파도가 뚫렸으면 연출이 끝난 뒤 언제든
+  const canCall = !!onCall && !running && siegeCallBlock({ lastWaveAt: nextWaveAt - BALANCE.siegeWaveMs, lastWon, speed, now }) === null;
   return (
-    <div className="siege" style={{ bottom: ground }} aria-hidden>
+    <div className="siege" style={{ bottom: ground, '--spd': speed } as CSSProperties} aria-hidden>
       {s.invaders.map((v) => (
         <div key={v.id} className={`invader ${v.state === 'leave' ? 'leaving' : ''}`} style={{ left: `${v.x}%` }}>
           {v.state !== 'dead' && (
@@ -113,6 +122,8 @@ export default function Siege(props: {
               {breached ? T.siege.breached : running ? T.siege.stage(shownStage) : T.siege.next(shownStage, Math.max(0, nextWaveAt - now))}
               {!breached && <small> · {T.siege.best(Math.max(best, shownStage))}</small>}
             </button>
+            <button className="pill speed" onClick={onSpeed}>{T.speed(speed)}</button>
+            {!has3x && <button className="pill speed locked" onClick={onBuy3x} aria-label={T.products.speed_x3[0]}>{T.speed(3)}</button>}
             {!running && (
               <button className="btn small gold" disabled={!canCall} onClick={() => onCall?.()}>{T.siege.call}</button>
             )}

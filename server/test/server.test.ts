@@ -304,7 +304,7 @@ describe('ads', () => {
     await server.getHome();
     expect(await fails(server.claimAdReward('daily_supply', null))).toBe(true);
     expect(await fails(server.claimAdReward('daily_supply', 'short'))).toBe(true);
-    expect((await server.claimAdReward('daily_supply', id)).gold).toBe(5000);
+    expect((await server.claimAdReward('daily_supply', id)).gold).toBe(1000);
     server.connect({ account: 't30-ad2' });
     await server.getHome();
     expect(await fails(server.claimAdReward('daily_supply', id))).toBe(true);
@@ -316,7 +316,7 @@ describe('ads', () => {
     await server.getHome();
     await server.$onItemPurchased({ account: acct, purchaseId: `p-prem-${acct}`, productId: 'premium', quantity: 1 });
     const r = await server.claimAdReward('daily_supply', null);
-    expect(r.gold).toBe(5000);
+    expect(r.gold).toBe(1000);
     expect(await fails(server.claimAdReward('daily_supply', null))).toBe(true);
     expect(await fails(server.claimAdReward('idle_double', null))).toBe(true); // 방금 만든 계정은 받을 방치 수입이 0
     expect(await fails(server.claimAdReward('revive', null))).toBe(true);

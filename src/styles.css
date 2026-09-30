@@ -269,6 +269,11 @@ canvas.battle {
 .pill.power img { width: 14px; height: 14px; image-rendering: pixelated; }
 .siege-stage .btn { pointer-events: auto; font-size: 12px; min-height: 26px; }
 .invader.leaving { opacity: 0; transition: opacity 1.2s; }
+/* 공성 배속(--spd): 스프라이트 동작도 같은 배속으로 */
+.siege .sprite { animation-duration: calc(var(--frames) * 140ms / var(--spd, 1)); }
+.siege .sprite.walking { animation-duration: calc(var(--frames) * 90ms / var(--spd, 1)); }
+.invader.leaving { transition-duration: calc(1.2s / var(--spd, 1)); }
+.siege-stage .pill.speed { min-width: 30px; }
 .siege-coin { position: absolute; translate: -50% 0; display: flex; align-items: center; gap: 1px; white-space: nowrap; }
 .siege-coin img { width: 18px; height: 18px; image-rendering: pixelated; }
 .siege-coin b { color: var(--gold); font-size: 13px; text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000; }

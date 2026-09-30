@@ -29,6 +29,27 @@ export function milestoneSoul(oldBest: number, newBest: number): number {
   return soul;
 }
 
+export type SiegeSpeed = 1 | 2 | 3;
+
+/** 공성 재생 배속. 1×·2×는 모두, 3×는 3배속 상품(perks.speed3) 보유자만(아니면 null). 모르는 값은 1× */
+export function siegeSpeed(requested: unknown, has3x: boolean): SiegeSpeed | null {
+  const n = Number(requested);
+  if (n === 3) return has3x ? 3 : null;
+  return n === 2 ? 2 : 1;
+}
+
+/**
+ * 바로 부르기를 막는 이유(되면 null).
+ * - 직전 파도 연출이 끝나야 한다: 1× 10초, 배속이면 그만큼 짧다
+ * - 직전 파도를 막았으면 다음 파도까지 20초 이하 남았을 때만. 뚫렸으면 언제든
+ */
+export function siegeCallBlock(p: { lastWaveAt: number; lastWon: boolean | undefined; speed: SiegeSpeed; now: number }): 'SIEGE_TOO_SOON' | null {
+  const since = p.now - p.lastWaveAt;
+  if (since < BALANCE.siegeCallGapMs / p.speed) return 'SIEGE_TOO_SOON';
+  if (p.lastWon !== false && BALANCE.siegeWaveMs - since > BALANCE.siegeCallWindowMs) return 'SIEGE_TOO_SOON';
+  return null;
+}
+
 /** 파도 하나: at 시각의 시드로 싸워 막았는지와 다음 단계·골드를 낸다. */
 export function fightWave(p: { account: string; stage: number; at: number; castleLevel: number; floors: ResolvedFloor[]; mult?: number }): { won: boolean; stage: number; gold: number } {
   const stage = Math.max(1, p.stage);

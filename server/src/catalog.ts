@@ -97,8 +97,10 @@ export const BALANCE = {
   idleCapHours: 8,
   /** 스테이지형 공성(2026-09-29 승인): 2분마다 파도 1번, 막으면 growth.ts waveGold(단계) */
   siegeWaveMs: 2 * 60_000,
-  /** 바로 부르기(무료 스킵, 2026-09-29 승인): 파도와 파도 사이 최소 간격 = 화면 연출 길이 */
+  /** 바로 부르기(무료 스킵, 2026-09-29 승인): 파도와 파도 사이 최소 간격 = 1× 화면 연출 길이(배속이면 그만큼 짧다) */
   siegeCallGapMs: 10_000,
+  /** 바로 부르기는 다음 파도까지 이만큼 남았을 때만. 직전 파도가 뚫렸으면 언제든 (2026-09-30 사용자 결정) */
+  siegeCallWindowMs: 20_000,
   /** 처음 도달한 10단계마다 영혼석 = 그 단계 수 (2026-09-29 승인). 계정당 한 번, 초기화해도 다시 받지 않는다 */
   siegeMilestoneEvery: 10,
   /** 용사 레벨(3명 합 − 3) 1마다: 공략 전리품 +1%(서버가 새로 지급), 공성 방어 능력치 +1% (2026-09-29 승인, 최대 레벨 100에 맞춰 +2%/+5%에서 낮춤) */
@@ -133,8 +135,13 @@ export const BALANCE = {
   /** VX 상품 1개당 지급량 (가격은 대시보드가 정한다) */
   starterGold: 5000,
   starterSoul: 30,
+  /** 폐기 상품 daily_supply(끄기 전 결제분)의 지급량 */
   dailySupplyGold: 5000,
   dailySupplySoul: 15,
+  /** 광고 보상 (2026-09-30 사용자 승인 "강하게"): 일일 보급 골드 1k(공성 단계에 따라 커짐)·영혼석 3, 방치 수입 광고 받기 1.5배 */
+  adSupplyGold: 1000,
+  adSupplySoul: 3,
+  adIdleMult: 1.5,
   revivePerBuy: 1,
   /** 광고 보상 하루 한도(부활은 판당 1회라 따로 없다) */
   adLimits: { daily_supply: 1, revenge: 3, idle_double: 3 },

@@ -19,7 +19,7 @@ export default function Shop(props: {
   return (
     <>
       <div className="line">
-        <span className="item"><Portrait id="prod_daily_supply" label={T.ads.supply} /><span><b>{T.ads.supply}</b><br /><small>{T.ads.supplyDesc(scaledGold(BALANCE.dailySupplyGold, best))}</small></span></span>
+        <span className="item"><Portrait id="prod_daily_supply" label={T.ads.supply} /><span><b>{T.ads.supply}</b><br /><small>{T.ads.supplyDesc(scaledGold(BALANCE.adSupplyGold, best), BALANCE.adSupplySoul)}</small></span></span>
         {supplyLeft > 0
           ? <AdButton api={api} placement="daily_supply" label={T.ads.receive} premium={!!home.state.perks?.premium} onDone={onRefresh} onToast={onToast} />
           : <button className="btn small" disabled>{T.ads.tomorrow}</button>}
