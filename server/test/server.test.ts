@@ -60,7 +60,8 @@ describe('raid vs npc', () => {
     expect(res.status).toBe('victory');
     const end = await server.endRaid(false);
     expect(end.won).toBe(true);
-    expect(end.offerStarter).toBe(true);
+    // 튜토리얼이 결과창을 덮고 있어 스타터팩 버튼을 못 누른다 — 첫 실전 승리로 미룬다
+    expect(end.offerStarter).toBe(false);
     const home = await server.getHome();
     expect(home.state.introDone).toBe(true);
     expect(home.state.run).toBe(null);
@@ -268,9 +269,10 @@ describe('onboarding', () => {
     await server.startRaid('npc:tut:1', false);
     const res = await playAll(server);
     expect(res.status).toBe('victory');
-    await server.endRaid(false);
+    expect((await server.endRaid(false)).offerStarter).toBe(false);
     const home = await server.getHome();
     expect(home.state.onboarding.at).toBe('end');
+    expect(home.state.starterOffered).toBe(false);
     expect((await server.advanceOnboarding('done')).onboarding.at).toBe('done');
   });
 });

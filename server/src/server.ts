@@ -149,7 +149,9 @@ async function finishRun(me: string, s: UserState, run: Run, won: boolean, loot:
   if (won && s.firstWinDay !== today) soul += BALANCE.firstWinSoul;
   if (lord) soul += BALANCE.lordDefeatSoul;
   if (soul) await $asset.mint('soul', soul);
-  const offerStarter = won && !s.starterOffered;
+  // 입문·튜토리얼 출정의 결과창은 튜토리얼 덮개에 가려 스타터팩 버튼을 누를 수 없다 → 첫 실전 승리에 띄운다
+  const onboardingRun = run.target === 'npc:0:intro' || run.target === TUTORIAL_TARGET;
+  const offerStarter = won && !s.starterOffered && !onboardingRun;
   const patch: Partial<UserState> = {
     run: null,
     firstWinDay: won ? today : s.firstWinDay,
