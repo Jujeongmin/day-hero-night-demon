@@ -14,6 +14,27 @@
 | `speed_x3` | 3x Speed | 300 | 999999 | 1 | — | — | `art/products/speed_x3.png` | Watch raids and sieges at 3x speed. Forever. One per account. |
 | `premium` | Premium Pass | 500 | 999999 | 1 | — | — | `art/products/premium.png` | Get ad rewards instantly without watching ads (same daily limits). Forever. One per account. |
 
+## 골드 묶음 4개 (2026-09-30 추가, 사용자 승인 D안 · 양은 후보표 그대로)
+
+반복 구매 상품. 지급 = max(켜 둔 공성 N시간치, 내 몬스터 평균 레벨 강화 M번치) — 초반은 시간치, 후반은 강화 횟수치가 커진다. 숫자는 `BALANCE.goldPacks`. 후보표: https://claude.ai/artifact/9EgYQRrPFgagdbbDdpvjgd
+
+| Product ID | Product Name | Price (VX) | Stock Quantity | Lifetime Limit | Period Limit | Time-Limited Sale | Image | Description (대시보드에 넣을 글, 영어) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `gold_pouch` | Gold Pouch | 100 | 999999 | — | — | — | `art/products/gold_pouch.png` | A pouch of gold that grows with your progress: 2 hours of siege gold or 5 monster upgrades, whichever is larger. The shop shows your exact amount. Buy as many as you like. |
+| `gold_chest` | Gold Chest | 500 | 999999 | — | — | — | `art/products/gold_chest.png` | A chest of gold: 12 hours of siege gold or 30 monster upgrades, whichever is larger. 20% more gold per VX than the Gold Pouch. The shop shows your exact amount. |
+| `gold_coffer` | Golden Coffer | 1500 | 999999 | — | — | — | `art/products/gold_coffer.png` | A golden coffer: 40 hours of siege gold or 100 monster upgrades, whichever is larger. 33% more gold per VX than the Gold Pouch. The shop shows your exact amount. |
+| `gold_vault` | Demon Lord's Vault | 5000 | 999999 | — | — | — | `art/products/gold_vault.png` | The best value. 150 hours of siege gold or 375 monster upgrades, whichever is larger. 50% more gold per VX than the Gold Pouch. The shop shows your exact amount. |
+
+한국어 설명(참고, 대시보드는 영어 권장 — 게임이 5개 언어라 결제창 문구는 영어가 넓게 읽힌다):
+- 금화 주머니: 진행에 맞춰 커지는 골드. 공성 2시간치와 몬스터 강화 5번치 중 큰 쪽. 상점에 정확한 금액이 보인다. 여러 번 살 수 있다.
+- 금화 상자: 공성 12시간치 또는 강화 30번치 중 큰 쪽. 주머니보다 VX당 20% 더.
+- 황금 궤짝: 공성 40시간치 또는 강화 100번치 중 큰 쪽. 주머니보다 VX당 33% 더.
+- 마왕의 보물고: 가장 이득. 공성 150시간치 또는 강화 375번치 중 큰 쪽. 주머니보다 VX당 50% 더.
+
+- 게임 안 아이콘: `public/icons/prod_gold_*.png`(pixflux 64px, seed 1501~1504). 대시보드 이미지는 그 8배 + 바탕 `#1a1024`(기존 상품과 같은 방식).
+- 서버: `server/src/purchases.ts` `PRODUCTS`·`SHOP_PRODUCTS`·`grantFor`. Product ID는 글자까지 같아야 한다.
+- 등록 완료: (날짜) / 테스트 결제: (결과)
+
 ## 없앤 상품 5개 (2026-09-29 사용자가 대시보드에서 삭제 — 정식 출시 전이라 판매 기록 없음)
 
 `daily_supply`, `revenge_ticket`, `shadow_double`, `revive`, `idle_x2` — 소모품은 광고 보상으로 옮겼다(`docs/superpowers/specs/2026-09-29-monetization-rework-design.md`). 서버는 끄기 전 결제분이 웹훅으로 와도 지급한다(`shadow_double`은 기능이 없어져 성공 처리만). 이미 `idle_x2`를 산 계정은 영구 2배가 유지된다.

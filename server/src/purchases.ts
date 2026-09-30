@@ -1,5 +1,5 @@
 import { BALANCE } from './catalog';
-import { scaledGold } from './growth';
+import { avgMonsterLevel, goldPackAmount, scaledGold } from './growth';
 import type { UserState } from './state';
 
 /** 웹훅이 지급할 수 있는 모든 상품. 폐기 상품(대시보드에서 끔)도 끄기 전 결제분을 위해 남긴다. */
@@ -7,10 +7,17 @@ export const PRODUCTS = [
   'starter_pack', 'recruit_dragon', 'idle_x2', 'revive',
   'shadow_double', 'revenge_ticket', 'daily_supply', 'season_pass',
   'speed_x3', 'premium',
+  'gold_pouch', 'gold_chest', 'gold_coffer', 'gold_vault',
 ] as const;
 
 /** 게임 상점에 보이는 상품 (2026-09-29: 소모품은 광고 보상으로 옮김) */
-export const SHOP_PRODUCTS = ['starter_pack', 'recruit_dragon', 'season_pass', 'speed_x3', 'premium'] as const;
+export const SHOP_PRODUCTS = [
+  'starter_pack', 'gold_pouch', 'gold_chest', 'gold_coffer', 'gold_vault',
+  'recruit_dragon', 'season_pass', 'speed_x3', 'premium',
+] as const;
+
+/** 골드 묶음(반복 구매) */
+export const GOLD_PACKS = ['gold_pouch', 'gold_chest', 'gold_coffer', 'gold_vault'] as const;
 
 export type ProductId = (typeof PRODUCTS)[number];
 
@@ -40,6 +47,12 @@ export function grantFor(productId: string, quantity: number, s: UserState): Gra
       return { patch: { perks: { ...s.perks, premium: true } }, gold: 0, soul: 0 };
     case 'season_pass':
       return { patch: { season: { ...s.season, pass: true } }, gold: 0, soul: 0 };
+    case 'gold_pouch':
+    case 'gold_chest':
+    case 'gold_coffer':
+    case 'gold_vault':
+      // 결제한 사람의 공성 최고 단계와 몬스터 평균 레벨로 계산한다(상점에 보인 금액과 같다)
+      return { patch: {}, gold: goldPackAmount(productId, s.siege?.best ?? 1, avgMonsterLevel(s.roster)) * q, soul: 0 };
     default:
       throw new Error(`unknown product: ${productId}`);
   }

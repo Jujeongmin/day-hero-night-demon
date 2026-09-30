@@ -138,6 +138,18 @@ export const BALANCE = {
   ] as { free: PassReward; pass: PassReward }[],
   /** VX 상품 1개당 지급량 (가격은 대시보드가 정한다) */
   starterGold: 5000,
+  /**
+   * 골드 묶음(반복 구매, 2026-09-30 사용자 승인 D안): 지급 = max(켜 둔 공성 hours시간치, 내 몬스터 평균 레벨 강화 upgrades번치).
+   * 초반은 시간치, 후반은 강화 횟수치가 커진다. VX당 양은 100 기준 +20%·+33%·+50%. vx는 표시·검증용(실제 가격은 대시보드)
+   */
+  goldPacks: {
+    gold_pouch: { vx: 100, hours: 2, upgrades: 5 },
+    gold_chest: { vx: 500, hours: 12, upgrades: 30 },
+    gold_coffer: { vx: 1500, hours: 40, upgrades: 100 },
+    gold_vault: { vx: 5000, hours: 150, upgrades: 375 },
+  },
+  /** 골드 묶음의 "켜 둔 공성 1시간" = 파도 골드 × 15 (1×로 평형 단계에서 30번 중 약 15번 막음) */
+  goldPackHourWaves: 15,
   starterSoul: 30,
   /** 폐기 상품 daily_supply(끄기 전 결제분)의 지급량 */
   dailySupplyGold: 5000,

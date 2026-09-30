@@ -1,5 +1,5 @@
 import { BALANCE } from '../../server/src/catalog';
-import { scaledGold } from '../../server/src/growth';
+import { avgMonsterLevel, goldPackAmount, scaledGold, type GoldPackId } from '../../server/src/growth';
 import { SHOP_PRODUCTS } from '../../server/src/purchases';
 import AdButton from '../render/AdButton';
 import { Portrait } from '../render/Sprite';
@@ -16,6 +16,7 @@ export default function Shop(props: {
   const { api, home, onRefresh, onToast } = props;
   const supplyLeft = adsLeft(home.state, 'daily_supply', Date.now());
   const best = home.state.siege?.best ?? 1;
+  const avgLevel = avgMonsterLevel(home.state.roster);
   return (
     <>
       <div className="line">
@@ -27,7 +28,11 @@ export default function Shop(props: {
       {SHOP_PRODUCTS.map((id) => {
         const item = findItem(props.items, id);
         const [name, fixedDesc] = T.products[id];
-        const desc = id === 'starter_pack' ? T.starterDesc(scaledGold(BALANCE.starterGold, best)) : fixedDesc;
+        // 골드 묶음: 이 계정이 실제로 받을 골드(서버 지급과 같은 식)와 100 VX 대비 VX당 더 주는 비율
+        const pack = id in BALANCE.goldPacks ? BALANCE.goldPacks[id as GoldPackId] : null;
+        const packGold = pack ? goldPackAmount(id as GoldPackId, best, avgLevel) : 0;
+        const bonus = pack ? Math.round(((packGold / pack.vx) / (goldPackAmount('gold_pouch', best, avgLevel) / BALANCE.goldPacks.gold_pouch.vx) - 1) * 100) : 0;
+        const desc = id === 'starter_pack' ? T.starterDesc(scaledGold(BALANCE.starterGold, best)) : pack ? T.goldPackDesc(packGold, bonus) : fixedDesc;
         const owned = props.owned.has(id) || !!item?.purchaseLimitReached;
         const blocked = owned || !item || !item.purchasable;
         return (

@@ -70,3 +70,20 @@ export function formatNum(n: number): string {
   }
   return String(Math.round(n));
 }
+
+export type GoldPackId = keyof typeof BALANCE.goldPacks;
+
+/** 골드 묶음 지급량 = max(켜 둔 공성 N시간치, 내 몬스터 평균 레벨의 강화 M번치). 최대 레벨이면 그 바로 아래 강화 비용으로 친다 */
+export function goldPackAmount(id: GoldPackId, bestStage: number, avgMonsterLevel: number): number {
+  const p = BALANCE.goldPacks[id];
+  const hours = waveGold(Math.max(1, bestStage)) * BALANCE.goldPackHourWaves * p.hours;
+  const lvl = Math.min(BALANCE.maxUnitLevel - 1, Math.max(1, Math.floor(avgMonsterLevel)));
+  const ups = unitUpgradeCost(lvl)! * p.upgrades;
+  return Math.max(hours, ups);
+}
+
+/** 보유 몬스터 평균 레벨(내림). 몬스터가 없으면 1 */
+export function avgMonsterLevel(roster: Partial<Record<string, { level: number }>>): number {
+  const lv = Object.values(roster).filter((m): m is { level: number } => !!m).map((m) => m.level);
+  return lv.length === 0 ? 1 : Math.floor(lv.reduce((a, b) => a + b, 0) / lv.length);
+}

@@ -64,7 +64,13 @@ export const ko = {
     season_pass: ['시즌 패스', '시즌 보상 트랙 패스 줄 + 한정 마왕 외형'],
     speed_x3: ['3배속', '공략·공성을 3배 빠르게 (영구)'],
     premium: ['프리미엄 패스', '광고 없이 바로 보상 (하루 한도는 같음, 영구)'],
+    gold_pouch: ['금화 주머니', '골드'],
+    gold_chest: ['금화 상자', '골드'],
+    gold_coffer: ['황금 궤짝', '골드'],
+    gold_vault: ['마왕의 보물고', '골드'],
   } as Record<string, [string, string]>,
+  /** 골드 묶음 설명: 이 계정이 받을 골드와 100 VX 대비 더 주는 비율 */
+  goldPackDesc: (gold: number, bonus: number) => (bonus > 0 ? `골드 ${F(gold)} · ${bonus}% 더` : `골드 ${F(gold)}`),
   buyStarter: '스타터팩 보기',
   /** 골드는 공성 최고 단계에 맞춰 커진다(서버 scaledGold와 같은 값) */
   starterDesc: (gold: number) => `네크로맨서 + 골드 ${F(gold)} + 영혼석 30`,
