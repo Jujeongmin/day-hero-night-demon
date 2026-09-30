@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { Target } from '../../server/src/state';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
+import { displayName } from '../strings/i18n';
 
 export default function Match(props: { api: Api; home: HomeData; onStart: () => void; onError: (m: string) => void }) {
   const { api, onStart, onError } = props;
@@ -32,7 +33,7 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
       {targets?.map((t, i) => (
         <div className="line" key={t.id}>
           <span>
-            <b>{t.nickname}</b> {t.npc && <span className="badge">{T.npcTag}</span>}
+            <b>{displayName(t.nickname)}</b> {t.npc && <span className="badge">{T.npcTag}</span>}
             <br />
             <small>{T.power} {formatNum(t.power)} · {T.estLoot} {formatNum(t.estLoot)}</small>
           </span>

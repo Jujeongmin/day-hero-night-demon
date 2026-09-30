@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { errorText, type Api, type HomeData, type LeagueData, type SiegeRankData } from '../services/api';
 import { T } from '../strings/ko';
+import { displayName } from '../strings/i18n';
 import Pass from './Pass';
 import { seasonRewardSoul } from '../../server/src/league';
 
@@ -40,7 +41,7 @@ function SiegeRanking(props: { api: Api; onError: (m: string) => void }) {
       {data.top.length === 0 && <span className="muted">{T.siege.noRank}</span>}
       {data.top.map((r, i) => (
         <div className="line" key={i} style={r.me ? { fontWeight: 700, color: 'var(--gold)' } : undefined}>
-          <span>{i + 1}. {r.nickname}</span>
+          <span>{i + 1}. {displayName(r.nickname)}</span>
           <span>{T.siege.stage(r.best)}</span>
         </div>
       ))}
@@ -69,14 +70,14 @@ function Ranking(props: { api: Api; onError: (m: string) => void }) {
       {data.bracket.length === 0 && <span>{T.noBracket}</span>}
       {data.bracket.map((r, i) => (
         <div className="line" key={i} style={r.me ? { fontWeight: 700 } : undefined}>
-          <span>{r.rank}. {r.nickname} {r.ghost && <span className="badge">{T.npcTag}</span>}</span>
+          <span>{r.rank}. {displayName(r.nickname)} {r.ghost && <span className="badge">{T.npcTag}</span>}</span>
           <span>{r.honor}</span>
         </div>
       ))}
       <h4>{T.topTitle}</h4>
       {data.top.map((r, i) => (
         <div className="line" key={i} style={r.me ? { fontWeight: 700 } : undefined}>
-          <span>{i + 1}. {r.nickname}</span>
+          <span>{i + 1}. {displayName(r.nickname)}</span>
           <span>{r.honor}</span>
         </div>
       ))}

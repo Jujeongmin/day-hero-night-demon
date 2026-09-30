@@ -3,6 +3,8 @@ import { useMyLiveState, useServer } from './services/connection';
 import type { OnboardingStage, UserState } from '../server/src/state';
 import { createApi, errorText, type EndResult, type HomeData } from './services/api';
 import { T } from './strings/ko';
+import { displayName, savedLang } from './strings/i18n';
+import LanguagePick from './screens/LanguagePick';
 import CastleScene from './screens/CastleScene';
 import CastleEdit from './screens/CastleEdit';
 import Match from './screens/Match';
@@ -59,6 +61,8 @@ export default function App() {
   const [raiding, setRaiding] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  // 이 기기에서 언어를 고른 적이 있나(처음이면 컷신 전에 고르는 화면)
+  const [langPicked, setLangPicked] = useState(() => savedLang() !== null);
 
   // 첫 입력에서 오디오를 풀고, 버튼을 누를 때마다 탭 소리
   useEffect(() => {
@@ -106,7 +110,7 @@ export default function App() {
     if (top.id === lastSeenLog.current) return;
     lastSeenLog.current = top.id;
     if (!top.npc) {
-      onError(top.attackerWon ? T.raidedLive(top.attackerName, top.goldLost) : T.defendedLive(top.attackerName));
+      onError(top.attackerWon ? T.raidedLive(displayName(top.attackerName), top.goldLost) : T.defendedLive(displayName(top.attackerName)));
       if (top.attackerWon) sfx('sfx_raided');
     }
     void refresh();
@@ -144,6 +148,7 @@ export default function App() {
 
   if (!connected || !api) return <div className="center">{T.connecting}</div>;
   if (!home) return <div className="center">{T.loading}</div>;
+  if (!langPicked) return <div className="app"><LanguagePick onDone={() => setLangPicked(true)} /></div>;
 
   // 서버가 아직 옛 버전이면(배포 사이) 온보딩 칸이 없다. 그때는 평소 화면을 그린다
   const stage: OnboardingStage = home.state.onboarding?.at ?? 'done';

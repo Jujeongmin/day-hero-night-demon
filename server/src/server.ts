@@ -6,6 +6,7 @@ import {
   DEFENSE_HONOR, honorForRaid, leagueCollection, rankBracket, seasonEndsAt, seasonIdAt, seasonRewardSoul, seasonStartOf,
 } from './league';
 import { checkNickname, nicknameKey } from './nickname';
+
 import { npcCastle, npcRaids, npcTiersFor, TUTORIAL_TARGET, tutorialCastle } from './npc';
 import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun } from './raid';
 import { planAdReward } from './ads';
@@ -17,6 +18,9 @@ import {
   canAdvance, dayKey, defaultState, isNew, isStage, resetState, resolveFloors, withDefaults,
   type CastleSnapshot, type OnboardingState, type RaidLogEntry, type Run, type Target, type UserState,
 } from './state';
+
+/** 데이터 초기화 확인 단어(화면 언어마다 다르다: 한국어·영어·일본어·중국어). 클라이언트 T.settings.resetWord와 같게 */
+const RESET_WORDS = ['초기화', 'RESET', 'リセット', '重置'];
 
 // ---- 모듈 헬퍼: Server 클래스 밖이라 원격 함수로 노출되지 않는다 ----
 
@@ -432,7 +436,7 @@ export class Server {
 
   async resetProgress(confirmText: string) {
     const me = $sender.account;
-    if (confirmText !== '초기화') throw new Error('RESET_CONFIRM');
+    if (!RESET_WORDS.includes(String(confirmText))) throw new Error('RESET_CONFIRM');
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await loadState(me, now);

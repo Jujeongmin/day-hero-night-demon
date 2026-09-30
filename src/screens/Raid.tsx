@@ -11,6 +11,7 @@ import { buy } from '../services/shop';
 import { errorText, type Api, type EndResult, type HomeData, type RunResult } from '../services/api';
 import { emitTut } from '../tutorial/bus';
 import { T } from '../strings/ko';
+import { displayName } from '../strings/i18n';
 
 export default function Raid(props: {
   api: Api;
@@ -114,7 +115,7 @@ export default function Raid(props: {
       <img className="backdrop" src="sprites/bg_night.png" alt="" draggable={false} />
       <img className="raid-backdrop" src="sprites/tower.png" alt="" draggable={false} />
       <header className="hud">
-        <span className="pill">{run.snapshot.nickname}</span>
+        <span className="pill">{displayName(run.snapshot.nickname)}</span>
         <span className="hud-row">
           <button className="pill" onClick={() => setSpeed(nextSpeed(speed, has3x))}>{T.speed(speed)}</button>
           {!has3x && <button className="pill locked" onClick={() => buy('speed_x3')} aria-label={T.products.speed_x3[0]}>{T.speed(3)}</button>}

@@ -6,7 +6,7 @@ export function sfxForFx(fx: Fx): Sfx | null {
   switch (fx.kind) {
     case 'hit': return 'sfx_attack';
     case 'ult': return 'sfx_ult';
-    case 'end': return fx.text === '' ? null : fx.text === '층 돌파' ? 'sfx_win' : 'sfx_lose';
+    case 'end': return fx.text === '' ? null : fx.won ? 'sfx_win' : 'sfx_lose';
     default: return null;
   }
 }

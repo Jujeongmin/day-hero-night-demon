@@ -18,8 +18,8 @@ describe('sfxForFx', () => {
   });
 
   it('plays the win sound when a floor is cleared and the lose sound on a wipe', () => {
-    expect(sfxForFx({ kind: 'end', key: null, text: '층 돌파' })).toBe('sfx_win');
-    expect(sfxForFx({ kind: 'end', key: null, text: '전멸' })).toBe('sfx_lose');
+    expect(sfxForFx({ kind: 'end', key: null, text: '층 돌파', won: true })).toBe('sfx_win');
+    expect(sfxForFx({ kind: 'end', key: null, text: '전멸', won: false })).toBe('sfx_lose');
   });
 
   it('a real cleared floor ends its frames with the win sound', () => {

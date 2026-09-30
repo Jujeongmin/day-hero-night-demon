@@ -68,18 +68,18 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
         </button>
       </div>
       <h4>{T.monstersTitle}</h4>
-      {(Object.keys(s.roster) as MonsterId[]).map((id, i) => row(id, MONSTERS[id].name, s.roster[id]!.level, () => api.upgrade('monster', id), i === 0, MONSTERS[id]))}
+      {(Object.keys(s.roster) as MonsterId[]).map((id, i) => row(id, T.units[id], s.roster[id]!.level, () => api.upgrade('monster', id), i === 0, MONSTERS[id]))}
       <h4>{T.heroesTitle} <small className="muted">{T.siege.heroHint}</small></h4>
-      {(Object.keys(s.heroes) as HeroId[]).map((id) => row(id, HEROES[id].name, s.heroes[id].level, () => api.upgrade('hero', id), false, HEROES[id]))}
+      {(Object.keys(s.heroes) as HeroId[]).map((id) => row(id, T.units[id], s.heroes[id].level, () => api.upgrade('hero', id), false, HEROES[id]))}
       {soulMonsters.length > 0 && <h4>{T.recruitTitle}</h4>}
       {soulMonsters.map((id) => {
         const unlock = MONSTERS[id].unlock as { soul: number };
         return (
           <div className="line" key={id}>
             <span className="item">
-              <Portrait id={id} label={MONSTERS[id].name} />
+              <Portrait id={id} label={T.units[id]} />
               <span>
-                {MONSTERS[id].name}
+                {T.units[id]}
                 <small className="skill">{skillText(MONSTERS[id].skill, MONSTERS[id].cooldown)}</small>
               </span>
             </span>

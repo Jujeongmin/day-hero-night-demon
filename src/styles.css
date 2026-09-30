@@ -41,6 +41,8 @@ select { font: inherit; }
 .backdrop { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center bottom; image-rendering: pixelated; user-select: none; }
 .hud { position: absolute; left: 8px; right: 8px; top: 8px; z-index: 3; display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; pointer-events: none; }
 .hud > * { pointer-events: auto; }
+/* 영어처럼 긴 재화 이름도 한 줄로 */
+.hud .pill { white-space: nowrap; }
 
 /* 위쪽은 재화 표시(약 44px)와 옥좌 위 마왕 머리가 들어갈 자리를, 아래는 출정 버튼(약 76px + 여백 10px)을 비운다 */
 .tower { position: absolute; left: 50%; bottom: 90px; height: min(calc(93cqh - 138px), calc(100cqw * 400 / 224)); aspect-ratio: 224 / 400; max-width: 100%; transform: translateX(-50%); }
@@ -212,7 +214,9 @@ canvas.battle {
   border: 1px solid transparent; border-image: url(/ui/bubble.png) 21 22 16 28 fill / 42px 44px 32px 56px round;
   padding: 12px 18px 12px 38px; image-rendering: pixelated; filter: drop-shadow(0 2px 6px #000c);
 }
-.tut-bubble p { margin: 0; font-size: 16px; line-height: 1.35; color: #3a1c14; word-break: keep-all; }
+.tut-bubble p { margin: 0; font-size: 16px; line-height: 1.35; color: #3a1c14; overflow-wrap: anywhere; }
+/* 한국어만 단어 단위로 줄바꿈(일본어·중국어는 띄어쓰기가 없어 keep-all이면 줄이 안 바뀐다) */
+:lang(ko) .tut-bubble p { word-break: keep-all; overflow-wrap: normal; }
 
 /* 설정 */
 /* 설정 아이콘: 재화 표시와 같은 판 위에 올려 붉은 달에 묻히지 않게 */
@@ -288,3 +292,22 @@ canvas.battle {
 .siege-coin b { color: var(--gold); font-size: 13px; text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000; }
 /* 편성 중인 칸: 칸 전체를 금빛으로 물들인다 (2026-09-29 승인 A안) */
 .btn.slot.on { filter: sepia(1) saturate(2.6) hue-rotate(-12deg) brightness(1.15); }
+
+/* 언어 (2026-09-30). 글꼴은 <html lang>으로 갈린다: 일본어는 도트 글꼴 DotGothic16, 중국어는 Noto Sans(번체 TC·간체 SC) 700 한 굵기만 받는다. 라틴·한글은 Do Hyeon */
+:root:lang(ja) { --font: 'DotGothic16', 'Do Hyeon', sans-serif; }
+:root:lang(zh-Hant) { --font: 'Do Hyeon', 'Noto Sans TC', sans-serif; }
+:root:lang(zh-Hans) { --font: 'Do Hyeon', 'Noto Sans SC', sans-serif; }
+/* 언어 이름 버튼은 그 언어 글꼴로 */
+button[lang='ja'] { font-family: 'DotGothic16', sans-serif; }
+button[lang='zh-Hant'] { font-family: 'Noto Sans TC', sans-serif; }
+button[lang='zh-Hans'] { font-family: 'Noto Sans SC', sans-serif; }
+.lang-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.lang-row .btn { flex: 1 1 30%; }
+.lang-screen { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; padding: 16px; background: var(--night); overflow: hidden; }
+.lang-screen .backdrop { filter: brightness(.45); }
+.lang-box {
+  position: relative; z-index: 1; width: min(100%, 320px); display: flex; flex-direction: column; gap: 8px; text-align: center;
+  border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated; padding: 8px;
+}
+.lang-box h2 { margin: 0 0 4px; font-weight: 400; font-size: 20px; color: var(--gold); }
+.lang-btn { min-height: 48px; font-size: 20px; }

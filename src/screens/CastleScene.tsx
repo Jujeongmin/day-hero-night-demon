@@ -155,7 +155,7 @@ export default function CastleScene(props: {
         <div className={`unit-at lord-at ${lordSkin ? 'aura' : ''}`} style={at(50, THRONE.stand)}>
           {!s.run && <span className="lord-hp"><span style={{ width: `${lordHp * 100}%` }} /></span>}
           {/* 공성 중(침입자와 싸우는 동안)에는 마왕도 공격 동작 */}
-          <Sprite id={lordSpriteId(lordSkin)} anim={defending ? 'attack' : 'idle'} label={LORD.name} scale={unitScale} />
+          <Sprite id={lordSpriteId(lordSkin)} anim={defending ? 'attack' : 'idle'} label={T.units.lord} scale={unitScale} />
         </div>
 
         {TIERS.map((tier, i) => {
@@ -165,7 +165,7 @@ export default function CastleScene(props: {
             <div key={i}>
               {!locked && floor.monsters.map((m, j) => m && (
                 <div className="unit-at" key={j} style={at(SLOT_X[j], tier.stand)}>
-                  <Sprite id={m} anim={defending && i === 0 ? 'attack' : 'idle'} label={MONSTERS[m].name} flip scale={unitScale} />
+                  <Sprite id={m} anim={defending && i === 0 ? 'attack' : 'idle'} label={T.units[m]} flip scale={unitScale} />
                 </div>
               ))}
               <button

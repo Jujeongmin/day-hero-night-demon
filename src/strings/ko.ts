@@ -1,5 +1,7 @@
 import { formatNum as F } from '../../server/src/growth';
-export const T = {
+
+/** 한국어 사전(기준). 다른 언어 사전은 이 모양(Strings)을 그대로 따른다. 화면은 T를 쓰고, 언어를 고르면 T가 바뀐다(src/strings/i18n.ts). */
+export const ko = {
   connecting: '서버에 연결하는 중…',
   loading: '불러오는 중…',
   gold: '골드',
@@ -126,6 +128,8 @@ export const T = {
     reset: '데이터 초기화',
     resetWarn: '성·레벨·골드·영혼석·기록·이번 시즌 명예가 처음으로 돌아갑니다. 결제로 얻은 몬스터·방치 2배·시즌 패스·남은 아이템, 닉네임, 공성 최고 기록은 남습니다. 튜토리얼을 다시 합니다. 되돌릴 수 없습니다.',
     resetType: "확인하려면 '초기화'를 입력하세요",
+    /** 초기화 확인 단어. 서버 RESET_WORDS에도 있어야 한다 */
+    resetWord: '초기화',
     resetGo: '초기화',
     resetDone: '초기화했다',
     lordLook: '마왕 외형',
@@ -205,4 +209,45 @@ export const T = {
     NO_REVENGE_CREDIT: '오늘 무료 복수 3회를 다 썼다. 복수권이 필요하다',
     generic: '문제가 생겼다. 잠시 후 다시 시도해줘.',
   } as Record<string, string>,
+  /** 서버가 한국어 문장으로 던지는 오류 → 이 언어 문장. 없으면 errors.generic */
+  serverMsg: {
+    '골드가 부족하다': '골드가 부족하다',
+    '영혼석이 부족하다': '영혼석이 부족하다',
+    '최대 레벨이다': '최대 레벨이다',
+    '성이 최대 레벨이다': '성이 최대 레벨이다',
+    '이미 공략 중이다': '이미 공략 중이다',
+    '공략 중에는 편성을 바꿀 수 없다': '공략 중에는 편성을 바꿀 수 없다',
+    '복수 기한(24시간)이 지났다': '복수 기한(24시간)이 지났다',
+    '복수할 수 없는 기록이다': '복수할 수 없는 기록이다',
+    '부활은 판당 1회다': '부활은 판당 1회다',
+    '이미 보유한 몬스터다': '이미 보유한 몬스터다',
+    '다시 시도해줘': '다시 시도해줘',
+  } as Record<string, string>,
+  /** 유닛 이름(서버 catalog의 한국어 name 대신 id로 찾는다) */
+  units: {
+    slime: '슬라임', skeleton: '해골병', imp: '임프', spider: '거미', necro: '네크로맨서', dragon: '새끼 용',
+    knight: '기사', archer: '궁수', priest: '성직자', lord: '마왕',
+  } as Record<string, string>,
+  /** 전투 화면에 뜨는 글자 */
+  fx: { taunt: '도발', web: '거미줄', stun: '기절', down: '쓰러짐', raise: '망령으로 부활', cleared: '층 돌파' } as Record<string, string>,
+  /** 서버가 만든 이름(NPC 길드·그림자 마왕·기본 닉네임)을 이 언어로 */
+  names: {
+    guild: '침입자 길드',
+    guildApprentice: '침입자 길드 견습',
+    guildRookie: '침입자 길드 신참',
+    guildTier: (n: number) => `침입자 길드 ${n}단`,
+    ghost: (n: number) => `그림자 마왕 ${n}`,
+    lordTag: (tag: string) => `마왕 #${tag}`,
+  },
+  /** 설정의 언어 칸과 처음 고르는 화면 */
+  lang: { title: '언어', pick: '언어를 고르세요', go: '시작' },
 };
+
+export type Strings = typeof ko;
+
+/** 지금 언어의 사전. ES 모듈 live binding이라 setStrings 뒤에 읽으면 새 언어다 */
+export let T: Strings = ko;
+
+export function setStrings(s: Strings): void {
+  T = s;
+}

@@ -42,16 +42,16 @@ export default function CastleEdit(props: { api: Api; home: HomeData; floor: num
       <div className="row">
         {current.monsters.map((m, i) => (
           <button key={i} className={`btn slot ${slot === i ? 'on' : ''}`} onClick={() => setSlot(i)}>
-            {m ? <Portrait id={m} label={MONSTERS[m].name} /> : <span className="portrait" />}
-            <small>{m ? MONSTERS[m].name : T.emptySlot}</small>
+            {m ? <Portrait id={m} label={T.units[m]} /> : <span className="portrait" />}
+            <small>{m ? T.units[m] : T.emptySlot}</small>
           </button>
         ))}
       </div>
       <div className="chips">
         {owned.map((id, i) => (
           <button key={id} className="btn small pick" data-tut={i === 0 ? 'pick-first' : undefined} disabled={busy} onClick={() => place(id)}>
-            <Portrait id={id} label={MONSTERS[id].name} />
-            <small>{MONSTERS[id].name}</small>
+            <Portrait id={id} label={T.units[id]} />
+            <small>{T.units[id]}</small>
           </button>
         ))}
         <button className="btn small ghost" disabled={busy} onClick={() => place(null)}>{T.clearSlot}</button>

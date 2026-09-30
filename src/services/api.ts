@@ -3,6 +3,7 @@ import type { Placement } from '../../server/src/ads';
 import type { RunStatus } from '../../server/src/raid';
 import type { OnboardingStage, OnboardingState, Run, Target, UserState } from '../../server/src/state';
 import { T } from '../strings/ko';
+import { currentLang } from '../strings/i18n';
 
 export interface RemoteServer {
   remoteFunction: (name: string, args?: unknown[]) => Promise<any>;
@@ -91,5 +92,7 @@ export function errorText(e: unknown): string {
   const msg = e instanceof Error ? e.message : typeof e === 'object' && e && 'message' in e ? String((e as { message: unknown }).message) : '';
   if (!msg) return T.errors.generic;
   for (const code of Object.keys(T.errors)) if (msg.includes(code)) return T.errors[code];
-  return /[가-힣]/.test(msg) ? msg : T.errors.generic;
+  if (msg in T.serverMsg) return T.serverMsg[msg];
+  // 서버의 다른 한국어 문장: 한국어 화면이면 그대로, 다른 언어면 일반 문구
+  return /[가-힣]/.test(msg) && currentLang() === 'ko' ? msg : T.errors.generic;
 }

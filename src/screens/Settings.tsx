@@ -5,8 +5,7 @@ import { Portrait } from '../render/Sprite';
 import { lordSpriteId } from '../render/skins';
 import { getAudioPrefs, setAudioPrefs, type AudioPrefs } from '../services/audio';
 import { T } from '../strings/ko';
-
-const RESET_WORD = '초기화';
+import { chooseLang, currentLang, displayName, LANGS } from '../strings/i18n';
 
 /** 음량 막대: 반듯한 직사각형 + 채운 만큼 붉은색 + 해골 손잡이. 끌거나 눌러서, 방향키로도 바꾼다. */
 function Slider(props: { value: number; disabled: boolean; label: string; onChange: (v: number) => void }) {
@@ -110,6 +109,22 @@ export default function Settings(props: {
       {soundRow(T.settings.bgm, prefs.bgmOn, prefs.bgmVol, 'bgm')}
       {soundRow(T.settings.sfx, prefs.sfxOn, prefs.sfxVol, 'sfx')}
 
+      {/* 언어: 고르면 이 기기에 기억하고 새로 불러와 모든 화면 글자를 바꾼다 */}
+      <h4>{T.lang.title}</h4>
+      <div className="lang-row">
+        {LANGS.map((l) => (
+          <button
+            key={l.id}
+            className={`btn small ${currentLang() === l.id ? 'on' : ''}`}
+            lang={l.id}
+            disabled={currentLang() === l.id}
+            onClick={() => { chooseLang(l.id); window.location.reload(); }}
+          >
+            {l.label}
+          </button>
+        ))}
+      </div>
+
       {looks.length > 1 && (
         <>
           <h4>{T.settings.lordLook}</h4>
@@ -129,7 +144,7 @@ export default function Settings(props: {
         </>
       )}
 
-      <h4>{T.settings.nickname} · {home.state.profile.nickname}</h4>
+      <h4>{T.settings.nickname} · {displayName(home.state.profile.nickname)}</h4>
       <div className="line">
         <input
           className="nick-input small"
@@ -159,7 +174,7 @@ export default function Settings(props: {
             <button className="btn" onClick={() => { setAskReset(false); setConfirm(''); }}>{T.cancel}</button>
             <button
               className="btn"
-              disabled={busy || confirm !== RESET_WORD}
+              disabled={busy || confirm !== T.settings.resetWord}
               onClick={() => void act(() => api.resetProgress(confirm), T.settings.resetDone).then((ok) => { if (ok) { setAskReset(false); setConfirm(''); } })}
             >
               {T.settings.resetGo}

@@ -6,6 +6,8 @@ export interface Fx {
   kind: 'hit' | 'heal' | 'down' | 'raise' | 'ult' | 'status' | 'end';
   key: string | null;
   text: string;
+  /** end: 층을 돌파했는가(효과음용. 글자는 언어마다 다르다) */
+  won?: boolean;
   /** 공격·회복을 한 쪽. 이 캐릭터가 공격 동작을 한다 */
   from?: string;
 }
@@ -28,8 +30,6 @@ export function preHp(battle: FloorBattle, events: BattleEvent[]): Record<string
   return hp;
 }
 
-const STATUS_TEXT = { taunt: '도발', web: '거미줄', stun: '기절' } as const;
-
 export function buildFrames(battle: FloorBattle, events: BattleEvent[]): Frame[] {
   const max = maxHpOf(battle);
   let hp = preHp(battle, events);
@@ -47,20 +47,20 @@ export function buildFrames(battle: FloorBattle, events: BattleEvent[]): Frame[]
         fx = { kind: 'heal', key: e.to, text: `+${formatNum(e.amount)}`, from: e.from };
         break;
       case 'down':
-        fx = { kind: 'down', key: e.key, text: '쓰러짐' };
+        fx = { kind: 'down', key: e.key, text: T.fx.down };
         break;
       case 'raise':
         hp[e.key] = e.hp;
-        fx = { kind: 'raise', key: e.key, text: '망령으로 부활' };
+        fx = { kind: 'raise', key: e.key, text: T.fx.raise };
         break;
       case 'status':
-        fx = { kind: 'status', key: e.to, text: STATUS_TEXT[e.status] };
+        fx = { kind: 'status', key: e.to, text: T.fx[e.status] };
         break;
       case 'ult':
         fx = { kind: 'ult', key: `h:${e.hero}`, text: T.ult[e.hero] };
         break;
       case 'end':
-        fx = { kind: 'end', key: null, text: e.outcome === 'won' ? '층 돌파' : T.defeat };
+        fx = { kind: 'end', key: null, text: e.outcome === 'won' ? T.fx.cleared : T.defeat, won: e.outcome === 'won' };
         break;
       default:
         fx = { kind: 'end', key: null, text: '' };
