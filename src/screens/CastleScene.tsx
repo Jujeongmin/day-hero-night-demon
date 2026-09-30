@@ -20,7 +20,7 @@ const THRONE = { stand: 10.5 };
 const TIERS = [[76, 23.5], [53.5, 28], [31, 31.5]].map(([stand, inset]) => ({ stand, inset, top: stand - 13, bottom: stand + 4 })); // 1층, 2층, 3층
 const SLOT_X = [36, 50, 64];
 /** 공성 재생: 옥좌에서 싸울 때 쓰는 자리(탑 꼭대기 폭) */
-const THRONE_TIER = { stand: THRONE.stand, inset: 30 };
+const THRONE_TIER = { stand: THRONE.stand, inset: 24 };
 /** 싸우는 층 안 여섯 자리(%): 왼쪽 셋은 침입자(뒤→앞), 오른쪽 셋은 내 몬스터(앞→뒤) */
 function fightX(inset: number, idx: number): number {
   const l = inset + 4;
@@ -128,7 +128,9 @@ export default function CastleScene(props: {
   // 공성 실제 전투 재생(탑 위). 막은 파도면 쓰러진 침입자마다 골드(파도 골드 ÷ 3). 파도 전 단계 = 막았으면 지금 −1, 뚫렸으면 +1
   const nowStage = s.siege?.stage ?? 1;
   const waveStage = lastWave ? Math.max(1, lastWave.won ? nowStage - 1 : nowStage + 1) : nowStage;
-  const replay = useSiegeReplay(lastWave, speed, Math.round(waveGold(waveStage) / 3), !!s.run);
+  // 오래 비웠다 돌아와 요약 카드가 뜨는 조회의 파도는 재생하지 않는다(카드와 겹치지 않게)
+  const replayWave = lastWave === served && home.siegeAway ? null : lastWave;
+  const replay = useSiegeReplay(replayWave, speed, Math.round(waveGold(waveStage) / 3), !!s.run);
   const replaying = replay.floor !== null || replay.result !== null;
   const floorsCount = s.castle.floors.length;
   const throneFight = replay.floor !== null && replay.floor >= floorsCount;
@@ -217,7 +219,8 @@ export default function CastleScene(props: {
         {/* 공성 실제 전투 재생: 싸우는 층에 침입자(왼쪽)와 그 층 몬스터(오른쪽)를 세우고 서버 기록대로 치고받는다 */}
         {replay.floor !== null && (() => {
           const tier = throneFight ? THRONE_TIER : TIERS[replay.floor] ?? TIERS[0];
-          const pos = (u: RUnit) => fightX(tier.inset, u.side === 'hero' ? heroIdx(u.kind) : 3 + replay.enemies.indexOf(u.key));
+          // 옥좌: 마왕은 덩치가 커서 오른쪽 끝에 세운다(침입자와 겹치지 않게)
+          const pos = (u: RUnit) => fightX(tier.inset, u.side === 'hero' ? heroIdx(u.kind) : throneFight ? 5 : 3 + replay.enemies.indexOf(u.key));
           const units = [...replay.heroes, ...replay.enemies].map((k) => replay.units[k]).filter(Boolean);
           return (
             <div className="rp-layer" style={{ '--spd': speed } as CSSProperties}>

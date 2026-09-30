@@ -159,6 +159,7 @@ export function useSiegeReplay(wave: { at: number; won: boolean; log?: FloorLog[
     if (paused || !w?.log || at === 0 || at <= played.current) return;
     played.current = at;
     stop();
+    if (document.hidden) return; // 숨은 탭에서 온 파도는 재생하지 않는다
     const beats = buildBeats(w.log, w.won, perKillRef.current);
     let i = 0;
     let lastSfx = 0;
@@ -180,6 +181,16 @@ export function useSiegeReplay(wave: { at: number; won: boolean; log?: FloorLog[
     stop();
     setState(IDLE_REPLAY);
   }, [paused]);
+  // 탭이 숨으면 재생을 접는다(결과는 이미 서버에 반영됐다). 숨은 채로 효과음이 나지 않게
+  useEffect(() => {
+    const onHide = () => {
+      if (!document.hidden || !timer.current) return;
+      stop();
+      setState(IDLE_REPLAY);
+    };
+    document.addEventListener('visibilitychange', onHide);
+    return () => document.removeEventListener('visibilitychange', onHide);
+  }, []);
   // 화면이 내려가면 멈춘다. 재생 도중 끊겼으면 다시 올라왔을 때 처음부터 튼다(개발 모드 StrictMode의 한 번 껐다 켜기 포함)
   useEffect(() => () => {
     if (timer.current) {
