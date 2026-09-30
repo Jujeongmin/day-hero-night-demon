@@ -33,11 +33,13 @@ export interface ReplayState {
   enemies: string[];
   floats: RFloat[];
   result: 'held' | 'breached' | null;
+  /** 침입자가 이미 뚫고 지나간 층(그 층 몬스터는 파도가 끝날 때까지 쓰러진 채로 둔다) */
+  cleared: number[];
 }
 
 export interface Beat { ms: number; sfx?: Sfx; apply: (s: ReplayState) => ReplayState }
 
-export const IDLE_REPLAY: ReplayState = { floor: null, units: {}, heroes: [], enemies: [], floats: [], result: null };
+export const IDLE_REPLAY: ReplayState = { floor: null, units: {}, heroes: [], enemies: [], floats: [], result: null, cleared: [] };
 
 /** 박자 길이(1× 기준, ms) */
 export const BEAT_MS = { enter: 700, attack: 300, heal: 260, status: 160, down: 220, raise: 300, ult: 480, end: 420, result: 1500 };
@@ -109,6 +111,8 @@ export function buildBeats(log: FloorLog[], held: boolean, perKill: number): Bea
       ms: BEAT_MS.enter,
       apply: (s) => ({
         ...s,
+        // 다음 층으로 올라왔으면 방금 싸운 층은 뚫린 것이다
+        cleared: s.floor !== null && s.floor !== f.floor && !s.cleared.includes(s.floor) ? [...s.cleared, s.floor] : s.cleared,
         floor: f.floor,
         heroes: f.start.filter((u) => u.side === 'hero').map((u) => u.key),
         enemies: f.start.filter((u) => u.side === 'enemy').map((u) => u.key),

@@ -48,4 +48,18 @@ describe('home siege replay of the real fight', () => {
     expect(seen).toEqual(w.log!.map((f) => f.floor));
     expect([...seen].sort()).toEqual(seen);
   });
+
+  it('floors the invaders got past stay fallen until the wave ends', () => {
+    // 몬스터가 약해 침입자가 1·2층을 넘어 옥좌까지 가는 파도를 찾는다
+    for (let stage = 20; stage <= 60; stage++) {
+      const w = fightWave({ account: 'c', stage, at: stage * W, castleLevel: 3, floors, record: true });
+      if (w.log!.length < 3) continue;
+      const states = play(buildBeats(w.log!, w.won, 0));
+      const atThrone = states.find((s) => s.floor === w.log!.at(-1)!.floor)!;
+      expect(atThrone.cleared).toEqual(w.log!.slice(0, -1).map((f) => f.floor));
+      expect(states.at(-1)!.cleared).toEqual([]);
+      return;
+    }
+    throw new Error('no wave reached the throne');
+  });
 });

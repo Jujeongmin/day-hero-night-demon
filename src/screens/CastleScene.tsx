@@ -192,9 +192,12 @@ export default function CastleScene(props: {
           const locked = i >= open || !floor;
           return (
             <div key={i}>
+              {/* 싸우는 층은 재생 층이 그린다. 이미 뚫린 층의 몬스터는 파도가 끝날 때까지 쓰러진 채로 */}
               {!locked && replay.floor !== i && floor.monsters.map((m, j) => m && (
-                <div className="unit-at" key={j} style={at(SLOT_X[j], tier.stand)}>
-                  <Sprite id={m} anim={defending && !replaying && i === 0 ? 'attack' : 'idle'} label={T.units[m]} flip scale={unitScale} />
+                <div className={`unit-at ${replay.cleared.includes(i) ? 'rp-fallen' : ''}`} key={j} style={at(SLOT_X[j], tier.stand)}>
+                  {replay.cleared.includes(i)
+                    ? <Sprite id={m} anim="death" className="once" label={T.units[m]} flip scale={unitScale} />
+                    : <Sprite id={m} anim={defending && !replaying && i === 0 ? 'attack' : 'idle'} label={T.units[m]} flip scale={unitScale} />}
                 </div>
               ))}
               <button
