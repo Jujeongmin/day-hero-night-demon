@@ -86,6 +86,9 @@ export function playBgm(name: Bgm | null): void {
 /** 원본이 긴 효과음은 여기서 잘라 쓴다 (ms). 파일은 손대지 않는다. */
 const SFX_MAX_MS: Partial<Record<Sfx, number>> = { sfx_win: 2500 };
 const FADE_MS = 400;
+/** 원본이 유난히 큰 효과음의 음량 배율. 옥좌 입장음은 평균 −11.8 dB로 효과음 중 가장 커서(타격음 −24 dB) 0.4배(≈ −8 dB)로 줄인다 (2026-09-30 사용자: 너무 크다) */
+const SFX_GAIN: Partial<Record<Sfx, number>> = { sfx_lord: 0.4 };
+const sfxVolume = (name: Sfx) => prefs.sfxVol * (SFX_GAIN[name] ?? 1);
 
 export function sfx(name: Sfx): void {
   if (!unlocked || !prefs.sfxOn) return;
@@ -97,20 +100,20 @@ export function sfx(name: Sfx): void {
   }
   // 겹쳐 울릴 수 있게 복제해서 재생한다
   const el = base.cloneNode() as HTMLAudioElement;
-  el.volume = prefs.sfxVol;
+  el.volume = sfxVolume(name);
   el.play().catch(() => {});
   const max = SFX_MAX_MS[name];
-  if (max) fadeOutAt(el, max - FADE_MS);
+  if (max) fadeOutAt(el, max - FADE_MS, sfxVolume(name));
 }
 
 /** at(ms) 시점부터 FADE_MS 동안 줄여서 멈춘다 */
-function fadeOutAt(el: HTMLAudioElement, at: number): void {
+function fadeOutAt(el: HTMLAudioElement, at: number, from: number): void {
   window.setTimeout(() => {
     const steps = 8;
     let i = 0;
     const id = window.setInterval(() => {
       i += 1;
-      el.volume = Math.max(0, prefs.sfxVol * (1 - i / steps));
+      el.volume = Math.max(0, from * (1 - i / steps));
       if (i >= steps) {
         window.clearInterval(id);
         el.pause();
