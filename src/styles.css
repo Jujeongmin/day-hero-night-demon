@@ -362,3 +362,35 @@ button[lang='zh-Hans'] { font-family: 'Noto Sans SC', sans-serif; }
 .hero-desc { margin: 0 0 4px; font-size: 13px; color: var(--muted); line-height: 1.4; }
 .hero-desc b { color: var(--gold); font-weight: 400; }
 .hero-next { display: block; color: var(--gold); font-size: 11px; margin-top: 1px; }
+
+/* 공성 실제 전투 재생 (2026-09-30). --spd = 배속. 침입자는 층을 옮길 때 미끄러져 올라간다 */
+.rp-layer { position: absolute; inset: 0; pointer-events: none; }
+.rp-unit { z-index: 2; transition: left calc(.5s / var(--spd, 1)) ease-out, top calc(.6s / var(--spd, 1)) ease-in-out; display: flex; flex-direction: column; align-items: center; }
+.rp-unit.hero { animation: rpIn calc(.6s / var(--spd, 1)) ease-out; }
+.rp-unit.dead { opacity: .55; transition: opacity .6s; }
+@keyframes rpIn { from { opacity: 0; translate: -24px 0; } }
+.rp-hp { width: 28px; height: 4px; background: #000b; border: 1px solid #000; margin-bottom: -4px; position: relative; z-index: 1; }
+.rp-hp span { display: block; height: 100%; background: var(--hp); transition: width .15s; }
+.rp-unit.hero .rp-hp span { background: var(--ruby); }
+.rp-body { display: block; }
+/* 맞음: 하얗게 번쩍 + 흔들림 */
+.rp-hit { animation: rpHit calc(.26s / var(--spd, 1)) steps(4); }
+@keyframes rpHit { 0% { filter: brightness(3) saturate(0); translate: -3px 0; } 33% { translate: 3px 0; } 66% { filter: brightness(1.6) sepia(1) hue-rotate(-40deg) saturate(4); translate: -2px 0; } 100% { filter: none; translate: 0 0; } }
+/* 공격: 상대 쪽으로 한 번 파고든다 */
+.rp-unit.hero .rp-lunge { animation: rpLungeR calc(.3s / var(--spd, 1)) ease-out; }
+.rp-unit.enemy .rp-lunge { animation: rpLungeL calc(.3s / var(--spd, 1)) ease-out; }
+@keyframes rpLungeR { 40% { translate: 10px 0; } }
+@keyframes rpLungeL { 40% { translate: -10px 0; } }
+/* 떠오르는 글자: 피해(빨강)·회복(초록)·상태(뼈색)·궁극기(금색 크게)·골드 */
+.rp-float {
+  position: absolute; z-index: 3; transform: translate(-50%, -150%); white-space: nowrap; font-size: 15px; line-height: 1;
+  text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000; animation: rpFloat calc(1s / var(--spd, 1)) ease-out forwards; display: flex; align-items: center; gap: 1px;
+}
+.rp-float.dmg { color: #ff5a5a; font-size: 17px; }
+.rp-float.heal { color: var(--hp); }
+.rp-float.fx { color: var(--bone); font-size: 12px; }
+.rp-float.ult { color: var(--gold); font-size: 18px; }
+.rp-float.coin { color: var(--gold); }
+.rp-float.coin img { width: 16px; height: 16px; image-rendering: pixelated; }
+@keyframes rpFloat { 0% { opacity: 0; translate: 0 6px; scale: .8; } 15% { opacity: 1; translate: 0 0; scale: 1.15; } 30% { scale: 1; } 100% { opacity: 0; translate: 0 -26px; } }
+@media (prefers-reduced-motion: reduce) { .rp-hit, .rp-lunge, .rp-unit.hero { animation: none !important; } }

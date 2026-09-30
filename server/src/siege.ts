@@ -1,4 +1,4 @@
-import { simulateAuto, type HeroSpec } from './battle';
+import { simulateAuto, type FloorLog, type HeroSpec } from './battle';
 import { BALANCE, HERO_ORDER } from './catalog';
 import { lordLevel, waveGold } from './growth';
 import { seedFrom } from './rng';
@@ -57,20 +57,21 @@ export function siegeCallBlock(p: { lastWaveAt: number; lastWon: boolean | undef
   return null;
 }
 
-/** 파도 하나: at 시각의 시드로 싸워 막았는지와 다음 단계·골드를 낸다. */
-export function fightWave(p: { account: string; stage: number; at: number; castleLevel: number; floors: ResolvedFloor[]; mult?: number }): { won: boolean; stage: number; gold: number } {
+/** 파도 하나: at 시각의 시드로 싸워 막았는지와 다음 단계·골드를 낸다. record면 실제 전투 기록(log)도 준다 */
+export function fightWave(p: { account: string; stage: number; at: number; castleLevel: number; floors: ResolvedFloor[]; mult?: number; record?: boolean }): { won: boolean; stage: number; gold: number; log?: FloorLog[] } {
   const stage = Math.max(1, p.stage);
-  const raid = simulateAuto({ heroes: siegeWave(stage), floors: defenseOf(p.castleLevel, p.floors, p.mult ?? 1), seed: seedFrom(p.account, 'siege', p.at) });
+  const raid = simulateAuto({ heroes: siegeWave(stage), floors: defenseOf(p.castleLevel, p.floors, p.mult ?? 1), seed: seedFrom(p.account, 'siege', p.at), record: p.record });
   const won = !raid.won;
-  return won
+  const r = won
     ? { won, stage: stage + 1, gold: waveGold(stage) }
     : { won, stage: Math.max(1, stage - 1), gold: 0 };
+  return raid.log ? { ...r, log: raid.log } : r;
 }
 
 /** 마지막 처리 이후 도착한 파도를 순서대로 싸운다. 막으면 단계 +1·골드, 뚫리면 단계 −1. 최대 8시간치. */
 export function runSiege(p: {
   account: string; stage: number; lastWaveAt: number; now: number; castleLevel: number; floors: ResolvedFloor[]; mult?: number;
-}): { stage: number; peak: number; lastWaveAt: number; gold: number; waves: { at: number; won: boolean }[] } {
+}): { stage: number; peak: number; lastWaveAt: number; gold: number; waves: { at: number; won: boolean }[]; lastLog?: FloorLog[] } {
   const W = BALANCE.siegeWaveMs;
   const total = Math.max(0, Math.floor((p.now - p.lastWaveAt) / W));
   const cap = Math.floor((BALANCE.idleCapHours * 3_600_000) / W);
@@ -79,13 +80,17 @@ export function runSiege(p: {
   let peak = stage;
   let gold = 0;
   const waves: { at: number; won: boolean }[] = [];
+  let lastLog: FloorLog[] | undefined;
   for (let i = skip + 1; i <= total; i++) {
     const at = p.lastWaveAt + i * W;
-    const r = fightWave({ account: p.account, stage, at, castleLevel: p.castleLevel, floors: p.floors, mult: p.mult });
+    // 마지막 파도만 전투 기록을 남긴다(홈 화면이 재생한다)
+    const r = fightWave({ account: p.account, stage, at, castleLevel: p.castleLevel, floors: p.floors, mult: p.mult, record: i === total });
     waves.push({ at, won: r.won });
     gold += r.gold;
     stage = r.stage;
     peak = Math.max(peak, stage);
+    if (r.log) lastLog = r.log;
   }
-  return { stage, peak, lastWaveAt: p.lastWaveAt + total * W, gold, waves };
+  const out = { stage, peak, lastWaveAt: p.lastWaveAt + total * W, gold, waves };
+  return lastLog ? { ...out, lastLog } : out;
 }

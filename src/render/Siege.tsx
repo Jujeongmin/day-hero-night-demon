@@ -5,6 +5,7 @@ import { formatNum, waveGold } from '../../server/src/growth';
 import { siegeCallBlock, siegePeriod } from '../../server/src/siege';
 import type { Speed } from './speed';
 import { T } from '../strings/ko';
+import type { SiegeWave } from '../services/api';
 
 const TICK_MS = 66;
 
@@ -22,7 +23,10 @@ export default function Siege(props: {
   /** 다음 파도 시각(이 기기 시계 기준) */
   nextWaveAt: number;
   /** 서버가 마지막으로 처리한 파도 (at = 서버 시각) */
-  lastWave: { at: number; won: boolean } | null;
+  lastWave: SiegeWave | null;
+  /** 탑 위에서 실제 전투를 재생하는 중(그동안 옛 연출은 쉬고, 단계 표시는 싸우기 전 단계) */
+  replaying: boolean;
+  replayResult: 'held' | 'breached' | null;
   /** 다음 파도 시각이 지나면 서버에 결과를 물어본다 */
   onWaveDue: () => void;
   onFighting: (fighting: boolean) => void;
@@ -37,7 +41,7 @@ export default function Siege(props: {
   /** 재생 배속. 배속 버튼은 화면 위 HUD(골드 오른쪽)에 있다 */
   speed: Speed;
 }) {
-  const { ground, paused, stage, best, onRank, nextWaveAt, lastWave, onWaveDue, onFighting, onLordHp, compact, onCall, lastWon, speed } = props;
+  const { ground, paused, stage, best, onRank, nextWaveAt, lastWave, onWaveDue, onFighting, onLordHp, compact, onCall, lastWon, speed, replaying, replayResult } = props;
   const [s, setS] = useState<SiegeState>(idleSiege);
   const [now, setNow] = useState(Date.now());
   // 재생 중에는 싸우기 전 단계를 보여 주고, 끝나면 새 단계로 바꾼다
@@ -50,10 +54,12 @@ export default function Siege(props: {
   useEffect(() => {
     if (!lastWave || lastWave.at <= played.current) return;
     played.current = lastWave.at;
+    // 실제 전투 기록이 있으면 탑 위에서 재생한다(CastleScene). 없을 때(옛 서버)만 성문 앞 연출
+    if (lastWave.log && lastWave.log.length > 0) return;
     setS((prev) => startWave(prev, lastWave.won));
   }, [lastWave]);
 
-  const running = waveRunning(s);
+  const running = waveRunning(s) || replaying;
   useEffect(() => {
     if (running) return;
     setShownStage(stage);
@@ -89,7 +95,7 @@ export default function Siege(props: {
   }, [fighting, onFighting]);
 
   if (paused) return null;
-  const breached = s.held === false && s.castleHp === 0;
+  const breached = (s.held === false && s.castleHp === 0) || replayResult === 'breached';
   // 쓰러진 침입자 1명당 골드(파도 골드 ÷ 3) — 서버 waveGold와 같은 식
   const perKill = formatNum(Math.round(waveGold(shownStage) / 3));
   // 서버와 같은 규칙: 다음 파도 20초 전부터, 직전 파도가 뚫렸으면 연출이 끝난 뒤 언제든

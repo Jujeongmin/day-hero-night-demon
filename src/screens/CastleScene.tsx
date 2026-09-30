@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { BALANCE, LORD, MONSTERS } from '../../server/src/catalog';
+import { BALANCE, HERO_ORDER, LORD, MONSTERS, type HeroId } from '../../server/src/catalog';
 import { floorsUnlocked } from '../../server/src/economy';
-import { formatNum } from '../../server/src/growth';
+import { formatNum, waveGold } from '../../server/src/growth';
 import AdButton from '../render/AdButton';
 import Siege from '../render/Siege';
+import { useSiegeReplay, type RUnit } from '../render/siegeReplay';
 import Sprite from '../render/Sprite';
 import { adsLeft } from '../services/ads';
 import { chooseLordSkin } from '../../server/src/pass';
 import { lordSpriteId } from '../render/skins';
 import { nextSpeed, type Speed } from '../render/speed';
-import { errorText, type Api, type HomeData } from '../services/api';
+import { errorText, type Api, type HomeData, type SiegeWave } from '../services/api';
 import { buy } from '../services/shop';
 import { T } from '../strings/ko';
 
@@ -18,6 +19,18 @@ const THRONE = { stand: 10.5 };
 /** inset: 층 벽 좌우 여백(%). 누르는 영역·잠금 표시를 탑 벽 폭에 맞춘다 */
 const TIERS = [[76, 23.5], [53.5, 28], [31, 31.5]].map(([stand, inset]) => ({ stand, inset, top: stand - 13, bottom: stand + 4 })); // 1층, 2층, 3층
 const SLOT_X = [36, 50, 64];
+/** 공성 재생: 옥좌에서 싸울 때 쓰는 자리(탑 꼭대기 폭) */
+const THRONE_TIER = { stand: THRONE.stand, inset: 30 };
+/** 싸우는 층 안 여섯 자리(%): 왼쪽 셋은 침입자(뒤→앞), 오른쪽 셋은 내 몬스터(앞→뒤) */
+function fightX(inset: number, idx: number): number {
+  const l = inset + 4;
+  const r = 100 - inset - 4;
+  return l + ((r - l) * idx) / 5;
+}
+/** 침입자 자리: 기사가 가장 앞(몬스터 쪽) */
+function heroIdx(kind: string): number {
+  return 2 - Math.max(0, HERO_ORDER.indexOf(kind as HeroId));
+}
 const TOWER_H = 400;
 const SIEGE_SPEED_KEY = 'siegeSpeed';
 
@@ -84,7 +97,7 @@ export default function CastleScene(props: {
     [s.siege?.lastWaveAt, home.siegeWaveMs, home.now, speed],
   );
   // 바로 부른 파도: getHome은 그 결과를 다시 주지 않으므로 여기서 들고 있다가 재생한다
-  const [calledWave, setCalledWave] = useState<{ at: number; won: boolean } | null>(null);
+  const [calledWave, setCalledWave] = useState<SiegeWave | null>(null);
   const [calling, setCalling] = useState(false);
   const callWave = useCallback(() => {
     if (calling) return;
@@ -112,6 +125,13 @@ export default function CastleScene(props: {
   }, [home]);
   const served = home.siegeLastWave ?? null;
   const lastWave = calledWave && (!served || calledWave.at > served.at) ? calledWave : served;
+  // 공성 실제 전투 재생(탑 위). 막은 파도면 쓰러진 침입자마다 골드(파도 골드 ÷ 3). 파도 전 단계 = 막았으면 지금 −1, 뚫렸으면 +1
+  const nowStage = s.siege?.stage ?? 1;
+  const waveStage = lastWave ? Math.max(1, lastWave.won ? nowStage - 1 : nowStage + 1) : nowStage;
+  const replay = useSiegeReplay(lastWave, speed, Math.round(waveGold(waveStage) / 3), !!s.run);
+  const replaying = replay.floor !== null || replay.result !== null;
+  const floorsCount = s.castle.floors.length;
+  const throneFight = replay.floor !== null && replay.floor >= floorsCount;
   // 영구 2배(옛 상품) 계정은 광고 2배를 쓰지 않는다
   const doubleLeft = home.state.idle.mult >= 2 ? 0 : adsLeft(home.state, 'idle_double', Date.now());
   const towerRef = useRef<HTMLDivElement>(null);
@@ -158,20 +178,23 @@ export default function CastleScene(props: {
       <div className="tower" ref={towerRef}>
         <img src="sprites/tower.png" alt="" draggable={false} />
 
-        <div className={`unit-at lord-at ${lordSkin ? 'aura' : ''}`} style={at(50, THRONE.stand)}>
-          {!s.run && <span className="lord-hp"><span style={{ width: `${lordHp * 100}%` }} /></span>}
-          {/* 공성 중(침입자와 싸우는 동안)에는 마왕도 공격 동작 */}
-          <Sprite id={lordSpriteId(lordSkin)} anim={defending ? 'attack' : 'idle'} label={T.units.lord} scale={unitScale} />
-        </div>
+        {/* 옥좌에서 싸우는 동안은 아래 재생 층이 마왕을 그린다 */}
+        {!throneFight && (
+          <div className={`unit-at lord-at ${lordSkin ? 'aura' : ''}`} style={at(50, THRONE.stand)}>
+            {!s.run && <span className="lord-hp"><span style={{ width: `${(replaying ? 1 : lordHp) * 100}%` }} /></span>}
+            {/* 옛 연출(성문 앞 싸움) 동안에는 마왕도 공격 동작 */}
+            <Sprite id={lordSpriteId(lordSkin)} anim={defending && !replaying ? 'attack' : 'idle'} label={T.units.lord} scale={unitScale} />
+          </div>
+        )}
 
         {TIERS.map((tier, i) => {
           const floor = s.castle.floors[i];
           const locked = i >= open || !floor;
           return (
             <div key={i}>
-              {!locked && floor.monsters.map((m, j) => m && (
+              {!locked && replay.floor !== i && floor.monsters.map((m, j) => m && (
                 <div className="unit-at" key={j} style={at(SLOT_X[j], tier.stand)}>
-                  <Sprite id={m} anim={defending && i === 0 ? 'attack' : 'idle'} label={T.units[m]} flip scale={unitScale} />
+                  <Sprite id={m} anim={defending && !replaying && i === 0 ? 'attack' : 'idle'} label={T.units[m]} flip scale={unitScale} />
                 </div>
               ))}
               <button
@@ -187,6 +210,43 @@ export default function CastleScene(props: {
             </div>
           );
         })}
+
+        {/* 공성 실제 전투 재생: 싸우는 층에 침입자(왼쪽)와 그 층 몬스터(오른쪽)를 세우고 서버 기록대로 치고받는다 */}
+        {replay.floor !== null && (() => {
+          const tier = throneFight ? THRONE_TIER : TIERS[replay.floor] ?? TIERS[0];
+          const pos = (u: RUnit) => fightX(tier.inset, u.side === 'hero' ? heroIdx(u.kind) : 3 + replay.enemies.indexOf(u.key));
+          const units = [...replay.heroes, ...replay.enemies].map((k) => replay.units[k]).filter(Boolean);
+          return (
+            <div className="rp-layer" style={{ '--spd': speed } as CSSProperties}>
+              {units.map((u) => (
+                // 침입자는 층을 옮겨도 같은 칸(위층으로 올라가는 모습), 몬스터는 층마다 새로 선다
+                <div key={u.side === 'hero' ? u.key : `${replay.floor}:${u.key}`} className={`unit-at rp-unit ${u.side} ${u.dead ? 'dead' : ''}`} style={at(pos(u), tier.stand)}>
+                  {!u.dead && <span className="rp-hp"><span style={{ width: `${(u.hp / u.maxHp) * 100}%` }} /></span>}
+                  <span key={`${u.key}:${u.hits}`} className={`rp-body ${u.hits > 0 ? 'rp-hit' : ''} ${u.attacking ? 'rp-lunge' : ''}`}>
+                    <Sprite
+                      id={u.kind === 'lord' ? lordSpriteId(lordSkin) : u.kind}
+                      anim={u.dead ? 'death' : u.attacking ? 'attack' : 'idle'}
+                      className={u.dead ? 'once' : ''}
+                      label={T.units[u.kind] ?? ''}
+                      flip={u.side === 'enemy'}
+                      scale={unitScale}
+                    />
+                  </span>
+                </div>
+              ))}
+              {replay.floats.map((f) => {
+                const u = replay.units[f.key];
+                if (!u) return null;
+                return (
+                  <span key={f.id} className={`rp-float ${f.kind}`} style={at(pos(u), tier.stand)}>
+                    {f.kind === 'coin' && <img src="icons/gold.png" alt="" draggable={false} />}
+                    {f.text}
+                  </span>
+                );
+              })}
+            </div>
+          );
+        })()}
       </div>
 
       <Siege
@@ -197,6 +257,8 @@ export default function CastleScene(props: {
         onRank={onSiegeRank}
         nextWaveAt={nextWaveAt}
         lastWave={lastWave}
+        replaying={replaying}
+        replayResult={replay.result}
         compact={panelOpen}
         onCall={calling ? null : callWave}
         lastWon={s.siege?.lastWon}

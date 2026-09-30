@@ -47,6 +47,14 @@ export type BattleEvent =
   | { t: 'ult'; hero: HeroId }
   | { t: 'end'; outcome: 'won' | 'lost' };
 
+/** 공성 한 층의 전투 기록: 시작 상태와 그 뒤 일어난 일 순서. 홈 화면이 그대로 재생한다 */
+export interface FloorLog {
+  /** simulateAuto에 넘긴 floors의 번호(마지막이 옥좌) */
+  floor: number;
+  start: Pick<Fighter, 'key' | 'side' | 'kind' | 'maxHp' | 'hp'>[];
+  events: BattleEvent[];
+}
+
 export interface HeroSpec { id: HeroId; level: number; hp?: number; mult?: number }
 export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number }
 
@@ -144,26 +152,36 @@ export function firstAliveHero(b: FloorBattle): HeroId | null {
   return f ? (f.kind as HeroId) : null;
 }
 
+/** record: 층마다 시작 상태와 일어난 일을 남긴다(결과는 같다). 공성의 마지막 파도를 홈 화면에서 재생할 때 쓴다 */
 export function simulateAuto(input: {
-  heroes: HeroSpec[]; floors: { enemies: EnemySpec[] }[]; seed: number;
-}): { won: boolean; floorsCleared: number } {
+  heroes: HeroSpec[]; floors: { enemies: EnemySpec[] }[]; seed: number; record?: boolean;
+}): { won: boolean; floorsCleared: number; log?: FloorLog[] } {
   let hp: Partial<Record<HeroId, number>> = {};
   let seed = input.seed;
+  const log: FloorLog[] | undefined = input.record ? [] : undefined;
+  const done = (r: { won: boolean; floorsCleared: number }) => (log ? { ...r, log } : r);
   for (let i = 0; i < input.floors.length; i++) {
     const floor = input.floors[i];
     if (floor.enemies.length === 0) continue;
     const party = input.heroes
       .filter((h) => (hp[h.id] ?? 1) > 0)
       .map((h) => ({ ...h, hp: hp[h.id] }));
-    let { battle } = createFloorBattle({ heroes: party, enemies: floor.enemies, tactic: 'charge', seed });
+    const created = createFloorBattle({ heroes: party, enemies: floor.enemies, tactic: 'charge', seed });
+    let battle = created.battle;
+    const entry: FloorLog | undefined = log
+      ? { floor: i, start: battle.fighters.map(({ key, side, kind, maxHp, hp: h }) => ({ key, side, kind, maxHp, hp: h })), events: [...created.events] }
+      : undefined;
     while (battle.outcome === 'ongoing') {
-      battle = playRound(battle, ultReady(battle) ? firstAliveHero(battle) : null).battle;
+      const r = playRound(battle, ultReady(battle) ? firstAliveHero(battle) : null);
+      battle = r.battle;
+      entry?.events.push(...r.events);
     }
-    if (battle.outcome === 'lost') return { won: false, floorsCleared: i };
+    if (entry) log!.push(entry);
+    if (battle.outcome === 'lost') return done({ won: false, floorsCleared: i });
     hp = restedHeroesHp(battle);
     seed = battle.rng;
   }
-  return { won: true, floorsCleared: input.floors.length };
+  return done({ won: true, floorsCleared: input.floors.length });
 }
 
 // ---- 내부 ----

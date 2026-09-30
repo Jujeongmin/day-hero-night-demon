@@ -1,4 +1,5 @@
 import type { BattleEvent } from '../../server/src/battle';
+import type { FloorLog } from '../../server/src/battle';
 import type { Placement } from '../../server/src/ads';
 import type { RunStatus } from '../../server/src/raid';
 import type { OnboardingStage, OnboardingState, Run, Target, UserState } from '../../server/src/state';
@@ -9,14 +10,17 @@ export interface RemoteServer {
   remoteFunction: (name: string, args?: unknown[]) => Promise<any>;
 }
 
+/** 공성 파도 하나. log = 서버가 실제로 싸운 기록(홈 화면이 재생). 옛 서버 응답에는 없다 */
+export interface SiegeWave { at: number; won: boolean; log?: FloorLog[] }
+
 export interface HomeData {
   state: UserState;
   gold: number;
   soul: number;
   now: number;
   idlePreview: number;
-  /** 이번 조회에서 서버가 처리한 마지막 공성 파도 */
-  siegeLastWave: { at: number; won: boolean } | null;
+  /** 이번 조회에서 서버가 처리한 마지막 공성 파도(실제 전투 기록 log 포함) */
+  siegeLastWave: SiegeWave | null;
   siegeWaveMs: number;
   /** 자리를 비운 동안 공성 요약(10분 넘게 비웠을 때) */
   siegeAway?: { waves: number; held: number; from: number; to: number } | null;
@@ -75,7 +79,7 @@ export function createApi(server: RemoteServer) {
     revive: () => call<RunResult>('revive'),
     endRaid: (abandon: boolean) => call<EndResult>('endRaid', [abandon]),
     getLeague: () => call<LeagueData>('getLeague'),
-    callSiegeWave: (speed: number) => call<{ wave: { at: number; won: boolean }; gold: number; soul: number }>('callSiegeWave', [speed]),
+    callSiegeWave: (speed: number) => call<{ wave: SiegeWave; gold: number; soul: number }>('callSiegeWave', [speed]),
     getSiegeRanking: () => call<SiegeRankData>('getSiegeRanking'),
     claimPassRewards: () => call<{ gold: number; soul: number; skins: string[] }>('claimPassRewards'),
     advanceOnboarding: (to: OnboardingStage) => call<{ onboarding: OnboardingState }>('advanceOnboarding', [to]),

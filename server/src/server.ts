@@ -10,6 +10,7 @@ import { checkNickname, nicknameKey } from './nickname';
 import { npcCastle, npcRaids, npcTiersFor, TUTORIAL_TARGET, tutorialCastle } from './npc';
 import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun } from './raid';
 import { planAdReward } from './ads';
+import type { FloorLog } from './battle';
 import { chooseLordSkin, planPassClaim } from './pass';
 import { grantFor } from './purchases';
 import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from './siege';
@@ -295,7 +296,7 @@ async function recordSiegeBest(me: string, s: UserState, oldBest: number): Promi
 }
 
 /** 지난 공성 파도를 처리해 단계와 받지 않은 골드를 갱신한다. 방치 수입 버튼으로 함께 받는다. */
-async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[]; soul: number }> {
+async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[]; soul: number; lastLog?: FloorLog[] }> {
   const r = runSiege({
     account: me, stage: s.siege.stage, lastWaveAt: s.siege.lastWaveAt, now,
     castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes),
@@ -306,7 +307,7 @@ async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s:
   await save(me, { siege });
   const next = { ...s, siege };
   const soul = await recordSiegeBest(me, next, s.siege.best);
-  return { s: next, waves: r.waves, soul };
+  return { s: next, waves: r.waves, soul, lastLog: r.lastLog };
 }
 
 async function applyNpcRaids(me: string, s: UserState, now: number): Promise<UserState> {
@@ -394,12 +395,12 @@ export class Server {
       const block = siegeCallBlock({ lastWaveAt: s.siege.lastWaveAt, lastWon: s.siege.lastWon, speed: sp, now });
       if (block) throw new Error(block);
       const r = fightWave({
-        account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes),
+        account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes), record: true,
       });
       const siege = { stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.stage), lastWon: r.won };
       await save(me, { siege });
       const soul = await recordSiegeBest(me, { ...s, siege }, s.siege.best);
-      return { wave: { at: now, won: r.won }, siege, gold: r.gold, soul };
+      return { wave: { at: now, won: r.won, log: r.log }, siege, gold: r.gold, soul };
     });
   }
 
@@ -503,7 +504,7 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const raided = await applyNpcRaids(me, await rollSeason(me, await loadState(me, now), now), now);
-      const { s, waves, soul: siegeSoul } = await advanceSiege(me, raided, now);
+      const { s, waves, soul: siegeSoul, lastLog } = await advanceSiege(me, raided, now);
       // 전투력 단위가 바뀐 뒤 처음 접속하면 매칭용 정보를 한 번 새로 쓴다(그 전 값은 옛 단위라 매칭에서 빠진다)
       if ((s.castleSyncV ?? 0) < CASTLE_SYNC_V && !isNew(await $global.getUserState(me))) {
         await syncCastle(me, s);
@@ -515,7 +516,8 @@ export class Server {
         now,
         idlePreview: idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult) + s.siege.pendingGold,
         // 이번에 처리된 파도 중 마지막 것만 화면에서 재생한다
-        siegeLastWave: waves.length > 0 ? waves[waves.length - 1] : null,
+        // 마지막 파도는 실제 전투 기록(log)과 함께 — 홈 화면이 그대로 재생한다
+        siegeLastWave: waves.length > 0 ? { ...waves[waves.length - 1], log: lastLog } : null,
         siegeWaveMs: BALANCE.siegeWaveMs,
         // 자리를 비웠다 돌아왔을 때 요약(파도 5번 이상 = 10분 넘게 비웠을 때만)
         siegeAway: waves.length >= 5
