@@ -28,8 +28,10 @@ export function planPassClaim(season: SeasonState, bestStage = 1): { gold: numbe
 }
 
 /** 다른 플레이어에게 보일 마왕 외형. 고른 외형이 보유 중일 때만, 안 골랐으면 패스 시즌엔 해골. */
-export function chooseLordSkin(chosen: 'base' | LordSkin | null, skins: string[], pass: boolean): LordSkin | undefined {
+export function chooseLordSkin(chosen: 'base' | LordSkin | null, skins: string[], pass: boolean, vip = 0): LordSkin | undefined {
   if (chosen === 'base') return undefined;
+  // VIP 전용 외형: 등급이 되면 고를 수 있다(BALANCE.vip.skins)
+  if (chosen === 'lava' || chosen === 'demon') return vip >= (BALANCE.vip.skins[chosen] ?? Infinity) ? chosen : pass ? 'skull' : undefined;
   if (chosen === 'dragon') return skins.includes('dragon') ? 'dragon' : pass ? 'skull' : undefined;
   if (chosen === 'skull') return pass ? 'skull' : undefined;
   return pass ? 'skull' : undefined;

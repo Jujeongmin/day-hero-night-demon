@@ -35,6 +35,9 @@
 - 서버: `server/src/purchases.ts` `PRODUCTS`·`SHOP_PRODUCTS`·`grantFor`. Product ID는 글자까지 같아야 한다.
 - 등록 완료: 2026-09-30 (사용자). 출시판 상점 가격 확인: 대기 — 2026-09-30 확인 시 출시판이 `8fe164a` 빌드(골드 묶음 이전)라 상점에 안 보였다. 최신 빌드로 다시 출시한 뒤 확인. / 테스트 결제: (결과)
 
+## VIP 누적 금액
+결제 웹훅에는 가격이 없어서 서버가 `BALANCE.productVx`(상품별 VX)로 누적을 더한다(`server/src/vip.ts` `spendFor`). **대시보드에서 가격을 바꾸면 productVx도 같이 바꾼다.** 2026-09-30 이전 결제는 기록에 상품 ID가 없어 소급되지 않는다.
+
 ## 없앤 상품 5개 (2026-09-29 사용자가 대시보드에서 삭제 — 정식 출시 전이라 판매 기록 없음)
 
 `daily_supply`, `revenge_ticket`, `shadow_double`, `revive`, `idle_x2` — 소모품은 광고 보상으로 옮겼다(`docs/superpowers/specs/2026-09-29-monetization-rework-design.md`). 서버는 끄기 전 결제분이 웹훅으로 와도 지급한다(`shadow_double`은 기능이 없어져 성공 처리만). 이미 `idle_x2`를 산 계정은 영구 2배가 유지된다.

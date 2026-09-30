@@ -7,6 +7,7 @@ import { grantFor } from '../server/src/purchases';
 import { runSiege } from '../server/src/siege';
 import { defaultState } from '../server/src/state';
 import { spendFor, vipLevel, vipPerks } from '../server/src/vip';
+import { chooseLordSkin } from '../server/src/pass';
 
 const H = 3_600_000;
 const W = BALANCE.siegeWaveMs;
@@ -75,5 +76,13 @@ describe('VIP (2026-09-30 approved: cumulative VX, perks are time/convenience/st
       s = { ...s, ...r.patch };
     }
     expect(n).toBe(BALANCE.adLimits.idle_double + 1);
+  });
+
+  it('VIP-only lord looks: lava from VIP 5, demon from VIP 8, otherwise fall back', () => {
+    expect(chooseLordSkin('lava', [], false, 5)).toBe('lava');
+    expect(chooseLordSkin('lava', [], false, 4)).toBeUndefined();
+    expect(chooseLordSkin('lava', [], true, 4)).toBe('skull');
+    expect(chooseLordSkin('demon', [], false, 8)).toBe('demon');
+    expect(chooseLordSkin('demon', [], false, 7)).toBeUndefined();
   });
 });

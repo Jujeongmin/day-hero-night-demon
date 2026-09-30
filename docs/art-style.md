@@ -111,3 +111,9 @@
 ## 홈 윗줄 (2026-09-30 승인 B안)
 - 골드·영혼석·전투력은 이름 없이 큰 아이콘(`icons/gold.png`·`soul.png`·`stat_atk.png`, 34px)이 필 왼쪽에 걸쳐 튀어나오고 숫자만. 후보: https://claude.ai/artifact/8pDMj5ji1p6yVYZTZwuXjB
 - 설정 톱니는 줄어들지 않는다(`flex: none`). 홈 장면 폭 360px 이하·320px 이하에서 윗줄 전체가 단계적으로 작아진다(`@container`). 280~375px에서 골드 "12.34M"로 겹침 없음 확인.
+
+## VIP (2026-09-30 승인)
+- 후보표: https://claude.ai/artifact/PKHH6cZBjthFcSDgxK4qyL — 수치는 `BALANCE.vip`, 상품 가격표 `BALANCE.productVx`.
+- 배지: `public/ui/vip_{bronze,silver,gold,ruby}.png`(pixflux 32px, seed 1601~1604, 원본 `art/ui/vip/`). 1~3 청동, 4~6 은, 7~9 금, 10 루비 왕관.
+- 전용 외형: VIP 5 용암 마왕 `lord_lava_*`(object 7437326d, v3 idle 4·attack 7·death 7), VIP 8 보라 날개 악마 `lord_demon_*`(character b709de8d, idle·death 템플릿, attack v3 두 번째 판 attack2). 악마 공격은 한 프레임 섬광과 몸통 굵기 변화가 있어 다시 뽑을 수 있다(첫 판 프레임 `art/frames/lord_demon_attack_v1`).
+- VIP 10 루비 오라: `.aura.ruby`(홈 탑 마왕 테두리). 전투 캔버스는 아직 보라 오라(외형이 있을 때만).

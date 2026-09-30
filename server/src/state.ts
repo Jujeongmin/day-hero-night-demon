@@ -9,7 +9,8 @@ export interface ResolvedFloor {
 }
 
 /** 시즌 패스 보유자의 한정 마왕 외형. 표시용이며 전투 수치에는 영향이 없다. */
-export type LordSkin = 'skull' | 'dragon';
+/** skull = 시즌 패스, dragon = 패스 10단계 영구, lava·demon = VIP 5·8 전용 (2026-09-30) */
+export type LordSkin = 'skull' | 'dragon' | 'lava' | 'demon';
 
 export interface CastleSnapshot {
   owner: string;

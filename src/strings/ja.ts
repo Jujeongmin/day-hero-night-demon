@@ -137,7 +137,7 @@ export const ja: Strings = {
     resetGo: '初期化',
     resetDone: '初期化した',
     lordLook: '魔王の外見',
-    looks: { base: '基本', skull: '骸骨の君主', dragon: '黒竜' } as Record<string, string>,
+    looks: { base: '基本', skull: '骸骨の君主', dragon: '黒竜', lava: '溶岩の魔王', demon: '紫翼の悪魔' } as Record<string, string>,
   },
   pass: {
     rank: '順位',

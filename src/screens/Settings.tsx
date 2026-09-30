@@ -5,6 +5,7 @@ import { Portrait } from '../render/Sprite';
 import { lordSpriteId } from '../render/skins';
 import { getAudioPrefs, setAudioPrefs, type AudioPrefs } from '../services/audio';
 import { T } from '../strings/ko';
+import { BALANCE } from '../../server/src/catalog';
 import { VipPanel } from '../render/Vip';
 import { vipOf, vipPerks } from '../../server/src/vip';
 import { chooseLang, currentLang, displayName, LANGS } from '../strings/i18n';
@@ -70,10 +71,14 @@ export default function Settings(props: {
   const left = Math.max(0, 1 + vipPerks(vipOf(home.state)).nicknameExtra - (home.state.profile.nicknameChanges ?? 0));
   // 마왕 외형: 기본 + 이번 시즌 패스(해골) + 영구 소장(흑룡). 기본만 있으면 칸을 숨긴다
   const st = home.state;
-  const looks: ('base' | 'skull' | 'dragon')[] = ['base'];
+  const looks: ('base' | 'skull' | 'dragon' | 'lava' | 'demon')[] = ['base'];
   if (st.season.pass) looks.push('skull');
   if (st.skins?.includes('dragon')) looks.push('dragon');
-  const current = chooseLordSkin(st.lordSkin ?? null, st.skins ?? [], st.season.pass) ?? 'base';
+  // VIP 전용 외형(5·8등급)
+  const vipLv = vipOf(st);
+  if (vipLv >= BALANCE.vip.skins.lava) looks.push('lava');
+  if (vipLv >= BALANCE.vip.skins.demon) looks.push('demon');
+  const current = chooseLordSkin(st.lordSkin ?? null, st.skins ?? [], st.season.pass, vipLv) ?? 'base';
 
   const change = (patch: Partial<AudioPrefs>) => {
     setAudioPrefs(patch);

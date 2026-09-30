@@ -129,7 +129,7 @@ async function buildSnapshot(target: string, now: number): Promise<CastleSnapsho
     shadow: false,
     ...(() => {
       const w = withDefaults(d);
-      const skin = chooseLordSkin(w.lordSkin, w.skins, w.season.pass && w.season.id === seasonIdAt(now));
+      const skin = chooseLordSkin(w.lordSkin, w.skins, w.season.pass && w.season.id === seasonIdAt(now), vipOf(w));
       return skin ? { lordSkin: skin } : {};
     })(),
   };
@@ -429,7 +429,9 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await loadState(me, now);
-      const ok = skin === 'base' || (skin === 'skull' && s.season.pass) || (skin === 'dragon' && s.skins.includes('dragon'));
+      const vipSkinAt = BALANCE.vip.skins[skin];
+      const ok = skin === 'base' || (skin === 'skull' && s.season.pass) || (skin === 'dragon' && s.skins.includes('dragon'))
+        || (vipSkinAt !== undefined && vipOf(s) >= vipSkinAt);
       if (!ok) throw new Error('SKIN_NOT_OWNED');
       const lordSkin = skin as UserState['lordSkin'];
       await save(me, { lordSkin });

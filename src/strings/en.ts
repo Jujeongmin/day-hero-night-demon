@@ -137,7 +137,7 @@ export const en: Strings = {
     resetGo: 'Reset',
     resetDone: 'Data reset',
     lordLook: 'Demon Lord look',
-    looks: { base: 'Default', skull: 'Skull Sovereign', dragon: 'Black Dragon' } as Record<string, string>,
+    looks: { base: 'Default', skull: 'Skull Sovereign', dragon: 'Black Dragon', lava: 'Lava Lord', demon: 'Violet-Winged Fiend' } as Record<string, string>,
   },
   pass: {
     rank: 'Ranking',

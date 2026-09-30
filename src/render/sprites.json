@@ -414,5 +414,71 @@
       87,
       93
     ]
+  },
+  "lord_lava_idle": {
+    "frames": 4,
+    "w": 96,
+    "h": 96,
+    "box": [
+      9,
+      0,
+      83,
+      95
+    ]
+  },
+  "lord_lava_attack": {
+    "frames": 7,
+    "w": 96,
+    "h": 96,
+    "box": [
+      3,
+      6,
+      92,
+      89
+    ]
+  },
+  "lord_lava_death": {
+    "frames": 7,
+    "w": 96,
+    "h": 96,
+    "box": [
+      11,
+      5,
+      84,
+      90
+    ]
+  },
+  "lord_demon_idle": {
+    "frames": 4,
+    "w": 92,
+    "h": 92,
+    "box": [
+      25,
+      9,
+      30,
+      81
+    ]
+  },
+  "lord_demon_attack": {
+    "frames": 7,
+    "w": 124,
+    "h": 124,
+    "box": [
+      22,
+      23,
+      77,
+      83
+    ]
+  },
+  "lord_demon_death": {
+    "frames": 7,
+    "w": 92,
+    "h": 92,
+    "box": [
+      5,
+      1,
+      87,
+      90
+    ]
   }
 }

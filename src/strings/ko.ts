@@ -139,7 +139,7 @@ export const ko = {
     resetGo: '초기화',
     resetDone: '초기화했다',
     lordLook: '마왕 외형',
-    looks: { base: '기본', skull: '해골 군주', dragon: '흑룡' } as Record<string, string>,
+    looks: { base: '기본', skull: '해골 군주', dragon: '흑룡', lava: '용암 마왕', demon: '보라 날개 악마' } as Record<string, string>,
   },
   pass: {
     rank: '순위',

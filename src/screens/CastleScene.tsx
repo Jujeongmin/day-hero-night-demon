@@ -13,6 +13,7 @@ import { nextSpeed, type Speed } from '../render/speed';
 import { errorText, type Api, type HomeData, type SiegeWave } from '../services/api';
 import { buy } from '../services/shop';
 import { T } from '../strings/ko';
+import { vipOf } from '../../server/src/vip';
 
 /** tower.png(224×400) 안에서 몬스터가 딛는 선(%). 누르는 영역은 그 선 위 몬스터 키만큼. */
 const THRONE = { stand: 10.5 };
@@ -139,7 +140,9 @@ export default function CastleScene(props: {
   const towerRef = useRef<HTMLDivElement>(null);
   const k = useHeight(towerRef) / TOWER_H;
   const open = floorsUnlocked(s.castle.level);
-  const lordSkin = chooseLordSkin(s.lordSkin ?? null, s.skins ?? [], s.season.pass);
+  const lordSkin = chooseLordSkin(s.lordSkin ?? null, s.skins ?? [], s.season.pass, vipOf(s));
+  // VIP 10: 마왕 테두리가 루비색으로 빛난다(외형과 상관없이)
+  const rubyAura = vipOf(s) >= BALANCE.vip.rubyAura;
 
   async function act(fn: () => Promise<unknown>, after?: () => void) {
     if (busy) return;
@@ -182,7 +185,7 @@ export default function CastleScene(props: {
 
         {/* 옥좌에서 싸우는 동안은 아래 재생 층이 마왕을 그린다 */}
         {!throneFight && (
-          <div className={`unit-at lord-at ${lordSkin ? 'aura' : ''}`} style={at(50, THRONE.stand)}>
+          <div className={`unit-at lord-at ${rubyAura ? 'aura ruby' : lordSkin ? 'aura' : ''}`} style={at(50, THRONE.stand)}>
             {!s.run && <span className="lord-hp"><span style={{ width: `${(replaying ? 1 : lordHp) * 100}%` }} /></span>}
             {/* 옛 연출(성문 앞 싸움) 동안에는 마왕도 공격 동작 */}
             <Sprite id={lordSpriteId(lordSkin)} anim={defending && !replaying ? 'attack' : 'idle'} label={T.units.lord} scale={unitScale} />

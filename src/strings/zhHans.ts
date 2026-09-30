@@ -137,7 +137,7 @@ export const zhHans: Strings = {
     resetGo: '重置',
     resetDone: '已重置',
     lordLook: '魔王外观',
-    looks: { base: '基本', skull: '骷髅君主', dragon: '黑龙' } as Record<string, string>,
+    looks: { base: '基本', skull: '骷髅君主', dragon: '黑龙', lava: '熔岩魔王', demon: '紫翼恶魔' } as Record<string, string>,
   },
   pass: {
     rank: '排名',
