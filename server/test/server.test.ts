@@ -178,10 +178,11 @@ describe('pvp', () => {
 describe('purchases', () => {
   test('the same purchaseId is granted once', async (server) => {
     const acct = `t14-buyer-${Date.now()}`;
-    await server.$onItemPurchased({ account: acct, purchaseId: 'p-1', productId: 'revive', quantity: 1 });
-    await server.$onItemPurchased({ account: acct, purchaseId: 'p-1', productId: 'revive', quantity: 1 });
+    await server.$onItemPurchased({ account: acct, purchaseId: 'p-1', productId: 'soul_pouch', quantity: 1 });
+    await server.$onItemPurchased({ account: acct, purchaseId: 'p-1', productId: 'soul_pouch', quantity: 1 });
     server.connect({ account: acct });
-    expect((await server.getHome()).state.credits.revive).toBe(1);
+    // 하네스 $asset은 계정 인자를 무시하므로 지급 횟수는 VIP 누적(서버 상태)으로 본다
+    expect((await server.getHome()).state.vip.spent).toBe(100);
   });
 });
 

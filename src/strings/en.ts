@@ -61,7 +61,6 @@ export const en: Strings = {
   purchased: 'Purchased',
   products: {
     starter_pack: ['Starter Pack', 'Necromancer + gold + 30 soulstones'],
-    recruit_dragon: ['Recruit Baby Dragon', 'A baby dragon that breathes fire on every enemy (also available for soulstones)'],
     season_pass: ['Season Pass', 'Pass track on the season rewards + a limited Demon Lord look'],
     speed_x3: ['3× Speed', 'Raids and sieges play 3× faster (permanent)'],
     premium: ['Premium Pass', 'Rewards instantly with no ads (same daily limits, permanent)'],

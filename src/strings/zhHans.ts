@@ -61,7 +61,6 @@ export const zhHans: Strings = {
   purchased: '已购买',
   products: {
     starter_pack: ['新手礼包', '死灵法师 + 金币 + 魂石30'],
-    recruit_dragon: ['招募幼龙', '会对全体敌人喷火的幼龙 (也能用魂石获得)'],
     season_pass: ['赛季通行证', '赛季奖励的通行证奖励列 + 限定魔王外观'],
     speed_x3: ['3倍速', '攻略与攻城快3倍 (永久)'],
     premium: ['高级通行证', '不看广告直接领奖励 (每日上限相同，永久)'],

@@ -28,7 +28,7 @@ export interface HeroDef {
 }
 
 /** 2026-09-29: 함정 폐기에 맞춰 기본 몬스터 4종 공격력 ×1.1 (A안) */
-/** 2026-10-01 사용자 결정: 몬스터는 영혼석으로만 산다(새끼 용 VX 상품 판매 중단, 영혼석 400 → 150). 스타터팩의 네크로맨서만 예외 */
+/** 2026-10-01 사용자 결정: 몬스터는 영혼석으로만 산다(새끼 용 VX 상품 삭제, 영혼석 400 → 150). 스타터팩의 네크로맨서만 예외 */
 export const MONSTERS: Record<MonsterId, MonsterDef> = {
   slime:    { id: 'slime',    name: '슬라임',     stats: { hp: 120, atk: 11, def: 8, spd: 2 }, skill: 'taunt',    cooldown: 3, unlock: { castleLevel: 1 } },
   skeleton: { id: 'skeleton', name: '해골병',     stats: { hp: 80,  atk: 20, def: 4, spd: 4 }, skill: 'pierce',   cooldown: 2, unlock: { castleLevel: 1 } },
@@ -193,17 +193,13 @@ export const BALANCE = {
   seasonChampionSkins: {} as Record<string, string>,
   /** 누적 VX 계산용 상품 가격. 결제 웹훅에 가격이 없어서 서버가 들고 있다 — 대시보드 가격을 바꾸면 여기도 같이 바꾼다 */
   productVx: {
-    starter_pack: 100, recruit_dragon: 300, season_pass: 400, speed_x3: 300, premium: 500,
+    starter_pack: 100, season_pass: 400, speed_x3: 300, premium: 500,
     gold_pouch: 100, gold_chest: 500, gold_coffer: 1500, gold_vault: 5000,
     soul_pouch: 100, soul_sack: 500, soul_chest: 1500, soul_altar: 5000, soul_relic: 30000,
-    idle_x2: 500, revive: 100, shadow_double: 100, revenge_ticket: 100, daily_supply: 100,
   } as Record<string, number>,
   /** 골드 묶음의 "켜 둔 공성 1시간" = 파도 골드 × 15 (1×로 평형 단계에서 30번 중 약 15번 막음) */
   goldPackHourWaves: 15,
   starterSoul: 30,
-  /** 폐기 상품 daily_supply(끄기 전 결제분)의 지급량 */
-  dailySupplyGold: 5000,
-  dailySupplySoul: 15,
   /** 광고 보상 (2026-09-30 사용자 승인 "강하게"): 일일 보급 골드 1k(공성 단계에 따라 커짐)·영혼석 3, 방치 수입 광고 받기 1.5배 */
   adSupplyGold: 1000,
   adSupplySoul: 3,

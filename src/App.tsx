@@ -43,7 +43,6 @@ function ownedProducts(s: UserState): Set<string> {
   if (s.season.pass) owned.add('season_pass');
   if (s.perks?.speed3) owned.add('speed_x3');
   if (s.perks?.premium) owned.add('premium');
-  if (s.roster.dragon) owned.add('recruit_dragon');
   if (s.roster.necro) owned.add('starter_pack');
   return owned;
 }

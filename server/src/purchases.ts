@@ -3,16 +3,14 @@ import { avgMonsterLevel, goldPackAmount, scaledGold } from './growth';
 import type { UserState } from './state';
 import { vipOf, vipPerks } from './vip';
 
-/** 웹훅이 지급할 수 있는 모든 상품. 폐기 상품(대시보드에서 끔)도 끄기 전 결제분을 위해 남긴다. */
+/** 웹훅이 지급할 수 있는 모든 상품. 폐기 상품(새끼 용·방치 2배·소모품)은 정식 출시 전이라 판매 기록이 없어 지웠다(2026-10-01) */
 export const PRODUCTS = [
-  'starter_pack', 'recruit_dragon', 'idle_x2', 'revive',
-  'shadow_double', 'revenge_ticket', 'daily_supply', 'season_pass',
-  'speed_x3', 'premium',
+  'starter_pack', 'season_pass', 'speed_x3', 'premium',
   'gold_pouch', 'gold_chest', 'gold_coffer', 'gold_vault',
   'soul_pouch', 'soul_sack', 'soul_chest', 'soul_altar', 'soul_relic',
 ] as const;
 
-/** 게임 상점에 보이는 상품 (2026-09-29: 소모품은 광고 보상으로 옮김. 2026-10-01: 몬스터는 영혼석으로만 — recruit_dragon 판매 중단, 지급은 남김) */
+/** 게임 상점에 보이는 상품 (2026-09-29: 소모품은 광고 보상으로 옮김. 2026-10-01: 몬스터는 영혼석으로만) */
 export const SHOP_PRODUCTS = [
   'starter_pack', 'gold_pouch', 'gold_chest', 'gold_coffer', 'gold_vault',
   'soul_pouch', 'soul_sack', 'soul_chest', 'soul_altar', 'soul_relic',
@@ -40,19 +38,6 @@ export function grantFor(productId: string, quantity: number, s: UserState): Gra
   switch (productId) {
     case 'starter_pack':
       return { patch: { roster: { ...s.roster, necro: s.roster.necro ?? { level: 1 } } }, gold: scaledGold(BALANCE.starterGold, (s.siege?.best ?? 1)), soul: BALANCE.starterSoul };
-    case 'recruit_dragon':
-      return { patch: { roster: { ...s.roster, dragon: s.roster.dragon ?? { level: 1 } } }, gold: 0, soul: 0 };
-    case 'idle_x2':
-      return { patch: { idle: { ...s.idle, mult: 2 } }, gold: 0, soul: 0 };
-    case 'revive':
-      return { patch: { credits: { ...s.credits, revive: s.credits.revive + BALANCE.revivePerBuy * q } }, gold: 0, soul: 0 };
-    case 'shadow_double':
-      // 폐기 상품: 대시보드에서 끄기 전에 결제된 건은 성공으로만 처리한다(대역 기능이 없어졌다)
-      return { patch: {}, gold: 0, soul: 0 };
-    case 'revenge_ticket':
-      return { patch: { credits: { ...s.credits, revenge: s.credits.revenge + BALANCE.revengePerBuy * q } }, gold: 0, soul: 0 };
-    case 'daily_supply':
-      return { patch: {}, gold: scaledGold(BALANCE.dailySupplyGold, (s.siege?.best ?? 1)) * q, soul: BALANCE.dailySupplySoul * q };
     case 'speed_x3':
       return { patch: { perks: { ...s.perks, speed3: true } }, gold: 0, soul: 0 };
     case 'premium':
