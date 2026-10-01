@@ -29,7 +29,13 @@ export interface HomeData {
   /** 전투력 = 성 전투력 × 용사 공성 방어 배수 */
   power?: number;
   seasonEndsAt: number;
+  /** 전체 알림(최근 하루). 옛 서버 응답에는 없다 */
+  news?: NewsItem[];
 }
+
+export interface NewsItem { id: string; kind: string; nickname: string; vip: number; at: number }
+
+export type TitleKind = 'champion' | 'top3' | 'top10';
 
 export interface RunResult { run: Run; status: RunStatus; events?: BattleEvent[] }
 
@@ -42,7 +48,7 @@ export interface EndResult {
   honor?: number;
 }
 
-export interface LeagueRow { rank: number; nickname: string; honor: number; ghost: boolean; me: boolean; vip?: number }
+export interface LeagueRow { rank: number; nickname: string; honor: number; ghost: boolean; me: boolean; vip?: number; title?: TitleKind | null }
 
 export interface SiegeRankData { myBest: number; top: { nickname: string; best: number; me: boolean; vip?: number }[] }
 
@@ -51,7 +57,9 @@ export interface LeagueData {
   endsAt: number;
   myHonor: number;
   bracket: LeagueRow[];
-  top: { nickname: string; honor: number; me: boolean; vip?: number }[];
+  top: { nickname: string; honor: number; me: boolean; vip?: number; title?: TitleKind | null }[];
+  /** 명예의 전당: 최근 시즌 1~3위 */
+  hall?: { season: string; top: { nickname: string; honor: number; vip: number }[] }[];
 }
 
 export function createApi(server: RemoteServer) {
@@ -70,6 +78,7 @@ export function createApi(server: RemoteServer) {
     upgrade: (kind: 'castle' | 'monster' | 'hero', id: string | null) => call<{ cost: number }>('upgrade', [kind, id]),
     setFloor: (index: number, monsters: (string | null)[]) => call<{ floor: unknown }>('setFloor', [index, monsters]),
     recruit: (monsterId: string) => call<{ soul: number }>('recruit', [monsterId]),
+    awaken: (unit: string) => call<{ soul: number }>('awaken', [unit]),
     findTargets: () => call<Target[]>('findTargets'),
     startRaid: (targetId: string) => call<RunResult>('startRaid', [targetId]),
     startIntroRaid: () => call<RunResult>('startIntroRaid'),

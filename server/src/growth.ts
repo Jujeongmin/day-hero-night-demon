@@ -14,6 +14,19 @@ export function statMult(level: number): number {
   return Math.pow(G.statGrowth, Math.max(0, level - 1));
 }
 
+/** 각성 배수: 별 하나마다 ×1.1 (별 0 = 1) */
+export function starMult(stars: number | undefined): number {
+  const n = Math.max(0, Math.min(BALANCE.awaken.maxStars, Math.floor(stars ?? 0)));
+  return Math.pow(BALANCE.awaken.statPerStar, n);
+}
+
+/** 별 n개째를 다는 영혼석. 최대 별을 넘으면 null */
+export function awakenCost(nextStar: number): number | null {
+  const a = BALANCE.awaken;
+  if (nextStar < 1 || nextStar > a.maxStars) return null;
+  return (nextStar < a.highFrom ? a.costLow : a.costHigh) * nextStar;
+}
+
 /** 성 레벨의 마왕 레벨 */
 export function lordLevel(castleLevel: number): number {
   return G.lordLevelsPerCastle * (Math.max(1, castleLevel) - 1) + 1;

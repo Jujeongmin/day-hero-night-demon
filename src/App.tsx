@@ -154,6 +154,28 @@ export default function App() {
       .catch((e) => onError(errorText(e)));
   }, [connected, api, onError]);
 
+  // 전체 알림(VIP 10·별 20·시즌 1위): 이 기기에서 안 본 것만 한 번씩 토스트로. 튜토리얼 중에는 미룬다
+  const news = home?.news;
+  const tutorialDone = (home?.state.onboarding?.at ?? 'done') === 'done';
+  useEffect(() => {
+    if (!news || news.length === 0 || !tutorialDone) return;
+    let seen: string[] = [];
+    try {
+      seen = JSON.parse(localStorage.getItem('seenNews') ?? '[]') as string[];
+    } catch {
+      seen = [];
+    }
+    const fresh = news.filter((n) => !seen.includes(n.id) && T.news[n.kind]);
+    if (fresh.length === 0) return;
+    const n = fresh[fresh.length - 1];
+    onError(T.news[n.kind](displayName(n.nickname)));
+    try {
+      localStorage.setItem('seenNews', JSON.stringify([...seen, n.id].slice(-30)));
+    } catch {
+      // 저장이 막힌 브라우저면 다음에 다시 보일 뿐이다
+    }
+  }, [news, tutorialDone, onError]);
+
   // 초기화 뒤 튜토리얼 첫 단계: 열린 창(설정)을 닫아야 출정 버튼이 보인다
   const onboardingAt = home?.state.onboarding?.at;
   useEffect(() => {
@@ -250,7 +272,7 @@ export default function App() {
         break;
       case 'upgrade':
         title = T.panels.upgrade;
-        body = <Upgrade api={api} home={home} onRefresh={refresh} onError={onError} />;
+        body = <Upgrade api={api} home={home} onRefresh={refresh} onError={onError} onShop={() => setPanel({ name: 'shop' })} />;
         break;
       case 'log':
         title = T.panels.log;

@@ -5,8 +5,8 @@ import { defaultState } from '../server/src/state';
 const fresh = () => defaultState('0xbuyer0001', 0, 's1');
 
 describe('purchases', () => {
-  it('lists 14 products (5 retired ones still pay out, 4 gold packs added 2026-09-30)', () => {
-    expect(PRODUCTS).toHaveLength(14);
+  it('lists 19 products (5 retired ones still pay out, 4 gold packs 2026-09-30, 5 soul packs 2026-10-01)', () => {
+    expect(PRODUCTS).toHaveLength(19);
   });
 
   it('speed_x3 and premium are permanent perks', () => {
@@ -17,6 +17,7 @@ describe('purchases', () => {
   it('the shop lists only the products still on sale', () => {
     expect(SHOP_PRODUCTS).toEqual([
       'starter_pack', 'gold_pouch', 'gold_chest', 'gold_coffer', 'gold_vault',
+      'soul_pouch', 'soul_sack', 'soul_chest', 'soul_altar', 'soul_relic',
       'recruit_dragon', 'season_pass', 'speed_x3', 'premium',
     ]);
   });

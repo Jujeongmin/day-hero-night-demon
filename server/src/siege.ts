@@ -1,6 +1,6 @@
 import { simulateAuto, type FloorLog, type HeroSpec } from './battle';
 import { BALANCE, HERO_ORDER } from './catalog';
-import { lordLevel, waveGold } from './growth';
+import { lordLevel, starMult, waveGold } from './growth';
 import { seedFrom } from './rng';
 import type { ResolvedFloor } from './state';
 import { vipPerks } from './vip';
@@ -13,12 +13,12 @@ export function siegeWave(stage: number): HeroSpec[] {
   return HERO_ORDER.map((id) => ({ id, level, mult }));
 }
 
-/** 막는 쪽: 내 층 몬스터 → 옥좌의 마왕. mult = 용사 레벨에서 오는 공성 방어 배수 */
-function defenseOf(castleLevel: number, floors: ResolvedFloor[], mult: number) {
-  const m1 = mult === 1 ? {} : { mult };
+/** 막는 쪽: 내 층 몬스터 → 옥좌의 마왕. mult = 용사 레벨에서 오는 공성 방어 배수, 각성 별은 유닛마다 더 곱한다 */
+function defenseOf(castleLevel: number, floors: ResolvedFloor[], mult: number, lordStars = 0) {
+  const m = (k: number) => (k === 1 ? {} : { mult: k });
   return [
-    ...floors.map((f) => ({ enemies: f.monsters.map((m) => ({ id: m.id, level: m.level, ...m1 })) })),
-    { enemies: [{ id: 'lord' as const, level: lordLevel(castleLevel), ...m1 }] },
+    ...floors.map((f) => ({ enemies: f.monsters.map((u) => ({ id: u.id, level: u.level, ...m(mult * starMult(u.stars)) })) })),
+    { enemies: [{ id: 'lord' as const, level: lordLevel(castleLevel), ...m(mult * starMult(lordStars)) }] },
   ];
 }
 
@@ -59,9 +59,9 @@ export function siegeCallBlock(p: { lastWaveAt: number; lastWon: boolean | undef
 }
 
 /** 파도 하나: at 시각의 시드로 싸워 막았는지와 다음 단계·골드를 낸다. record면 실제 전투 기록(log)도 준다 */
-export function fightWave(p: { account: string; stage: number; at: number; castleLevel: number; floors: ResolvedFloor[]; mult?: number; record?: boolean }): { won: boolean; stage: number; gold: number; log?: FloorLog[] } {
+export function fightWave(p: { account: string; stage: number; at: number; castleLevel: number; floors: ResolvedFloor[]; mult?: number; lordStars?: number; record?: boolean }): { won: boolean; stage: number; gold: number; log?: FloorLog[] } {
   const stage = Math.max(1, p.stage);
-  const raid = simulateAuto({ heroes: siegeWave(stage), floors: defenseOf(p.castleLevel, p.floors, p.mult ?? 1), seed: seedFrom(p.account, 'siege', p.at), record: p.record });
+  const raid = simulateAuto({ heroes: siegeWave(stage), floors: defenseOf(p.castleLevel, p.floors, p.mult ?? 1, p.lordStars ?? 0), seed: seedFrom(p.account, 'siege', p.at), record: p.record });
   const won = !raid.won;
   const r = won
     ? { won, stage: stage + 1, gold: waveGold(stage) }
@@ -72,6 +72,8 @@ export function fightWave(p: { account: string; stage: number; at: number; castl
 /** 마지막 처리 이후 도착한 파도를 순서대로 싸운다. 막으면 단계 +1·골드(자리 비운 동안 도착한 파도는 절반), 뚫리면 단계 −1. 최대 8시간치. */
 export function runSiege(p: {
   account: string; stage: number; lastWaveAt: number; now: number; castleLevel: number; floors: ResolvedFloor[]; mult?: number;
+  /** 마왕 각성 별 */
+  lordStars?: number;
   /** VIP 등급: 자리 비운 공성 골드 배수와 최대 시간 */
   vip?: number;
 }): { stage: number; peak: number; lastWaveAt: number; gold: number; waves: { at: number; won: boolean }[]; lastLog?: FloorLog[] } {
@@ -88,7 +90,7 @@ export function runSiege(p: {
   for (let i = skip + 1; i <= total; i++) {
     const at = p.lastWaveAt + i * W;
     // 마지막 파도만 전투 기록을 남긴다(홈 화면이 재생한다)
-    const r = fightWave({ account: p.account, stage, at, castleLevel: p.castleLevel, floors: p.floors, mult: p.mult, record: i === total });
+    const r = fightWave({ account: p.account, stage, at, castleLevel: p.castleLevel, floors: p.floors, mult: p.mult, lordStars: p.lordStars, record: i === total });
     waves.push({ at, won: r.won });
     // 도착한 지 오래 지나 처리된 파도(자리 비운 동안)는 골드 절반
     gold += p.now - at > BALANCE.awayGraceMs ? Math.floor(r.gold * perks.awayMult) : r.gold;

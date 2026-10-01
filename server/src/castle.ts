@@ -1,6 +1,7 @@
 import { BALANCE, HEROES, MONSTERS, type HeroId, type MonsterId } from './catalog';
 import { castleUpgradeCost, floorsUnlocked, unitUpgradeCost } from './economy';
-import type { FloorLayout, UserState } from './state';
+import { awakenCost } from './growth';
+import type { FloorLayout, StarUnit, UserState } from './state';
 
 export function planUpgrade(
   s: UserState, kind: 'castle' | 'monster' | 'hero', id: string | null,
@@ -51,4 +52,15 @@ export function planRecruit(s: UserState, monsterId: string): { soul: number; pa
   if (!def || !('soul' in def.unlock)) throw new Error('영혼석으로 영입할 수 없는 몬스터다');
   if (s.roster[def.id]) throw new Error('이미 보유한 몬스터다');
   return { soul: def.unlock.soul, patch: { roster: { ...s.roster, [def.id]: { level: 1 } } } };
+}
+
+/** 각성 별 하나: 보유 몬스터나 마왕. 영혼석 비용과 새 별 기록 */
+export function planAwaken(s: UserState, unit: string): { soul: number; patch: Pick<UserState, 'stars'> } {
+  if (unit !== 'lord' && !(unit in MONSTERS)) throw new Error('없는 유닛이다');
+  if (unit !== 'lord' && !s.roster[unit as MonsterId]) throw new Error('보유하지 않은 몬스터다');
+  const key = unit as StarUnit;
+  const now = s.stars?.[key] ?? 0;
+  const soul = awakenCost(now + 1);
+  if (soul === null) throw new Error('MAX_STARS');
+  return { soul, patch: { stars: { ...(s.stars ?? {}), [key]: now + 1 } } };
 }

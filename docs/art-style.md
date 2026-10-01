@@ -122,3 +122,7 @@
 - VX Shop 대시보드용 512×512: pixflux 256×256 `highly detailed`, 문장 틀 "dark fantasy game shop item art, centered: <상품>, dark purple background with soft vignette glow, no text" → NEAREST 2배.
 - 시즌 패스는 두루마리 판(`hq/season_pass_scroll.png`)이 비어 보여 흑룡 + 해골 메달 판으로, 새끼 용은 검은 판(`hq/recruit_dragon_black.png`)이 흑룡 외형과 헷갈려 게임 속 빨간 새끼 용으로 다시 뽑음. 스타터팩 오른쪽 아래 흔적은 배경색으로 덮음.
 - 게임 안 상점 아이콘(`public/icons/prod_*.png`, 64px)은 그대로.
+
+## 각성 별 · 영혼석 묶음 (2026-10-01)
+- 별 아이콘 `public/ui/star.png` = `art/ui/stars/star_a.png`(금 별 + 붉은 보석, pixflux 32px seed 1711). 다른 후보 `star_b`(보라 수정 1712)·`star_c`(붉은 불씨 1713). 강화·각성 줄에 14px.
+- 영혼석 묶음 이미지·아이콘은 `docs/vxshop-products.md` 영혼석 묶음 절.

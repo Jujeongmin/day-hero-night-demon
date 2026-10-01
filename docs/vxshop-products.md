@@ -35,6 +35,24 @@
 - 서버: `server/src/purchases.ts` `PRODUCTS`·`SHOP_PRODUCTS`·`grantFor`. Product ID는 글자까지 같아야 한다.
 - 등록 완료: 2026-09-30 (사용자). 출시판 상점 가격 확인: 2026-09-30 `fa66fad` 출시판에서 4개 모두 가격 표시(100·500·1,500·5,000 VX), 게임 콘솔 오류 없음. / 테스트 결제: (결과)
 
+## 영혼석 묶음 5개 (2026-10-01 추가, 사용자 승인 — 후보표 https://claude.ai/artifact/CADy1vbru2Q9eTAXgQsgcE)
+
+영혼석은 몬스터·마왕 각성(별 1~20, 별마다 능력치 ×1.1)에 쓴다. 지급량은 고정이고 VIP 묶음 보너스(최대 +25%)가 붙는다. 반복 구매.
+
+| Product ID | 이름 | 가격 | 설명 |
+|---|---|---|---|
+| `soul_pouch` | 영혼석 주머니 / Soulstone Pouch | 100 VX | 영혼석 30개. 몬스터와 마왕을 각성시키는 데 쓴다. 여러 번 살 수 있다. / 30 soulstones to awaken your monsters and Demon Lord. Buy as many as you like. |
+| `soul_sack` | 영혼석 자루 / Soulstone Sack | 500 VX | 영혼석 180개. 주머니보다 VX당 20% 더. / 180 soulstones. 20% more per VX than the Pouch. |
+| `soul_chest` | 영혼석 상자 / Soulstone Chest | 1,500 VX | 영혼석 600개. 주머니보다 VX당 33% 더. / 600 soulstones. 33% more per VX than the Pouch. |
+| `soul_altar` | 영혼석 제단 / Soulstone Altar | 5,000 VX | 영혼석 2,250개. 주머니보다 VX당 50% 더. / 2,250 soulstones. 50% more per VX than the Pouch. |
+| `soul_relic` | 영혼석 성유물 / Soulstone Relic | 30,000 VX | 가장 이득. 영혼석 15,000개, 주머니보다 VX당 67% 더. 마왕과 몬스터 6종을 모두 별 10까지 올릴 수 있다. / The best value. 15,000 soulstones, 67% more per VX than the Pouch. Enough to awaken your Demon Lord and all six monsters to 10 stars. |
+
+- 나머지 칸: Stock Quantity 999999, Lifetime·Period Limit 없음, Time-Limited Sale 없음.
+- 대시보드 이미지 512×512: `art/products/soul_{pouch,sack,chest,altar,relic}.png` (pixflux 256 `highly detailed`, seed 1701~1705 → NEAREST 2배. 성유물 오른쪽 아래 흔적은 배경색으로 덮음). 원본 `art/products/hq/soul_*_256.png`.
+- 게임 안 아이콘: `public/icons/prod_soul_*.png` (pixflux 64px, seed 1721·1722·1733·1724·1725).
+- 대시보드에 아직 없는 상품은 게임 상점에서 숨는다(목록이 온 뒤). 등록하면 바로 보인다.
+- 등록 완료: (날짜) / 테스트 결제: (결과)
+
 ## VIP 누적 금액
 결제 웹훅에는 가격이 없어서 서버가 `BALANCE.productVx`(상품별 VX)로 누적을 더한다(`server/src/vip.ts` `spendFor`). **대시보드에서 가격을 바꾸면 productVx도 같이 바꾼다.** 2026-09-30 이전 결제는 기록에 상품 ID가 없어 소급되지 않는다.
 

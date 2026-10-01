@@ -202,6 +202,15 @@ const tools = {
     if (s.idle) { s.idle.lastClaimAt -= ms; s.idle.lastRaidAt -= ms; }
     persist();
   },
+  /** 튜토리얼을 끝난 것으로(화면 확인용) */
+  done() {
+    const s = store.users[account] as { onboarding?: unknown; introDone?: boolean } | undefined;
+    if (!s) return;
+    s.onboarding = { at: 'done', nicknameSet: true };
+    s.introDone = true;
+    persist();
+    location.reload();
+  },
   wipe() {
     store = { users: {}, assets: {}, collections: {}, global: {} };
     persist();

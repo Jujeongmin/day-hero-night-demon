@@ -68,9 +68,15 @@ export const ko = {
     gold_chest: ['금화 상자', '골드'],
     gold_coffer: ['황금 궤짝', '골드'],
     gold_vault: ['마왕의 보물고', '골드'],
+    soul_pouch: ['영혼석 주머니', '영혼석'],
+    soul_sack: ['영혼석 자루', '영혼석'],
+    soul_chest: ['영혼석 상자', '영혼석'],
+    soul_altar: ['영혼석 제단', '영혼석'],
+    soul_relic: ['영혼석 성유물', '영혼석'],
   } as Record<string, [string, string]>,
   /** 골드 묶음 설명: 이 계정이 받을 골드와 100 VX 대비 더 주는 비율 */
   goldPackDesc: (gold: number, bonus: number) => (bonus > 0 ? `골드 ${F(gold)} · ${bonus}% 더` : `골드 ${F(gold)}`),
+  soulPackDesc: (soul: number, bonus: number) => (bonus > 0 ? `영혼석 ${F(soul)} · ${bonus}% 더` : `영혼석 ${F(soul)}`),
   buyStarter: '스타터팩 보기',
   /** 골드는 공성 최고 단계에 맞춰 커진다(서버 scaledGold와 같은 값) */
   starterDesc: (gold: number) => `네크로맨서 + 골드 ${F(gold)} + 영혼석 30`,
@@ -81,6 +87,10 @@ export const ko = {
   seasonReward: (a: number, b: number, c: number, d: number) => `시즌 끝 보상(브래킷 순위): 1위 영혼석 ${a} · 2~3위 ${b} · 4~10위 ${c} · 그 밖 ${d}`,
   honorHow: '명예: 공략 승리 10 · 마왕 처치 +5 · 복수 2배 · 방어 성공 3',
   topTitle: '전체 상위 20',
+  globalReward: '전체 순위 보상: 1위 칭호 「패왕」·명예의 전당 · 2~3위 칭호·명예의 전당 · 4~10위 칭호 (다음 시즌 동안)',
+  hallTitle: '명예의 전당',
+  hallSeason: (id: string) => `시즌 ${id.slice(1)}`,
+  titles: { champion: '패왕', top3: '3강', top10: '10강' } as Record<string, string>,
   noBracket: '첫 공략에서 이기면 브래킷에 들어간다',
   stats: { hp: '체력', atk: '공격', def: '방어', spd: '속도' },
   skills: {
@@ -132,7 +142,7 @@ export const ko = {
     renameLeft: (n: number) => `무료 변경 ${n}회 남음`,
     rename: '변경',
     reset: '데이터 초기화',
-    resetWarn: '성·레벨·골드·영혼석·기록·이번 시즌 명예가 처음으로 돌아갑니다. 결제로 얻은 몬스터·방치 2배·시즌 패스·남은 아이템, 닉네임, 공성 최고 기록은 남습니다. 튜토리얼을 다시 합니다. 되돌릴 수 없습니다.',
+    resetWarn: '성·레벨·골드·기록·이번 시즌 명예가 처음으로 돌아갑니다. 영혼석·각성 별, 결제로 얻은 몬스터·방치 2배·시즌 패스·남은 아이템, 닉네임, 공성 최고 기록은 남습니다. 튜토리얼을 다시 합니다. 되돌릴 수 없습니다.',
     resetType: "확인하려면 '초기화'를 입력하세요",
     /** 초기화 확인 단어. 서버 RESET_WORDS에도 있어야 한다 */
     resetWord: '초기화',
@@ -215,6 +225,8 @@ export const ko = {
     ONBOARDING_ORDER: '다시 시도해줘',
     NO_REVIVE_CREDIT: '부활 아이템이 없다',
     NO_REVENGE_CREDIT: '오늘 무료 복수 3회를 다 썼다. 복수권이 필요하다',
+    NO_SOUL: '영혼석이 부족하다',
+    MAX_STARS: '이미 최대 각성이다',
     generic: '문제가 생겼다. 잠시 후 다시 시도해줘.',
   } as Record<string, string>,
   /** 서버가 한국어 문장으로 던지는 오류 → 이 언어 문장. 없으면 errors.generic */
@@ -280,6 +292,20 @@ export const ko = {
     aura: '루비 오라',
     skins: { lava: '용암 마왕', demon: '보라 날개 악마' } as Record<string, string>,
   },
+  awaken: {
+    upTab: '강화',
+    tab: '각성',
+    hint: '별 하나마다 모든 능력치 ×1.1. 영혼석을 쓰고, 초기화해도 남는다.',
+    btn: (soul: number) => `각성 (영혼석 ${F(soul)})`,
+    max: '최대 각성',
+    mult: (now: string, next: string | null) => (next ? `능력치 ×${now} → ×${next}` : `능력치 ×${now}`),
+    buySoul: '영혼석 사기',
+  },
+  news: {
+    vip10: (name: string) => `${name}님이 VIP 10에 올랐다!`,
+    star20: (name: string) => `${name}님이 별 20 각성을 해냈다!`,
+    champion: (name: string) => `${name}님이 지난 시즌 전체 1위 「패왕」이 되었다!`,
+  } as Record<string, (name: string) => string>,
   lang: { title: '언어', pick: '언어를 고르세요', go: '시작' },
 };
 

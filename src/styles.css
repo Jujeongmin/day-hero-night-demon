@@ -420,3 +420,15 @@ button[lang='zh-Hans'] { font-family: 'Noto Sans SC', sans-serif; }
 /* VIP 10 루비 오라: 마왕 테두리 빛이 루비색 */
 .aura.ruby { animation-name: rubyAura; }
 @keyframes rubyAura { 0%, 100% { filter: drop-shadow(0 0 3px #ff2d4a) drop-shadow(0 0 1px #ffd0d6); } 50% { filter: drop-shadow(0 0 10px #ff2d4a) drop-shadow(0 0 3px #ffd0d6); } }
+
+/* 각성 별 수 (2026-10-01) */
+.star-count { display: inline-flex; align-items: center; gap: 1px; color: var(--gold); font-size: 12px; vertical-align: middle; }
+.star-count img { width: 14px; height: 14px; image-rendering: pixelated; }
+/* 지난 시즌 전체 순위 칭호 */
+.title-tag { font-size: 11px; color: var(--gold); vertical-align: middle; }
+.title-tag.champion { color: var(--ruby); text-shadow: 0 0 4px #ff3b3b88; }
+.title-tag::before { content: '「'; }
+.title-tag::after { content: '」'; }
+/* 명예의 전당 */
+.hall-line > span:last-child { display: flex; flex-wrap: wrap; gap: 2px 10px; justify-content: flex-end; font-size: 12px; }
+.hall-1 { color: var(--gold); }

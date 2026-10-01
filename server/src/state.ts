@@ -5,8 +5,12 @@ import type { FloorBattle } from './battle';
 export interface FloorLayout { monsters: (MonsterId | null)[] }
 
 export interface ResolvedFloor {
-  monsters: { id: MonsterId; level: number }[];
+  /** stars = 각성 별(0이면 빠진다) */
+  monsters: { id: MonsterId; level: number; stars?: number }[];
 }
+
+/** 각성 대상: 몬스터 6종 + 마왕 */
+export type StarUnit = MonsterId | 'lord';
 
 /** 시즌 패스 보유자의 한정 마왕 외형. 표시용이며 전투 수치에는 영향이 없다. */
 /** skull = 시즌 패스, dragon = 패스 10단계 영구, lava·demon = VIP 5·8 전용 (2026-09-30) */
@@ -24,6 +28,8 @@ export interface CastleSnapshot {
   /** NPC 등급 성 전용: 마왕 레벨(없으면 성 레벨로 계산)과 몬스터·마왕 능력치 배수 */
   lordLevel?: number;
   mult?: number;
+  /** 마왕 각성 별(플레이어 성) */
+  lordStars?: number;
 }
 
 export interface Run {
@@ -130,6 +136,10 @@ export interface UserState {
   siege: { stage: number; lastWaveAt: number; pendingGold: number; best: number; lastWon?: boolean };
   /** VIP: 누적 결제 VX(결제 웹훅이 서버 가격표로 더한다). 등급은 vip.ts vipLevel */
   vip: { spent: number };
+  /** 각성 별(몬스터·마왕). 영혼석으로 산다. 초기화해도 남는다 */
+  stars: Partial<Record<StarUnit, number>>;
+  /** 지난 시즌 전체 순위 칭호(1~10위). 받은 다음 시즌 동안만 보인다(league.ts activeTitle) */
+  title?: { kind: 'champion' | 'top3' | 'top10'; season: string } | null;
   /** 매칭용 공개 정보(castles 컬렉션)를 새 전투력 단위로 다시 쓴 판. 2 = 큰 숫자 성장(2026-09-29) */
   castleSyncV?: number;
 }
@@ -177,6 +187,7 @@ export function defaultState(account: string, now: number, seasonId: string): Us
     starterOffered: false,
     processedPurchases: [],
     vip: { spent: 0 },
+    stars: {},
     onboarding: { at: 'cutscene', nicknameSet: false },
     ads: { day: '', counts: {} },
     perks: { speed3: false, premium: false },
@@ -190,7 +201,10 @@ export function resolveFloors(s: UserState): ResolvedFloor[] {
   return s.castle.floors.map((f) => ({
     monsters: f.monsters
       .filter((id): id is MonsterId => id !== null)
-      .map((id) => ({ id, level: s.roster[id]?.level ?? 1 })),
+      .map((id) => {
+        const stars = s.stars?.[id] ?? 0;
+        return stars > 0 ? { id, level: s.roster[id]?.level ?? 1, stars } : { id, level: s.roster[id]?.level ?? 1 };
+      }),
   }));
 }
 
@@ -206,6 +220,7 @@ export function withDefaults(s: UserState): UserState {
     skins: s.skins ?? [],
     lordSkin: s.lordSkin ?? null,
     vip: s.vip ?? { spent: 0 },
+    stars: s.stars ?? {},
     siege: s.siege
       ? { ...s.siege, best: s.siege.best ?? s.siege.stage }
       : { stage: 1, lastWaveAt: s.idle.lastClaimAt, pendingGold: 0, best: 1 },
@@ -235,6 +250,8 @@ export function resetState(s: UserState, now: number): UserState {
     processedPurchases: s.processedPurchases,
     // VIP 누적은 결제라 초기화해도 남긴다
     vip: s.vip,
+    // 각성 별은 영혼석(결제 포함)으로 산 것이라 남긴다
+    stars: s.stars ?? {},
     onboarding: { at: 'raid_sortie', nicknameSet: s.onboarding.nicknameSet },
     // 오늘 광고 횟수는 초기화로 다시 받지 못하게, 영구 상품은 결제라 남긴다
     ads: s.ads,

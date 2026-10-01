@@ -166,10 +166,34 @@ export const BALANCE = {
     /** 루비 오라(마왕 테두리)가 켜지는 등급 */
     rubyAura: 10,
   },
+  /**
+   * 각성(별, 2026-10-01 사용자 승인 "추천대로", 후보표 https://claude.ai/artifact/CADy1vbru2Q9eTAXgQsgcE).
+   * 몬스터·마왕마다 별 1~20, 별 하나마다 모든 능력치 ×1.1(레벨과 따로 곱한다). 비용은 영혼석:
+   * 별 n개째 = n이 highFrom 미만이면 costLow × n, 아니면 costHigh × n (한 마리 별 20까지 17,150)
+   */
+  awaken: { maxStars: 20, statPerStar: 1.1, costLow: 30, costHigh: 100, highFrom: 11 },
+  /** 영혼석 묶음(반복 구매, 2026-10-01 승인). 100 VX당 30·36·40·45·50. VIP 묶음 보너스가 붙는다. vx는 표시·검증용 */
+  soulPacks: {
+    soul_pouch: { vx: 100, soul: 30 },
+    soul_sack: { vx: 500, soul: 180 },
+    soul_chest: { vx: 1500, soul: 600 },
+    soul_altar: { vx: 5000, soul: 2250 },
+    soul_relic: { vx: 30000, soul: 15000 },
+  },
+  /** 시즌 순위 보상(2026-10-01 승인). 브래킷(30명) 순위별 영혼석 */
+  seasonRankSoul: { first: 300, top3: 180, top10: 90, rest: 20 },
+  /** 전체 순위 칭호: 1위 champion(+ 그 시즌 한정 마왕 외형·명예의 전당), 2~3위 top3(+ 명예의 전당), 4~10위 top10. 다음 시즌 동안 이름 옆에 보인다 */
+  globalRankTitles: { top3: 3, top10: 10 },
+  /**
+   * 시즌별 전체 1위 한정 마왕 외형(art/lord 보관 후보). 없는 시즌은 외형 없이 칭호만.
+   * 그림·움직임이 준비되면 여기에 시즌 id를 더한다
+   */
+  seasonChampionSkins: {} as Record<string, string>,
   /** 누적 VX 계산용 상품 가격. 결제 웹훅에 가격이 없어서 서버가 들고 있다 — 대시보드 가격을 바꾸면 여기도 같이 바꾼다 */
   productVx: {
     starter_pack: 100, recruit_dragon: 300, season_pass: 400, speed_x3: 300, premium: 500,
     gold_pouch: 100, gold_chest: 500, gold_coffer: 1500, gold_vault: 5000,
+    soul_pouch: 100, soul_sack: 500, soul_chest: 1500, soul_altar: 5000, soul_relic: 30000,
     idle_x2: 500, revive: 100, shadow_double: 100, revenge_ticket: 100, daily_supply: 100,
   } as Record<string, number>,
   /** 골드 묶음의 "켜 둔 공성 1시간" = 파도 골드 × 15 (1×로 평형 단계에서 30번 중 약 15번 막음) */

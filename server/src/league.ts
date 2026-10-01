@@ -38,10 +38,10 @@ export function ghostHonor(bracketId: string, index: number, seasonStart: number
   return Math.floor(rate * hours);
 }
 
-export interface Ranked { id: string; nickname: string; honor: number; ghost: boolean; rank: number; vip?: number }
+export interface Ranked { id: string; nickname: string; honor: number; ghost: boolean; rank: number; vip?: number; title?: TitleKind | null }
 
 export function rankBracket(
-  entries: { id: string; nickname: string; honor: number; vip?: number }[],
+  entries: { id: string; nickname: string; honor: number; vip?: number; title?: TitleKind | null }[],
   bracketId: string, seasonStart: number, at: number,
 ): Ranked[] {
   const rows = entries.map((e) => ({ ...e, ghost: false }));
@@ -60,7 +60,24 @@ export function rankBracket(
   });
 }
 
+/** 브래킷 순위 보상 영혼석 (2026-10-01 승인: 300·180·90·20) */
 export function seasonRewardSoul(rank: number): number {
-  const base = rank === 1 ? 100 : rank <= 3 ? 60 : rank <= 10 ? 30 : 10;
-  return base;
+  const r = BALANCE.seasonRankSoul;
+  return rank === 1 ? r.first : rank <= 3 ? r.top3 : rank <= 10 ? r.top10 : r.rest;
+}
+
+/** 전체 순위 칭호: 1위 champion, 2~3위 top3, 4~10위 top10, 그 밖은 없음 */
+export type TitleKind = 'champion' | 'top3' | 'top10';
+export function titleForGlobalRank(rank: number): TitleKind | null {
+  if (rank < 1) return null;
+  if (rank === 1) return 'champion';
+  if (rank <= BALANCE.globalRankTitles.top3) return 'top3';
+  if (rank <= BALANCE.globalRankTitles.top10) return 'top10';
+  return null;
+}
+
+/** 칭호는 받은 다음 시즌 동안만 이름 옆에 보인다. title.season = 순위를 낸 시즌 */
+export function activeTitle(title: { kind: TitleKind; season: string } | null | undefined, now: number): TitleKind | null {
+  if (!title) return null;
+  return seasonIndexAt(now) === Number(title.season.slice(1)) + 1 ? title.kind : null;
 }

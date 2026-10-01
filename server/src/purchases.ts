@@ -9,16 +9,27 @@ export const PRODUCTS = [
   'shadow_double', 'revenge_ticket', 'daily_supply', 'season_pass',
   'speed_x3', 'premium',
   'gold_pouch', 'gold_chest', 'gold_coffer', 'gold_vault',
+  'soul_pouch', 'soul_sack', 'soul_chest', 'soul_altar', 'soul_relic',
 ] as const;
 
 /** 게임 상점에 보이는 상품 (2026-09-29: 소모품은 광고 보상으로 옮김) */
 export const SHOP_PRODUCTS = [
   'starter_pack', 'gold_pouch', 'gold_chest', 'gold_coffer', 'gold_vault',
+  'soul_pouch', 'soul_sack', 'soul_chest', 'soul_altar', 'soul_relic',
   'recruit_dragon', 'season_pass', 'speed_x3', 'premium',
 ] as const;
 
 /** 골드 묶음(반복 구매) */
 export const GOLD_PACKS = ['gold_pouch', 'gold_chest', 'gold_coffer', 'gold_vault'] as const;
+
+/** 영혼석 묶음(반복 구매, 2026-10-01) */
+export const SOUL_PACKS = ['soul_pouch', 'soul_sack', 'soul_chest', 'soul_altar', 'soul_relic'] as const;
+export type SoulPackId = (typeof SOUL_PACKS)[number];
+
+/** 영혼석 묶음 1개 지급량(VIP 묶음 보너스 포함) */
+export function soulPackAmount(id: SoulPackId, vip: number): number {
+  return Math.floor(BALANCE.soulPacks[id].soul * (1 + vipPerks(vip).packBonus));
+}
 
 export type ProductId = (typeof PRODUCTS)[number];
 
@@ -54,6 +65,12 @@ export function grantFor(productId: string, quantity: number, s: UserState): Gra
     case 'gold_vault':
       // 결제한 사람의 공성 최고 단계와 몬스터 평균 레벨로 계산한다(상점에 보인 금액과 같다)
       return { patch: {}, gold: Math.floor(goldPackAmount(productId, s.siege?.best ?? 1, avgMonsterLevel(s.roster)) * (1 + vipPerks(vipOf(s)).packBonus)) * q, soul: 0 };
+    case 'soul_pouch':
+    case 'soul_sack':
+    case 'soul_chest':
+    case 'soul_altar':
+    case 'soul_relic':
+      return { patch: {}, gold: 0, soul: soulPackAmount(productId, vipOf(s)) * q };
     default:
       throw new Error(`unknown product: ${productId}`);
   }

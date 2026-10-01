@@ -1,9 +1,9 @@
 import { BALANCE, HERO_ORDER, TACTICS, type HeroId, type Tactic } from './catalog';
-import { planRecruit, planUpgrade, validateFloor } from './castle';
+import { planAwaken, planRecruit, planUpgrade, validateFloor } from './castle';
 import { castlePower, displayPower, heroLootBonus, idleIncome, lootAmount, npcLoot, pvpLootCap, siegeDefenseMult, snapshotPower } from './economy';
 import { waveGold } from './growth';
 import {
-  DEFENSE_HONOR, honorForRaid, leagueCollection, rankBracket, seasonEndsAt, seasonIdAt, seasonRewardSoul, seasonStartOf,
+  DEFENSE_HONOR, activeTitle, honorForRaid, leagueCollection, rankBracket, seasonEndsAt, seasonIdAt, seasonRewardSoul, seasonStartOf, titleForGlobalRank,
 } from './league';
 import { checkNickname, nicknameKey } from './nickname';
 
@@ -48,6 +48,11 @@ async function save(account: string, patch: Partial<UserState>): Promise<void> {
   await $global.updateUserState(account, patch);
 }
 
+/** 마왕 각성 별 */
+function lordStarsOf(s: UserState): number {
+  return s.stars?.lord ?? 0;
+}
+
 /** 매칭용 공개 정보. 표시·매칭에만 쓰고 재화 판단에는 쓰지 않는다. */
 async function syncCastle(account: string, s: UserState): Promise<void> {
   const floors = resolveFloors(s);
@@ -55,7 +60,7 @@ async function syncCastle(account: string, s: UserState): Promise<void> {
     account,
     nickname: s.profile.nickname,
     castleLevel: s.castle.level,
-    power: castlePower(s.castle.level, floors),
+    power: castlePower(s.castle.level, floors, lordStarsOf(s)),
     floors,
     shieldUntil: s.shieldUntil,
     vip: vipOf(s),
@@ -127,6 +132,7 @@ async function buildSnapshot(target: string, now: number): Promise<CastleSnapsho
     floors: resolveFloors(d),
     throneEmpty: false,
     shadow: false,
+    ...(lordStarsOf(withDefaults(d)) > 0 ? { lordStars: lordStarsOf(withDefaults(d)) } : {}),
     ...(() => {
       const w = withDefaults(d);
       const skin = chooseLordSkin(w.lordSkin, w.skins, w.season.pass && w.season.id === seasonIdAt(now), vipOf(w));
@@ -176,7 +182,7 @@ async function finishRun(me: string, s: UserState, run: Run, won: boolean, loot:
 }
 
 async function realTargets(me: string, s: UserState, now: number): Promise<Target[]> {
-  const power = castlePower(s.castle.level, resolveFloors(s));
+  const power = castlePower(s.castle.level, resolveFloors(s), lordStarsOf(s));
   const rows = await $global.getCollectionItems('castles', {
     filters: [
       { field: 'power', operator: '>=', value: Math.floor(power * 0.8) },
@@ -253,12 +259,72 @@ async function rollSeason(account: string, s: UserState, now: number): Promise<U
     );
     const me = ranked.find((r) => r.id === account);
     if (me) soul = seasonRewardSoul(me.rank);
+    // 전체 순위 1~10위: 칭호, 1위는 그 시즌 한정 외형. 명예의 전당은 처음 넘어온 사람이 남긴다
+    const top = await $global.getCollectionItems(leagueCollection(s.season.id), { orderBy: [{ field: 'honor', direction: 'desc' }], limit: BALANCE.globalRankTitles.top10 });
+    await recordHall(s.season.id, top, now);
+    const kind = titleForGlobalRank(top.findIndex((r: any) => r.account === account) + 1);
+    if (kind) {
+      const skin = kind === 'champion' ? BALANCE.seasonChampionSkins[s.season.id] : undefined;
+      const patch: Partial<UserState> = { title: { kind, season: s.season.id }, ...(skin ? { skins: [...new Set([...s.skins, skin])] } : {}) };
+      await save(account, patch);
+      s = { ...s, ...patch };
+    }
   }
   if (soul) await $asset.mint('soul', soul, account);
   // 안 받은 패스 보상은 시즌과 함께 사라진다(트랙 화면에 안내)
   const season = { id: current, bracketId: null, honor: 0, pass: false, rewardedFor: s.season.id, claimed: { free: 0, pass: 0 } };
   await save(account, { season });
   return { ...s, season };
+}
+
+const HALL = 'hall_of_fame';
+const NEWS_MS = 24 * 3_600_000;
+
+async function recentNews(now: number): Promise<{ id: string; kind: string; nickname: string; vip: number; at: number }[]> {
+  try {
+    const rows = await $global.getCollectionItems(ANNOUNCE, { orderBy: [{ field: 'at', direction: 'desc' }], limit: 5 });
+    return rows
+      .filter((r: any) => now - r.at < NEWS_MS)
+      .map((r: any) => ({ id: `${r.kind}:${r.at}:${r.nickname}`, kind: r.kind, nickname: r.nickname, vip: r.vip ?? 0, at: r.at }));
+  } catch {
+    return [];
+  }
+}
+const ANNOUNCE = 'announcements';
+
+/** 지난 시즌 전체 1~3위를 명예의 전당에 한 번 남기고, 1위를 전체 알림으로 띄운다 */
+async function recordHall(seasonId: string, top: any[], now: number): Promise<void> {
+  if (top.length === 0 || !(top[0].honor > 0)) return;
+  await $lock(`hall:${seasonId}`, async () => {
+    try {
+      if (await $global.getCollectionItem(HALL, seasonId)) return;
+    } catch {
+      // 로컬 하네스는 없는 문서를 읽으면 예외를 던진다
+    }
+    const podium = top.slice(0, BALANCE.globalRankTitles.top3).map((r: any) => ({ nickname: r.nickname, honor: r.honor, vip: r.vip ?? 0 }));
+    await $global.addCollectionItem(HALL, { season: seasonId, at: now, top: podium }, { id: seasonId });
+    await announce('champion', top[0].nickname, top[0].vip ?? 0, now, seasonId);
+  });
+}
+
+/** 명예의 전당: 최근 3시즌의 1~3위 */
+async function hallOfFame(): Promise<{ season: string; top: { nickname: string; honor: number; vip: number }[] }[]> {
+  try {
+    const rows = await $global.getCollectionItems(HALL, { orderBy: [{ field: 'at', direction: 'desc' }], limit: 3 });
+    return rows.map((r: any) => ({ season: r.season, top: r.top ?? [] }));
+  } catch {
+    return [];
+  }
+}
+
+/** 전체 알림(VIP 10 도달·별 20·시즌 1위). 홈을 열 때 최근 것을 받아 한 번 보여 준다 */
+async function announce(kind: 'vip10' | 'star20' | 'champion', nickname: string, vip: number, now: number, key: string): Promise<void> {
+  await $global.addCollectionItem(ANNOUNCE, { kind, nickname, vip, at: now }, { id: `${kind}:${key}` });
+}
+
+/** 리그 순위표 한 줄(명예의 사본 + 표시용 닉네임·VIP·칭호) */
+function leagueRow(account: string, s: UserState, season: UserState['season'], now: number) {
+  return { account, nickname: s.profile.nickname, bracketId: season.bracketId, honor: season.honor, vip: vipOf(s), title: activeTitle(s.title, now) };
 }
 
 async function assignBracket(seasonId: string): Promise<string> {
@@ -279,11 +345,7 @@ async function addHonor(account: string, s: UserState, amount: number, now: numb
   if (!season.bracketId) season = { ...season, bracketId: await assignBracket(season.id) };
   season = { ...season, honor: season.honor + amount };
   await save(account, { season });
-  await $global.addCollectionItem(
-    leagueCollection(season.id),
-    { account, nickname: s.profile.nickname, bracketId: season.bracketId, honor: season.honor, vip: vipOf(s) },
-    { id: account },
-  );
+  await $global.addCollectionItem(leagueCollection(season.id), leagueRow(account, rolled, season, now), { id: account });
   return { ...rolled, season };
 }
 
@@ -301,7 +363,7 @@ async function recordSiegeBest(me: string, s: UserState, oldBest: number): Promi
 async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[]; soul: number; lastLog?: FloorLog[] }> {
   const r = runSiege({
     account: me, stage: s.siege.stage, lastWaveAt: s.siege.lastWaveAt, now,
-    castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes), vip: vipOf(s),
+    castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes), lordStars: lordStarsOf(s), vip: vipOf(s),
   });
   if (r.lastWaveAt === s.siege.lastWaveAt) return { s, waves: [], soul: 0 };
   const last = r.waves[r.waves.length - 1];
@@ -397,7 +459,7 @@ export class Server {
       const block = siegeCallBlock({ lastWaveAt: s.siege.lastWaveAt, lastWon: s.siege.lastWon, speed: sp, now });
       if (block) throw new Error(block);
       const r = fightWave({
-        account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes), record: true,
+        account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes), lordStars: lordStarsOf(s), record: true,
       });
       const siege = { stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.stage), lastWon: r.won };
       await save(me, { siege });
@@ -449,7 +511,7 @@ export class Server {
       const next = resetState(s, now);
       const b = await balances(me);
       if (b.gold > 0) await $asset.burn('gold', b.gold);
-      if (b.soul > 0) await $asset.burn('soul', b.soul);
+      // 영혼석은 2026-10-01부터 결제(영혼석 묶음)로도 사서 초기화해도 남긴다
       await $asset.mint('gold', BALANCE.startGold);
       if (s.season.bracketId) {
         try {
@@ -493,11 +555,7 @@ export class Server {
       const next = { ...s, profile, onboarding };
       await syncCastle(me, next);
       if (s.season.bracketId) {
-        await $global.addCollectionItem(
-          leagueCollection(s.season.id),
-          { account: me, nickname: check.name, bracketId: s.season.bracketId, honor: s.season.honor, vip: vipOf(s) },
-          { id: me },
-        );
+        await $global.addCollectionItem(leagueCollection(s.season.id), leagueRow(me, next, s.season, now), { id: me });
       }
       return { nickname: check.name, onboarding, nicknameChanges: profile.nicknameChanges };
     });
@@ -529,8 +587,10 @@ export class Server {
           : null,
         // 자리를 비운 동안 처음 넘은 10단계 보상(영혼석). 화면에 한 번 알린다
         siegeSoul,
-        power: displayPower(s.castle.level, resolveFloors(s), s.heroes),
+        power: displayPower(s.castle.level, resolveFloors(s), s.heroes, lordStarsOf(s)),
         seasonEndsAt: seasonEndsAt(now),
+        // 전체 알림: 최근 하루 것 최대 5개. 이미 본 것은 화면이 거른다
+        news: await recentNews(now),
       };
     });
   }
@@ -587,6 +647,23 @@ export class Server {
       await $asset.burn('soul', soul);
       await save(me, patch);
       return { soul };
+    });
+  }
+
+  /** 각성: 몬스터(보유) 또는 마왕에게 별 하나. 영혼석을 쓴다 */
+  async awaken(unit: string) {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      const { soul, patch } = planAwaken(s, unit);
+      if (!(await $asset.has('soul', soul))) throw new Error('NO_SOUL');
+      await $asset.burn('soul', soul);
+      await save(me, patch);
+      await syncCastle(me, { ...s, ...patch });
+      const n = patch.stars[unit as keyof typeof patch.stars] ?? 0;
+      if (n >= BALANCE.awaken.maxStars) await announce('star20', s.profile.nickname, vipOf(s), now, `${me}:${unit}`);
+      return { soul, stars: patch.stars };
     });
   }
 
@@ -736,10 +813,13 @@ export class Server {
       await save(p.account, { ...g.patch, vip, processedPurchases: [...s.processedPurchases, p.purchaseId].slice(-200) });
       // 등급이 오르면 다른 플레이어에게 보이는 곳(매칭 성·리그·공성 순위)의 배지를 바로 고친다
       const next = { ...s, ...g.patch, vip };
+      if (vipOf(next) >= BALANCE.vip.thresholds.length && vipOf(s) < BALANCE.vip.thresholds.length) {
+        await announce('vip10', s.profile.nickname, vipOf(next), now, p.account);
+      }
       if (vipOf(next) !== vipOf(s)) {
         await syncCastle(p.account, next);
         if (s.season.bracketId) {
-          await $global.addCollectionItem(leagueCollection(s.season.id), { account: p.account, nickname: s.profile.nickname, bracketId: s.season.bracketId, honor: s.season.honor, vip: vipOf(next) }, { id: p.account });
+          await $global.addCollectionItem(leagueCollection(s.season.id), leagueRow(p.account, next, s.season, now), { id: p.account });
         }
         if (s.siege.best > 1) {
           await $global.addCollectionItem(SIEGE_BEST, { account: p.account, nickname: s.profile.nickname, best: s.siege.best, vip: vipOf(next) }, { id: p.account });
@@ -771,15 +851,16 @@ export class Server {
         ? await $global.getCollectionItems(col, { filters: [{ field: 'bracketId', operator: '==', value: s.season.bracketId }], limit: 100 })
         : [];
       const bracket = s.season.bracketId
-        ? rankBracket(rows.map((r: any) => ({ id: r.account, nickname: r.nickname, honor: r.honor, vip: r.vip ?? 0 })), s.season.bracketId, start, now)
+        ? rankBracket(rows.map((r: any) => ({ id: r.account, nickname: r.nickname, honor: r.honor, vip: r.vip ?? 0, title: r.title ?? null })), s.season.bracketId, start, now)
         : [];
       const top = await $global.getCollectionItems(col, { orderBy: [{ field: 'honor', direction: 'desc' }], limit: 20 });
       return {
         seasonId: s.season.id,
         endsAt: seasonEndsAt(now),
         myHonor: s.season.honor,
-        bracket: bracket.map((r) => ({ rank: r.rank, nickname: r.nickname, honor: r.honor, ghost: r.ghost, me: r.id === me, vip: r.vip ?? 0 })),
-        top: top.map((r: any) => ({ nickname: r.nickname, honor: r.honor, me: r.account === me, vip: r.vip ?? 0 })),
+        bracket: bracket.map((r) => ({ rank: r.rank, nickname: r.nickname, honor: r.honor, ghost: r.ghost, me: r.id === me, vip: r.vip ?? 0, title: r.title ?? null })),
+        top: top.map((r: any) => ({ nickname: r.nickname, honor: r.honor, me: r.account === me, vip: r.vip ?? 0, title: r.title ?? null })),
+        hall: await hallOfFame(),
       };
     });
   }

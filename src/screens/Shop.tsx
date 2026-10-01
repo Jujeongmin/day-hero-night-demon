@@ -1,6 +1,6 @@
 import { BALANCE } from '../../server/src/catalog';
 import { avgMonsterLevel, goldPackAmount, scaledGold, type GoldPackId } from '../../server/src/growth';
-import { SHOP_PRODUCTS } from '../../server/src/purchases';
+import { SHOP_PRODUCTS, soulPackAmount, type SoulPackId } from '../../server/src/purchases';
 import AdButton from '../render/AdButton';
 import { Portrait } from '../render/Sprite';
 import { adsLeft } from '../services/ads';
@@ -38,9 +38,16 @@ export default function Shop(props: {
         // VIP 골드 묶음 추가 지급까지 더한 실제 금액. "N% 더"는 VIP와 상관없이 주머니 대비 VX당 비율
         const packGold = Math.floor(packBase * (1 + vipPerks(vipOf(home.state)).packBonus));
         const bonus = pack ? Math.round(((packBase / pack.vx) / (goldPackAmount('gold_pouch', best, avgLevel) / BALANCE.goldPacks.gold_pouch.vx) - 1) * 100) : 0;
-        const desc = id === 'starter_pack' ? T.starterDesc(scaledGold(BALANCE.starterGold, best)) : pack ? T.goldPackDesc(packGold, bonus) : fixedDesc;
+        // 영혼석 묶음: VIP 보너스까지 더한 실제 지급량, "N% 더"는 주머니 대비 VX당 비율(VIP와 상관없이)
+        const soulPack = id in BALANCE.soulPacks ? BALANCE.soulPacks[id as SoulPackId] : null;
+        const soulBonus = soulPack ? Math.round(((soulPack.soul / soulPack.vx) / (BALANCE.soulPacks.soul_pouch.soul / BALANCE.soulPacks.soul_pouch.vx) - 1) * 100) : 0;
+        const desc = id === 'starter_pack' ? T.starterDesc(scaledGold(BALANCE.starterGold, best))
+          : pack ? T.goldPackDesc(packGold, bonus)
+            : soulPack ? T.soulPackDesc(soulPackAmount(id as SoulPackId, vipOf(home.state)), soulBonus) : fixedDesc;
         const owned = props.owned.has(id) || !!item?.purchaseLimitReached;
         const blocked = owned || !item || !item.purchasable;
+        // 대시보드에 아직 없는 상품(등록 전)은 목록이 온 뒤에는 숨긴다
+        if (!item && props.items.length > 0) return null;
         return (
           <div className="line" key={id}>
             <span className="item"><Portrait id={`prod_${id}`} label={name} /><span><b>{name}</b><br /><small>{desc}</small></span></span>

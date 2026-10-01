@@ -359,3 +359,37 @@ describe('siege', () => {
     expect(Array.isArray(r.top)).toBe(true);
   });
 });
+
+describe('awakening & soul packs (2026-10-01)', () => {
+  test('a soul pack pays soul; awakening spends it, raises power, and survives a reset', async (server) => {
+    const acct = 't60-awaken';
+    server.connect({ account: acct });
+    await server.getHome();
+    expect(await fails(server.awaken('slime'))).toBe(true);
+    await server.$onItemPurchased({ account: acct, purchaseId: `p-soul-${acct}`, productId: 'soul_sack', quantity: 1 });
+    let home = await server.getHome();
+    expect(home.soul).toBe(180);
+    expect(home.state.vip.spent).toBe(500);
+    const before = home.power;
+    expect((await server.awaken('slime')).soul).toBe(30);
+    expect((await server.awaken('lord')).soul).toBe(30);
+    expect((await server.awaken('lord')).soul).toBe(60);
+    expect(await fails(server.awaken('dragon'))).toBe(true);
+    home = await server.getHome();
+    expect(home.soul).toBe(60);
+    expect(home.state.stars).toEqual({ slime: 1, lord: 2 });
+    expect(home.power).toBeGreaterThan(before);
+    await server.resetProgress('초기화');
+    home = await server.getHome();
+    expect(home.state.stars).toEqual({ slime: 1, lord: 2 });
+    expect(home.soul).toBe(60);
+  });
+
+  test('home carries a news list and the league a hall of fame', async (server) => {
+    server.connect({ account: 't61-news' });
+    const home = await server.getHome();
+    expect(Array.isArray(home.news)).toBe(true);
+    const league = await server.getLeague();
+    expect(Array.isArray(league.hall)).toBe(true);
+  });
+});

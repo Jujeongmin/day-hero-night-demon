@@ -1,18 +1,41 @@
 import { useState } from 'react';
 import { BALANCE, HEROES, MONSTERS, type HeroId, type MonsterId, type SkillId, type Stats } from '../../server/src/catalog';
 import { castleUpgradeCost, heroBonusLevels, unitUpgradeCost } from '../../server/src/economy';
-import { formatNum, lordLevel } from '../../server/src/growth';
+import { awakenCost, formatNum, lordLevel, starMult } from '../../server/src/growth';
+import type { StarUnit } from '../../server/src/state';
 import { Portrait } from '../render/Sprite';
 import { skillText, unitStats } from '../render/unitStats';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { emitTut } from '../tutorial/bus';
 import { T } from '../strings/ko';
 
-export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: () => Promise<void>; onError: (m: string) => void }) {
-  const { api, home, onRefresh, onError } = props;
-  const s = home.state;
-  const [busy, setBusy] = useState(false);
+export type UpgradeTab = 'up' | 'awaken';
 
+/** 별 수 배지(각성). 0이면 그리지 않는다 */
+export function Stars(props: { n?: number }) {
+  if (!props.n) return null;
+  return <span className="star-count"><img src="ui/star.png" alt="" draggable={false} />{props.n}</span>;
+}
+
+/** 강화 창: 강화(골드) | 각성(영혼석) 두 탭 */
+export default function Upgrade(props: {
+  api: Api; home: HomeData; onRefresh: () => Promise<void>; onError: (m: string) => void; onShop: () => void;
+}) {
+  const [tab, setTab] = useState<UpgradeTab>('up');
+  return (
+    <>
+      <div className="row">
+        {([['up', T.awaken.upTab], ['awaken', T.awaken.tab]] as [UpgradeTab, string][]).map(([id, label]) => (
+          <button key={id} className={`btn small ${tab === id ? 'on' : ''}`} onClick={() => setTab(id)}>{label}</button>
+        ))}
+      </div>
+      {tab === 'up' ? <UpgradeList {...props} /> : <AwakenList {...props} />}
+    </>
+  );
+}
+
+function useAct(onRefresh: () => Promise<void>, onError: (m: string) => void) {
+  const [busy, setBusy] = useState(false);
   async function act(fn: () => Promise<unknown>) {
     if (busy) return;
     setBusy(true);
@@ -26,6 +49,48 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
       setBusy(false);
     }
   }
+  return { busy, act };
+}
+
+/** 각성: 마왕 + 보유 몬스터. 별 하나마다 능력치 ×1.1, 영혼석 */
+function AwakenList(props: { api: Api; home: HomeData; onRefresh: () => Promise<void>; onError: (m: string) => void; onShop: () => void }) {
+  const { api, home } = props;
+  const s = home.state;
+  const { busy, act } = useAct(props.onRefresh, props.onError);
+  const units: StarUnit[] = ['lord', ...(Object.keys(s.roster) as MonsterId[])];
+  const x = (n: number) => (Math.round(starMult(n) * 100) / 100).toFixed(2);
+  return (
+    <>
+      <div className="line">
+        <small className="hero-desc">{T.awaken.hint}</small>
+        <button className="btn small" onClick={props.onShop}>{T.awaken.buySoul}</button>
+      </div>
+      {units.map((id) => {
+        const n = s.stars?.[id] ?? 0;
+        const cost = awakenCost(n + 1);
+        return (
+          <div className="line unit-line" key={id}>
+            <span className="item">
+              <Portrait id={id} label={T.units[id]} />
+              <span>
+                {T.units[id]} <Stars n={n} />
+                <small className="hero-next">{T.awaken.mult(x(n), cost === null ? null : x(n + 1))}</small>
+              </span>
+            </span>
+            <button className="btn small" disabled={busy || cost === null || home.soul < cost} onClick={() => act(() => api.awaken(id))}>
+              {cost === null ? T.awaken.max : T.awaken.btn(cost)}
+            </button>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise<void>; onError: (m: string) => void }) {
+  const { api, home, onRefresh, onError } = props;
+  const s = home.state;
+  const { busy, act } = useAct(onRefresh, onError);
 
   const row = (
     id: string, label: string, level: number, onUp: () => Promise<unknown>, first: boolean,
@@ -44,7 +109,7 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
         <span className="item">
           <Portrait id={id} label={label} />
           <span>
-            {label} {T.level(level)}
+            {label} {T.level(level)} <Stars n={s.stars?.[id as StarUnit]} />
             <span className="stats">{(['hp', 'atk', 'def'] as const).map(stat)}</span>
             <small className="skill">{skillText(unit.skill, unit.cooldown)}</small>
             {note && <small className="hero-next">{note}</small>}
@@ -65,7 +130,7 @@ export default function Upgrade(props: { api: Api; home: HomeData; onRefresh: ()
   return (
     <>
       <div className="line">
-        <span className="item"><Portrait id="castle" label={T.throne} />{T.castleLevel(s.castle.level)} <small className="muted">{T.lordLevel(lordLevel(s.castle.level))}</small></span>
+        <span className="item"><Portrait id="castle" label={T.throne} />{T.castleLevel(s.castle.level)} <small className="muted">{T.lordLevel(lordLevel(s.castle.level))}</small> <Stars n={s.stars?.lord} /></span>
         <button className="btn small" disabled={busy || castleCost === null || home.gold < castleCost} onClick={() => act(() => api.upgrade('castle', null))}>
           {castleCost === null ? T.maxLevel : T.upgradeBtn(castleCost)}
         </button>

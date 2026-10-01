@@ -50,6 +50,12 @@ function SiegeRanking(props: { api: Api; onError: (m: string) => void }) {
   );
 }
 
+/** 이름 옆 칭호(지난 시즌 전체 1~10위, 이번 시즌 동안) */
+function Title(props: { kind?: string | null }) {
+  if (!props.kind || !T.titles[props.kind]) return null;
+  return <span className={`title-tag ${props.kind}`}>{T.titles[props.kind]}</span>;
+}
+
 function Ranking(props: { api: Api; onError: (m: string) => void }) {
   const [data, setData] = useState<LeagueData | null>(null);
   useEffect(() => {
@@ -65,20 +71,33 @@ function Ranking(props: { api: Api; onError: (m: string) => void }) {
       <small className="muted league-info">
         {T.seasonReward(seasonRewardSoul(1), seasonRewardSoul(2), seasonRewardSoul(4), seasonRewardSoul(11))}
         <br />
+        {T.globalReward}
+        <br />
         {T.honorHow}
       </small>
+      {data.hall && data.hall.length > 0 && (
+        <>
+          <h4>{T.hallTitle}</h4>
+          {data.hall.map((h) => (
+            <div className="line hall-line" key={h.season}>
+              <span className="muted">{T.hallSeason(h.season)}</span>
+              <span>{h.top.map((r, i) => <span key={i} className={`hall-${i + 1}`}>{i + 1}. {displayName(r.nickname)} <VipBadge level={r.vip} /></span>)}</span>
+            </div>
+          ))}
+        </>
+      )}
       <h4>{T.bracketTitle}</h4>
       {data.bracket.length === 0 && <span>{T.noBracket}</span>}
       {data.bracket.map((r, i) => (
         <div className="line" key={i} style={r.me ? { fontWeight: 700 } : undefined}>
-          <span>{r.rank}. {displayName(r.nickname)} <VipBadge level={r.vip} /> {r.ghost && <span className="badge">{T.npcTag}</span>}</span>
+          <span>{r.rank}. {displayName(r.nickname)} <VipBadge level={r.vip} /> <Title kind={r.title} /> {r.ghost && <span className="badge">{T.npcTag}</span>}</span>
           <span>{r.honor}</span>
         </div>
       ))}
       <h4>{T.topTitle}</h4>
       {data.top.map((r, i) => (
         <div className="line" key={i} style={r.me ? { fontWeight: 700 } : undefined}>
-          <span>{i + 1}. {displayName(r.nickname)} <VipBadge level={r.vip} /></span>
+          <span>{i + 1}. {displayName(r.nickname)} <VipBadge level={r.vip} /> <Title kind={r.title} /></span>
           <span>{r.honor}</span>
         </div>
       ))}
