@@ -12,11 +12,11 @@ export const PRODUCTS = [
   'soul_pouch', 'soul_sack', 'soul_chest', 'soul_altar', 'soul_relic',
 ] as const;
 
-/** 게임 상점에 보이는 상품 (2026-09-29: 소모품은 광고 보상으로 옮김) */
+/** 게임 상점에 보이는 상품 (2026-09-29: 소모품은 광고 보상으로 옮김. 2026-10-01: 몬스터는 영혼석으로만 — recruit_dragon 판매 중단, 지급은 남김) */
 export const SHOP_PRODUCTS = [
   'starter_pack', 'gold_pouch', 'gold_chest', 'gold_coffer', 'gold_vault',
   'soul_pouch', 'soul_sack', 'soul_chest', 'soul_altar', 'soul_relic',
-  'recruit_dragon', 'season_pass', 'speed_x3', 'premium',
+  'season_pass', 'speed_x3', 'premium',
 ] as const;
 
 /** 골드 묶음(반복 구매) */

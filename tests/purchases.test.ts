@@ -18,7 +18,7 @@ describe('purchases', () => {
     expect(SHOP_PRODUCTS).toEqual([
       'starter_pack', 'gold_pouch', 'gold_chest', 'gold_coffer', 'gold_vault',
       'soul_pouch', 'soul_sack', 'soul_chest', 'soul_altar', 'soul_relic',
-      'recruit_dragon', 'season_pass', 'speed_x3', 'premium',
+      'season_pass', 'speed_x3', 'premium',
     ]);
   });
 

@@ -14,7 +14,8 @@ export interface MonsterDef {
   skill: SkillId;
   /** 0 = 패시브(발동 턴 없음) */
   cooldown: number;
-  unlock: { castleLevel: number } | { soul: number; product: string };
+  /** product = 이 몬스터를 함께 주는 VX 상품(있으면) */
+  unlock: { castleLevel: number } | { soul: number; product?: string };
 }
 
 export interface HeroDef {
@@ -27,13 +28,14 @@ export interface HeroDef {
 }
 
 /** 2026-09-29: 함정 폐기에 맞춰 기본 몬스터 4종 공격력 ×1.1 (A안) */
+/** 2026-10-01 사용자 결정: 몬스터는 영혼석으로만 산다(새끼 용 VX 상품 판매 중단, 영혼석 400 → 150). 스타터팩의 네크로맨서만 예외 */
 export const MONSTERS: Record<MonsterId, MonsterDef> = {
   slime:    { id: 'slime',    name: '슬라임',     stats: { hp: 120, atk: 11, def: 8, spd: 2 }, skill: 'taunt',    cooldown: 3, unlock: { castleLevel: 1 } },
   skeleton: { id: 'skeleton', name: '해골병',     stats: { hp: 80,  atk: 20, def: 4, spd: 4 }, skill: 'pierce',   cooldown: 2, unlock: { castleLevel: 1 } },
   imp:      { id: 'imp',      name: '임프',       stats: { hp: 60,  atk: 18, def: 2, spd: 5 }, skill: 'backline', cooldown: 0, unlock: { castleLevel: 2 } },
   spider:   { id: 'spider',   name: '거미',       stats: { hp: 70,  atk: 13, def: 4, spd: 6 }, skill: 'web',      cooldown: 3, unlock: { castleLevel: 3 } },
   necro:    { id: 'necro',    name: '네크로맨서', stats: { hp: 70,  atk: 12, def: 3, spd: 3 }, skill: 'raise',    cooldown: 0, unlock: { soul: 150, product: 'starter_pack' } },
-  dragon:   { id: 'dragon',   name: '새끼 용',    stats: { hp: 110, atk: 20, def: 6, spd: 3 }, skill: 'breath',   cooldown: 3, unlock: { soul: 400, product: 'recruit_dragon' } },
+  dragon:   { id: 'dragon',   name: '새끼 용',    stats: { hp: 110, atk: 20, def: 6, spd: 3 }, skill: 'breath',   cooldown: 3, unlock: { soul: 150 } },
 };
 
 export const HEROES: Record<HeroId, HeroDef> = {
