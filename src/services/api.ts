@@ -2,6 +2,7 @@ import type { BattleEvent } from '../../server/src/battle';
 import type { FloorLog } from '../../server/src/battle';
 import type { Placement } from '../../server/src/ads';
 import type { RunStatus } from '../../server/src/raid';
+import type { SummonResult } from '../../server/src/summon';
 import type { OnboardingStage, OnboardingState, Run, Target, UserState } from '../../server/src/state';
 import { T } from '../strings/ko';
 import { currentLang } from '../strings/i18n';
@@ -81,6 +82,8 @@ export function createApi(server: RemoteServer) {
     awaken: (unit: string) => call<{ soul: number }>('awaken', [unit]),
     buySortie: () => call<{ cost: number }>('buySortie'),
     buyGold: (packId: string) => call<{ soul: number; gold: number }>('buyGold', [packId]),
+    summon: (kind: 'one' | 'ten') => call<{ cost: number; soul: number; results: SummonResult[]; summon: { pulls: number; sinceLegend: number }; toPity: number }>('summon', [kind]),
+    wearGear: (monster: string, gear: string | null) => call<{ gear: NonNullable<UserState['gear']> }>('wearGear', [monster, gear]),
     findTargets: () => call<Target[]>('findTargets'),
     startRaid: (targetId: string) => call<RunResult>('startRaid', [targetId]),
     startIntroRaid: () => call<RunResult>('startIntroRaid'),
@@ -96,7 +99,7 @@ export function createApi(server: RemoteServer) {
     advanceOnboarding: (to: OnboardingStage) => call<{ onboarding: OnboardingState }>('advanceOnboarding', [to]),
     setNickname: (name: string) => call<{ nickname: string; onboarding: OnboardingState; nicknameChanges: number }>('setNickname', [name]),
     resetProgress: (text: string) => call<{ ok: true }>('resetProgress', [text]),
-    setLordSkin: (skin: 'base' | 'skull' | 'dragon' | 'lava' | 'demon') => call<{ lordSkin: string }>('setLordSkin', [skin]),
+    setLordSkin: (skin: 'base' | 'skull' | 'dragon' | 'lava' | 'demon' | 'summon1') => call<{ lordSkin: string }>('setLordSkin', [skin]),
     claimAdReward: (placement: Placement, requestId: string | null) => call<{ gold: number; soul: number }>('claimAdReward', [placement, requestId]),
   };
 }

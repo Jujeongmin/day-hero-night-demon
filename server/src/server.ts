@@ -17,6 +17,7 @@ import { chooseLordSkin, planPassClaim } from './pass';
 import { grantFor } from './purchases';
 import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from './siege';
 import { rngNext, seedFrom } from './rng';
+import { planSummon, planWearGear, pullsToPity, summonOf } from './summon';
 import {
   canAdvance, dayKey, defaultState, isNew, isStage, resetState, resolveFloors, withDefaults,
   type CastleSnapshot, type OnboardingState, type RaidLogEntry, type Run, type Target, type UserState,
@@ -97,6 +98,8 @@ const NICKNAMES = 'nicknames';
 const AD_CLAIMS = 'ad_claims';
 /** 공성 최고 단계 순위(계정당 1행, id = 계정). 원본은 사용자 상태 siege.best */
 const SIEGE_BEST = 'siege_best';
+/** 소환 결과 기록(확률형 아이템 결과 보관). id = 계정:그때까지 뽑은 수 */
+const SUMMON_LOG = 'summon_log';
 const CASTLE_SYNC_V = 2;
 
 async function adClaimed(requestId: string): Promise<boolean> {
@@ -500,7 +503,7 @@ export class Server {
       const now = Date.now();
       const s = await loadState(me, now);
       const vipSkinAt = BALANCE.vip.skins[skin];
-      const ok = skin === 'base' || (skin === 'skull' && s.season.pass) || (skin === 'dragon' && s.skins.includes('dragon'))
+      const ok = skin === 'base' || (skin === 'skull' && s.season.pass) || ((skin === 'dragon' || BALANCE.summon.legendLooks.includes(skin)) && s.skins.includes(skin))
         || (vipSkinAt !== undefined && vipOf(s) >= vipSkinAt);
       if (!ok) throw new Error('SKIN_NOT_OWNED');
       const lordSkin = skin as UserState['lordSkin'];
@@ -705,6 +708,37 @@ export class Server {
       const n = patch.stars[unit as keyof typeof patch.stars] ?? 0;
       if (n >= BALANCE.awaken.maxStars) await announce('star20', s.profile.nickname, vipOf(s), now, `${me}:${unit}`);
       return { soul, stars: patch.stars };
+    });
+  }
+
+  /** 소환 의식: 'one' = 1회, 'ten' = 10+1회. 서버 난수로 뽑고, 비용·결과 영혼석을 정산하고, 결과를 기록한다 */
+  async summon(kind: string) {
+    const me = $sender.account;
+    if (kind !== 'one' && kind !== 'ten') throw new Error('잘못된 소환이다');
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      const before = summonOf(s).pulls;
+      const plan = planSummon(s, kind, Math.random);
+      if (!(await $asset.has('soul', plan.cost))) throw new Error('NO_SOUL');
+      await $asset.burn('soul', plan.cost);
+      if (plan.soul) await $asset.mint('soul', plan.soul);
+      await save(me, plan.patch);
+      await $global.addCollectionItem(SUMMON_LOG, { account: me, at: now, kind, cost: plan.cost, results: plan.results }, { id: `${me}:${before}` });
+      return { cost: plan.cost, soul: plan.soul, results: plan.results, summon: plan.patch.summon, toPity: pullsToPity(plan.patch) };
+    });
+  }
+
+  /** 몬스터 장비 외형 입히기(gear) / 벗기기(null). 표시용 */
+  async wearGear(monster: string, gear: string | null) {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      const patch = planWearGear(s, monster, gear);
+      await save(me, patch);
+      await syncCastle(me, { ...s, ...patch });
+      return patch;
     });
   }
 

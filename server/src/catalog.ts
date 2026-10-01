@@ -202,6 +202,20 @@ export const BALANCE = {
     soul_altar: { vx: 5000, soul: 2250 },
     soul_relic: { vx: 30000, soul: 15000 },
   },
+  /**
+   * 소환 의식(가챠 D-1, 2026-10-01 승인 · 2026-10-02 영혼석으로 소환). 서버 난수로 뽑고 결과를 summon_log에 남긴다.
+   * 10+1은 11번 뽑고 영웅 이상 하나 확정. 천장: 전설 없이 pity번째 소환은 전설. 확률·천장은 소환 화면과 상점에 그대로 보여 준다.
+   * 영웅 = 몬스터 장비 외형(gear, "몬스터:장비"), 전설 = 소환 한정 마왕 외형(legendLooks). 이미 가졌으면 영혼석으로 바꿔 준다.
+   * 2026-10-02 사용자: 색만 바꾼 외형은 싸 보인다 → 장비를 씌운 외형. gear는 그림 승인 뒤 채운다(비어 있으면 영웅도 영혼석)
+   */
+  summon: {
+    costOne: 30, costTen: 300, tenPulls: 11,
+    rates: { common: 0.7, rare: 0.24, epic: 0.055, legend: 0.005 },
+    commonSoul: 15, rareSoul: 50, epicDupSoul: 150, legendDupSoul: 1500,
+    pity: 100,
+    gear: [] as string[],
+    legendLooks: ['summon1'] as string[],
+  },
   /** 시즌 순위 보상(2026-10-01 승인). 브래킷(30명) 순위별 영혼석 */
   seasonRankSoul: { first: 300, top3: 180, top10: 90, rest: 20 },
   /** 전체 순위 칭호: 1위 champion(+ 그 시즌 한정 마왕 외형·명예의 전당), 2~3위 top3(+ 명예의 전당), 4~10위 top10. 다음 시즌 동안 이름 옆에 보인다 */

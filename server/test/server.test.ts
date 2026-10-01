@@ -419,3 +419,35 @@ describe('sortie tickets & gold for soulstones (2026-10-01)', () => {
     expect((await server.getHome()).gold).toBe(300 - r.cost);
   });
 });
+
+describe('summon (2026-10-02)', () => {
+  test('summons spend soul, refund result soul, count toward pity and survive a reset', async (server) => {
+    const acct = 't70-summon';
+    server.connect({ account: acct });
+    await server.getHome();
+    expect(await fails(server.summon('one'))).toBe(true);
+    expect(await fails(server.summon('hundred'))).toBe(true);
+    await server.$onItemPurchased({ account: acct, purchaseId: `p-${acct}`, productId: 'soul_sack', quantity: 1 });
+    const one = await server.summon('one');
+    expect(one.cost).toBe(30);
+    expect(one.results).toHaveLength(1);
+    expect(one.toPity).toBe(one.summon.sinceLegend === 0 ? 100 : 99);
+    const ten = await server.summon('ten');
+    expect(ten.cost).toBe(300);
+    expect(ten.results).toHaveLength(11);
+    expect(ten.results.some((r: { grade: string }) => r.grade === 'epic' || r.grade === 'legend')).toBe(true);
+    expect(ten.summon.pulls).toBe(12);
+    const home = await server.getHome();
+    expect(home.soul).toBe(180 - 30 - 300 + one.soul + ten.soul);
+    expect(home.state.summon.pulls).toBe(12);
+    await server.resetProgress('초기화');
+    expect((await server.getHome()).state.summon.pulls).toBe(12);
+  });
+
+  test('gear can only be worn when owned', async (server) => {
+    server.connect({ account: 't71-gear' });
+    await server.getHome();
+    expect(await fails(server.wearGear('slime', 'slime:crown'))).toBe(true);
+    expect((await server.wearGear('slime', null)).gear.worn).toEqual({});
+  });
+});

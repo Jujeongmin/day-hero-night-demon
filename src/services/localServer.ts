@@ -220,6 +220,19 @@ const tools = {
     persist();
     location.reload();
   },
+  /** 소환('one' | 'ten'). 소환 화면이 생기기 전 확인용 */
+  async summon(kind: 'one' | 'ten' = 'ten') {
+    const r = await server.summon(kind);
+    notifyMine();
+    return r;
+  },
+  /** 천장 카운터 바꾸기: 마지막 전설 뒤로 n번 뽑은 것으로 */
+  pity(sinceLegend: number) {
+    const s = store.users[account] as { summon?: { pulls: number; sinceLegend: number } } | undefined;
+    if (!s) return;
+    s.summon = { pulls: Math.max(s.summon?.pulls ?? 0, sinceLegend), sinceLegend };
+    persist();
+  },
   /** 튜토리얼을 끝난 것으로(화면 확인용) */
   done() {
     const s = store.users[account] as { onboarding?: unknown; introDone?: boolean } | undefined;

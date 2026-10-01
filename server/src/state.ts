@@ -5,16 +5,16 @@ import type { FloorBattle } from './battle';
 export interface FloorLayout { monsters: (MonsterId | null)[] }
 
 export interface ResolvedFloor {
-  /** stars = 각성 별(0이면 빠진다) */
-  monsters: { id: MonsterId; level: number; stars?: number }[];
+  /** stars = 각성 별(0이면 빠진다), gear = 입힌 장비 외형(표시용) */
+  monsters: { id: MonsterId; level: number; stars?: number; gear?: string }[];
 }
 
 /** 각성 대상: 몬스터 6종 + 마왕 */
 export type StarUnit = MonsterId | 'lord';
 
 /** 시즌 패스 보유자의 한정 마왕 외형. 표시용이며 전투 수치에는 영향이 없다. */
-/** skull = 시즌 패스, dragon = 패스 10단계 영구, lava·demon = VIP 5·8 전용 (2026-09-30) */
-export type LordSkin = 'skull' | 'dragon' | 'lava' | 'demon';
+/** skull = 시즌 패스, dragon = 패스 10단계 영구, lava·demon = VIP 5·8 전용 (2026-09-30), summon1 = 소환 전설 (2026-10-02) */
+export type LordSkin = 'skull' | 'dragon' | 'lava' | 'demon' | 'summon1';
 
 export interface CastleSnapshot {
   owner: string;
@@ -142,6 +142,10 @@ export interface UserState {
   title?: { kind: 'champion' | 'top3' | 'top10'; season: string } | null;
   /** 오늘(한국 시간) 출정 입장권·마왕 처치 영혼석 횟수 (sortie.ts) */
   daily?: { day: string; sorties: number; bought: number; lordSoul: number };
+  /** 소환: 지금까지 뽑은 수, 마지막 전설 뒤로 뽑은 수(천장). 초기화해도 남는다 */
+  summon?: { pulls: number; sinceLegend: number };
+  /** 몬스터 장비 외형(소환 영웅): 가진 것, 몬스터마다 입힌 것. 표시용, 초기화해도 남는다 */
+  gear?: { owned: string[]; worn: Partial<Record<MonsterId, string>> };
   /** 매칭용 공개 정보(castles 컬렉션)를 새 전투력 단위로 다시 쓴 판. 2 = 큰 숫자 성장(2026-09-29) */
   castleSyncV?: number;
 }
@@ -205,7 +209,8 @@ export function resolveFloors(s: UserState): ResolvedFloor[] {
       .filter((id): id is MonsterId => id !== null)
       .map((id) => {
         const stars = s.stars?.[id] ?? 0;
-        return stars > 0 ? { id, level: s.roster[id]?.level ?? 1, stars } : { id, level: s.roster[id]?.level ?? 1 };
+        const gear = s.gear?.worn[id];
+        return { id, level: s.roster[id]?.level ?? 1, ...(stars > 0 ? { stars } : {}), ...(gear ? { gear } : {}) };
       }),
   }));
 }
@@ -259,6 +264,9 @@ export function resetState(s: UserState, now: number): UserState {
     vip: s.vip,
     // 각성 별은 영혼석(결제 포함)으로 산 것이라 남긴다
     stars: s.stars ?? {},
+    // 소환 천장·장비 외형도 영혼석으로 얻은 것이라 남긴다
+    summon: s.summon,
+    gear: s.gear,
     onboarding: { at: 'raid_sortie', nicknameSet: s.onboarding.nicknameSet },
     // 오늘 광고 횟수는 초기화로 다시 받지 못하게, 영구 상품은 결제라 남긴다
     ads: s.ads,
