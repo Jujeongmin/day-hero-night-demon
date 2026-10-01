@@ -35,6 +35,20 @@
 - 서버: `server/src/purchases.ts` `PRODUCTS`·`SHOP_PRODUCTS`·`grantFor`. Product ID는 글자까지 같아야 한다.
 - 등록 완료: 2026-09-30 (사용자). 출시판 상점 가격 확인: 2026-09-30 `fa66fad` 출시판에서 4개 모두 가격 표시(100·500·1,500·5,000 VX), 게임 콘솔 오류 없음. / 테스트 결제: (결과)
 
+## 기존 상품 9개 한글·영어 (2026-10-01, 대시보드 이름·설명 교체용)
+
+| Product ID | 이름 | 가격 | 설명 |
+|---|---|---|---|
+| `starter_pack` | 스타터팩 / Starter Pack | 100 VX | 네크로맨서(전투마다 처음 쓰러진 몬스터를 한 번 되살린다) + 골드 + 영혼석 30. 골드는 공성 최고 단계에 맞춰 커진다(처음 5,000). 계정당 1번. / The Necromancer (brings your first fallen monster back once per fight) + gold + 30 soulstones. Gold grows with your best siege stage (5,000 at the start). One per account. |
+| `recruit_dragon` | 새끼 용 영입 / Baby Dragon | 300 VX | 적 전체에게 불을 뿜는 새끼 용을 영입한다. 계정당 1번. / Recruit the Baby Dragon, who breathes fire on every enemy. One per account. |
+| `season_pass` | 시즌 패스 / Season Pass | 400 VX | 이번 2주 시즌의 패스 줄을 연다: 공성 단계에 맞춰 커지는 추가 골드, 10단계에서 영구 소장 흑룡 마왕 외형. 시즌 동안 해골 군주 외형도 입는다. / Unlocks the pass track of this 2-week season: extra gold that grows with your siege stage, and the Black Dragon lord look to keep forever at tier 10. You also wear the Skull Sovereign look for the season. |
+| `speed_x3` | 3배속 / 3x Speed | 300 VX | 공략·공성 3배속, 영구. 게임을 켜 둔 동안 공성 파도가 2분 대신 40초마다 온다. 계정당 1번. / 3x speed for raids and sieges, forever. While the game is open, siege waves come every 40 seconds instead of every 2 minutes. One per account. |
+| `premium` | 프리미엄 패스 / Premium Pass | 500 VX | 광고를 보지 않고 광고 보상을 바로 받는다(하루 한도는 같다). 영구. 계정당 1번. / Claim ad rewards instantly without watching ads (same daily limits). Forever. One per account. |
+| `gold_pouch` | 금화 주머니 / Gold Pouch | 100 VX | 진행에 맞춰 커지는 골드: 공성 2시간치와 몬스터 강화 5번치 중 큰 쪽. 상점에 정확한 금액이 보인다. 여러 번 살 수 있다. / A pouch of gold that grows with your progress: 2 hours of siege gold or 5 monster upgrades, whichever is larger. The shop shows your exact amount. Buy as many as you like. |
+| `gold_chest` | 금화 상자 / Gold Chest | 500 VX | 공성 12시간치와 몬스터 강화 30번치 중 큰 쪽. 주머니보다 VX당 20% 더. 상점에 정확한 금액이 보인다. / A chest of gold: 12 hours of siege gold or 30 monster upgrades, whichever is larger. 20% more gold per VX than the Gold Pouch. The shop shows your exact amount. |
+| `gold_coffer` | 황금 궤짝 / Golden Coffer | 1,500 VX | 공성 40시간치와 몬스터 강화 100번치 중 큰 쪽. 주머니보다 VX당 33% 더. 상점에 정확한 금액이 보인다. / A golden coffer: 40 hours of siege gold or 100 monster upgrades, whichever is larger. 33% more gold per VX than the Gold Pouch. The shop shows your exact amount. |
+| `gold_vault` | 마왕의 보물고 / Demon Lord's Vault | 5,000 VX | 가장 이득. 공성 150시간치와 몬스터 강화 375번치 중 큰 쪽. 주머니보다 VX당 50% 더. 상점에 정확한 금액이 보인다. / The best value. 150 hours of siege gold or 375 monster upgrades, whichever is larger. 50% more gold per VX than the Gold Pouch. The shop shows your exact amount. |
+
 ## 영혼석 묶음 5개 (2026-10-01 추가, 사용자 승인 — 후보표 https://claude.ai/artifact/CADy1vbru2Q9eTAXgQsgcE)
 
 영혼석은 몬스터·마왕 각성(별 1~20, 별마다 능력치 ×1.1)에 쓴다. 지급량은 고정이고 VIP 묶음 보너스(최대 +25%)가 붙는다. 반복 구매.
