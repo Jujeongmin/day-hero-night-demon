@@ -132,3 +132,7 @@
 - 흡혈귀 character `e0dba331-6138-4e98-8973-950cb541045d`, 데스 나이트 character `b5ba1e0e-23c5-4939-8dd1-8e9514a694e9` (create_character 규격 그대로, 동쪽 idle 템플릿·attack v3 6프레임·death 템플릿).
 - 돌 골렘·밴시는 사람형 캐릭터로 뽑으니 골렘은 마른 사람, 밴시는 흰 원피스 소녀가 되어(원본 `art/monsters/*_char_east.png`) `create_1_direction_object`(sidescroller 68px, 16장 중 고름)로 다시: 골렘 object `96c98a38-8e5b-4e32-8062-335873b02eca`(후보 2번, 용암 균열 바위), 밴시 object `ac0647c6-1822-4095-8d73-875e235d66c8`(후보 0번, 푸른 유령). animate_object v3: 대기 4(keep_first_frame false)·공격 6·쓰러짐 6.
 - 골렘은 다른 몬스터보다 크게 나온다(탱커라 그대로).
+
+## 보상 표시 · 출정 입장권 (2026-10-01 승인)
+- 보상(구매·광고·패스·공성 영혼석·방치 수입)은 알림 상자 대신, 오른 재화 필 아래에서 "+N"이 떠올랐다 사라진다(골드 금색·영혼석 보라·전투력 붉은색, 검은 테두리 글자). 필은 숫자가 올라가며 세어지고 번쩍인다(`src/render/CurrencyPill.tsx`). 오류·전체 알림·새 외형·부활/복수권은 상자 그대로.
+- 출정 버튼 오른쪽 위 입장권 필 `public/ui/ticket.png` = `art/ui/ticket/ticket_a.png`(양피지 표 + 붉은 해골 봉인, pixflux 32px seed 1901; 후보 b 철 토큰 1902). 0장이면 출정 버튼이 어두워지고 멈추며, 필이 "0/10 + 골드값"으로 바뀌어 누르면 골드로 한 장 산다.

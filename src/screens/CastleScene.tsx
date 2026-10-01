@@ -15,6 +15,7 @@ import { errorText, type Api, type HomeData, type SiegeWave } from '../services/
 import { buy } from '../services/shop';
 import { T } from '../strings/ko';
 import { vipOf } from '../../server/src/vip';
+import { sortiesLeft, sortieTicketCost } from '../../server/src/sortie';
 
 /** tower.png(224×400) 안에서 몬스터가 딛는 선(%). 누르는 영역은 그 선 위 몬스터 키만큼. */
 const THRONE = { stand: 10.5 };
@@ -107,7 +108,7 @@ export default function CastleScene(props: {
     if (calling) return;
     setCalling(true);
     api.callSiegeWave(speed)
-      .then((r) => { setCalledWave(r.wave); if (r.soul > 0) onError(T.siege.milestone(r.soul)); return onRefresh(); })
+      .then((r) => { setCalledWave(r.wave); return onRefresh(); })
       .catch((e) => onError(errorText(e)))
       .finally(() => setCalling(false));
   }, [api, calling, speed, onRefresh, onError]);
@@ -115,13 +116,9 @@ export default function CastleScene(props: {
   const onWaveDue = useCallback(() => {
     if (speed === 1) { onRefresh().catch(() => undefined); return; }
     api.callSiegeWave(speed)
-      .then((r) => { setCalledWave(r.wave); if (r.soul > 0) onError(T.siege.milestone(r.soul)); return onRefresh(); })
+      .then((r) => { setCalledWave(r.wave); return onRefresh(); })
       .catch(() => onRefresh().catch(() => undefined));
   }, [api, speed, onRefresh, onError]);
-  // 자리를 비운 동안 처음 넘은 10단계 보상 알림 (그 조회에서만 0보다 크다)
-  useEffect(() => {
-    if ((home.siegeSoul ?? 0) > 0) onError(T.siege.milestone(home.siegeSoul ?? 0));
-  }, [home, onError]);
   // 돌아왔을 때 요약 카드: 서버가 10분 넘게 밀린 파도를 처리한 응답에서 한 번만 띄운다
   const [away, setAway] = useState<NonNullable<HomeData['siegeAway']> | null>(null);
   useEffect(() => {
@@ -164,6 +161,12 @@ export default function CastleScene(props: {
     }
   }
 
+  // 출정 입장권(2026-10-01 승인): 튜토리얼이 끝난 뒤에만 쓴다. 0장이면 출정 버튼은 멈추고 "+"로 골드 한 장
+  const ticketsOn = (s.onboarding?.at ?? 'done') === 'done' && s.introDone;
+  const tickets = sortiesLeft(s, Date.now());
+  const ticketCost = sortieTicketCost(s);
+  const noTicket = ticketsOn && tickets <= 0;
+
   const at = (x: number, y: number): CSSProperties => ({ left: `${x}%`, top: `${y}%` });
   const unitScale = k * 0.7;
 
@@ -179,11 +182,11 @@ export default function CastleScene(props: {
             {!has3x && <button className="pill speed locked" onClick={() => buy('speed_x3')} aria-label={T.products.speed_x3[0]}>{T.speed(3)}</button>}
           </span>
           {home.power !== undefined && (
-            <CurrencyPill icon="icons/stat_atk.png" label={T.siege.power} value={home.power} />
+            <CurrencyPill icon="icons/stat_atk.png" label={T.siege.power} value={home.power} tone="power" />
           )}
         </span>
         <button className="hud-icon" data-tut="settings" onClick={onSettings} aria-label={T.settings.title}><img src="ui/settings.png" alt="" draggable={false} /></button>
-        <CurrencyPill icon="icons/soul.png" label={T.soul} value={home.soul} />
+        <CurrencyPill icon="icons/soul.png" label={T.soul} value={home.soul} tone="soul" />
       </header>
 
       <div className="tower" ref={towerRef}>
@@ -358,14 +361,25 @@ export default function CastleScene(props: {
         {s.run ? (
           <button className="btn big" onClick={onRaid}>{T.resumeBtn}</button>
         ) : (
-          <button
-            className="btn big"
-            data-tut="sortie"
-            disabled={busy}
-            onClick={() => (s.introDone ? onMatch() : act(() => api.startIntroRaid(), onRaid))}
-          >
-            {T.sortie}
-          </button>
+          <span className="sortie-wrap">
+            <button
+              className="btn big"
+              data-tut="sortie"
+              disabled={busy || noTicket}
+              onClick={() => (s.introDone ? onMatch() : act(() => api.startIntroRaid(), onRaid))}
+            >
+              {T.sortie}
+            </button>
+            {ticketsOn && (noTicket ? (
+              <button className="pill ticket buy" disabled={busy || home.gold < ticketCost} onClick={() => act(() => api.buySortie())} aria-label={T.buyTicket(ticketCost)}>
+                <img src="ui/ticket.png" alt="" draggable={false} />0/{BALANCE.sortiesPerDay} <b>+</b> <img className="coin" src="icons/gold.png" alt="" draggable={false} />{formatNum(ticketCost)}
+              </button>
+            ) : (
+              <span className="pill ticket" aria-label={T.sortieInfo(tickets, BALANCE.sortiesPerDay, 0, 0)}>
+                <img src="ui/ticket.png" alt="" draggable={false} />{tickets}/{BALANCE.sortiesPerDay}
+              </span>
+            ))}
+          </span>
         )}
       </div>}
     </div>

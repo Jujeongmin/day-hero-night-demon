@@ -25,7 +25,8 @@ export default function AdButton(props: {
       const r = await earnAd(api, placement, premium);
       if (r === 'ok') {
         await onDone();
-        onToast(T.ads.got);
+        // 골드·영혼석 보상은 윗줄에서 "+N"이 떠오른다. 부활·복수권처럼 숫자가 안 보이는 보상만 알린다
+        if (placement === 'revive' || placement === 'revenge') onToast(T.ads.got);
       } else {
         onToast(r === 'dismissed' ? T.ads.dismissed : T.ads.failed);
       }

@@ -211,6 +211,15 @@ const tools = {
     persist();
     location.reload();
   },
+  /** 오늘 쓴 출정 입장권 수 바꾸기(화면 확인용) */
+  sorties(used: number) {
+    const s = store.users[account] as { daily?: { day: string; sorties: number; bought: number; lordSoul: number } } | undefined;
+    if (!s) return;
+    const day = new Date(Date.now() + 9 * 3_600_000).toISOString().slice(0, 10);
+    s.daily = { day, sorties: used, bought: 0, lordSoul: s.daily?.day === day ? s.daily.lordSoul : 0 };
+    persist();
+    location.reload();
+  },
   /** 튜토리얼을 끝난 것으로(화면 확인용) */
   done() {
     const s = store.users[account] as { onboarding?: unknown; introDone?: boolean } | undefined;

@@ -43,7 +43,8 @@ export default function Pass(props: { api: Api; home: HomeData; onRefresh: () =>
     try {
       const r = await api.claimPassRewards();
       await onRefresh();
-      onToast(T.pass.got(r.gold, r.soul, r.skins.length > 0));
+      // 골드·영혼석은 윗줄에서 "+N"이 떠오른다. 새 외형을 받았을 때만 알린다
+      if (r.skins.length > 0) onToast(T.pass.got(r.gold, r.soul, true));
     } catch (e) {
       onToast(errorText(e));
     } finally {

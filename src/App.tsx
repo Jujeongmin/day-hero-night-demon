@@ -139,10 +139,8 @@ export default function App() {
       api.getHome().then((h) => {
         setHome(h);
         if (before && purchasedSomething(before, h)) {
+          // 늘어난 재화는 윗줄에서 "+N"이 떠오른다(CurrencyPill)
           sfx('sfx_purchase');
-          // 결제로 늘어난 재화를 한 줄로 알린다(윗줄 숫자는 올라가며 번쩍인다)
-          const gained = [h.soul > before.soul ? T.gainSoul(h.soul - before.soul) : '', h.gold > before.gold ? T.gainGold(h.gold - before.gold) : ''].filter(Boolean);
-          if (gained.length) onError(gained.join(' · '));
         }
       }).catch(() => {});
     });

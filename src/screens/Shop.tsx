@@ -27,9 +27,8 @@ export default function Shop(props: {
     if (goldBusy) return;
     setGoldBusy(true);
     try {
-      const r = await api.buyGold(id);
+      await api.buyGold(id);
       sfx('sfx_purchase');
-      onToast(T.gainGold(r.gold));
       await onRefresh();
     } catch (e) {
       onToast(errorText(e));
