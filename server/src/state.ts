@@ -140,6 +140,8 @@ export interface UserState {
   stars: Partial<Record<StarUnit, number>>;
   /** 지난 시즌 전체 순위 칭호(1~10위). 받은 다음 시즌 동안만 보인다(league.ts activeTitle) */
   title?: { kind: 'champion' | 'top3' | 'top10'; season: string } | null;
+  /** 오늘(한국 시간) 출정 입장권·마왕 처치 영혼석 횟수 (sortie.ts) */
+  daily?: { day: string; sorties: number; bought: number; lordSoul: number };
   /** 매칭용 공개 정보(castles 컬렉션)를 새 전투력 단위로 다시 쓴 판. 2 = 큰 숫자 성장(2026-09-29) */
   castleSyncV?: number;
 }

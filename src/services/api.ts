@@ -79,6 +79,8 @@ export function createApi(server: RemoteServer) {
     setFloor: (index: number, monsters: (string | null)[]) => call<{ floor: unknown }>('setFloor', [index, monsters]),
     recruit: (monsterId: string) => call<{ soul: number }>('recruit', [monsterId]),
     awaken: (unit: string) => call<{ soul: number }>('awaken', [unit]),
+    buySortie: () => call<{ cost: number }>('buySortie'),
+    buyGold: (packId: string) => call<{ soul: number; gold: number }>('buyGold', [packId]),
     findTargets: () => call<Target[]>('findTargets'),
     startRaid: (targetId: string) => call<RunResult>('startRaid', [targetId]),
     startIntroRaid: () => call<RunResult>('startIntroRaid'),

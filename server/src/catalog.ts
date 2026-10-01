@@ -151,14 +151,25 @@ export const BALANCE = {
   starterGold: 5000,
   /**
    * 골드 묶음(반복 구매, 2026-09-30 사용자 승인 D안): 지급 = max(켜 둔 공성 hours시간치, 내 몬스터 평균 레벨 강화 upgrades번치).
-   * 초반은 시간치, 후반은 강화 횟수치가 커진다. VX당 양은 100 기준 +20%·+33%·+50%. vx는 표시·검증용(실제 가격은 대시보드)
+   * 초반은 시간치, 후반은 강화 횟수치가 커진다. 영혼석당 양은 주머니 기준 +20%·+33%·+50%.
+   * 2026-10-01 사용자 결정: VX가 아니라 게임 안에서 영혼석으로 산다(현질 재화는 영혼석 하나). soul = 옛 VX 가격 × 0.3(영혼석 주머니 단가)
    */
   goldPacks: {
-    gold_pouch: { vx: 100, hours: 2, upgrades: 5 },
-    gold_chest: { vx: 500, hours: 12, upgrades: 30 },
-    gold_coffer: { vx: 1500, hours: 40, upgrades: 100 },
-    gold_vault: { vx: 5000, hours: 150, upgrades: 375 },
+    gold_pouch: { soul: 30, hours: 2, upgrades: 5 },
+    gold_chest: { soul: 150, hours: 12, upgrades: 30 },
+    gold_coffer: { soul: 450, hours: 40, upgrades: 100 },
+    gold_vault: { soul: 1500, hours: 150, upgrades: 375 },
   },
+  /**
+   * 출정 입장권(2026-10-01 사용자 결정): 하루 무료 sortiesPerDay장(한국 시간 자정에 다시 채워짐, 쌓이지 않음).
+   * 다 쓰면 골드로 한 장씩 산다: 값 = 내 몬스터 평균 레벨의 NPC 공략 전리품 × sortieTicketLootMult. 복수·튜토리얼은 입장권을 쓰지 않는다
+   */
+  sortiesPerDay: 10,
+  sortieTicketLootMult: 0.5,
+  /** 마왕 처치 영혼석(lordDefeatSoul)은 하루 이 횟수까지 (2026-10-01 사용자 결정) */
+  lordSoulPerDay: 10,
+  /** 공성 최고 단계를 새로 올릴 때마다 영혼석 (2026-10-01 사용자 결정, 10단계 보상과 별도) */
+  siegeBestSoul: 10,
   /**
    * VIP (2026-09-30 사용자 승인, 후보표 https://claude.ai/artifact/PKHH6cZBjthFcSDgxK4qyL 그대로).
    * 누적 결제 VX로 1~10. 배열은 등급 1~10의 값(0번 칸 없음, VIP 0은 기존 값). 시간 단축·편의·지위만, 전투 능력치·명예는 없다
@@ -203,7 +214,6 @@ export const BALANCE = {
   /** 누적 VX 계산용 상품 가격. 결제 웹훅에 가격이 없어서 서버가 들고 있다 — 대시보드 가격을 바꾸면 여기도 같이 바꾼다 */
   productVx: {
     starter_pack: 100, season_pass: 400, speed_x3: 300, premium: 500,
-    gold_pouch: 100, gold_chest: 500, gold_coffer: 1500, gold_vault: 5000,
     soul_pouch: 100, soul_sack: 500, soul_chest: 1500, soul_altar: 5000, soul_relic: 30000,
   } as Record<string, number>,
   /** 골드 묶음의 "켜 둔 공성 1시간" = 파도 골드 × 15 (1×로 평형 단계에서 30번 중 약 15번 막음) */

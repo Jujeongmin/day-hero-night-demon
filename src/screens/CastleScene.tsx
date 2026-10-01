@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import CurrencyPill from '../render/CurrencyPill';
 import { BALANCE, HERO_ORDER, LORD, MONSTERS, type HeroId } from '../../server/src/catalog';
 import { floorsUnlocked } from '../../server/src/economy';
 import { formatNum, waveGold } from '../../server/src/growth';
@@ -173,16 +174,16 @@ export default function CastleScene(props: {
         <span className="hud-col">
           {/* 공성 배속은 골드 오른쪽 (2026-09-30 사용자 결정) */}
           <span className="hud-row">
-            <span className="pill cur" aria-label={T.gold}><img src="icons/gold.png" alt="" draggable={false} /><b>{formatNum(home.gold)}</b></span>
+            <CurrencyPill icon="icons/gold.png" label={T.gold} value={home.gold} />
             <button className="pill speed" onClick={cycleSpeed}>{T.speed(speed)}</button>
             {!has3x && <button className="pill speed locked" onClick={() => buy('speed_x3')} aria-label={T.products.speed_x3[0]}>{T.speed(3)}</button>}
           </span>
           {home.power !== undefined && (
-            <span className="pill cur" aria-label={T.siege.power}><img src="icons/stat_atk.png" alt="" draggable={false} /><b>{formatNum(home.power)}</b></span>
+            <CurrencyPill icon="icons/stat_atk.png" label={T.siege.power} value={home.power} />
           )}
         </span>
         <button className="hud-icon" data-tut="settings" onClick={onSettings} aria-label={T.settings.title}><img src="ui/settings.png" alt="" draggable={false} /></button>
-        <span className="pill cur" aria-label={T.soul}><img src="icons/soul.png" alt="" draggable={false} /><b>{formatNum(home.soul)}</b></span>
+        <CurrencyPill icon="icons/soul.png" label={T.soul} value={home.soul} />
       </header>
 
       <div className="tower" ref={towerRef}>

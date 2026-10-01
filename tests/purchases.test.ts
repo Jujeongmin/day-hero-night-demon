@@ -5,8 +5,9 @@ import { defaultState } from '../server/src/state';
 const fresh = () => defaultState('0xbuyer0001', 0, 's1');
 
 describe('purchases', () => {
-  it('lists 13 products (retired ones removed before launch 2026-10-01)', () => {
-    expect(PRODUCTS).toHaveLength(13);
+  it('lists 9 products (retired ones removed and gold packs moved to soulstones before launch, 2026-10-01)', () => {
+    expect(PRODUCTS).toHaveLength(9);
+    expect(PRODUCTS).not.toContain('gold_vault');
     expect(PRODUCTS).not.toContain('recruit_dragon');
   });
 
@@ -17,7 +18,7 @@ describe('purchases', () => {
 
   it('the shop lists only the products still on sale', () => {
     expect(SHOP_PRODUCTS).toEqual([
-      'starter_pack', 'gold_pouch', 'gold_chest', 'gold_coffer', 'gold_vault',
+      'starter_pack',
       'soul_pouch', 'soul_sack', 'soul_chest', 'soul_altar', 'soul_relic',
       'season_pass', 'speed_x3', 'premium',
     ]);

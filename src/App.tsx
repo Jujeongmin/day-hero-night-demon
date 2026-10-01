@@ -138,7 +138,12 @@ export default function App() {
       const before = homeRef.current;
       api.getHome().then((h) => {
         setHome(h);
-        if (before && purchasedSomething(before, h)) sfx('sfx_purchase');
+        if (before && purchasedSomething(before, h)) {
+          sfx('sfx_purchase');
+          // 결제로 늘어난 재화를 한 줄로 알린다(윗줄 숫자는 올라가며 번쩍인다)
+          const gained = [h.soul > before.soul ? T.gainSoul(h.soul - before.soul) : '', h.gold > before.gold ? T.gainGold(h.gold - before.gold) : ''].filter(Boolean);
+          if (gained.length) onError(gained.join(' · '));
+        }
       }).catch(() => {});
     });
   }, [connected, api]);
@@ -263,7 +268,7 @@ export default function App() {
         break;
       case 'match':
         title = T.panels.match;
-        body = <Match api={api} home={home} onStart={startRaid} onError={onError} />;
+        body = <Match api={api} home={home} onStart={startRaid} onError={onError} onRefresh={refresh} />;
         break;
       case 'result':
         title = panel.result.won ? T.victory : T.defeat;

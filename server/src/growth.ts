@@ -85,6 +85,7 @@ export function formatNum(n: number): string {
 }
 
 export type GoldPackId = keyof typeof BALANCE.goldPacks;
+export const GOLD_PACK_IDS = Object.keys(BALANCE.goldPacks) as GoldPackId[];
 
 /** 골드 묶음 지급량 = max(켜 둔 공성 N시간치, 내 몬스터 평균 레벨의 강화 M번치). 최대 레벨이면 그 바로 아래 강화 비용으로 친다 */
 export function goldPackAmount(id: GoldPackId, bestStage: number, avgMonsterLevel: number): number {

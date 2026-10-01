@@ -1,7 +1,8 @@
 import { BALANCE, HERO_ORDER, TACTICS, type HeroId, type Tactic } from './catalog';
 import { planAwaken, planRecruit, planUpgrade, validateFloor } from './castle';
 import { castlePower, displayPower, heroLootBonus, idleIncome, lootAmount, npcLoot, pvpLootCap, siegeDefenseMult, snapshotPower } from './economy';
-import { waveGold } from './growth';
+import { avgMonsterLevel, goldPackAmount, GOLD_PACK_IDS, waveGold, type GoldPackId } from './growth';
+import { dailyOf, lordSoulLeft, sortiesLeft, sortieTicketCost } from './sortie';
 import {
   DEFENSE_HONOR, activeTitle, honorForRaid, leagueCollection, rankBracket, seasonEndsAt, seasonIdAt, seasonRewardSoul, seasonStartOf, titleForGlobalRank,
 } from './league';
@@ -160,7 +161,12 @@ async function finishRun(me: string, s: UserState, run: Run, won: boolean, loot:
   const today = dayKey(now);
   let soul = 0;
   if (won && s.firstWinDay !== today) soul += BALANCE.firstWinSoul;
-  if (lord) soul += BALANCE.lordDefeatSoul;
+  // 마왕 처치 영혼석은 하루 lordSoulPerDay번까지(2026-10-01)
+  let daily = dailyOf(s, now);
+  if (lord && lordSoulLeft(s, now) > 0) {
+    soul += BALANCE.lordDefeatSoul;
+    daily = { ...daily, lordSoul: daily.lordSoul + 1 };
+  }
   if (soul) await $asset.mint('soul', soul);
   // 입문·튜토리얼 출정의 결과창은 튜토리얼 덮개에 가려 스타터팩 버튼을 누를 수 없다 → 첫 실전 승리에 띄운다
   const onboardingRun = run.target === 'npc:0:intro' || run.target === TUTORIAL_TARGET;
@@ -170,6 +176,7 @@ async function finishRun(me: string, s: UserState, run: Run, won: boolean, loot:
     firstWinDay: won ? today : s.firstWinDay,
     starterOffered: s.starterOffered || offerStarter,
     introDone: s.introDone || run.target === 'npc:0:intro',
+    daily,
     raidLog: run.isRevenge && run.revengeLogId
       ? s.raidLog.map((e) => (e.id === run.revengeLogId ? { ...e, revenged: true } : e))
       : s.raidLog,
@@ -353,7 +360,8 @@ async function addHonor(account: string, s: UserState, amount: number, now: numb
 /** 새 최고 단계면 처음 넘은 10단계 보상(영혼석)을 주고 순위표를 고친다. 락 안에서, siege 저장 뒤에 부른다. */
 async function recordSiegeBest(me: string, s: UserState, oldBest: number): Promise<number> {
   if (s.siege.best <= oldBest) return 0;
-  const soul = milestoneSoul(oldBest, s.siege.best);
+  // 10단계 보상 + 새로 올린 최고 단계마다 siegeBestSoul (2026-10-01)
+  const soul = milestoneSoul(oldBest, s.siege.best) + (s.siege.best - oldBest) * BALANCE.siegeBestSoul;
   if (soul) await $asset.mint('soul', soul);
   await $global.addCollectionItem(SIEGE_BEST, { account: me, nickname: s.profile.nickname, best: s.siege.best, vip: vipOf(s) }, { id: me });
   return soul;
@@ -650,6 +658,39 @@ export class Server {
     });
   }
 
+  /** 출정 입장권 한 장을 골드로 산다(오늘 무료분을 다 쓴 뒤에도 출정할 수 있게) */
+  async buySortie() {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      const cost = sortieTicketCost(s);
+      if (!(await $asset.has('gold', cost))) throw new Error('골드가 부족하다');
+      await $asset.burn('gold', cost);
+      const d = dailyOf(s, now);
+      const daily = { ...d, bought: d.bought + 1 };
+      await save(me, { daily });
+      return { cost, daily };
+    });
+  }
+
+  /** 골드 묶음을 영혼석으로 산다(2026-10-01: 현질 재화는 영혼석 하나). 양은 공성 최고 단계·몬스터 평균 레벨로 서버가 계산 */
+  async buyGold(packId: string) {
+    const me = $sender.account;
+    if (!GOLD_PACK_IDS.includes(packId as GoldPackId)) throw new Error('없는 상품이다');
+    const id = packId as GoldPackId;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      const soul = BALANCE.goldPacks[id].soul;
+      if (!(await $asset.has('soul', soul))) throw new Error('NO_SOUL');
+      const gold = goldPackAmount(id, s.siege.best, avgMonsterLevel(s.roster));
+      await $asset.burn('soul', soul);
+      await $asset.mint('gold', gold);
+      return { soul, gold };
+    });
+  }
+
   /** 각성: 몬스터(보유) 또는 마왕에게 별 하나. 영혼석을 쓴다 */
   async awaken(unit: string) {
     const me = $sender.account;
@@ -687,8 +728,13 @@ export class Server {
       const s = await loadState(me, now);
       const t = s.lastTargets.find((x) => x.id === targetId);
       if (!t) throw new Error('제안받은 대상이 아니다');
+      // 출정 입장권: 튜토리얼 공략은 쓰지 않는다
+      const tutorial = t.id === TUTORIAL_TARGET;
+      if (!tutorial && sortiesLeft(s, now) <= 0) throw new Error('NO_SORTIE');
       const snapshot = await buildSnapshot(t.id, now);
-      return beginRun(me, s, snapshot, { isRevenge: false, revengeLogId: null }, now);
+      const d = dailyOf(s, now);
+      const extra: Partial<UserState> = tutorial ? {} : { daily: { ...d, sorties: d.sorties + 1 } };
+      return beginRun(me, s, snapshot, { isRevenge: false, revengeLogId: null, extra }, now);
     });
   }
 

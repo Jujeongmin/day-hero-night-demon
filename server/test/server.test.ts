@@ -394,3 +394,28 @@ describe('awakening & soul packs (2026-10-01)', () => {
     expect(Array.isArray(league.hall)).toBe(true);
   });
 });
+
+describe('sortie tickets & gold for soulstones (2026-10-01)', () => {
+  test('gold packs cost soulstones; an unknown pack is refused', async (server) => {
+    const acct = 't62-gold';
+    server.connect({ account: acct });
+    await server.getHome();
+    expect(await fails(server.buyGold('gold_pouch'))).toBe(true);
+    await server.$onItemPurchased({ account: acct, purchaseId: `p-${acct}`, productId: 'soul_pouch', quantity: 1 });
+    const r = await server.buyGold('gold_pouch');
+    expect(r.soul).toBe(30);
+    expect(r.gold).toBeGreaterThan(0);
+    const home = await server.getHome();
+    expect(home.soul).toBe(0);
+    expect(home.gold).toBe(300 + r.gold);
+    expect(await fails(server.buyGold('gold_mountain'))).toBe(true);
+  });
+
+  test('a sortie ticket costs gold and counts for today', async (server) => {
+    server.connect({ account: 't63-ticket' });
+    await server.getHome();
+    const r = await server.buySortie();
+    expect(r.daily.bought).toBe(1);
+    expect((await server.getHome()).gold).toBe(300 - r.cost);
+  });
+});

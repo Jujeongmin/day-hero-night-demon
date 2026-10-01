@@ -76,6 +76,11 @@ export const ko = {
   /** 골드 묶음 설명: 이 계정이 받을 골드와 100 VX 대비 더 주는 비율 */
   goldPackDesc: (gold: number, bonus: number) => (bonus > 0 ? `골드 ${F(gold)} · ${bonus}% 더` : `골드 ${F(gold)}`),
   soulPackDesc: (soul: number, bonus: number) => (bonus > 0 ? `영혼석 ${F(soul)} · ${bonus}% 더` : `영혼석 ${F(soul)}`),
+  sortieInfo: (left: number, total: number, lord: number, lordCap: number) => `오늘 출정 ${left}/${total} · 마왕 처치 영혼석 ${lord}/${lordCap}`,
+  buyTicket: (gold: number) => `입장권 사기 (${F(gold)} 골드)`,
+  goldForSoul: (soul: number) => `영혼석 ${F(soul)}`,
+  gainGold: (n: number) => `골드 +${F(n)}`,
+  gainSoul: (n: number) => `영혼석 +${F(n)}`,
   buyStarter: '스타터팩 보기',
   /** 골드는 공성 최고 단계에 맞춰 커진다(서버 scaledGold와 같은 값) */
   starterDesc: (gold: number) => `네크로맨서 + 골드 ${F(gold)} + 영혼석 30`,
@@ -182,7 +187,7 @@ export const ko = {
     rankTab: '공성',
     best: (n: number) => `최고 ${n}`,
     myBest: (n: number) => `내 최고 ${n}단계`,
-    milestoneHint: '10단계마다 처음 넘으면 영혼석',
+    milestoneHint: '최고 단계를 새로 넘을 때마다 영혼석 10, 10단계마다 더',
     noRank: '아직 기록이 없다',
     rankFailed: '순위를 불러오지 못했다',
     milestone: (soul: number) => `공성 단계 첫 돌파! 영혼석 +${soul}`,
@@ -228,6 +233,7 @@ export const ko = {
     ONBOARDING_ORDER: '다시 시도해줘',
     NO_REVIVE_CREDIT: '부활 아이템이 없다',
     NO_REVENGE_CREDIT: '오늘 무료 복수 3회를 다 썼다. 복수권이 필요하다',
+    NO_SORTIE: '오늘 출정 입장권을 다 썼다. 골드로 더 살 수 있다',
     NO_SOUL: '영혼석이 부족하다',
     MAX_STARS: '이미 최대 각성이다',
     generic: '문제가 생겼다. 잠시 후 다시 시도해줘.',
@@ -274,7 +280,7 @@ export const ko = {
       '팁: 공성은 자리를 비워도 계속된다',
       '팁: 복수하면 명예가 2배다',
       '팁: 용사를 강화할 때마다 약탈 골드 +1%',
-      '팁: 공성 10단계마다 처음 넘으면 영혼석',
+      '팁: 공성 최고 단계를 새로 넘을 때마다 영혼석',
     ],
   },
   /** VIP (누적 결제). 다음 등급에서 달라지는 것만 한 줄씩 */
