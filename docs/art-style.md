@@ -126,3 +126,9 @@
 ## 각성 별 · 영혼석 묶음 (2026-10-01)
 - 별 아이콘 `public/ui/star.png` = `art/ui/stars/star_a.png`(금 별 + 붉은 보석, pixflux 32px seed 1711). 다른 후보 `star_b`(보라 수정 1712)·`star_c`(붉은 불씨 1713). 강화·각성 줄에 14px.
 - 영혼석 묶음 이미지·아이콘은 `docs/vxshop-products.md` 영혼석 묶음 절.
+
+## 새 몬스터 4종 (2026-10-01 승인, 후보표 https://claude.ai/artifact/5gyqpNWS1UW3F5xCjqeSB4)
+- 시안 `art/monsters/concept/*_a.png`(pixflux 64px, seed 1801·1811·1821·1831).
+- 흡혈귀 character `e0dba331-6138-4e98-8973-950cb541045d`, 데스 나이트 character `b5ba1e0e-23c5-4939-8dd1-8e9514a694e9` (create_character 규격 그대로, 동쪽 idle 템플릿·attack v3 6프레임·death 템플릿).
+- 돌 골렘·밴시는 사람형 캐릭터로 뽑으니 골렘은 마른 사람, 밴시는 흰 원피스 소녀가 되어(원본 `art/monsters/*_char_east.png`) `create_1_direction_object`(sidescroller 68px, 16장 중 고름)로 다시: 골렘 object `96c98a38-8e5b-4e32-8062-335873b02eca`(후보 2번, 용암 균열 바위), 밴시 object `ac0647c6-1822-4095-8d73-875e235d66c8`(후보 0번, 푸른 유령). animate_object v3: 대기 4(keep_first_frame false)·공격 6·쓰러짐 6.
+- 골렘은 다른 몬스터보다 크게 나온다(탱커라 그대로).

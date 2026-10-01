@@ -1,4 +1,4 @@
-import type { HeroId, MonsterId, Tactic } from './catalog';
+import { MONSTERS, type HeroId, type MonsterId, type Tactic } from './catalog';
 import type { FloorBattle } from './battle';
 
 /** 함정은 2026-09-29 폐기. 옛 저장본의 trap 칸은 읽지 않는다. */
@@ -212,8 +212,13 @@ export function resolveFloors(s: UserState): ResolvedFloor[] {
 export function withDefaults(s: UserState): UserState {
   const onboarding: OnboardingState = s.onboarding ?? { at: s.introDone ? 'done' : 'cutscene', nicknameSet: false };
   const profile = { ...s.profile, nicknameChanges: s.profile.nicknameChanges ?? 0 };
+  // 나중에 생긴 성 레벨 몬스터(2026-10-01 골렘·밴시)는 이미 그 레벨을 넘은 성에 바로 준다
+  let roster = s.roster;
+  for (const m of Object.values(MONSTERS)) {
+    if ('castleLevel' in m.unlock && m.unlock.castleLevel <= s.castle.level && !roster[m.id]) roster = { ...roster, [m.id]: { level: 1 } };
+  }
   return {
-    ...s, onboarding, profile,
+    ...s, onboarding, profile, roster,
     ads: s.ads ?? { day: '', counts: {} },
     perks: s.perks ?? { speed3: false, premium: false },
     season: { ...s.season, claimed: s.season.claimed ?? { free: 0, pass: 0 } },

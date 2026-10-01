@@ -480,5 +480,137 @@
       87,
       90
     ]
+  },
+  "deathknight_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      24,
+      9,
+      28,
+      48
+    ]
+  },
+  "deathknight_attack": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      15,
+      10,
+      37,
+      47
+    ]
+  },
+  "deathknight_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      7,
+      10,
+      56,
+      46
+    ]
+  },
+  "vampire_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      24,
+      7,
+      20,
+      52
+    ]
+  },
+  "vampire_attack": {
+    "frames": 7,
+    "w": 76,
+    "h": 76,
+    "box": [
+      10,
+      12,
+      57,
+      50
+    ]
+  },
+  "vampire_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      5,
+      9,
+      55,
+      50
+    ]
+  },
+  "golem_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      4,
+      3,
+      62,
+      61
+    ]
+  },
+  "golem_attack": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      3,
+      4,
+      64,
+      60
+    ]
+  },
+  "golem_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      3,
+      3,
+      64,
+      61
+    ]
+  },
+  "banshee_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      11,
+      5,
+      44,
+      59
+    ]
+  },
+  "banshee_attack": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      12,
+      4,
+      44,
+      60
+    ]
+  },
+  "banshee_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      11,
+      5,
+      44,
+      61
+    ]
   }
 }

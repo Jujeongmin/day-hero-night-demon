@@ -1,5 +1,5 @@
 import {
-  BALANCE, HEROES, LORD, MONSTERS, scaleStats,
+  BALANCE, HEROES, LORD, MONSTERS, SKILL_NUMBERS, scaleStats,
   type HeroId, type MonsterId, type SkillId, type Stats, type Tactic,
 } from './catalog';
 import { rngNext } from './rng';
@@ -261,6 +261,22 @@ function strike(b: FloorBattle, f: Fighter, t: Fighter, mult: number, def: numbe
   const dmg = calcDamage(f.atk, mult, def);
   events.push(skill ? { t: 'attack', from: f.key, to: t.key, dmg, skill } : { t: 'attack', from: f.key, to: t.key, dmg });
   applyDamage(b, t, dmg, events);
+  // 흡혈(상시): 준 피해의 일부를 회복
+  if (f.skill === 'lifesteal' && f.hp > 0) {
+    const amount = heal(f, Math.max(1, Math.round(dmg * SKILL_NUMBERS.lifesteal)));
+    if (amount > 0) events.push({ t: 'heal', from: f.key, to: f.key, amount });
+  }
+  // 가시 바위(상시): 맞은 쪽이 받은 피해의 일부를 때린 쪽에 돌려준다(되돌림은 다시 되돌리지 않는다)
+  if (t.skill === 'thorns' && f.hp > 0 && f.side !== t.side) {
+    const back = Math.max(1, Math.round(dmg * SKILL_NUMBERS.thornsReflect));
+    events.push({ t: 'attack', from: t.key, to: f.key, dmg: back, skill: 'thorns' });
+    applyDamage(b, f, back, events);
+  }
+}
+
+/** 이번 라운드에 a가 b보다 먼저 움직이는가(속도 순서와 같은 규칙) */
+function movesBefore(a: Fighter, c: Fighter): boolean {
+  return effSpd(a) > effSpd(c) || (effSpd(a) === effSpd(c) && a.key.localeCompare(c.key) < 0);
 }
 
 function castSkill(b: FloorBattle, f: Fighter, events: BattleEvent[]): boolean {
@@ -280,6 +296,22 @@ function castSkill(b: FloorBattle, f: Fighter, events: BattleEvent[]): boolean {
       if (!t) return false;
       t.web = 2;
       events.push({ t: 'status', to: t.key, status: 'web', rounds: 2 });
+      return true;
+    }
+    case 'scream': {
+      // 비명: 적 하나를 1턴 기절. 이번 라운드에 이미 움직인 적이면 다음 라운드까지 간다
+      const t = chooseTarget(b, f);
+      if (!t) return false;
+      t.stun = movesBefore(t, f) ? 2 : 1;
+      events.push({ t: 'status', to: t.key, status: 'stun', rounds: 1 });
+      return true;
+    }
+    case 'execute': {
+      // 처형: 체력이 가장 낮은 적에게 2배
+      const foes = alive(b, other(f.side));
+      if (foes.length === 0) return false;
+      const t = foes.reduce((m, x) => (x.hp < m.hp ? x : m));
+      strike(b, f, t, SKILL_NUMBERS.executeMult, t.def, events, 'execute');
       return true;
     }
     case 'breath':

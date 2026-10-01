@@ -99,6 +99,10 @@ export const ko = {
     web: (cd: number) => `거미줄: ${cd}턴마다 적 하나를 2턴 동안 느리게 한다`,
     raise: () => '되살리기(상시): 처음 쓰러진 아군을 한 번 체력 30%로 일으킨다',
     breath: (cd: number) => `화염: ${cd}턴마다 적 전체를 태운다(60%)`,
+    thorns: () => '가시 바위(상시): 공격받으면 받은 피해의 30%를 때린 적에게 돌려준다',
+    scream: (cd: number) => `비명: ${cd}턴마다 적 하나를 1턴 기절시킨다`,
+    lifesteal: () => '흡혈(상시): 준 피해의 30%만큼 체력을 회복한다',
+    execute: (cd: number) => `처형: ${cd}턴마다 체력이 가장 낮은 적에게 2배 피해`,
     double_shot: (cd: number) => `연사: ${cd}턴마다 두 번 쏜다(60%씩)`,
     heal: (cd: number) => `치유: ${cd}턴마다 가장 다친 아군을 체력 25% 회복`,
     dark_wave: (cd: number) => `암흑 파동: ${cd}턴마다 적 전체를 공격(80%)`,
@@ -244,7 +248,7 @@ export const ko = {
   } as Record<string, string>,
   /** 유닛 이름(서버 catalog의 한국어 name 대신 id로 찾는다) */
   units: {
-    slime: '슬라임', skeleton: '해골병', imp: '임프', spider: '거미', necro: '네크로맨서', dragon: '새끼 용',
+    slime: '슬라임', skeleton: '해골병', imp: '임프', spider: '거미', necro: '네크로맨서', dragon: '새끼 용', golem: '돌 골렘', banshee: '밴시', vampire: '흡혈귀', deathknight: '데스 나이트',
     knight: '기사', archer: '궁수', priest: '성직자', lord: '마왕',
   } as Record<string, string>,
   /** 전투 화면에 뜨는 글자 */

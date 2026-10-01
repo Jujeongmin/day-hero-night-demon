@@ -202,6 +202,15 @@ const tools = {
     if (s.idle) { s.idle.lastClaimAt -= ms; s.idle.lastRaidAt -= ms; }
     persist();
   },
+  /** 성 레벨 바꾸기(화면 확인용). 다시 불러오면 열리는 몬스터·층이 채워진다 */
+  castle(level: number) {
+    const s = store.users[account] as { castle?: { level: number; floors: { monsters: (string | null)[] }[] } } | undefined;
+    if (!s?.castle) return;
+    s.castle.level = level;
+    while (s.castle.floors.length < (level >= 4 ? 3 : level >= 2 ? 2 : 1)) s.castle.floors.push({ monsters: [null, null, null] });
+    persist();
+    location.reload();
+  },
   /** 튜토리얼을 끝난 것으로(화면 확인용) */
   done() {
     const s = store.users[account] as { onboarding?: unknown; introDone?: boolean } | undefined;

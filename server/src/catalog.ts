@@ -1,8 +1,9 @@
-export type MonsterId = 'slime' | 'skeleton' | 'imp' | 'spider' | 'necro' | 'dragon';
+export type MonsterId = 'slime' | 'skeleton' | 'imp' | 'spider' | 'necro' | 'dragon' | 'golem' | 'banshee' | 'vampire' | 'deathknight';
 export type HeroId = 'knight' | 'archer' | 'priest';
 export type Tactic = 'charge' | 'guard' | 'focus';
 export type SkillId =
   | 'taunt' | 'pierce' | 'backline' | 'web' | 'raise' | 'breath'
+  | 'thorns' | 'scream' | 'lifesteal' | 'execute'
   | 'double_shot' | 'heal' | 'dark_wave';
 
 export interface Stats { hp: number; atk: number; def: number; spd: number }
@@ -36,7 +37,15 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
   spider:   { id: 'spider',   name: '거미',       stats: { hp: 70,  atk: 13, def: 4, spd: 6 }, skill: 'web',      cooldown: 3, unlock: { castleLevel: 3 } },
   necro:    { id: 'necro',    name: '네크로맨서', stats: { hp: 70,  atk: 12, def: 3, spd: 3 }, skill: 'raise',    cooldown: 0, unlock: { soul: 150, product: 'starter_pack' } },
   dragon:   { id: 'dragon',   name: '새끼 용',    stats: { hp: 110, atk: 20, def: 6, spd: 3 }, skill: 'breath',   cooldown: 3, unlock: { soul: 150 } },
+  // 2026-10-01 사용자 승인(후보표 https://claude.ai/artifact/5gyqpNWS1UW3F5xCjqeSB4): 무료 2종(성 5·7) + 영혼석 2종
+  golem:       { id: 'golem',       name: '돌 골렘',     stats: { hp: 140, atk: 8,  def: 12, spd: 1 }, skill: 'thorns',    cooldown: 0, unlock: { castleLevel: 5 } },
+  banshee:     { id: 'banshee',     name: '밴시',        stats: { hp: 65,  atk: 14, def: 3,  spd: 5 }, skill: 'scream',    cooldown: 3, unlock: { castleLevel: 7 } },
+  vampire:     { id: 'vampire',     name: '흡혈귀',      stats: { hp: 90,  atk: 19, def: 5,  spd: 5 }, skill: 'lifesteal', cooldown: 0, unlock: { soul: 300 } },
+  deathknight: { id: 'deathknight', name: '데스 나이트', stats: { hp: 115, atk: 18, def: 7,  spd: 2 }, skill: 'execute',   cooldown: 3, unlock: { soul: 500 } },
 };
+
+/** 새 몬스터 기술 수치: 가시 바위 되돌림, 흡혈 회복, 처형 배수 */
+export const SKILL_NUMBERS = { thornsReflect: 0.3, lifesteal: 0.3, executeMult: 1.5 } as const;
 
 export const HEROES: Record<HeroId, HeroDef> = {
   knight: { id: 'knight', name: '기사',   stats: { hp: 150, atk: 14, def: 10, spd: 3 }, skill: 'taunt',       cooldown: 3, row: 'front' },
