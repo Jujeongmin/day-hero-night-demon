@@ -186,3 +186,19 @@ describe('summon economy (2026-10-02)', () => {
     expect(monsterMult(1, 'slime:crown')).toBeCloseTo(1.21);
   });
 });
+
+describe('lord look bonus (2026-10-02)', () => {
+  it('any non-base lord look gives the lord +10% stats', async () => {
+    const { lordMult, starMult } = await import('../server/src/growth');
+    const { castlePower, snapshotPower } = await import('../server/src/economy');
+    const { defaultState, resolveFloors } = await import('../server/src/state');
+    expect(lordMult(0, false)).toBe(1);
+    expect(lordMult(0, true)).toBeCloseTo(1.1);
+    expect(lordMult(2, true)).toBeCloseTo(starMult(2) * 1.1);
+    const floors = resolveFloors(defaultState('a', 0, 's1'));
+    expect(castlePower(1, floors, 0, true)).toBeGreaterThan(castlePower(1, floors, 0, false));
+    const snap = { owner: 'a', nickname: 'x', castleLevel: 1, floors, throneEmpty: false, shadow: false };
+    expect(snapshotPower({ ...snap, lordSkin: 'summon1' as const })).toBe(castlePower(1, floors, 0, true));
+    expect(snapshotPower(snap)).toBe(castlePower(1, floors, 0, false));
+  });
+});

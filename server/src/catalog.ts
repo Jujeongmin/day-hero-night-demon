@@ -223,6 +223,7 @@ export const BALANCE = {
     costOne: 30, costTen: 300, tenPulls: 11,
     rates: { common: 0.7, rare: 0.24, epic: 0.055, legend: 0.005 },
     commonSoul: 10, rareSoul: 30, epicDupSoul: 30, legendDupSoul: 300,
+    /** 장비 외형을 입은 몬스터·외형을 입은 마왕(기본 아닌 모든 마왕 외형) 능력치 배수 (2026-10-02 사용자) */
     gearStatMult: 1.1,
     pity: 10,
     gear: [

@@ -1,5 +1,5 @@
 import { BALANCE, LORD, MONSTERS, scaleStats } from './catalog';
-import { idlePerHour, lordLevel, monsterMult, npcLoot, starMult, unitPower } from './growth';
+import { idlePerHour, lordLevel, lordMult, monsterMult, npcLoot, unitPower } from './growth';
 import type { CastleSnapshot, ResolvedFloor } from './state';
 import { vipPerks } from './vip';
 
@@ -47,8 +47,8 @@ export function siegeDefenseMult(heroes: Record<string, { level: number }>): num
 }
 
 /** 성 전투력 = 층 몬스터 + 마왕의 (체력 + 공격×5 + 방어×5) ÷ 10 합. 시작 편성이 100. 매칭에도 쓴다 */
-export function castlePower(castleLevel: number, floors: ResolvedFloor[], lordStars = 0): number {
-  let p = unitPower(scaleStats(LORD.stats, lordLevel(castleLevel), starMult(lordStars)));
+export function castlePower(castleLevel: number, floors: ResolvedFloor[], lordStars = 0, lordLook = false): number {
+  let p = unitPower(scaleStats(LORD.stats, lordLevel(castleLevel), lordMult(lordStars, lordLook)));
   for (const f of floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, monsterMult(m.stars, m.gear)));
   return Math.round(p);
 }
@@ -56,14 +56,14 @@ export function castlePower(castleLevel: number, floors: ResolvedFloor[], lordSt
 /** 공략 상대 성의 전투력(NPC 등급 성은 마왕 레벨·배수가 따로 있다) */
 export function snapshotPower(c: CastleSnapshot): number {
   const mult = c.mult ?? 1;
-  let p = c.throneEmpty && !c.shadow ? 0 : unitPower(scaleStats(LORD.stats, c.lordLevel ?? lordLevel(c.castleLevel), mult * (c.throneEmpty ? 0.5 : 1) * starMult(c.lordStars)));
+  let p = c.throneEmpty && !c.shadow ? 0 : unitPower(scaleStats(LORD.stats, c.lordLevel ?? lordLevel(c.castleLevel), mult * (c.throneEmpty ? 0.5 : 1) * lordMult(c.lordStars, !!c.lordSkin)));
   for (const f of c.floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, mult * monsterMult(m.stars, m.gear)));
   return Math.round(p);
 }
 
 /** 화면에 보이는 전투력 = 성 전투력 × 공성 방어 배수 */
-export function displayPower(castleLevel: number, floors: ResolvedFloor[], heroes: Record<string, { level: number }>, lordStars = 0): number {
-  return Math.round(castlePower(castleLevel, floors, lordStars) * siegeDefenseMult(heroes));
+export function displayPower(castleLevel: number, floors: ResolvedFloor[], heroes: Record<string, { level: number }>, lordStars = 0, lordLook = false): number {
+  return Math.round(castlePower(castleLevel, floors, lordStars, lordLook) * siegeDefenseMult(heroes));
 }
 
 export function floorsUnlocked(castleLevel: number): number {

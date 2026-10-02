@@ -1,6 +1,6 @@
 import { BALANCE, HERO_ORDER, type HeroId, type Tactic } from './catalog';
 import { createFloorBattle, playRound, restedHeroesHp, type BattleEvent, type EnemySpec } from './battle';
-import { lordLevel, monsterMult, starMult } from './growth';
+import { lordLevel, lordMult, monsterMult } from './growth';
 import { seedFrom } from './rng';
 import type { CastleSnapshot, Run } from './state';
 
@@ -14,7 +14,7 @@ export function floorEnemies(s: CastleSnapshot, floor: number): EnemySpec[] {
   if (floor > throneIndex(s)) return [];
   if (floor === throneIndex(s)) {
     if (s.throneEmpty && !s.shadow) return [];
-    return [{ id: 'lord', level: s.lordLevel ?? lordLevel(s.castleLevel), mult: (s.mult ?? 1) * (s.throneEmpty ? 0.5 : 1) * starMult(s.lordStars), ...(s.lordStars ? { stars: s.lordStars } : {}) }];
+    return [{ id: 'lord', level: s.lordLevel ?? lordLevel(s.castleLevel), mult: (s.mult ?? 1) * (s.throneEmpty ? 0.5 : 1) * lordMult(s.lordStars, !!s.lordSkin), ...(s.lordStars ? { stars: s.lordStars } : {}) }];
   }
   // 각성 별은 능력치 배수로 곱한다
   return s.floors[floor].monsters.map((m) => {
