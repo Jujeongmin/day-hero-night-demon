@@ -28,7 +28,8 @@ function TalkBody(props: { line: string }) {
       <div className="tut-bubble">
         <p>{props.line}</p>
       </div>
-      <img className="tut-imp" src="ui/imp_front.png" alt="임프" draggable={false} />
+      {/* 크기를 미리 적어 그림이 늦게 떠도 말풍선 높이가 바뀌지 않게 */}
+      <img className="tut-imp" src="ui/imp_front.png" width={86} height={79} alt="임프" draggable={false} />
     </>
   );
 }
@@ -48,6 +49,17 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
   useLayoutEffect(() => {
     setTalkH(talkRef.current?.offsetHeight ?? 0);
   }, [step?.line, box]);
+  // 글꼴·그림이 늦게 와서 말풍선 크기가 바뀌어도 다시 잰다(폰에서 자리가 틀어진 채 보이던 문제, 2026-10-02)
+  useEffect(() => {
+    const el = talkRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => setTalkH(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [step, gaveUp, launched]);
+  // 붙을 대상이 있는 단계는 자리를 계산하기 전까지 말풍선을 숨긴다(기본 자리에 잠깐 떴다가 움직이지 않게)
+  const anchored = !!step && (step.targets.length > 0 || (step.near?.length ?? 0) > 0);
+  const hidden: CSSProperties = { visibility: 'hidden' };
 
   useEffect(() => onTut((ev) => {
     const to = nextStage(stage, ev);
@@ -90,7 +102,8 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
     const vh = window.innerHeight;
     const style: CSSProperties | undefined = box && talkH > 0
       ? { top: Math.max(8, Math.min(vh - talkH - 8, box.top + box.height + 10)) }
-      : undefined;
+      // 대상을 아직 못 찾았으면 숨기고, 3초 넘게 없으면 기본 자리에 보인다
+      : box || (anchored && !gaveUp) ? hidden : undefined;
     return (
       <div className="tut passive">
         <div className="tut-talk" ref={talkRef} style={style}>
@@ -132,7 +145,7 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
       {box
         ? <div className="tut-hole" style={{ left: box.left - pad, top: box.top - pad, width: box.width + pad * 2, height: box.height + pad * 2 }} />
         : <div className="tut-dim" />}
-      <div className="tut-talk" ref={talkRef} style={talkStyle}>
+      <div className="tut-talk" ref={talkRef} style={talkStyle ?? (anchored ? hidden : undefined)}>
         <TalkBody line={step.line} />
       </div>
     </div>

@@ -223,7 +223,7 @@ canvas.battle {
 /* 말풍선: 틀 없이 정면 임프(public/ui/imp_front.png) + 해골 말풍선. 그림은 art/tutorial/ (2026-09-30 승인) */
 /* 말풍선은 꼬리 없이 임프 머리 오른쪽 위에 뜬다 (2026-09-30 사용자 요청) */
 .tut-talk { position: absolute; left: 8px; right: 8px; top: 52px; max-width: 464px; margin: 0 auto; display: flex; flex-direction: column; align-items: flex-start; }
-.tut-imp { flex: none; width: 104px; margin-top: 2px; image-rendering: pixelated; filter: drop-shadow(0 2px 6px #000c); }
+.tut-imp { flex: none; width: 104px; height: auto; margin-top: 2px; image-rendering: pixelated; filter: drop-shadow(0 2px 6px #000c); }
 /* bubble.png(123×58)를 2배로 9조각. 폭은 글 길이만큼(모서리 조각 합 100px 이상). 왼쪽 위 해골을 피해 글은 안쪽으로 */
 .tut-bubble {
   position: relative; margin-left: 38px; max-width: calc(100% - 38px); min-width: 100px; min-height: 74px; display: flex; align-items: center;
