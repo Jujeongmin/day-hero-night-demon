@@ -48,8 +48,8 @@ let bgmEl: HTMLAudioElement | null = null;
 let bgmRetry = false;
 const sfxCache = new Map<Sfx, HTMLAudioElement>();
 
-/** 파일을 다시 만들면 올린다(브라우저에 남은 옛 파일 대신 새 파일을 받게). 배경음 2 = 평균 -24dB로 줄임(2026-10-02) */
-const VERSION: Partial<Record<string, number>> = { bgm_home: 2, bgm_battle: 2 };
+/** 파일을 다시 만들면 올린다(브라우저에 남은 옛 파일 대신 새 파일을 받게). 배경음 2 = 평균 -24dB로 줄임, sfx_tap 2 = Gear fast lock tap(2026-10-02) */
+const VERSION: Partial<Record<string, number>> = { bgm_home: 2, bgm_battle: 2, sfx_tap: 2 };
 
 function src(name: string): string {
   const v = VERSION[name];

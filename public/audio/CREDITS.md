@@ -6,7 +6,7 @@
 | --- | --- | --- | --- |
 | bgm_home.mp3 | Dark Shadows | Ahjay Stelino | https://mixkit.co/free-stock-music/tag/dark/ (id 64) |
 | bgm_battle.mp3 | Sparta | Arulo | https://mixkit.co/free-stock-music/tag/dark/ (id 370) |
-| sfx_tap.mp3 | Game click | Mixkit | https://mixkit.co/free-sound-effects/click/ (id 1114) |
+| sfx_tap.mp3 | Gear fast lock tap | Mixkit | https://mixkit.co/free-sound-effects/click/ (id 2857) |
 | sfx_attack.mp3 | Fast sword whoosh | Mixkit | https://mixkit.co/free-sound-effects/sword/ (id 2792) |
 | sfx_hit.mp3 | Sword strikes armor | Mixkit | https://mixkit.co/free-sound-effects/sword/ (id 2765) |
 | sfx_ult.mp3 | Fireball spell | Mixkit | https://mixkit.co/free-sound-effects/fire/ (id 1347) |
@@ -24,3 +24,4 @@
 최적화(2026-10-02): 원본은 `art/audio/source/`. 배포 파일은 ffmpeg(libmp3lame)로 128kbps 다시 인코딩(평균 음량 차이 1dB 안팎). sfx_win은 코드가 쓰는 2.5초까지(끝 0.4초 줄임), sfx_summon은 3초까지(끝 0.4초 줄임)만 남김. sfx_attack은 원래 87kbps라 원본 그대로. 전체 6.6MB → 3.6MB.
 
 - 2026-10-02 사용자: 배경음이 너무 커서 두 곡 모두 원본(`art/audio/source/`)에서 평균 -24dB로 줄여 128kbps로 다시 만듦(bgm_home -10.9dB, bgm_battle -4.5dB). 주소에 `?v=2`(`src/services/audio.ts` VERSION)를 붙여 옛 파일 캐시를 피한다.
+- 2026-10-02 사용자: 버튼 소리를 Game click(1114)에서 Gear fast lock tap(2857, 후보 B)으로 바꿈. 앞 공백을 자르고 0.6초(끝 0.1초 페이드), 최고 -3dB. 원본 `art/audio/source/sfx_tap_2857.mp3`, 후보 https://claude.ai/artifact/LZKNfEKy5Ke1aMDNbQzrrx
