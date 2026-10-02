@@ -89,6 +89,12 @@ async function balances(account: string): Promise<{ gold: number; soul: number }
   return { gold: b.gold ?? 0, soul: b.soul ?? 0 };
 }
 
+/** "npc:<등급>:<키>"에서 등급(튜토리얼·입문 성은 0 → 1로 친다) */
+function npcTierOf(target: string): number {
+  const tier = Number(target.split(':')[1]);
+  return Number.isFinite(tier) ? Math.max(1, tier) : 1;
+}
+
 function npcTargets(s: UserState, now: number): Target[] {
   // 고정 등급(모두에게 같은 난이도): 용사 평균 레벨 −1 / 같음 / +1
   return npcTiersFor(heroGrowth(s)).map((tier, i) => {
@@ -882,7 +888,8 @@ export class Server {
       const won = status === 'victory';
       let loot = 0;
       if (run.target.startsWith('npc:')) {
-        loot = won ? npcLoot(run.snapshot.castleLevel) : 0;
+        // NPC 전리품은 그 성의 등급(목록의 예상 약탈과 같은 값). 전에는 층 수(castleLevel)로 계산해서 1~10단이 늘 같았다(2026-10-02 수정)
+        loot = won ? npcLoot(npcTierOf(run.target)) : 0;
         if (loot) await $asset.mint('gold', loot);
       } else {
         loot = await settleDefender(me, s, run, won, now);
