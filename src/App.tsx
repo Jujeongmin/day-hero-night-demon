@@ -18,6 +18,7 @@ import Shop from './screens/Shop';
 import League, { type LeagueTab } from './screens/League';
 import Settings from './screens/Settings';
 import Cutscene from './screens/Cutscene';
+import Summon from './screens/Summon';
 import Nickname from './screens/Nickname';
 import { startShop, type ShopItem } from './services/shop';
 import { playBgm, sfx, unlockAudio } from './services/audio';
@@ -64,6 +65,7 @@ export default function App() {
   const [home, setHome] = useState<HomeData | null>(null);
   const [raiding, setRaiding] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
+  const [summonOpen, setSummonOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   // 이 기기에서 언어를 고른 적이 있나(처음이면 컷신 전에 고르는 화면)
   const [langPicked, setLangPicked] = useState(() => savedLang() !== null);
@@ -310,6 +312,7 @@ export default function App() {
         onLocked={() => setPanel({ name: 'upgrade' })}
         onSiegeRank={() => setPanel({ name: 'league', tab: 'siege' })}
         onPass={() => setPanel({ name: 'league', tab: 'track' })}
+        onSummon={() => { setPanel(null); setSummonOpen(true); }}
         onError={onError}
       />
       {panel && (
@@ -333,6 +336,7 @@ export default function App() {
           </button>
         ))}
       </nav>
+      {summonOpen && <Summon api={api} home={home} onClose={() => setSummonOpen(false)} onRefresh={refresh} onError={onError} />}
       {tutorial}
       {toast && <div className="toast">{toast}</div>}
     </div>

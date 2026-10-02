@@ -9,7 +9,7 @@ import { useSiegeReplay, type RUnit } from '../render/siegeReplay';
 import Sprite from '../render/Sprite';
 import { adsLeft } from '../services/ads';
 import { chooseLordSkin, passTier, planPassClaim } from '../../server/src/pass';
-import { lordSpriteId } from '../render/skins';
+import { lordSpriteId, monsterSpriteId } from '../render/skins';
 import { nextSpeed, type Speed } from '../render/speed';
 import { errorText, type Api, type HomeData, type SiegeWave } from '../services/api';
 import { buy } from '../services/shop';
@@ -73,9 +73,11 @@ export default function CastleScene(props: {
   onSiegeRank: () => void;
   /** 시즌 패스 탭 열기(윗줄 패스 버튼) */
   onPass: () => void;
+  /** 소환 의식 열기(탑 왼쪽 제단 아이콘) */
+  onSummon: () => void;
   onError: (msg: string) => void;
 }) {
-  const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onSiegeRank, onPass, onError } = props;
+  const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onSiegeRank, onPass, onSummon, onError } = props;
   const s = home.state;
   const [busy, setBusy] = useState(false);
   const [choose, setChoose] = useState(false);
@@ -210,8 +212,8 @@ export default function CastleScene(props: {
               {!locked && replay.floor !== i && floor.monsters.map((m, j) => m && (
                 <div className={`unit-at ${replay.cleared.includes(i) ? 'rp-fallen' : ''}`} key={j} style={at(SLOT_X[j], tier.stand)}>
                   {replay.cleared.includes(i)
-                    ? <Sprite id={m} anim="death" className="once" label={T.units[m]} flip scale={unitScale} />
-                    : <Sprite id={m} anim={defending && !replaying && i === 0 ? 'attack' : 'idle'} label={T.units[m]} flip scale={unitScale} />}
+                    ? <Sprite id={monsterSpriteId(m, s.gear?.worn[m])} anim="death" className="once" label={T.units[m]} flip scale={unitScale} />
+                    : <Sprite id={monsterSpriteId(m, s.gear?.worn[m])} anim={defending && !replaying && i === 0 ? 'attack' : 'idle'} label={T.units[m]} flip scale={unitScale} />}
                 </div>
               ))}
               <button
@@ -242,7 +244,7 @@ export default function CastleScene(props: {
                   {!u.dead && <span className="rp-hp"><span style={{ width: `${(u.hp / u.maxHp) * 100}%` }} /></span>}
                   <span key={`${u.key}:${u.hits}`} className={`rp-body ${u.hits > 0 ? 'rp-hit' : ''} ${u.attacking ? 'rp-lunge' : ''}`}>
                     <Sprite
-                      id={u.kind === 'lord' ? lordSpriteId(lordSkin) : u.kind}
+                      id={u.kind === 'lord' ? lordSpriteId(lordSkin) : monsterSpriteId(u.kind, u.gear)}
                       anim={u.dead ? 'death' : u.attacking ? 'attack' : 'idle'}
                       className={u.dead ? 'once' : ''}
                       label={T.units[u.kind] ?? ''}
@@ -287,6 +289,14 @@ export default function CastleScene(props: {
       />
 
       {/* 오른쪽 위: 방치 수입 받기, 그 아래 시즌 패스(2026-09-30 승인 A안: 단계 표시, 받을 보상이 있으면 빨간 점·빛) */}
+      {/* 소환 제단 (2026-10-02 승인: 탑 왼쪽 아이콘). 튜토리얼이 끝난 뒤에만 */}
+      {(s.onboarding?.at ?? 'done') === 'done' && (
+        <button className="summon-entry" onClick={onSummon} aria-label={T.summon.open}>
+          <img src="ui/summon.png" alt="" draggable={false} />
+          <span>{T.summon.open}</span>
+        </button>
+      )}
+
       <div className="float-right">
         {home.idlePreview > 0 && (
           <button

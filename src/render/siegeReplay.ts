@@ -13,6 +13,8 @@ import { T } from '../strings/ko';
 export interface RUnit {
   key: string;
   kind: string;
+  /** 입힌 장비 외형(내 몬스터) */
+  gear?: string;
   side: 'hero' | 'enemy';
   hp: number;
   maxHp: number;
@@ -116,7 +118,7 @@ export function buildBeats(log: FloorLog[], held: boolean, perKill: number): Bea
         floor: f.floor,
         heroes: f.start.filter((u) => u.side === 'hero').map((u) => u.key),
         enemies: f.start.filter((u) => u.side === 'enemy').map((u) => u.key),
-        units: Object.fromEntries(f.start.map((u) => [u.key, { key: u.key, kind: u.kind, side: u.side, hp: u.hp, maxHp: u.maxHp, dead: u.hp <= 0, attacking: false, hits: 0 }])),
+        units: Object.fromEntries(f.start.map((u) => [u.key, { key: u.key, kind: u.kind, ...(u.gear ? { gear: u.gear } : {}), side: u.side, hp: u.hp, maxHp: u.maxHp, dead: u.hp <= 0, attacking: false, hits: 0 }])),
       }),
     });
     for (const e of f.events) {

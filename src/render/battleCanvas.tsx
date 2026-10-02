@@ -3,7 +3,7 @@ import type { BattleEvent, Fighter, FloorBattle } from '../../server/src/battle'
 import type { LordSkin } from '../../server/src/state';
 import { sfx } from '../services/audio';
 import { sfxForFx } from './sfxMap';
-import { auraBlur, AURA, lordSpriteId } from './skins';
+import { auraBlur, AURA, lordSpriteId, monsterSpriteId } from './skins';
 import SPRITES from './sprites.json';
 import { buildFrames, preHp, type Fx } from './timeline';
 
@@ -53,7 +53,7 @@ function positions(b: FloorBattle): Record<string, { x: number; y: number }> {
 
 /** 시트 이름의 앞부분. 마왕은 상대의 시즌 패스 외형을 따른다 */
 function spriteOf(f: Fighter, lordSkin: LordSkin | undefined): string {
-  return f.kind === 'lord' ? lordSpriteId(lordSkin) : f.kind;
+  return f.kind === 'lord' ? lordSpriteId(lordSkin) : monsterSpriteId(f.kind, f.gear);
 }
 
 /** 한 칸 그리기. 시트가 없으면 이름표 상자 */

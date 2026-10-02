@@ -612,5 +612,434 @@
       44,
       61
     ]
+  },
+  "slime_crown_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      13,
+      7,
+      44,
+      50
+    ]
+  },
+  "slime_crown_attack": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      6,
+      4,
+      53,
+      57
+    ]
+  },
+  "slime_crown_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      8,
+      6,
+      53,
+      55
+    ]
+  },
+  "skeleton_royal_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      16,
+      6,
+      35,
+      51
+    ]
+  },
+  "skeleton_royal_attack": {
+    "frames": 7,
+    "w": 80,
+    "h": 80,
+    "box": [
+      19,
+      12,
+      41,
+      51
+    ]
+  },
+  "skeleton_royal_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      6,
+      7,
+      50,
+      49
+    ]
+  },
+  "imp_king_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      20,
+      6,
+      32,
+      51
+    ]
+  },
+  "imp_king_attack": {
+    "frames": 7,
+    "w": 76,
+    "h": 76,
+    "box": [
+      19,
+      11,
+      44,
+      50
+    ]
+  },
+  "imp_king_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      8,
+      7,
+      47,
+      49
+    ]
+  },
+  "slime_helm_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      13,
+      6,
+      44,
+      55
+    ]
+  },
+  "slime_helm_attack": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      13,
+      4,
+      46,
+      58
+    ]
+  },
+  "slime_helm_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      8,
+      5,
+      53,
+      57
+    ]
+  },
+  "spider_iron_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      4,
+      3,
+      59,
+      61
+    ]
+  },
+  "spider_iron_attack": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      3,
+      4,
+      61,
+      59
+    ]
+  },
+  "spider_iron_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      3,
+      3,
+      61,
+      60
+    ]
+  },
+  "lord_summon1_idle": {
+    "frames": 4,
+    "w": 96,
+    "h": 96,
+    "box": [
+      0,
+      2,
+      91,
+      94
+    ]
+  },
+  "lord_summon1_attack": {
+    "frames": 7,
+    "w": 96,
+    "h": 96,
+    "box": [
+      0,
+      2,
+      96,
+      94
+    ]
+  },
+  "lord_summon1_death": {
+    "frames": 7,
+    "w": 96,
+    "h": 96,
+    "box": [
+      0,
+      3,
+      96,
+      93
+    ]
+  },
+  "skeleton_dread_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      24,
+      5,
+      32,
+      53
+    ]
+  },
+  "skeleton_dread_attack": {
+    "frames": 7,
+    "w": 84,
+    "h": 84,
+    "box": [
+      18,
+      13,
+      48,
+      52
+    ]
+  },
+  "skeleton_dread_death": {
+    "frames": 7,
+    "w": 84,
+    "h": 84,
+    "box": [
+      16,
+      13,
+      51,
+      54
+    ]
+  },
+  "imp_warlock_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      20,
+      5,
+      31,
+      53
+    ]
+  },
+  "imp_warlock_attack": {
+    "frames": 7,
+    "w": 80,
+    "h": 80,
+    "box": [
+      16,
+      12,
+      50,
+      52
+    ]
+  },
+  "imp_warlock_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      5,
+      6,
+      55,
+      50
+    ]
+  },
+  "necro_lich_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      18,
+      5,
+      35,
+      52
+    ]
+  },
+  "necro_lich_attack": {
+    "frames": 7,
+    "w": 80,
+    "h": 80,
+    "box": [
+      20,
+      12,
+      42,
+      51
+    ]
+  },
+  "necro_lich_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      4,
+      8,
+      59,
+      48
+    ]
+  },
+  "necro_bone_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      22,
+      8,
+      34,
+      49
+    ]
+  },
+  "necro_bone_attack": {
+    "frames": 7,
+    "w": 72,
+    "h": 72,
+    "box": [
+      18,
+      11,
+      45,
+      49
+    ]
+  },
+  "necro_bone_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      8,
+      10,
+      44,
+      46
+    ]
+  },
+  "spider_crown_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      5,
+      5,
+      58,
+      57
+    ]
+  },
+  "spider_crown_attack": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      3,
+      5,
+      61,
+      58
+    ]
+  },
+  "spider_crown_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      2,
+      4,
+      64,
+      59
+    ]
+  },
+  "dragon_knight_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      1,
+      2,
+      64,
+      64
+    ]
+  },
+  "dragon_knight_attack": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      2,
+      1,
+      64,
+      65
+    ]
+  },
+  "dragon_knight_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      1,
+      1,
+      64,
+      65
+    ]
+  },
+  "dragon_royal_idle": {
+    "frames": 4,
+    "w": 68,
+    "h": 68,
+    "box": [
+      2,
+      1,
+      63,
+      65
+    ]
+  },
+  "dragon_royal_attack": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      3,
+      3,
+      64,
+      63
+    ]
+  },
+  "dragon_royal_death": {
+    "frames": 7,
+    "w": 68,
+    "h": 68,
+    "box": [
+      1,
+      3,
+      64,
+      63
+    ]
   }
 }

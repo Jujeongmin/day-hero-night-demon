@@ -473,3 +473,52 @@ button.pill.ticket.buy:disabled { animation: none; filter: grayscale(0.6) bright
 @keyframes ticket-buy { 50% { filter: brightness(1.35); } }
 .scene-foot .btn.big:disabled { filter: grayscale(0.7) brightness(0.6); }
 @media (prefers-reduced-motion: reduce) { button.pill.ticket.buy { animation: none; } }
+
+/* 소환 의식 (2026-10-02 승인: 탑 왼쪽 제단 아이콘 → 전체 화면 뿔 해골 제단, 결과 카드는 창틀 그림 + 등급 빛) */
+.summon-entry { position: absolute; left: 6px; top: 96px; z-index: 3; width: 54px; padding: 0; background: none; border: 0; display: grid; justify-items: center; color: #e7c8ff; font-size: 12px; text-shadow: 0 1px 0 #000, 0 0 3px #000; }
+.summon-entry img { width: 44px; height: auto; image-rendering: pixelated; filter: drop-shadow(0 0 5px #c070ffcc); animation: summon-glow 2.4s ease-in-out infinite; }
+.summon-entry:hover img { filter: drop-shadow(0 0 8px #d9a0ff) brightness(1.15); }
+@keyframes summon-glow { 50% { filter: drop-shadow(0 0 9px #c070ff) brightness(1.1); } }
+.summon { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; background: #07030a; }
+.summon-stage { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; background: #0b0a1c url(/ui/summon_altar.png) center 85% / 720px 360px no-repeat; image-rendering: pixelated; }
+.summon-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.summon-top .close, .summon-rates .close { background: none; border: 0; padding: 2px; width: 34px; height: 34px; }
+.summon-top .close img, .summon-rates .close img { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+.summon-pity { display: grid; justify-items: center; gap: 2px; padding-bottom: 6px; text-shadow: 0 1px 0 #000, 0 0 4px #000; }
+.summon-pity b { font-weight: 400; color: var(--gold); font-size: 20px; }
+.summon-pity .link { font-size: 14px; text-decoration: underline; color: #e9dcff; }
+.summon-foot { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 6px 8px 10px; border: 12px solid transparent; border-bottom-width: 6px; border-image: url(/ui/frame_sq.png) 10 / 12px 12px 6px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated; }
+.summon-foot h4 { margin: 0; font-weight: 400; font-size: 14px; color: var(--bone); }
+.summon-foot h4 small { color: var(--muted); font-size: 12px; margin-left: 4px; }
+.summon-pull { flex-direction: column; min-height: 50px; font-size: 18px; line-height: 1.1; }
+.summon-pull span { display: inline-flex; align-items: center; gap: 3px; font-size: 15px; color: var(--gold); }
+.summon-pull img { width: 16px; height: 16px; image-rendering: pixelated; }
+.summon-coll { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+.summon-coll .cell { padding: 0; background: none; border: 0; aspect-ratio: 1; }
+.summon-coll .cell .portrait { display: block; width: 100%; height: 100%; border-width: 5px; border-image-width: 5px; }
+.summon-coll .cell.miss .portrait-art { filter: brightness(0) opacity(.45); }
+.summon-coll .cell.wear { filter: drop-shadow(0 0 3px var(--gold)); }
+.summon-coll .cell.legend:not(.miss) { filter: drop-shadow(0 0 4px #ffcf4d99); }
+.summon-coll .cell.legend.wear { filter: drop-shadow(0 0 5px var(--gold)) brightness(1.1); }
+.summon-over { position: absolute; inset: 0; z-index: 2; background: #07030aee; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 12px; }
+.summon-over h3 { margin: 0; font-weight: 400; font-size: 22px; color: var(--bone); }
+.summon-rates { width: min(100%, 340px); display: flex; flex-direction: column; gap: 6px; padding: 6px 8px; border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated; font-size: 14px; }
+.summon-rates b { font-weight: 400; }
+.summon-rates small { color: var(--muted); font-size: 12px; }
+.grade-rare b { color: #8cc4ff; } .grade-epic b { color: #d9a0ff; } .grade-legend b { color: var(--gold); }
+.summon-cards { display: grid; grid-template-columns: repeat(4, 66px); gap: 8px; justify-content: center; }
+.summon-cards.n1 { grid-template-columns: 96px; }
+.summon-cards .card { height: 84px; border: 7px solid transparent; border-image: url(/ui/frame_sq.png) 10 fill / 7px stretch; image-rendering: pixelated; display: grid; justify-items: center; align-content: center; gap: 2px; position: relative; font-size: 11px; filter: brightness(.55); }
+.summon-cards.n1 .card { height: 120px; font-size: 14px; }
+.summon-cards .card.open { filter: none; animation: card-flip .25s ease-out; }
+.summon-cards .card > img { width: 36px; height: 36px; image-rendering: pixelated; }
+.summon-cards .card .portrait { display: block; width: 48px; height: 48px; border: 0; border-image: none; }
+.summon-cards .card b { font-weight: 400; color: var(--gold); text-align: center; line-height: 1.1; }
+.summon-cards .card .tag { position: absolute; top: -9px; right: -9px; z-index: 1; font-size: 10px; background: var(--ruby); color: #fff; padding: 0 3px; border-radius: 3px; }
+.summon-cards .card.rare { filter: drop-shadow(0 0 4px #5aa8ff); }
+.summon-cards .card.epic { filter: drop-shadow(0 0 7px #c070ff); }
+.summon-cards .card.legend { filter: drop-shadow(0 0 10px var(--gold)); animation: card-flip .25s ease-out, card-shake .4s .25s; }
+@keyframes card-flip { from { transform: rotateY(90deg) scale(.9); } to { transform: none; } }
+@keyframes card-shake { 25% { translate: -2px 0; } 50% { translate: 2px 0; } 75% { translate: -1px 0; } }
+.summon-over .btn.big { min-width: 160px; }
+@media (prefers-reduced-motion: reduce) { .summon-entry img, .summon-cards .card { animation: none !important; } }

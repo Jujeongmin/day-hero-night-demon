@@ -71,13 +71,15 @@ export default function Settings(props: {
   const left = Math.max(0, 1 + vipPerks(vipOf(home.state)).nicknameExtra - (home.state.profile.nicknameChanges ?? 0));
   // 마왕 외형: 기본 + 이번 시즌 패스(해골) + 영구 소장(흑룡). 기본만 있으면 칸을 숨긴다
   const st = home.state;
-  const looks: ('base' | 'skull' | 'dragon' | 'lava' | 'demon')[] = ['base'];
+  const looks: ('base' | 'skull' | 'dragon' | 'lava' | 'demon' | 'summon1')[] = ['base'];
   if (st.season.pass) looks.push('skull');
   if (st.skins?.includes('dragon')) looks.push('dragon');
   // VIP 전용 외형(5·8등급)
   const vipLv = vipOf(st);
   if (vipLv >= BALANCE.vip.skins.lava) looks.push('lava');
   if (vipLv >= BALANCE.vip.skins.demon) looks.push('demon');
+  // 소환 전설 외형
+  if (st.skins?.includes('summon1')) looks.push('summon1');
   const current = chooseLordSkin(st.lordSkin ?? null, st.skins ?? [], st.season.pass, vipLv) ?? 'base';
 
   const change = (patch: Partial<AudioPrefs>) => {

@@ -4,6 +4,7 @@ import { castleUpgradeCost, heroBonusLevels, unitUpgradeCost } from '../../serve
 import { awakenCost, formatNum, lordLevel, starMult } from '../../server/src/growth';
 import type { StarUnit } from '../../server/src/state';
 import { Portrait } from '../render/Sprite';
+import { monsterSpriteId } from '../render/skins';
 import { skillText, unitStats } from '../render/unitStats';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { emitTut } from '../tutorial/bus';
@@ -96,6 +97,10 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
     id: string, label: string, level: number, onUp: () => Promise<unknown>, first: boolean,
     unit: { stats: Stats; skill: SkillId; cooldown: number }, note?: string,
   ) => {
+    // 소환으로 얻은 장비 외형(2026-10-02 사용자: 강화 창에서 몬스터마다 입힌다). 누를 때마다 기본 → 외형 → … → 기본
+    const looks = BALANCE.summon.gear.filter((g) => g.split(':')[0] === id && s.gear?.owned.includes(g));
+    const worn = s.gear?.worn[id as MonsterId];
+    const nextLook = looks.length === 0 ? null : worn ? looks[looks.indexOf(worn) + 1] ?? null : looks[0];
     const cost = unitUpgradeCost(level);
     const { now, gain } = unitStats(unit.stats, level);
     const stat = (k: keyof Stats) => (
@@ -107,12 +112,17 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
     return (
       <div className="line unit-line" key={id}>
         <span className="item">
-          <Portrait id={id} label={label} />
+          <Portrait id={id in MONSTERS ? monsterSpriteId(id, worn) : id} label={label} />
           <span>
             {label} {T.level(level)} <Stars n={s.stars?.[id as StarUnit]} />
             <span className="stats">{(['hp', 'atk', 'def'] as const).map(stat)}</span>
             <small className="skill">{skillText(unit.skill, unit.cooldown)}</small>
             {note && <small className="hero-next">{note}</small>}
+            {looks.length > 0 && (
+              <button className="look-chip" disabled={busy} onClick={() => act(() => api.wearGear(id, nextLook))}>
+                {T.summon.look(worn ? T.summon.gear[worn] : T.summon.baseLook)} ▸
+              </button>
+            )}
           </span>
         </span>
         <button className="btn small" data-tut={first ? 'upgrade-first' : undefined} disabled={busy || cost === null || home.gold < cost} onClick={() => act(onUp)}>

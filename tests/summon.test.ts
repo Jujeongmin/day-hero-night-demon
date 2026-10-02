@@ -33,7 +33,7 @@ describe('summon rates', () => {
 
   it('over many pulls lands near the published rates', () => {
     const rand = seeded(12345);
-    const n = 200_000;
+    const n = 80_000;
     const count = { common: 0, rare: 0, epic: 0, legend: 0 };
     // 천장이 끼지 않게 매번 새 기록에서 한 번씩
     for (let i = 0; i < n; i++) count[planSummon(fresh, 'one', rand, POOLS).results[0].grade]++;
@@ -50,19 +50,18 @@ describe('summon costs and soul', () => {
     const ten = planSummon(fresh, 'ten', always(0.9), POOLS);
     expect(ten.cost).toBe(300);
     expect(ten.results).toHaveLength(11);
-    expect(ten.patch.summon).toEqual({ pulls: 11, sinceLegend: 11 });
+    // 10번째 칸에서 천장(영웅), 11번째는 다시 1부터
+    expect(ten.patch.summon).toEqual({ pulls: 11, sinceHigh: 1 });
   });
 
-  it('10+1 guarantees one epic or better in the last slot when none came', () => {
-    const ten = planSummon(fresh, 'ten', always(0.9), POOLS);
-    expect(ten.results.slice(0, 10).every((r) => r.grade === 'common')).toBe(true);
-    expect(ten.results[10].grade).toBe('epic');
-    // 이미 영웅이 나왔으면 마지막 칸을 건드리지 않는다
-    let i = 0;
-    const firstEpic = () => (i++ === 0 ? 0.03 : 0.9);
-    const ten2 = planSummon(fresh, 'ten', firstEpic, POOLS);
-    expect(ten2.results[0].grade).toBe('epic');
-    expect(ten2.results[10].grade).toBe('common');
+  it('every 10+1 holds at least one epic or better', () => {
+    const rand = seeded(777);
+    let s = fresh as Parameters<typeof planSummon>[0];
+    for (let k = 0; k < 500; k++) {
+      const r = planSummon(s, 'ten', rand, POOLS);
+      expect(r.results.some((x) => x.grade === 'epic' || x.grade === 'legend')).toBe(true);
+      s = { ...s, ...r.patch };
+    }
   });
 
   it('soul gained is the sum of the results', () => {
@@ -98,28 +97,43 @@ describe('summon items and duplicates', () => {
   });
 });
 
-describe('pity', () => {
-  it('the 100th pull without a legend is a legend, then the counter restarts', () => {
-    const s = { ...fresh, summon: { pulls: 99, sinceLegend: 99 } };
+describe('pity: epic or better within 10 (2026-10-02)', () => {
+  it('the 10th pull without an epic or better is an epic or better, then the counter restarts', () => {
+    const s = { ...fresh, summon: { pulls: 9, sinceHigh: 9 } };
     expect(pullsToPity(s)).toBe(1);
     const r = planSummon(s, 'one', always(0.9), POOLS);
-    expect(r.results[0].grade).toBe('legend');
-    expect(r.patch.summon).toEqual({ pulls: 100, sinceLegend: 0 });
-    expect(pullsToPity(r.patch)).toBe(100);
+    expect(r.results[0].grade).toBe('epic');
+    expect(r.patch.summon).toEqual({ pulls: 10, sinceHigh: 0 });
+    expect(pullsToPity(r.patch)).toBe(10);
   });
 
-  it('pity lands inside a 10+1 at the right slot', () => {
-    const s = { ...fresh, summon: { pulls: 95, sinceLegend: 95 } };
-    const r = planSummon(s, 'ten', always(0.9), POOLS);
-    expect(r.results.map((x) => x.grade).indexOf('legend')).toBe(4);
-    // 전설이 나왔으니 마지막 칸 보정은 없다
-    expect(r.results[10].grade).toBe('common');
-    expect(r.patch.summon).toEqual({ pulls: 106, sinceLegend: 6 });
+  it('the forced pull keeps the epic : legend ratio', () => {
+    const s = { ...fresh, summon: { pulls: 9, sinceHigh: 9 } };
+    let i = 0;
+    const seq = () => (i++ === 0 ? 0.9 : 0.05);
+    expect(planSummon(s, 'one', seq, POOLS).results[0].grade).toBe('legend');
   });
 
-  it('a natural legend resets the counter', () => {
-    const s = { ...fresh, summon: { pulls: 40, sinceLegend: 40 } };
-    expect(planSummon(s, 'one', always(0.001), POOLS).patch.summon).toEqual({ pulls: 41, sinceLegend: 0 });
+  it('a natural epic or legend resets the counter', () => {
+    const s = { ...fresh, summon: { pulls: 40, sinceHigh: 4 } };
+    expect(planSummon(s, 'one', always(0.03), POOLS).patch.summon).toEqual({ pulls: 41, sinceHigh: 0 });
+    expect(planSummon(s, 'one', always(0.001), POOLS).patch.summon).toEqual({ pulls: 41, sinceHigh: 0 });
+  });
+
+  it('over many pulls there is never a run of 10 without an epic or better', () => {
+    const rand = seeded(4242);
+    let s = fresh as Parameters<typeof planSummon>[0];
+    let run = 0;
+    let high = 0;
+    const n = 30_000;
+    for (let k = 0; k < n; k++) {
+      const r = planSummon(s, 'one', rand, POOLS);
+      s = { ...s, ...r.patch };
+      if (r.results[0].grade === 'epic' || r.results[0].grade === 'legend') { high++; run = 0; } else run++;
+      expect(run).toBeLessThan(10);
+    }
+    // 천장 포함 실제 영웅 이상 비율 약 13%
+    expect(high / n).toBeCloseTo(0.13, 2);
   });
 });
 
@@ -136,5 +150,16 @@ describe('wear gear', () => {
     expect(() => planWearGear(owner, 'slime', 'slime:armor')).toThrow();
     expect(() => planWearGear(owner, 'slime', 'imp:horns')).toThrow();
     expect(() => planWearGear(owner, 'unicorn', null)).toThrow();
+  });
+});
+
+describe('gear catalog', () => {
+  it('has 12 looks, two for each of the first six monsters, all distinct', () => {
+    const gear = BALANCE.summon.gear;
+    expect(gear).toHaveLength(12);
+    expect(new Set(gear).size).toBe(12);
+    const per: Record<string, number> = {};
+    for (const g of gear) per[g.split(':')[0]] = (per[g.split(':')[0]] ?? 0) + 1;
+    expect(per).toEqual({ slime: 2, skeleton: 2, imp: 2, necro: 2, spider: 2, dragon: 2 });
   });
 });

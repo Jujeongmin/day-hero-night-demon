@@ -8,6 +8,14 @@ export function lordSpriteId(skin: LordSkin | undefined): string {
   return `${id}_idle` in SPRITES ? id : 'lord';
 }
 
+/** 몬스터 장비 외형(소환 영웅, "몬스터:장비") 시트 이름: `<몬스터>_<장비>_*`. 안 입었거나 시트가 아직 없으면 기본 몬스터 */
+export function monsterSpriteId(kind: string, gear: string | undefined): string {
+  if (!gear) return kind;
+  const [monster, name] = gear.split(':');
+  const id = `${monster}_${name}`;
+  return monster === kind && `${id}_idle` in SPRITES ? id : kind;
+}
+
 /** 유료 외형(해골 군주·흑룡)은 몸 테두리가 보랏빛으로 천천히 빛난다 (2026-09-29 승인 D안). */
 export const AURA = { color: '#b04dff', minBlur: 3, maxBlur: 9, periodMs: 1600 };
 

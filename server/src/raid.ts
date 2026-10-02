@@ -19,7 +19,7 @@ export function floorEnemies(s: CastleSnapshot, floor: number): EnemySpec[] {
   // 각성 별은 능력치 배수로 곱한다
   return s.floors[floor].monsters.map((m) => {
     const k = (s.mult ?? 1) * starMult(m.stars);
-    return k !== 1 ? { id: m.id, level: m.level, mult: k } : { id: m.id, level: m.level };
+    return { id: m.id, level: m.level, ...(k !== 1 ? { mult: k } : {}), ...(m.gear ? { gear: m.gear } : {}) };
   });
 }
 

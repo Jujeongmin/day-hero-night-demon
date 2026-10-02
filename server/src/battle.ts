@@ -25,6 +25,8 @@ export interface Fighter {
   web: number;
   stun: number;
   ghost: boolean;
+  /** 입힌 장비 외형(소환). 표시용이라 능력치와 상관없다 */
+  gear?: string;
 }
 
 export interface FloorBattle {
@@ -51,12 +53,12 @@ export type BattleEvent =
 export interface FloorLog {
   /** simulateAuto에 넘긴 floors의 번호(마지막이 옥좌) */
   floor: number;
-  start: Pick<Fighter, 'key' | 'side' | 'kind' | 'maxHp' | 'hp'>[];
+  start: Pick<Fighter, 'key' | 'side' | 'kind' | 'maxHp' | 'hp' | 'gear'>[];
   events: BattleEvent[];
 }
 
 export interface HeroSpec { id: HeroId; level: number; hp?: number; mult?: number }
-export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number }
+export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number; gear?: string }
 
 function makeFighter(
   key: string, side: Side, kind: UnitKind, level: number, row: 'front' | 'back',
@@ -87,7 +89,8 @@ export function createFloorBattle(input: {
     } else {
       const def = MONSTERS[e.id];
       const s = scaleStats(def.stats, e.level, e.mult ?? 1);
-      fighters.push(makeFighter(`e${i}:${e.id}`, 'enemy', e.id, e.level, i === 0 ? 'front' : 'back', s, s.hp, def.skill, def.cooldown));
+      const f = makeFighter(`e${i}:${e.id}`, 'enemy', e.id, e.level, i === 0 ? 'front' : 'back', s, s.hp, def.skill, def.cooldown);
+      fighters.push(e.gear ? { ...f, gear: e.gear } : f);
     }
   });
   const battle: FloorBattle = {
@@ -169,7 +172,7 @@ export function simulateAuto(input: {
     const created = createFloorBattle({ heroes: party, enemies: floor.enemies, tactic: 'charge', seed });
     let battle = created.battle;
     const entry: FloorLog | undefined = log
-      ? { floor: i, start: battle.fighters.map(({ key, side, kind, maxHp, hp: h }) => ({ key, side, kind, maxHp, hp: h })), events: [...created.events] }
+      ? { floor: i, start: battle.fighters.map(({ key, side, kind, maxHp, hp: h, gear }) => ({ key, side, kind, maxHp, hp: h, ...(gear ? { gear } : {}) })), events: [...created.events] }
       : undefined;
     while (battle.outcome === 'ongoing') {
       const r = playRound(battle, ultReady(battle) ? firstAliveHero(battle) : null);

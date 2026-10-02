@@ -142,8 +142,8 @@ export interface UserState {
   title?: { kind: 'champion' | 'top3' | 'top10'; season: string } | null;
   /** 오늘(한국 시간) 출정 입장권·마왕 처치 영혼석 횟수 (sortie.ts) */
   daily?: { day: string; sorties: number; bought: number; lordSoul: number };
-  /** 소환: 지금까지 뽑은 수, 마지막 전설 뒤로 뽑은 수(천장). 초기화해도 남는다 */
-  summon?: { pulls: number; sinceLegend: number };
+  /** 소환: 지금까지 뽑은 수, 마지막 영웅 이상 뒤로 뽑은 수(천장). 초기화해도 남는다 */
+  summon?: { pulls: number; sinceHigh: number };
   /** 몬스터 장비 외형(소환 영웅): 가진 것, 몬스터마다 입힌 것. 표시용, 초기화해도 남는다 */
   gear?: { owned: string[]; worn: Partial<Record<MonsterId, string>> };
   /** 매칭용 공개 정보(castles 컬렉션)를 새 전투력 단위로 다시 쓴 판. 2 = 큰 숫자 성장(2026-09-29) */

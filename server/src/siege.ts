@@ -17,7 +17,7 @@ export function siegeWave(stage: number): HeroSpec[] {
 function defenseOf(castleLevel: number, floors: ResolvedFloor[], mult: number, lordStars = 0) {
   const m = (k: number) => (k === 1 ? {} : { mult: k });
   return [
-    ...floors.map((f) => ({ enemies: f.monsters.map((u) => ({ id: u.id, level: u.level, ...m(mult * starMult(u.stars)) })) })),
+    ...floors.map((f) => ({ enemies: f.monsters.map((u) => ({ id: u.id, level: u.level, ...m(mult * starMult(u.stars)), ...(u.gear ? { gear: u.gear } : {}) })) })),
     { enemies: [{ id: 'lord' as const, level: lordLevel(castleLevel), ...m(mult * starMult(lordStars)) }] },
   ];
 }

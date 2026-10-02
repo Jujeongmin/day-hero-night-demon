@@ -10,14 +10,15 @@ export interface SummonPools { gear: readonly string[]; legend: readonly string[
 
 const POOLS: SummonPools = { gear: BALANCE.summon.gear, legend: BALANCE.summon.legendLooks };
 
-/** 소환 기록: 지금까지 뽑은 수, 마지막 전설 뒤로 뽑은 수(천장) */
+/** 소환 기록: 지금까지 뽑은 수, 마지막 영웅 이상 뒤로 뽑은 수(천장) */
 export function summonOf(s: Pick<UserState, 'summon'>): NonNullable<UserState['summon']> {
-  return s.summon ?? { pulls: 0, sinceLegend: 0 };
+  const r = s.summon as { pulls: number; sinceHigh?: number } | undefined;
+  return { pulls: r?.pulls ?? 0, sinceHigh: r?.sinceHigh ?? 0 };
 }
 
-/** 전설 확정까지 남은 소환 수(이번 소환을 포함해 센다) */
+/** 영웅 이상 확정까지 남은 소환 수(이번 소환을 포함해 센다) */
 export function pullsToPity(s: Pick<UserState, 'summon'>): number {
-  return BALANCE.summon.pity - summonOf(s).sinceLegend;
+  return BALANCE.summon.pity - summonOf(s).sinceHigh;
 }
 
 function rollGrade(r: number): SummonGrade {
@@ -44,19 +45,20 @@ export function planSummon(
   const cost = kind === 'ten' ? B.costTen : B.costOne;
   const gearOwned = new Set(s.gear?.owned ?? []);
   const skins = new Set(s.skins);
-  let { pulls, sinceLegend } = summonOf(s);
+  let { pulls, sinceHigh } = summonOf(s);
   const results: SummonResult[] = [];
   let highSeen = false;
   for (let i = 0; i < n; i++) {
     pulls += 1;
-    sinceLegend += 1;
-    let grade: SummonGrade = sinceLegend >= B.pity ? 'legend' : rollGrade(rand());
-    // 10+1의 마지막 칸: 그때까지 영웅 이상이 없으면 영웅 이상으로 다시 뽑는다(영웅:전설 비율 그대로)
-    if (kind === 'ten' && i === n - 1 && !highSeen && (grade === 'common' || grade === 'rare')) {
+    sinceHigh += 1;
+    let grade: SummonGrade = rollGrade(rand());
+    // 천장(영웅 이상 없이 pity번째) 또는 10+1의 마지막 칸(그때까지 영웅 이상이 없으면): 영웅 이상으로 다시 뽑는다(영웅:전설 비율 그대로)
+    const forced = sinceHigh >= B.pity || (kind === 'ten' && i === n - 1 && !highSeen);
+    if (forced && (grade === 'common' || grade === 'rare')) {
       grade = rand() < B.rates.legend / (B.rates.legend + B.rates.epic) ? 'legend' : 'epic';
     }
     if (grade === 'epic' || grade === 'legend') highSeen = true;
-    if (grade === 'legend') sinceLegend = 0;
+    if (grade === 'epic' || grade === 'legend') sinceHigh = 0;
     if (grade === 'common') results.push({ grade, soul: B.commonSoul });
     else if (grade === 'rare') results.push({ grade, soul: B.rareSoul });
     else {
@@ -80,7 +82,7 @@ export function planSummon(
     soul: results.reduce((a, r) => a + r.soul, 0),
     results,
     patch: {
-      summon: { pulls, sinceLegend },
+      summon: { pulls, sinceHigh },
       gear: { owned: [...gearOwned], worn: s.gear?.worn ?? {} },
       skins: [...skins],
     },
