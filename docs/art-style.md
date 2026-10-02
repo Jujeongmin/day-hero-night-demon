@@ -157,3 +157,7 @@
 
 ## 시즌 1위 한정 외형 (2026-10-02 승인)
 - 소환 전설 후보(object 19d478ca 리뷰)의 남은 3장을 꺼냄: 시즌 1 뼈 용 리치 왕 `lord_lich_*`(object 0833ee80, 쓰러짐은 두 번째 판 death2, 첫 판 `art/frames/lord_lich_death_v1`), 시즌 2 외눈 심연 군주 `lord_abyss_*`(object b07a0262, 쓰러짐이 약해 다시 뽑을 만함), 시즌 3 심연 황제 `lord_emperor_*`(object 9d58c765). v3 idle 4 · attack/death 7.
+
+## 새 무료 몬스터 3종 (2026-10-02 승인)
+- 시안 `art/monsters/concept2/`(pixflux 64px: 늑대인간 double_b seed 3212, 역병 버섯 heal_a 3201, 심연의 눈 aoe_b 3222). 캐릭터를 새로 뽑지 않고 시안 그림을 `animate_image`로 바로 움직였다(움직임 하나 1회). 늑대인간 공격은 앞 여백을 둔 96×64로 다시 만들고, 하얗게 나온 손은 분홍 털색으로 칠함. 버섯 쓰러짐은 한 번 다시 만듦.
+- 낱장 → 스트립: `scripts/frames-to-strip.py`(전투는 가로 가운데·발 84% 기준이라 72×72에 여백, 늑대인간 공격 128×72, 눈은 아래 6px 내림). 원본 프레임 `art/monsters/new3/`, 미리보기 https://claude.ai/artifact/XvKghFGLJ9D1rXy4hr4nbe

@@ -318,7 +318,7 @@ Verse8 공식 기능이 존재하는 영역을 불필요하게 자체 구현하�
 
 1. 현재 상태: `PROJECT/Status.md` (된 것·남은 것), 결정 기록: `docs/ui-style.md`, `docs/art-style.md`, `docs/vxshop-products.md`. 계획서의 Task 15(사용자 작업)·20이 남았다. Task 19 밸런스는 2026-09-29 B안으로 끝.
 2. 준비: `npm install`, `cd server && npm install` (서버 타입 검사용). `.env`(VITE_AGENT8_VERSE/ACCOUNT)는 저장소에 들어 있다.
-3. 확인: `npm test`(vitest 207개), `npm run test:server`(하네스 31개), `npx tsc --noEmit -p tsconfig.app.json`, `npx tsc -p server/tsconfig.json --noEmit`.
+3. 확인: `npm test`(vitest 214개), `npm run test:server`(하네스 32개), `npx tsc --noEmit -p tsconfig.app.json`, `npx tsc -p server/tsconfig.json --noEmit`.
 4. 미리보기: `npx vite --port 5199 --strictPort` (5173은 다른 것이 쓸 때가 있다). 서버는 Agent8 편집기가 `<verse>-preview`에 배포하고, `git push origin develop`이 빌드·배포다.
 5. **로컬 서버 모드(배포 전 확인은 이걸로 먼저):** 미리보기 주소에 `?local=1`을 붙이면 브라우저 안에서 `server/src/server.ts`를 그대로 돌린다(`src/services/localServer.ts`, 개발 서버에서만 켜지고 빌드에는 안 들어감). `&acct=이름`으로 계정 바꾸기. 콘솔 도구 `localServer.buy('premium')`, `.gold(5000)`, `.soul(100)`, `.rewind(분)`, `.as('다른계정')`, `.wipe()`, `.summon('ten')`, `.pity(9)`, `.gear('slime:crown')`, `.lv('slime', 50)`, `.unpass()`(모든 로컬 계정을 패스 안 산 상태로). 결제는 웹훅 직접 호출, 광고는 항상 끝까지 본 것으로 친다. 서버 변경은 여기서 먼저 끝까지 확인하고 사용자에게 보여 준다.
 
@@ -333,6 +333,6 @@ Verse8 공식 기능이 존재하는 영역을 불필요하게 자체 구현하�
 - 서브에이전트는 토큰을 많이 써서 쓰지 않는다. 이 세션 안에서 직접 한다.
 
 도구 메모:
-- PixelLab MCP: 한 달 2,000회, 2026-10-28 갱신. 2026-10-02 시점 약 1,170회 남음(같은 계정의 다른 작업도 8칸 동시 작업을 함께 쓴다). 캐릭터 규격은 `docs/art-style.md`.
+- PixelLab MCP: 한 달 2,000회, 2026-10-28 갱신. 2026-10-02 저녁 약 1,140회 남음(같은 계정의 다른 작업도 8칸 동시 작업을 함께 쓴다). 캐릭터 규격은 `docs/art-style.md`.
 - 프로젝트가 OneDrive 폴더면 Vite 파일 감시가 빠져서 `vite.config.ts`에 폴링을 켜 두었다. 다른 PC에서 일반 폴더면 그대로 둬도 된다.
 - 로컬 하네스의 `$asset`은 계정 인자를 무시한다. 계정 간 골드 이동은 preview 서버에서 확인한다. 원격 함수는 함수당 초당 10회 제한.
