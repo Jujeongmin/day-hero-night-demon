@@ -100,7 +100,7 @@ export function createApi(server: RemoteServer) {
     advanceOnboarding: (to: OnboardingStage) => call<{ onboarding: OnboardingState }>('advanceOnboarding', [to]),
     setNickname: (name: string) => call<{ nickname: string; onboarding: OnboardingState; nicknameChanges: number }>('setNickname', [name]),
     resetProgress: (text: string) => call<{ ok: true }>('resetProgress', [text]),
-    setLordSkin: (skin: 'base' | 'skull' | 'dragon' | 'lava' | 'demon' | 'summon1') => call<{ lordSkin: string }>('setLordSkin', [skin]),
+    setLordSkin: (skin: 'base' | 'skull' | 'dragon' | 'lava' | 'demon' | 'summon1' | 'lich' | 'abyss' | 'emperor') => call<{ lordSkin: string }>('setLordSkin', [skin]),
     claimAdReward: (placement: Placement, requestId: string | null) => call<{ gold: number; soul: number }>('claimAdReward', [placement, requestId]),
   };
 }

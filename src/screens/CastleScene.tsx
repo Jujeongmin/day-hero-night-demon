@@ -79,11 +79,13 @@ export default function CastleScene(props: {
   /** 순위(리그) 창·방어 기록 창 열기(탑 왼쪽 아이콘, 2026-10-02) */
   onRank: () => void;
   onLog: () => void;
+  /** 상점(오른쪽 줄 보석 상자, 2026-10-02) */
+  onShop: () => void;
   /** 내 브래킷 순위(모르면 null) */
   rank: number | null;
   onError: (msg: string) => void;
 }) {
-  const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onSiegeRank, onPass, onSummon, onRank, onLog, rank, onError } = props;
+  const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onSiegeRank, onPass, onSummon, onRank, onLog, onShop, rank, onError } = props;
   const s = home.state;
   const [busy, setBusy] = useState(false);
   const [choose, setChoose] = useState(false);
@@ -343,6 +345,13 @@ export default function CastleScene(props: {
             <img src="ui/idle.png" alt="" draggable={false} />
             <b>+{formatNum(home.idlePreview)}</b>
             <small>{T.idleBtn}</small>
+          </button>
+        )}
+        {/* 상점(2026-10-02 승인: 오른쪽 줄 패스 → 방치 → 상점, 뿔 달린 보석 상자) */}
+        {(s.onboarding?.at ?? 'done') === 'done' && (
+          <button className="side-icon shop-entry" onClick={onShop} aria-label={T.icons.shop}>
+            <img src="ui/shop.png" alt="" draggable={false} />
+            <span>{T.icons.shop}</span>
           </button>
         )}
       </div>

@@ -238,10 +238,10 @@ export const BALANCE = {
   /** 전체 순위 칭호: 1위 champion(+ 그 시즌 한정 마왕 외형·명예의 전당), 2~3위 top3(+ 명예의 전당), 4~10위 top10. 다음 시즌 동안 이름 옆에 보인다 */
   globalRankTitles: { top3: 3, top10: 10 },
   /**
-   * 시즌별 전체 1위 한정 마왕 외형(art/lord 보관 후보). 없는 시즌은 외형 없이 칭호만.
+   * 시즌별 전체 1위 한정 마왕 외형(2026-10-02 승인: 시즌 1 뼈 용 리치 왕 → 2 외눈 심연 군주 → 3 심연 황제). 없는 시즌은 외형 없이 칭호만.
    * 그림·움직임이 준비되면 여기에 시즌 id를 더한다
    */
-  seasonChampionSkins: {} as Record<string, string>,
+  seasonChampionSkins: { s1: 'lich', s2: 'abyss', s3: 'emperor' } as Record<string, string>,
   /** 누적 VX 계산용 상품 가격. 결제 웹훅에 가격이 없어서 서버가 들고 있다 — 대시보드 가격을 바꾸면 여기도 같이 바꾼다 */
   productVx: {
     starter_pack: 100, season_pass: 400, speed_x3: 300, premium: 500,

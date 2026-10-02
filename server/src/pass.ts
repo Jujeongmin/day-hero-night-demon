@@ -33,7 +33,7 @@ export function chooseLordSkin(chosen: 'base' | LordSkin | null, skins: string[]
   // VIP 전용 외형: 등급이 되면 고를 수 있다(BALANCE.vip.skins)
   if (chosen === 'lava' || chosen === 'demon') return vip >= (BALANCE.vip.skins[chosen] ?? Infinity) ? chosen : pass ? 'skull' : undefined;
   // 영구 소장 외형: 패스 10단계 흑룡, 소환 전설
-  if (chosen === 'dragon' || chosen === 'summon1') return skins.includes(chosen) ? chosen : pass ? 'skull' : undefined;
+  if (chosen === 'dragon' || chosen === 'summon1' || chosen === 'lich' || chosen === 'abyss' || chosen === 'emperor') return skins.includes(chosen) ? chosen : pass ? 'skull' : undefined;
   if (chosen === 'skull') return pass ? 'skull' : undefined;
   return pass ? 'skull' : undefined;
 }

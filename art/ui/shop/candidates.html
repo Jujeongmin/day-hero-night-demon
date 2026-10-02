@@ -1,0 +1,168 @@
+<title>프리미엄 상점 후보</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<style>
+/* 레이아웃: 휴대폰 모형 2안(전체 화면 상점) + 입구 위치 + 시즌 1위 외형. 게임과 같은 밤 색 한 테마 */
+:root {
+  color-scheme: dark;
+  --page: #120c18; --ink: #ece4f2; --muted: #a99bb5; --line: #2f2439;
+  --gold: #ffcf4d; --gold-deep: #b8860b; --ruby: #ff4a5e; --soul: #c070ff; --panel: rgb(81, 20, 35);
+  --game: 'Do Hyeon', 'Malgun Gothic', sans-serif;
+  --body: 'IBM Plex Sans KR', system-ui, sans-serif;
+}
+body { background: var(--page); color: var(--ink); font: 15px/1.65 var(--body); }
+main { max-width: 980px; margin: 0 auto; padding-block: 28px 64px; padding-inline: 16px; display: grid; gap: 36px; }
+h1, h2, h3 { font-family: var(--game); font-weight: 400; margin: 0; text-wrap: balance; }
+h1 { font-size: 30px; } h2 { font-size: 22px; } h3 { font-size: 18px; }
+h3 .rec, .rec { font-family: var(--body); font-size: 12px; color: #1c1206; background: var(--gold); padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: 2px; }
+p { margin: 0; max-width: 65ch; }
+.lede, .note { color: var(--muted); } .note { font-size: 13px; }
+section { display: grid; gap: 14px; }
+.opts { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.opt { display: grid; gap: 8px; width: 320px; max-width: 100%; }
+.opt p { font-size: 14px; }
+
+/* 전체 화면 상점 모형(실제 375×812의 약 0.85배) */
+.phone { position: relative; width: 320px; height: 690px; max-width: 100%; overflow: hidden; border: 2px solid var(--line); border-radius: 18px; background: #0a0610 url(bg_b.png) center top / cover; image-rendering: pixelated; font-family: var(--game); color: #f4ecdc; display: flex; flex-direction: column; }
+.phone.a2 { background-image: url(bg_a_clean.png); }
+.phone::before { content: ''; position: absolute; inset: 0; background: linear-gradient(#0a0610cc, #0a061066 30%, #0a0610bb); pointer-events: none; }
+.phone > * { position: relative; }
+.top { display: flex; justify-content: space-between; align-items: center; padding: 8px; }
+.top h4 { margin: 0; font-weight: 400; font-size: 20px; color: var(--gold); text-shadow: 0 2px 0 #000, 0 0 8px #b8860b; letter-spacing: .04em; }
+.pills { display: flex; gap: 4px; }
+.pill { border: 6px solid transparent; border-image: url(pill.png) 8 fill / 6px stretch; image-rendering: pixelated; padding: 0 3px; display: inline-flex; align-items: center; gap: 3px; font-size: 12px; }
+.pill img { width: 15px; height: 15px; }
+.x { width: 24px; height: 24px; image-rendering: pixelated; }
+.vip { margin: 0 8px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #f0dcae; }
+.vip img { width: 20px; height: 20px; image-rendering: pixelated; }
+.vbar { flex: 1; height: 8px; background: #0008; border: 1px solid #000; }
+.vbar i { display: block; width: 35%; height: 100%; background: var(--gold); }
+.scroll { flex: 1; overflow: hidden; padding: 6px 8px; display: grid; gap: 8px; align-content: start; }
+.hero { border: 12px solid transparent; border-image: url(frame_sq.png) 10 / 12px stretch; background: #2a0d18e6; background-clip: padding-box; image-rendering: pixelated; display: grid; grid-template-columns: 96px 1fr; gap: 8px; padding: 4px; position: relative; filter: drop-shadow(0 0 8px #ffcf4d66); }
+.hero img { width: 96px; height: 96px; image-rendering: pixelated; }
+.hero b { font-weight: 400; font-size: 18px; color: var(--gold); }
+.hero small { display: block; font-size: 12px; color: #e8d6c0; line-height: 1.3; }
+.ribbon { position: absolute; top: -10px; left: -6px; font: 12px var(--game); color: #1c1206; background: var(--gold); padding: 1px 8px; border: 2px solid #000; transform: rotate(-6deg); }
+.ribbon.red { background: var(--ruby); color: #fff; }
+.tabs2 { display: flex; gap: 3px; }
+.tabs2 span { flex: 1; text-align: center; font-size: 13px; color: #c9ae9a; border: 7px solid transparent; border-image: url(bar.png) 10 fill / 7px stretch; filter: brightness(.75); }
+.tabs2 span.on { color: var(--gold); filter: brightness(1.3); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.card { position: relative; border: 9px solid transparent; border-image: url(frame_sq.png) 10 / 9px stretch; background: #1d0b14e6; background-clip: padding-box; image-rendering: pixelated; display: grid; justify-items: center; gap: 2px; padding: 3px 2px 4px; text-align: center; }
+.card img { width: 72px; height: 72px; image-rendering: pixelated; }
+.card b { font-weight: 400; font-size: 14px; }
+.card .amt { font-size: 13px; color: var(--soul); }
+.card .amt.g { color: var(--gold); }
+.card .bonus { position: absolute; top: -8px; right: -6px; font-size: 11px; color: #fff; background: var(--ruby); border: 2px solid #000; padding: 0 4px; }
+.price { width: 100%; border: 8px solid transparent; border-image: url(button_big.png) 20 fill / 8px stretch; image-rendering: pixelated; font-size: 13px; color: var(--gold); text-align: center; }
+.card.best { filter: drop-shadow(0 0 6px var(--soul)); }
+.sec { font-size: 15px; color: var(--gold); border-bottom: 1px solid #ffcf4d44; padding-bottom: 2px; }
+.row { display: flex; gap: 7px; }
+.row > * { flex: 1; }
+.icons { display: flex; gap: 16px; flex-wrap: wrap; }
+.icon { display: grid; justify-items: center; gap: 4px; width: 130px; text-align: center; font-size: 13px; }
+.icon .box { background: #221b29; border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+.icon img { width: 96px; height: 96px; image-rendering: pixelated; display: block; }
+.icon.big img { width: 160px; height: 160px; }
+.icon.big { width: 190px; }
+.icon small { color: var(--muted); }
+.decide { border: 1px solid var(--gold); border-radius: 6px; padding: 14px 16px; display: grid; gap: 8px; }
+.decide h2 { color: var(--gold); font-size: 19px; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+</style>
+<main>
+  <header style="display:grid;gap:8px">
+    <h1>프리미엄 상점 후보</h1>
+    <p class="lede">아래 탭의 상점을 홈 아이콘으로 옮기고, 누르면 전체 화면 상점이 열립니다. 상품마다 큰 그림(256px), 금테 카드, "+50%" 같은 이득 표시, 맨 위 추천 상품, VIP 진행 막대로 결제를 이끕니다. 모든 그림은 PixelLab·기존 UI 키트입니다.</p>
+  </header>
+
+  <section>
+    <h2>1. 상점 화면</h2>
+    <div class="opts">
+      <div class="opt">
+        <h3>A. 탭으로 나눈 상점 <span class="rec">추천</span></h3>
+        <div class="phone">
+          <div class="top"><div class="pills"><span class="pill"><img src="soul.png" alt="">1.7k</span><span class="pill"><img src="gold.png" alt="">2.4k</span></div><h4>마왕의 보물고</h4><img class="x" src="close_x.png" alt="닫기"></div>
+          <div class="vip"><img src="vip_bronze.png" alt="">VIP 1까지<span class="vbar"><i></i></span>65 VX</div>
+          <div class="scroll">
+            <div class="hero"><span class="ribbon red">한 번만</span><img src="starter_pack.png" alt=""><div><b>스타터팩</b><small>네크로맨서 + 골드 5k + 영혼석 30</small><small style="color:var(--gold)">가치 5배</small><div class="price" style="margin-top:4px">₩1,400</div></div></div>
+            <div class="tabs2"><span class="on">영혼석</span><span>골드</span><span>특별</span></div>
+            <div class="grid2">
+              <div class="card"><img src="soul_pouch.png" alt=""><b>영혼석 주머니</b><span class="amt">30</span><span class="price">100 VX</span></div>
+              <div class="card"><span class="bonus">+20%</span><img src="soul_sack.png" alt=""><b>영혼석 자루</b><span class="amt">180</span><span class="price">500 VX</span></div>
+              <div class="card"><span class="bonus">+33%</span><img src="soul_chest.png" alt=""><b>영혼석 상자</b><span class="amt">600</span><span class="price">1,500 VX</span></div>
+              <div class="card best"><span class="bonus">BEST +50%</span><img src="soul_altar.png" alt=""><b>영혼석 제단</b><span class="amt">2,250</span><span class="price">5,000 VX</span></div>
+            </div>
+          </div>
+        </div>
+        <p>맨 위 추천 상품 한 개(스타터팩 → 시즌 패스 → 성유물 순으로 바뀜) + 탭(영혼석·골드·특별). 한 화면에 볼 것이 적어 읽기 쉽습니다.</p>
+      </div>
+      <div class="opt">
+        <h3>B. 한 줄로 내려 보는 상점</h3>
+        <div class="phone a2">
+          <div class="top"><div class="pills"><span class="pill"><img src="soul.png" alt="">1.7k</span><span class="pill"><img src="gold.png" alt="">2.4k</span></div><h4>마왕의 보물고</h4><img class="x" src="close_x.png" alt="닫기"></div>
+          <div class="vip"><img src="vip_bronze.png" alt="">VIP 1까지<span class="vbar"><i></i></span>65 VX</div>
+          <div class="scroll">
+            <div class="sec">오늘의 추천</div>
+            <div class="row">
+              <div class="card"><span class="bonus">한 번만</span><img src="starter_pack.png" alt=""><b>스타터팩</b><span class="price">₩1,400</span></div>
+              <div class="card"><img src="season_pass.png" alt=""><b>시즌 패스</b><span class="price">400 VX</span></div>
+            </div>
+            <div class="sec">영혼석</div>
+            <div class="grid2">
+              <div class="card"><img src="soul_pouch.png" alt=""><b>주머니</b><span class="amt">30</span><span class="price">100 VX</span></div>
+              <div class="card"><span class="bonus">+20%</span><img src="soul_sack.png" alt=""><b>자루</b><span class="amt">180</span><span class="price">500 VX</span></div>
+            </div>
+            <div class="sec">골드</div>
+            <div class="grid2">
+              <div class="card"><img src="gold_pouch.png" alt=""><b>금화 주머니</b><span class="amt g">750</span><span class="price">영혼석 30</span></div>
+              <div class="card"><img src="gold_chest.png" alt=""><b>금화 상자</b><span class="amt g">4.5k</span><span class="price">영혼석 150</span></div>
+            </div>
+          </div>
+        </div>
+        <p>탭 없이 아래로 내려 보며 다 보입니다. 배경은 보물 금고(A의 차분한 회랑보다 화려함).</p>
+      </div>
+    </div>
+    <p class="note">가격 버튼의 "₩1,400 / 100 VX"는 예시이고, 실제로는 Verse8이 알려 주는 가격을 그대로 씁니다. 일일 보급(광고)·3배속·프리미엄은 "특별" 탭(B는 맨 아래)에 들어갑니다.</p>
+  </section>
+
+  <section>
+    <h2>2. 상점 입구 아이콘과 위치</h2>
+    <div class="icons">
+      <div class="icon"><div class="box"><img src="icon_a.png" alt="뿔 보물상자"></div>A. 뿔 달린 보석 상자 <small>추천 · 한눈에 "상점"</small></div>
+      <div class="icon"><div class="box"><img src="icon_b.png" alt="두건 쓴 악마 상인"></div>B. 두건 쓴 악마 상인 <small>캐릭터 느낌</small></div>
+    </div>
+    <ul>
+      <li>위치 1 <span class="rec">추천</span>: 오른쪽 줄 패스 → 방치 보상 → 상점(사기·받기를 오른쪽에 모음)</li>
+      <li>위치 2: 왼쪽 줄 맨 위(소환 위)</li>
+      <li>아래 탭은 "강화" 하나만 남습니다. 강화도 아이콘으로 옮겨 아래 줄을 없애면 탑이 더 크게 보입니다(선택).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>3. 배경</h2>
+    <div class="icons">
+      <div class="icon big"><div class="box"><img src="bg_b.png" alt="어두운 상인 회랑" style="width:120px;height:200px"></div>A. 어두운 상인 회랑 <small>추천 · 카드가 잘 읽힘</small></div>
+      <div class="icon big"><div class="box"><img src="bg_a_clean.png" alt="보물 금고" style="width:120px;height:200px"></div>B. 보물 금고 <small>화려함 · 왼쪽 아래 글자는 지움</small></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>4. 시즌 1위 한정 마왕 외형</h2>
+    <p class="note">예전 보관 후보 4종은 모두 다른 곳에 쓰였습니다(해골 군주=패스, 흑룡=패스 10단계, 용암 마왕=VIP 5, 보라 날개 악마=VIP 8). 소환 전설을 고를 때 뽑은 후보 중 남은 3장을 시즌마다 하나씩 씁니다. 고르시면 대기·공격·쓰러짐 움직임을 만듭니다.</p>
+    <div class="icons">
+      <div class="icon big"><div class="box"><img src="champ_1.png" alt="뼈 용 리치 왕"></div>뼈 용 리치 왕 <small>추천 시즌 1 · 괴물형, 초록 영혼불, 금 왕관</small></div>
+      <div class="icon big"><div class="box"><img src="champ_3.png" alt="외눈 심연 군주"></div>외눈 심연 군주 <small>시즌 2 · 촉수 괴물형, 금 왕관과 사슬</small></div>
+      <div class="icon big"><div class="box"><img src="champ_0.png" alt="심연 황제"></div>심연 황제 <small>시즌 3 · 흑요석 갑옷(사람형에 가까움)</small></div>
+    </div>
+  </section>
+
+  <section class="decide">
+    <h2>정해 주실 것</h2>
+    <ul>
+      <li>상점 화면: A 탭(추천) / B 한 줄</li>
+      <li>입구 아이콘: A 보석 상자(추천) / B 악마 상인 · 위치: 오른쪽 줄(추천) / 왼쪽 줄 맨 위 · 강화도 아이콘으로(아래 줄 없앰) 할지</li>
+      <li>배경: A 회랑(추천) / B 금고</li>
+      <li>시즌 1위 외형 순서: 리치 왕 → 심연 군주 → 심연 황제(추천) / 다른 순서</li>
+    </ul>
+  </section>
+</main>

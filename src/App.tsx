@@ -32,7 +32,8 @@ type Tab = 'upgrade' | 'log' | 'league' | 'shop';
 export type Panel =
   | { name: Exclude<Tab, 'league'> } | { name: 'league'; tab?: LeagueTab } | { name: 'match' } | { name: 'settings' } | { name: 'floor'; floor: number } | { name: 'result'; result: EndResult };
 
-const TABS: Tab[] = ['upgrade', 'shop'];
+/** 2026-10-02: 상점도 오른쪽 줄 아이콘 → 전체 화면. 아래 탭은 강화 하나 */
+const TABS: Tab[] = ['upgrade'];
 
 function samePanel(a: Panel, b: Panel): boolean {
   if (a.name === 'floor' && b.name === 'floor') return a.floor === b.floor;
@@ -67,6 +68,7 @@ export default function App() {
   const [raiding, setRaiding] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
   const [summonOpen, setSummonOpen] = useState(false);
+  const [shopOpen, setShopOpen] = useState(false);
   // 내 브래킷 순위: 홈 아이콘에 숫자로. 홈을 열 때·공략이 끝났을 때·2분마다 가볍게 받아 온다(강화마다 받지 않는다)
   const [rank, setRank] = useState<number | null>(null);
   const rankBusy = useRef(false);
@@ -323,7 +325,7 @@ export default function App() {
         break;
       case 'upgrade':
         title = T.panels.upgrade;
-        body = <Upgrade api={api} home={home} onRefresh={refresh} onError={onError} onShop={() => setPanel({ name: 'shop' })} />;
+        body = <Upgrade api={api} home={home} onRefresh={refresh} onError={onError} onShop={() => { setPanel(null); setShopOpen(true); }} />;
         break;
       case 'log':
         title = T.panels.log;
@@ -336,10 +338,6 @@ export default function App() {
       case 'settings':
         title = T.panels.settings;
         body = <Settings api={api} home={home} onRefresh={refresh} onError={onError} onToast={onError} />;
-        break;
-      case 'shop':
-        title = T.panels.shop;
-        body = <Shop api={api} home={home} items={shopItems} owned={ownedProducts(home.state)} onRefresh={refresh} onToast={onError} />;
         break;
     }
   }
@@ -360,6 +358,7 @@ export default function App() {
         onSiegeRank={() => setPanel({ name: 'league', tab: 'siege' })}
         onPass={() => setPanel({ name: 'league', tab: 'track' })}
         onSummon={() => { setPanel(null); setSummonOpen(true); }}
+        onShop={() => { setPanel(null); setShopOpen(true); }}
         onRank={() => toggle({ name: 'league' })}
         onLog={() => toggle({ name: 'log' })}
         rank={rank}
@@ -386,7 +385,8 @@ export default function App() {
           </button>
         ))}
       </nav>
-      {summonOpen && <Summon api={api} home={home} onClose={() => setSummonOpen(false)} onShop={() => { setSummonOpen(false); setPanel({ name: 'shop' }); }} onRefresh={refresh} onError={onError} />}
+      {shopOpen && <Shop api={api} home={home} items={shopItems} owned={ownedProducts(home.state)} onClose={() => setShopOpen(false)} onRefresh={refresh} onToast={onError} />}
+      {summonOpen && <Summon api={api} home={home} onClose={() => setSummonOpen(false)} onShop={() => { setSummonOpen(false); setShopOpen(true); }} onRefresh={refresh} onError={onError} />}
       {tutorial}
       {toast && <div className="toast">{toast}</div>}
     </div>

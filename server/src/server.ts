@@ -526,7 +526,7 @@ export class Server {
       const now = Date.now();
       const s = await loadState(me, now);
       const vipSkinAt = BALANCE.vip.skins[skin];
-      const ok = skin === 'base' || (skin === 'skull' && s.season.pass) || ((skin === 'dragon' || BALANCE.summon.legendLooks.includes(skin)) && s.skins.includes(skin))
+      const ok = skin === 'base' || (skin === 'skull' && s.season.pass) || ((skin === 'dragon' || BALANCE.summon.legendLooks.includes(skin) || Object.values(BALANCE.seasonChampionSkins).includes(skin)) && s.skins.includes(skin))
         || (vipSkinAt !== undefined && vipOf(s) >= vipSkinAt);
       if (!ok) throw new Error('SKIN_NOT_OWNED');
       const lordSkin = skin as UserState['lordSkin'];

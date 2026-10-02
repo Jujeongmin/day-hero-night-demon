@@ -41,3 +41,8 @@
 ## 홈 왼쪽 줄 (2026-10-02 승인 A)
 - 소환(제단) → 순위(`public/ui/rank.png` = `art/ui/rank/rank_a.png` 뿔 트로피, seed 2301, 아래 금색 "n위") → 기록(`public/ui/log.png` = `log_b.png` 두루마리와 단검, seed 2312, 복수 가능한 침입 수 빨간 배지). 아래 탭은 강화·상점 두 개. 순위 창 제목은 "순위".
 - 사용자 의도: 순위가 잘 보여야 과금을 끌어낸다.
+
+## 마왕의 보물고 (2026-10-02 승인 A)
+- 오른쪽 줄 패스 → 방치 보상 → 상점(`public/ui/shop.png` = `art/ui/shop/icon_a.png` 뿔 달린 보석 상자, seed 2501). 아래 탭은 강화 하나.
+- 누르면 전체 화면: 배경 `public/ui/shop_bg.png` = `art/ui/shop/bg_b.png`(어두운 상인 회랑, seed 2512)에 어둡게 그라데이션. 위 재화·제목·닫기, VIP 막대, 맨 위 추천 상품 하나(스타터팩 → 시즌 패스 → 성유물 중 살 수 있는 첫 것, 붉은 리본), 영혼석·골드·특별 탭, 2열 카드(상품 그림 256px `public/products/`, 이득 리본 +N%, 제단은 BEST, 금테 가격 버튼).
+- 후보 https://claude.ai/artifact/VWx6Jsox4ekaKVEso8Y9kC
