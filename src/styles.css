@@ -660,3 +660,23 @@ span.up-pt { cursor: default; }
 .up-row .portrait { display: block; width: 40px; height: 40px; }
 .btn.up-bt { flex-direction: row; }
 .up-bt img { display: inline-block; }
+
+/* 의뢰(2026-10-02 승인): 출정 왼쪽 아래 "다음 할 일" 카드(폭 70px) + 가운데 의뢰 창 */
+.quest-card { position: absolute; left: 4px; bottom: 0; width: 72px; display: grid; justify-items: center; gap: 1px; padding: 3px 2px 4px; background: none; color: var(--bone); font: inherit; line-height: 1.1; text-align: center; cursor: pointer; border: 6px solid transparent; border-image: url(/ui/pill.png) 8 fill / 6px stretch; image-rendering: pixelated; }
+.quest-card > img { width: 28px; height: auto; image-rendering: pixelated; }
+.quest-card small { font-size: 10px; color: var(--muted); }
+.quest-card b { font-weight: 400; font-size: 11px; word-break: keep-all; }
+.quest-card.done { animation: questGlow 1.4s ease-in-out infinite; }
+.quest-card em { font-style: normal; color: #1c1206; background: var(--gold); padding: 0 3px; margin-left: 2px; }
+@keyframes questGlow { 50% { filter: brightness(1.3) drop-shadow(0 0 6px #ffcf4d); } }
+@media (prefers-reduced-motion: reduce) { .quest-card.done { animation: none; filter: drop-shadow(0 0 4px #ffcf4d); } }
+.quest-bar { display: block; width: 100%; height: 6px; position: relative; background: #1a0810; border: 1px solid #05030a; }
+.quest-bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--gold); }
+.quest-rw { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; color: var(--gold); white-space: nowrap; }
+.quest-rw img { width: 14px; height: 14px; image-rendering: pixelated; }
+.quest-line { display: flex; align-items: center; gap: 8px; padding: 2px 0 6px; border-bottom: 1px dashed #efe3c833; }
+.quest-line.got { opacity: .45; }
+.quest-txt { flex: 1; min-width: 0; display: grid; gap: 3px; }
+.quest-txt b { font-weight: 400; }
+.quest-txt small { color: var(--muted); font-size: 12px; }
+.quest-bt { flex: none; min-width: 58px; }

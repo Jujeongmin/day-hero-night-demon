@@ -9,6 +9,28 @@ export const en: Strings = {
   soul: 'Soulstones',
   icons: { shop: 'Shop', rank: 'Rank', rankN: (n: number) => `#${n}`, log: 'Log' },
   upMany: { ten: '×10', max: (n: number) => `Max +${n}` },
+  quest: {
+    title: 'Quests', next: 'Next', go: 'Go', claim: 'Claim', done: 'Done', after: 'After that', all: 'All done',
+    siegeWait: 'Siege stages rise while you wait at home',
+    tabs: { guide: 'Growth', daily: 'Daily' },
+    guide: {
+      unit: (name: string, n: number) => `${name} to Lv.${n}`,
+      anyLevel: (n: number) => `Any monster Lv.${n}`,
+      wins: (n: number) => `Win ${n} raids`,
+      castle: (n: number) => `Castle Lv.${n}`,
+      filled: (n: number) => `Fill ${n} monster slots`,
+      idle: 'Claim idle rewards',
+      summon: (n: number) => `Summon ${n} time(s)`,
+      siege: (n: number) => `Siege stage ${n}`,
+      stars: (n: number) => `${n} awaken star(s)`,
+    },
+    daily: {
+      sortie: (n: number) => `Sortie ${n} times`,
+      win: (n: number) => `Win ${n} raid(s)`,
+      upgrade: (n: number) => `Upgrade ${n} times`,
+      idle: () => 'Claim idle rewards',
+    },
+  },
   up: {
     one: '×1', ten: '×10', max: 'Max',
     nextFloor: (n: number) => `Next: floor ${n} opens`,

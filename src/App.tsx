@@ -20,6 +20,8 @@ import Settings from './screens/Settings';
 import Cutscene from './screens/Cutscene';
 import Summon from './screens/Summon';
 import Pass from './screens/Pass';
+import Quests, { type QuestGo } from './screens/Quests';
+import { floorsUnlocked } from '../server/src/economy';
 import Nickname from './screens/Nickname';
 import { findItem, startShop, type ShopItem } from './services/shop';
 import { playBgm, sfx, unlockAudio } from './services/audio';
@@ -31,7 +33,7 @@ import TutorialOverlay from './tutorial/TutorialOverlay';
 type Tab = 'upgrade' | 'log' | 'league' | 'shop';
 /** 아래 탭은 강화·상점 두 개(2026-10-02). 리그(순위)·기록은 탑 왼쪽 아이콘 */
 export type Panel =
-  | { name: Exclude<Tab, 'league'> } | { name: 'league'; tab?: LeagueTab } | { name: 'match' } | { name: 'pass' } | { name: 'settings' } | { name: 'floor'; floor: number } | { name: 'result'; result: EndResult };
+  | { name: Exclude<Tab, 'league'> } | { name: 'league'; tab?: LeagueTab } | { name: 'match' } | { name: 'pass' } | { name: 'quest' } | { name: 'settings' } | { name: 'floor'; floor: number } | { name: 'result'; result: EndResult };
 
 /** 2026-10-02: 상점도 오른쪽 줄 아이콘 → 전체 화면. 아래 탭은 강화 하나 */
 const TABS: Tab[] = ['upgrade'];
@@ -296,6 +298,27 @@ export default function App() {
     toggle({ name: 'floor', floor });
     emitTut('floor_opened');
   };
+  // 의뢰의 "가기": 그 일을 하는 곳으로
+  const goQuest = (go: QuestGo) => {
+    if (!home) return;
+    if (go === 'upgrade') setPanel({ name: 'upgrade' });
+    else if (go === 'match') setPanel({ name: 'match' });
+    else if (go === 'floor') {
+      const s = home.state;
+      const open = Math.min(floorsUnlocked(s.castle.level), s.castle.floors.length);
+      const i = s.castle.floors.slice(0, open).findIndex((f) => f.monsters.includes(null));
+      setPanel({ name: 'floor', floor: Math.max(0, i) });
+    } else if (go === 'idle') {
+      setPanel(null);
+      api.claimIdle().then(refresh).catch((e) => onError(errorText(e)));
+    } else if (go === 'summon') {
+      setPanel(null);
+      setSummonOpen(true);
+    } else {
+      setPanel(null);
+      onError(T.quest.siegeWait);
+    }
+  };
 
   if (raiding) {
     return (
@@ -344,6 +367,10 @@ export default function App() {
         title = T.panels.log;
         body = <Log api={api} home={home} onRefresh={refresh} onRaid={startRaid} onError={onError} />;
         break;
+      case 'quest':
+        title = T.quest.title;
+        body = <Quests api={api} home={home} onGo={goQuest} onRefresh={refresh} onError={onError} />;
+        break;
       case 'pass':
         title = T.products.season_pass[0];
         body = <Pass api={api} home={home} item={findItem(shopItems, 'season_pass')} onRefresh={refresh} onToast={onError} />;
@@ -359,7 +386,7 @@ export default function App() {
     }
   }
 
-  const centered = panel?.name === 'pass' || panel?.name === 'league' || panel?.name === 'log';
+  const centered = panel?.name === 'pass' || panel?.name === 'league' || panel?.name === 'log' || panel?.name === 'quest';
 
   return (
     <div className="app">
@@ -380,6 +407,8 @@ export default function App() {
         onShop={(tab) => openShop(tab)}
         onRank={() => toggle({ name: 'league' })}
         onLog={() => toggle({ name: 'log' })}
+        onQuest={() => toggle({ name: 'quest' })}
+        onQuestGo={goQuest}
         rank={rank}
         onError={onError}
       />

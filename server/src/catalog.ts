@@ -235,6 +235,30 @@ export const BALANCE = {
     ] as string[],
     legendLooks: ['summon1'] as string[],
   },
+  /**
+   * 의뢰(2026-10-02 사용자 승인). 일일 의뢰: 한국 시간 0시에 새로, 하나에 영혼석 soulEach, 모두 하면 soulAll 더(하루 40).
+   * 성장 의뢰: 한 번에 하나, 순서대로. 골드는 공성 최고 단계에 맞춰 커진다(scaledGold). 목록이 끝나면 cycle이 끝없이 돈다
+   */
+  quests: {
+    daily: { sortie: 3, win: 1, upgrade: 10, idle: 1, soulEach: 5, soulAll: 20 },
+    guide: [
+      { kind: 'unit', id: 'slime', target: 5, soul: 10, gold: 1000 },
+      { kind: 'wins', target: 3, soul: 10, gold: 1000 },
+      { kind: 'castle', target: 2, soul: 10, gold: 1000 },
+      { kind: 'filled', target: 6, soul: 10, gold: 1000 },
+      { kind: 'idle', target: 1, soul: 10, gold: 1000 },
+      { kind: 'summon', target: 1, soul: 20, gold: 3000 },
+      { kind: 'siege', target: 10, soul: 20, gold: 3000 },
+      { kind: 'castle', target: 4, soul: 20, gold: 3000 },
+      { kind: 'filled', target: 9, soul: 20, gold: 3000 },
+      { kind: 'wins', target: 15, soul: 30, gold: 6000 },
+      { kind: 'anyLevel', target: 25, soul: 30, gold: 6000 },
+      { kind: 'siege', target: 30, soul: 30, gold: 6000 },
+      { kind: 'stars', target: 1, soul: 50, gold: 6000 },
+    ] as { kind: 'unit' | 'wins' | 'castle' | 'filled' | 'idle' | 'summon' | 'siege' | 'anyLevel' | 'stars'; id?: string; target: number; soul: number; gold: number }[],
+    /** 목록 뒤: 공성 최고 +10단계 → 공략 +10승 → 몬스터 별 합 +1 을 돌아가며 */
+    cycle: { siegeStep: 10, winsStep: 10, starsStep: 1, soul: 20, gold: 8000 },
+  },
   /** 시즌 순위 보상(2026-10-01 승인). 브래킷(30명) 순위별 영혼석 */
   seasonRankSoul: { first: 300, top3: 180, top10: 90, rest: 20 },
   /** 전체 순위 칭호: 1위 champion(+ 그 시즌 한정 마왕 외형·명예의 전당), 2~3위 top3(+ 명예의 전당), 4~10위 top10. 다음 시즌 동안 이름 옆에 보인다 */

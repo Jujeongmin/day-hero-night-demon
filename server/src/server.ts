@@ -14,6 +14,7 @@ import { planAdReward } from './ads';
 import type { FloorLog } from './battle';
 import { spendFor, vipOf, vipPerks } from './vip';
 import { chooseLordSkin, ownedLooks, planPassClaim } from './pass';
+import { bumpQuests, planClaimDaily, planClaimGuide } from './quests';
 import { grantFor } from './purchases';
 import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from './siege';
 import { rngNext, seedFrom } from './rng';
@@ -503,6 +504,33 @@ export class Server {
     });
   }
 
+  /** 성장 의뢰 받기: 서버가 진행을 다시 확인하고 골드·영혼석을 준다 */
+  async claimGuide() {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      const plan = planClaimGuide(s, now);
+      if (plan.gold) await $asset.mint('gold', plan.gold);
+      if (plan.soul) await $asset.mint('soul', plan.soul);
+      await save(me, { quests: plan.quests });
+      return { gold: plan.gold, soul: plan.soul };
+    });
+  }
+
+  /** 일일 의뢰 받기(id = sortie·win·upgrade·idle, 넷 다 하면 all) */
+  async claimDaily(id: string) {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      const plan = planClaimDaily(s, now, String(id));
+      await $asset.mint('soul', plan.soul);
+      await save(me, { quests: plan.quests });
+      return { soul: plan.soul };
+    });
+  }
+
   async claimPassRewards() {
     const me = $sender.account;
     return withLocks([me], async () => {
@@ -647,7 +675,7 @@ export class Server {
       const siegeGold = s.siege.pendingGold;
       const gold = idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult, vipOf(s)) + siegeGold;
       if (gold > 0) await $asset.mint('gold', gold);
-      await save(me, { idle: { ...s.idle, lastClaimAt: now }, siege: { ...s.siege, pendingGold: 0 } });
+      await save(me, { idle: { ...s.idle, lastClaimAt: now }, siege: { ...s.siege, pendingGold: 0 }, quests: bumpQuests(s, now, { daily: 'idle', idle: true }) });
       return { gold, siegeGold };
     });
   }
@@ -657,9 +685,10 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await loadState(me, now);
-      const { cost, patch } = planUpgrade(s, kind, id);
+      const { cost, patch: up } = planUpgrade(s, kind, id);
       if (!(await $asset.has('gold', cost))) throw new Error('골드가 부족하다');
       await $asset.burn('gold', cost);
+      const patch: Partial<UserState> = { ...up, quests: bumpQuests(s, now, { daily: 'upgrade' }) };
       await save(me, patch);
       await syncCastle(me, { ...s, ...patch });
       return { cost };
@@ -675,9 +704,10 @@ export class Server {
       const now = Date.now();
       const s = await loadState(me, now);
       const { gold } = await balances(me);
-      const { cost, times, patch } = planUpgradeMany(s, kind, String(id), count, gold);
+      const { cost, times, patch: up } = planUpgradeMany(s, kind, String(id), count, gold);
       if (times === 0) throw new Error('골드가 부족하다');
       await $asset.burn('gold', cost);
+      const patch: Partial<UserState> = { ...up, quests: bumpQuests(s, now, { daily: 'upgrade', n: times }) };
       await save(me, patch);
       await syncCastle(me, { ...s, ...patch });
       return { cost, times };
@@ -820,7 +850,7 @@ export class Server {
       if (!tutorial && sortiesLeft(s, now) <= 0) throw new Error('NO_SORTIE');
       const snapshot = await buildSnapshot(t.id, now);
       const d = dailyOf(s, now);
-      const extra: Partial<UserState> = tutorial ? {} : { daily: { ...d, sorties: d.sorties + 1 } };
+      const extra: Partial<UserState> = tutorial ? {} : { daily: { ...d, sorties: d.sorties + 1 }, quests: bumpQuests(s, now, { daily: 'sortie' }) };
       return beginRun(me, s, snapshot, { isRevenge: false, revengeLogId: null, extra }, now);
     });
   }
@@ -902,6 +932,8 @@ export class Server {
       if (bonus) await $asset.mint('gold', bonus);
       loot += bonus;
       const result = await finishRun(me, s, run, won, loot, now);
+      // 의뢰: 튜토리얼 공략 말고 이긴 공략을 센다
+      if (won && run.target !== TUTORIAL_TARGET) await save(me, { quests: bumpQuests(s, now, { daily: 'win', win: true }) });
       if (run.target === TUTORIAL_TARGET && s.onboarding.at === 'match_sortie') {
         await save(me, { onboarding: { ...s.onboarding, at: 'end' } });
       }

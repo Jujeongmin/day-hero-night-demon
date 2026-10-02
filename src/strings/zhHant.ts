@@ -9,6 +9,28 @@ export const zhHant: Strings = {
   soul: '魂石',
   icons: { shop: '商店', rank: '排名', rankN: (n: number) => `第${n}名`, log: '紀錄' },
   upMany: { ten: '×10', max: (n: number) => `最大 +${n}` },
+  quest: {
+    title: '委託', next: '下一步', go: '前往', claim: '領取', done: '完成', after: '之後', all: '全部完成',
+    siegeWait: '攻城階段在主頁等待就會上升',
+    tabs: { guide: '成長', daily: '每日' },
+    guide: {
+      unit: (name: string, n: number) => `${name}強化到Lv.${n}`,
+      anyLevel: (n: number) => `任一怪物Lv.${n}`,
+      wins: (n: number) => `攻略勝利${n}次`,
+      castle: (n: number) => `城堡Lv.${n}`,
+      filled: (n: number) => `放置${n}格怪物`,
+      idle: '領取掛機獎勵',
+      summon: (n: number) => `召喚${n}次`,
+      siege: (n: number) => `攻城第${n}階段`,
+      stars: (n: number) => `覺醒星${n}顆`,
+    },
+    daily: {
+      sortie: (n: number) => `出征${n}次`,
+      win: (n: number) => `攻略勝利${n}次`,
+      upgrade: (n: number) => `強化${n}次`,
+      idle: () => '領取掛機獎勵',
+    },
+  },
   up: {
     one: '×1', ten: '×10', max: '最大',
     nextFloor: (n: number) => `下一級: 開放第${n}層`,

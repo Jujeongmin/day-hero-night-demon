@@ -457,3 +457,22 @@ describe('summon (2026-10-02)', () => {
     expect((await server.wearGear('slime', null)).gear.worn).toEqual({});
   });
 });
+
+describe('quests', () => {
+  test('quest claims are checked on the server; upgrades count toward the daily quest', async (server) => {
+    server.connect({ account: 't60-quest' });
+    await server.getHome();
+    expect(await fails(server.claimGuide())).toBe(true);
+    expect(await fails(server.claimDaily('upgrade'))).toBe(true);
+    expect(await fails(server.claimDaily('bogus'))).toBe(true);
+    await server.$onItemPurchased({ account: 't60-quest', purchaseId: 'p-t60', productId: 'soul_chest', quantity: 1 });
+    await server.buyGold('gold_chest');
+    for (let i = 0; i < 4; i++) await server.upgrade('monster', 'slime');
+    const g = await server.claimGuide();
+    expect(g.soul).toBe(10);
+    expect(await fails(server.claimGuide())).toBe(true);
+    await server.upgradeMany('monster', 'skeleton', 6);
+    expect((await server.claimDaily('upgrade')).soul).toBe(5);
+    expect(await fails(server.claimDaily('upgrade'))).toBe(true);
+  });
+});

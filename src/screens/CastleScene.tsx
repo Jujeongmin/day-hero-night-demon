@@ -17,6 +17,8 @@ import { buy } from '../services/shop';
 import { T } from '../strings/ko';
 import { vipOf } from '../../server/src/vip';
 import { sortiesLeft, sortieTicketCost } from '../../server/src/sortie';
+import { claimableQuests } from '../../server/src/quests';
+import { QuestCard, type QuestGo } from './Quests';
 
 /** tower.png(224×400) 안에서 몬스터가 딛는 선(%). 누르는 영역은 그 선 위 몬스터 키만큼. */
 const THRONE = { stand: 10.5 };
@@ -79,13 +81,15 @@ export default function CastleScene(props: {
   /** 순위(리그) 창·방어 기록 창 열기(탑 왼쪽 아이콘, 2026-10-02) */
   onRank: () => void;
   onLog: () => void;
+  onQuest: () => void;
+  onQuestGo: (go: QuestGo) => void;
   /** 상점(오른쪽 줄 보석 상자, 2026-10-02). tab = 처음 열 탭(재화 "+") */
   onShop: (tab?: 'soul' | 'gold') => void;
   /** 내 브래킷 순위(모르면 null) */
   rank: number | null;
   onError: (msg: string) => void;
 }) {
-  const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onSiegeRank, onPass, onSummon, onRank, onLog, onShop, rank, onError } = props;
+  const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onSiegeRank, onPass, onSummon, onRank, onLog, onQuest, onQuestGo, onShop, rank, onError } = props;
   const s = home.state;
   const [busy, setBusy] = useState(false);
   // 튜토리얼이 끝난 뒤에만 상점 바로가기(+)를 보인다
@@ -159,6 +163,7 @@ export default function CastleScene(props: {
   const passPlan = planPassClaim(s.season, s.siege?.best ?? 1);
   const passReady = passPlan.gold > 0 || passPlan.soul > 0 || passPlan.skins.length > 0;
   // 기록 배지: 지금 복수할 수 있는 침입(실제 플레이어가 이겼고, 24시간 안, 아직 복수 안 함)
+  const questBadge = claimableQuests(s, Date.now());
   const revengeable = s.raidLog.filter((e) => !e.npc && e.attackerWon && !e.revenged && Date.now() - e.at < BALANCE.revengeWindowMs).length;
   // 받을 칸 수(무료 줄 + 패스 줄). 빨간 알림 배지에 숫자로 (2026-10-02 사용자)
   const passCount = (passPlan.claimed.free - s.season.claimed.free) + (passPlan.claimed.pass - s.season.claimed.pass);
@@ -325,6 +330,12 @@ export default function CastleScene(props: {
             {revengeable > 0 && <i className="badge">{revengeable}</i>}
             <span>{T.icons.log}</span>
           </button>
+          {/* 의뢰(2026-10-02 승인): 일일·성장 의뢰 창. 받을 수 있는 수를 빨간 배지로 */}
+          <button className="side-icon quest-entry" onClick={onQuest} aria-label={T.quest.title}>
+            <img src="ui/quest.png" alt="" draggable={false} />
+            {questBadge > 0 && <i className="badge">{questBadge}</i>}
+            <span>{T.quest.title}</span>
+          </button>
         </div>
       )}
 
@@ -410,6 +421,8 @@ export default function CastleScene(props: {
       )}
 
       {!panelOpen && <div className="scene-foot">
+        {/* 다음 할 일 카드(2026-10-02 승인 A): 출정 왼쪽 아래 빈 언덕. 튜토리얼이 끝난 뒤에만 */}
+        {!s.run && (s.onboarding?.at ?? 'done') === 'done' && <QuestCard api={api} home={home} onGo={onQuestGo} onRefresh={onRefresh} onError={onError} />}
         {s.run ? (
           <button className="btn big" onClick={onRaid}>{T.resumeBtn}</button>
         ) : (

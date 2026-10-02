@@ -148,6 +148,8 @@ export interface UserState {
   daily?: { day: string; sorties: number; bought: number; lordSoul: number };
   /** 소환: 지금까지 뽑은 수, 마지막 영웅 이상 뒤로 뽑은 수(천장). 초기화해도 남는다 */
   summon?: { pulls: number; sinceHigh: number };
+  /** 의뢰(2026-10-02): 성장 의뢰 번호·누적, 일일 의뢰 진행. server/src/quests.ts */
+  quests?: import('./quests').QuestState;
   /** 몬스터 장비 외형(소환 영웅): 가진 것, 몬스터마다 입힌 것. 표시용, 초기화해도 남는다 */
   gear?: { owned: string[]; worn: Partial<Record<MonsterId, string>> };
   /** 성장 곡선 판. 2 = 레벨 50 + 각성 순환(2026-10-02). 옛 판은 불러올 때 한 번 바꾼다(server.ts migrateGrowth) */
@@ -273,6 +275,8 @@ export function resetState(s: UserState, now: number): UserState {
     summon: { pulls: 0, sinceHigh: 0 },
     gear: { owned: [], worn: {} },
     title: null,
+    // 성장 의뢰는 처음부터, 오늘 받은 일일 의뢰는 남긴다(초기화로 다시 받지 못하게)
+    quests: { guide: 0, wins: 0, idles: 0, daily: s.quests?.daily ?? { day: '', n: {}, claimed: [] } },
   };
 }
 

@@ -9,6 +9,28 @@ export const ja: Strings = {
   soul: '魂石',
   icons: { shop: 'ショップ', rank: '順位', rankN: (n: number) => `${n}位`, log: '記録' },
   upMany: { ten: '×10', max: (n: number) => `最大 +${n}` },
+  quest: {
+    title: '依頼', next: '次にやること', go: '行く', claim: '受け取る', done: '完了', after: 'その次', all: 'すべて達成',
+    siegeWait: '攻城段階はホームで待つと上がる',
+    tabs: { guide: '成長', daily: 'デイリー' },
+    guide: {
+      unit: (name: string, n: number) => `${name}をLv.${n}まで強化`,
+      anyLevel: (n: number) => `モンスター1体をLv.${n}`,
+      wins: (n: number) => `攻略に${n}回勝つ`,
+      castle: (n: number) => `城Lv.${n}`,
+      filled: (n: number) => `モンスターを${n}マス配置`,
+      idle: '放置報酬を受け取る',
+      summon: (n: number) => `召喚${n}回`,
+      siege: (n: number) => `攻城${n}段階`,
+      stars: (n: number) => `覚醒の星${n}個`,
+    },
+    daily: {
+      sortie: (n: number) => `出撃${n}回`,
+      win: (n: number) => `攻略に${n}回勝つ`,
+      upgrade: (n: number) => `強化${n}回`,
+      idle: () => '放置報酬を受け取る',
+    },
+  },
   up: {
     one: '×1', ten: '×10', max: '最大',
     nextFloor: (n: number) => `次: ${n}階が開く`,

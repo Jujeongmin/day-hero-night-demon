@@ -9,6 +9,28 @@ export const ko = {
   icons: { shop: '상점', rank: '순위', rankN: (n: number) => `${n}위`, log: '기록' },
   upMany: { ten: '×10', max: (n: number) => `최대 +${n}` },
   // 강화 창 A안(2026-10-02): 위 횟수 고르기, 줄마다 버튼 하나, 설명은 초상화를 눌러서
+  quest: {
+    title: '의뢰', next: '다음 할 일', go: '가기', claim: '받기', done: '완료', after: '그다음', all: '모두 하면',
+    siegeWait: '공성 단계는 홈에서 기다리면 올라간다',
+    tabs: { guide: '성장', daily: '일일' },
+    guide: {
+      unit: (name: string, n: number) => `${name} Lv.${n}까지 강화`,
+      anyLevel: (n: number) => `몬스터 하나 Lv.${n}`,
+      wins: (n: number) => `공략 ${n}번 이기기`,
+      castle: (n: number) => `성 Lv.${n}`,
+      filled: (n: number) => `몬스터 ${n}칸 채우기`,
+      idle: '방치 보상 받기',
+      summon: (n: number) => `소환 ${n}번`,
+      siege: (n: number) => `공성 ${n}단계`,
+      stars: (n: number) => `몬스터 각성 별 ${n}개`,
+    },
+    daily: {
+      sortie: (n: number) => `출정 ${n}번`,
+      win: (n: number) => `공략 ${n}번 이기기`,
+      upgrade: (n: number) => `강화 ${n}번`,
+      idle: () => '방치 보상 받기',
+    },
+  },
   up: {
     one: '×1', ten: '×10', max: '최대',
     nextFloor: (n: number) => `다음: ${n}층 열림`,

@@ -1,0 +1,28 @@
+<meta charset="utf-8">
+<title>늑대인간 움직임</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<style>
+/* 레이아웃: 시안 한 장 + 대기·공격·쓰러짐 움직임(게임처럼 왼쪽을 봄, 4배). 게임과 같은 밤 색 한 테마 */
+:root { color-scheme: dark; --page: #120c18; --ink: #ece4f2; --muted: #a99bb5; --line: #2f2439; --gold: #ffcf4d; --body: 'IBM Plex Sans KR', system-ui, sans-serif; }
+body { background: var(--page); color: var(--ink); font: 15px/1.65 var(--body); }
+main { max-width: 960px; margin: 0 auto; padding-block: 28px 64px; padding-inline: 16px; display: grid; gap: 22px; }
+h1 { font-family: 'Do Hyeon', sans-serif; font-weight: 400; font-size: 30px; margin: 0; }
+p { margin: 0; max-width: 65ch; } .lede { color: var(--muted); }
+.row { display: flex; flex-wrap: wrap; gap: 18px; }
+.c { display: grid; gap: 6px; justify-items: center; font-size: 14px; }
+.c img { height: 256px; width: auto; max-width: 100%; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 8px; }
+.c small { color: var(--muted); }
+.decide { border: 1px solid var(--gold); border-radius: 6px; padding: 14px 16px; }
+.decide b { color: var(--gold); }
+</style>
+<main>
+  <h1>늑대인간 움직임</h1>
+  <p class="lede">고르신 시안 그림을 그대로 움직였습니다(움직임 하나에 1회, 총 3회). 게임에서처럼 왼쪽(용사 쪽)을 보게 뒤집었습니다. 성 Lv.1에 열리는 연속 공격형입니다.</p>
+  <div class="row">
+    <div class="c"><img src="double_b.png" alt="" style="transform:scaleX(-1)">시안</div>
+    <div class="c"><img src="ww_idle.gif" alt="">대기<small>숨쉬기</small></div>
+    <div class="c"><img src="ww_attack.gif" alt="">공격<small>앞으로 뛰어들며 발톱으로 할퀴기 (하얀 손 고침)</small></div>
+    <div class="c"><img src="ww_death.gif" alt="">쓰러짐<small>뒤로 비틀거리며 주저앉음</small></div>
+  </div>
+  <div class="decide"><b>정해 주실 것</b><p>이대로 쓰기 / 다시 만들 움직임(대기·공격·쓰러짐 중) 알려 주기. 좋으면 같은 방식으로 역병 버섯 → 심연의 눈을 하나씩 만들어 보여 드립니다.</p></div>
+</main>
