@@ -37,7 +37,7 @@ export const en: Strings = {
   honor: 'Honor',
   tabs: { upgrade: 'Upgrade', log: 'Log', league: 'League', shop: 'Shop' },
   panels: { match: 'Who do we rob?', upgrade: 'Upgrade', log: 'Log', league: 'League', shop: 'Shop', settings: 'Settings' } as Record<string, string>,
-  lockedFloor: (lv: number) => `Castle Lv.${lv}`,
+  lockedFloor: (lv: number) => `Opens at castle Lv.${lv}`,
   logEmpty: 'Nobody has come yet',
   ok: 'OK',
   close: 'Close',

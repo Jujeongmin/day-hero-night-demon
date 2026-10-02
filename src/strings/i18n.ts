@@ -1,8 +1,4 @@
-import { en } from './en';
-import { ja } from './ja';
 import { ko, setStrings, T, type Strings } from './ko';
-import { zhHans } from './zhHans';
-import { zhHant } from './zhHant';
 
 /** 화면 언어. 고른 값은 이 기기(localStorage)에만 둔다 — 계정 데이터가 아니다 */
 export type Lang = 'ko' | 'en' | 'ja' | 'zh-Hant' | 'zh-Hans';
@@ -16,7 +12,14 @@ export const LANGS: { id: Lang; label: string }[] = [
   { id: 'zh-Hans', label: '简体中文' },
 ];
 
-const DICTS: Record<Lang, Strings> = { ko, en, ja, 'zh-Hant': zhHant, 'zh-Hans': zhHans };
+/** 한국어만 처음부터 묶고, 다른 언어는 고를 때 받는다(첫 다운로드를 줄인다, 2026-10-02) */
+const DICTS: Record<Lang, () => Promise<Strings>> = {
+  ko: async () => ko,
+  en: () => import('./en').then((m) => m.en),
+  ja: () => import('./ja').then((m) => m.ja),
+  'zh-Hant': () => import('./zhHant').then((m) => m.zhHant),
+  'zh-Hans': () => import('./zhHans').then((m) => m.zhHans),
+};
 const KEY = 'lang';
 let current: Lang = 'ko';
 
@@ -51,16 +54,22 @@ export function currentLang(): Lang {
   return current;
 }
 
-/** 사전을 바꾸고 <html lang>을 맞춘다(글꼴이 lang으로 갈린다) */
-export function applyLang(lang: Lang): void {
+/** 사전을 받아 바꾸고 <html lang>을 맞춘다(글꼴이 lang으로 갈린다). 받지 못하면 한국어로 */
+export async function applyLang(lang: Lang): Promise<void> {
+  let dict: Strings = ko;
+  try {
+    dict = await DICTS[lang]();
+  } catch {
+    lang = 'ko';
+  }
   current = lang;
-  setStrings(DICTS[lang]);
+  setStrings(dict);
   document.documentElement.lang = lang;
 }
 
 /** 고르고 기억한다 */
-export function chooseLang(lang: Lang): void {
-  applyLang(lang);
+export async function chooseLang(lang: Lang): Promise<void> {
+  await applyLang(lang);
   try {
     localStorage.setItem(KEY, lang);
   } catch {

@@ -36,7 +36,7 @@ export const ko = {
   honor: '명예',
   tabs: { upgrade: '강화', log: '기록', league: '리그', shop: '상점' },
   panels: { match: '누구를 털까?', upgrade: '강화', log: '기록', league: '리그', shop: '상점', settings: '설정' } as Record<string, string>,
-  lockedFloor: (lv: number) => `성 Lv.${lv}`,
+  lockedFloor: (lv: number) => `성 Lv.${lv}에 열림`,
   logEmpty: '아직 아무도 오지 않았다',
   ok: '확인',
   close: '닫기',

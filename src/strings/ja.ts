@@ -37,7 +37,7 @@ export const ja: Strings = {
   honor: '名誉',
   tabs: { upgrade: '強化', log: '記録', league: 'リーグ', shop: 'ショップ' },
   panels: { match: '誰を襲う？', upgrade: '強化', log: '記録', league: 'リーグ', shop: 'ショップ', settings: '設定' } as Record<string, string>,
-  lockedFloor: (lv: number) => `城 Lv.${lv}`,
+  lockedFloor: (lv: number) => `城 Lv.${lv}で解放`,
   logEmpty: 'まだ誰も来ていない',
   ok: 'OK',
   close: '閉じる',

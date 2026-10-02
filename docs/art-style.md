@@ -146,3 +146,8 @@
 - 방치 보상 보물상자 `public/ui/idle.png` = `art/ui/idle/idle_a.png`(seed 2101). 후보 https://claude.ai/artifact/ByPf8EVcYCtUGRtTMkrad8
 - 각성 별 동·은·금 `public/ui/star_{bronze,silver,gold}.png`(pixflux 32px seed 2201~2203, 내용 영역만).
 - 로딩 키아트 `public/loading/key.png`: `key_b`의 옛 마왕을 달 색(252,39,99)으로 지우고(`art/loading/key_erased.png`) 게임 속 마왕 대기 첫 프레임을 발 y=126에 합성(`key_ourlord.png`).
+
+## 그림 파일 최적화 (2026-10-02)
+- `public/**/*.png`는 pyoxipng(level 4, safe strip)로 무손실 압축: 2.7MB → 0.65MB, 152장 모두 픽셀 비교로 같음 확인. pngjs로 새로 만든 그림은 압축이 약하니 넣은 뒤 다시 돌린다:
+  `python -c "import oxipng,pathlib;[oxipng.optimize(p,level=4,strip=oxipng.StripChunks.safe()) for p in pathlib.Path('public').rglob('*.png')]"`
+- 안 쓰는 그림(함정 아이콘, 폐기 상품 아이콘, 예비 UI 조각)은 `art/unused/`로 옮김.

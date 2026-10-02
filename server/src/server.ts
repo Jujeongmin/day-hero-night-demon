@@ -597,7 +597,8 @@ export class Server {
     });
   }
 
-  async getHome() {
+  /** withNews = false면 전체 알림 조회를 건너뛴다(강화 뒤 새로고침처럼 잦은 호출, 2026-10-02) */
+  async getHome(withNews?: boolean) {
     const me = $sender.account;
     return withLocks([me], async () => {
       const now = Date.now();
@@ -626,7 +627,7 @@ export class Server {
         power: displayPower(s.castle.level, resolveFloors(s), heroGrowth(s), lordStarsOf(s), lordLookOf(s, now)),
         seasonEndsAt: seasonEndsAt(now),
         // 전체 알림: 최근 하루 것 최대 5개. 이미 본 것은 화면이 거른다
-        news: await recentNews(now),
+        news: withNews === false ? [] : await recentNews(now),
       };
     });
   }

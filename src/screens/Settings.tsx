@@ -127,7 +127,7 @@ export default function Settings(props: {
             className={`btn small ${currentLang() === l.id ? 'on' : ''}`}
             lang={l.id}
             disabled={currentLang() === l.id}
-            onClick={() => { chooseLang(l.id); window.location.reload(); }}
+            onClick={() => void chooseLang(l.id).then(() => window.location.reload())}
           >
             {l.label}
           </button>

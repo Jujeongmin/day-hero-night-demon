@@ -119,8 +119,17 @@ export default function App() {
   useEffect(() => {
     if (!connected) return;
     playBgm('bgm_home');
-    preloadSprites();
   }, [connected]);
+
+  // 나머지 스프라이트(전투·외형 등 약 100장)는 로딩 화면이 끝난 뒤 한가할 때 받는다.
+  // 로딩 중에 같이 받으면 첫 화면 그림과 대역폭을 나눠 로딩이 늦어진다(2026-10-02)
+  const firstScreenReady = !!home && assetsDone && minShown;
+  useEffect(() => {
+    if (!firstScreenReady) return;
+    const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback;
+    if (idle) idle(() => preloadSprites());
+    else window.setTimeout(preloadSprites, 500);
+  }, [firstScreenReady]);
 
 
   const onError = useCallback((msg: string) => {
@@ -133,9 +142,15 @@ export default function App() {
   const lastSeenLog = useRef<string | null>(null);
   const advancing = useRef<OnboardingStage | null>(null);
 
+  // 강화·편성 같은 행동 뒤 새로고침은 잦아서 전체 알림은 1분에 한 번만 함께 받는다(서버 컬렉션 조회를 줄인다)
+  const newsAt = useRef(0);
   const refresh = useCallback(async () => {
     if (!api) return;
-    setHome(await api.getHome());
+    const withNews = Date.now() - newsAt.current > 60_000;
+    const h = await api.getHome(withNews);
+    if (withNews) newsAt.current = Date.now();
+    // 알림을 안 받은 새로고침은 이전 알림 목록을 그대로 둔다
+    setHome((prev) => (withNews || !prev ? h : { ...h, news: prev.news }));
   }, [api]);
 
   useEffect(() => {
@@ -175,6 +190,7 @@ export default function App() {
     if (!connected || !api) return;
     api.getHome()
       .then((h) => {
+        newsAt.current = Date.now();
         setHome(h);
         if (h.state.run) setRaiding(true);
       })

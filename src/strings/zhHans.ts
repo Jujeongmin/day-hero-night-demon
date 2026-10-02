@@ -37,7 +37,7 @@ export const zhHans: Strings = {
   honor: '荣誉',
   tabs: { upgrade: '强化', log: '记录', league: '联赛', shop: '商店' },
   panels: { match: '要抢谁？', upgrade: '强化', log: '记录', league: '联赛', shop: '商店', settings: '设置' } as Record<string, string>,
-  lockedFloor: (lv: number) => `城堡 Lv.${lv}`,
+  lockedFloor: (lv: number) => `城堡 Lv.${lv} 开放`,
   logEmpty: '还没有人来过',
   ok: '确定',
   close: '关闭',

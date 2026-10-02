@@ -37,7 +37,7 @@ export const zhHant: Strings = {
   honor: '榮譽',
   tabs: { upgrade: '強化', log: '紀錄', league: '聯賽', shop: '商店' },
   panels: { match: '要搶誰？', upgrade: '強化', log: '紀錄', league: '聯賽', shop: '商店', settings: '設定' } as Record<string, string>,
-  lockedFloor: (lv: number) => `城堡 Lv.${lv}`,
+  lockedFloor: (lv: number) => `城堡 Lv.${lv} 開放`,
   logEmpty: '還沒有人來過',
   ok: '確認',
   close: '關閉',
