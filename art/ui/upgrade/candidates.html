@@ -1,0 +1,99 @@
+<meta charset="utf-8">
+<title>강화 창 정리</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<style>
+/* 레이아웃: 지금 강화 창(폰 화면 캡처) 옆에 줄인 안 A·B를 같은 크기(폰 폭 375, 아래 창 높이)로. 게임과 같은 밤 색 한 테마 */
+:root { color-scheme: dark; --page: #120c18; --ink: #ece4f2; --muted: #a99bb5; --line: #2f2439; --gold: #ffcf4d; --hp: #3cf07a; --ruby: #ff4a5e; --panel: rgb(81, 20, 35); --bone: #efe3c8; --body: 'IBM Plex Sans KR', system-ui, sans-serif; --game: 'Do Hyeon', 'Malgun Gothic', sans-serif; }
+body { background: var(--page); color: var(--ink); font: 15px/1.65 var(--body); }
+main { max-width: 1240px; margin: 0 auto; padding-block: 28px 64px; padding-inline: 16px; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--game); font-weight: 400; margin: 0; text-wrap: balance; }
+h1 { font-size: 30px; } h3 { font-size: 18px; }
+p { margin: 0; max-width: 65ch; } .lede, .note { color: var(--muted); } .note { font-size: 13px; }
+.rec { font: 600 11px var(--body); color: #1c1206; background: var(--gold); padding: 2px 6px; border-radius: 4px; vertical-align: 2px; }
+.opts { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.opt { display: grid; gap: 8px; width: 375px; max-width: 100%; }
+.opt p { font-size: 14px; }
+.shot { width: 375px; max-width: 100%; height: 330px; overflow: hidden; border: 2px solid var(--line); border-radius: 10px; background: url(now.jpg) 0 -482px / 375px 812px no-repeat; }
+.sheet { width: 375px; max-width: 100%; height: 330px; overflow: hidden; border: 2px solid var(--line); border-radius: 10px; position: relative; font-family: var(--game); color: var(--bone); background: #0c0716; }
+.frame { position: absolute; inset: 0; border: 12px solid transparent; border-image: url(frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated; padding: 0 6px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
+.head { display: flex; justify-content: space-between; align-items: center; font-size: 18px; }
+.head img { width: 26px; height: 26px; image-rendering: pixelated; }
+.mult { display: flex; gap: 3px; align-items: center; font-size: 13px; color: var(--muted); }
+.mult span { padding: 0 7px; border: 6px solid transparent; border-image: url(bar.png) 10 fill / 6px stretch; image-rendering: pixelated; filter: brightness(.7); color: var(--bone); }
+.mult span.on { filter: none; color: var(--gold); }
+.sec { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; padding: 2px 2px 0; }
+.sec b { font-weight: 400; color: var(--gold); }
+.row { display: flex; align-items: center; gap: 6px; padding: 0 3px; border: 5px solid transparent; border-image: url(pill.png) 8 fill / 5px stretch; image-rendering: pixelated; min-height: 34px; }
+.pt { width: 30px; height: 30px; flex: none; display: grid; place-items: center; background: #0006; border: 1px solid #0008; position: relative; }
+.pt img { max-width: 27px; max-height: 27px; image-rendering: pixelated; }
+.pt i { position: absolute; right: -3px; bottom: -3px; width: 13px; height: 13px; border-radius: 7px; background: #3a1c14; border: 1px solid var(--gold); color: var(--gold); font: 700 9px/11px var(--body); text-align: center; font-style: normal; }
+.nm { flex: 1; min-width: 0; display: grid; line-height: 1.15; }
+.nm b { font-weight: 400; font-size: 15px; white-space: nowrap; }
+.nm small { font-size: 12px; color: #c9ae9a; display: flex; gap: 6px; align-items: center; white-space: nowrap; }
+.nm small img { width: 12px; height: 12px; image-rendering: pixelated; vertical-align: -1px; }
+.nm .chip { font-size: 11px; color: #1c1206; background: #c9ae9a; padding: 0 4px; }
+.bt { flex: none; min-width: 70px; text-align: center; font-size: 13px; padding: 0 4px; border: 6px solid transparent; border-image: url(bar.png) 10 fill / 6px stretch; image-rendering: pixelated; display: inline-flex; align-items: center; gap: 2px; justify-content: center; }
+.bt img { width: 13px; height: 13px; image-rendering: pixelated; }
+.bt.sm { min-width: 0; padding: 1px 2px; font-size: 12px; }
+.pop { position: absolute; left: 30px; right: 30px; top: 70px; border: 12px solid transparent; border-image: url(frame_sq.png) 10 / 12px stretch; background: #3a0f1c; background-clip: padding-box; image-rendering: pixelated; padding: 2px 6px 6px; display: grid; gap: 4px; font-size: 13px; box-shadow: 0 0 0 999px #0009; }
+.pop .t { display: flex; gap: 8px; align-items: center; font-size: 16px; }
+.pop .t img { width: 34px; height: 34px; image-rendering: pixelated; }
+.pop .k { color: var(--gold); }
+.pop small { color: #c9ae9a; }
+.decide { border: 1px solid var(--gold); border-radius: 6px; padding: 14px 16px; display: grid; gap: 6px; }
+.decide h2 { color: var(--gold); font-size: 19px; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+</style>
+<main>
+  <header style="display:grid;gap:8px"><h1>강화 창 정리</h1>
+  <p class="lede">지금 강화 창은 줄마다 스킬 설명, 용사마다 "강화하면 약탈 골드…" 줄, 칸마다 설명이 있어서 폰에서 한 화면에 두 줄 남짓만 보입니다. 아래 두 안은 글을 걷어 내고 한 줄에 한 유닛만 둡니다. 셋 다 폰(375px) 아래 창 높이와 같습니다.</p></header>
+  <div class="opts">
+    <div class="opt">
+      <h3>지금</h3>
+      <div class="shot" role="img" aria-label="지금 강화 창"></div>
+      <p>성 레벨 이름이 두 줄로 꺾이고, 슬라임 줄이 반쯤 잘립니다.</p>
+    </div>
+    <div class="opt">
+      <h3>A. 한 줄 + 위에 ×1/×10/최대 하나 <span class="rec">추천</span></h3>
+      <div class="sheet"><div class="frame">
+        <div class="head"><span>강화</span><span class="mult"><span class="on">×1</span><span>×10</span><span>최대</span></span><img src="close_x.png" alt=""></div>
+        <div class="row"><span class="pt"><img src="castle.png" alt=""></span><span class="nm"><b>성 Lv.1</b><small>다음: 2층 열림</small></span><span class="bt"><img src="gold.png" alt="">6.3k</span></div>
+        <div class="row"><span class="pt"><img src="p_lord.png" alt=""></span><span class="nm"><b>마왕 <img src="star.png" alt="" style="width:12px">0</b><small>별마다 ×1.1</small></span><span class="bt"><img src="soul.png" alt="">30 각성</span></div>
+        <div class="sec"><span>몬스터</span></div>
+        <div class="row"><span class="pt"><img src="p_slime.png" alt=""><i>?</i></span><span class="nm"><b>슬라임 Lv.1</b><small><span><img src="stat_hp.png" alt="">120</span><span><img src="stat_atk.png" alt="">11</span><span><img src="stat_def.png" alt="">8</span></small></span><span class="bt"><img src="gold.png" alt="">26</span></div>
+        <div class="row"><span class="pt"><img src="p_skeleton.png" alt=""><i>?</i></span><span class="nm"><b>해골병 Lv.1</b><small><span><img src="stat_hp.png" alt="">80</span><span><img src="stat_atk.png" alt="">20</span><span><img src="stat_def.png" alt="">4</span></small></span><span class="bt"><img src="gold.png" alt="">26</span></div>
+        <div class="sec"><span>용사</span><span>약탈·방어 <b>+0%</b></span></div>
+        <div class="row"><span class="pt"><img src="p_knight.png" alt=""><i>?</i></span><span class="nm"><b>기사 Lv.1</b><small><span><img src="stat_hp.png" alt="">150</span><span><img src="stat_atk.png" alt="">14</span><span><img src="stat_def.png" alt="">10</span></small></span><span class="bt"><img src="gold.png" alt="">26</span></div>
+      </div></div>
+      <p>위의 ×1·×10·최대를 한 번 고르면 모든 줄의 버튼이 그 횟수로 강화합니다. 줄마다 버튼이 하나뿐이라 깔끔하고, 폰에서 4~5줄이 한 화면에 보입니다(지금은 2줄). 스킬 설명은 초상화(작은 ?)를 누르면 뜹니다.</p>
+    </div>
+    <div class="opt">
+      <h3>A에서 초상화를 누르면</h3>
+      <div class="sheet"><div class="frame">
+        <div class="head"><span>강화</span><span class="mult"><span class="on">×1</span><span>×10</span><span>최대</span></span><img src="close_x.png" alt=""></div>
+        <div class="row"><span class="pt"><img src="castle.png" alt=""></span><span class="nm"><b>성 Lv.1</b><small>다음: 2층 열림</small></span><span class="bt"><img src="gold.png" alt="">6.3k</span></div>
+        <div class="row"><span class="pt"><img src="p_lord.png" alt=""></span><span class="nm"><b>마왕</b><small>별마다 ×1.1</small></span><span class="bt"><img src="soul.png" alt="">30 각성</span></div>
+      </div>
+        <div class="pop"><span class="t"><img src="p_slime.png" alt="">슬라임 Lv.1</span><span><span class="k">도발</span> 3턴마다 2턴 동안 적의 공격을 끌어온다</span><small>다음 레벨: 체력 +9 · 공격 +1 · 방어 +1</small></div>
+      </div>
+      <p>스킬과 다음 레벨에 오르는 능력치는 여기서만 봅니다. 바깥을 누르면 닫힙니다.</p>
+    </div>
+    <div class="opt">
+      <h3>B. 설명만 걷기 (버튼은 그대로)</h3>
+      <div class="sheet"><div class="frame">
+        <div class="head"><span>강화</span><img src="close_x.png" alt=""></div>
+        <div class="row"><span class="pt"><img src="castle.png" alt=""></span><span class="nm"><b>성 Lv.1</b></span><span class="bt">강화 6.3k</span></div>
+        <div class="row"><span class="pt"><img src="p_lord.png" alt=""></span><span class="nm"><b>마왕</b></span><span class="bt">각성 30</span></div>
+        <div class="sec"><span>몬스터</span></div>
+        <div class="row"><span class="pt"><img src="p_slime.png" alt=""></span><span class="nm"><b>슬라임 Lv.1</b><small><span class="chip">도발</span><span><img src="stat_hp.png" alt="">120</span><span><img src="stat_atk.png" alt="">11</span></small></span><span class="bt sm">강화 26</span><span class="bt sm">×10</span><span class="bt sm">최대</span></div>
+        <div class="row"><span class="pt"><img src="p_skeleton.png" alt=""></span><span class="nm"><b>해골병 Lv.1</b><small><span class="chip">관통</span><span><img src="stat_hp.png" alt="">80</span><span><img src="stat_atk.png" alt="">20</span></small></span><span class="bt sm">강화 26</span><span class="bt sm">×10</span><span class="bt sm">최대</span></div>
+        <div class="sec"><span>용사</span><span>약탈·방어 <b>+0%</b></span></div>
+        <div class="row"><span class="pt"><img src="p_knight.png" alt=""></span><span class="nm"><b>기사 Lv.1</b><small><span class="chip">도발</span><span><img src="stat_hp.png" alt="">150</span></small></span><span class="bt sm">강화 26</span><span class="bt sm">×10</span><span class="bt sm">최대</span></div>
+      </div></div>
+      <p>스킬은 이름(도발·관통)만 작게 남기고 긴 설명과 용사 줄의 설명을 뺍니다. 줄마다 버튼 3개는 그대로라 오른쪽이 빽빽합니다.</p>
+    </div>
+  </div>
+  <section class="decide"><h2>정해 주실 것</h2><ul>
+    <li>A 한 줄 + 위 ×1/×10/최대 선택(추천) / B 설명만 걷기 / 지금 그대로</li>
+  </ul></section>
+</main>

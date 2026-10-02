@@ -8,6 +8,18 @@ export const ko = {
   soul: '영혼석',
   icons: { shop: '상점', rank: '순위', rankN: (n: number) => `${n}위`, log: '기록' },
   upMany: { ten: '×10', max: (n: number) => `최대 +${n}` },
+  // 강화 창 A안(2026-10-02): 위 횟수 고르기, 줄마다 버튼 하나, 설명은 초상화를 눌러서
+  up: {
+    one: '×1', ten: '×10', max: '최대',
+    nextFloor: (n: number) => `다음: ${n}층 열림`,
+    nextUnit: (name: string) => `다음: ${name} 합류`,
+    nextLord: '다음: 마왕 강화',
+    lordShort: '별마다 ×1.1',
+    heroBonus: (p: number) => `약탈·방어 +${p}%`,
+    awaken: '각성', recruit: '영입', maxLv: '최대',
+    nextLevel: '다음 레벨',
+    info: '설명 보기',
+  },
   castleHint: '몬스터 칸·층이 늘고 마왕이 강해진다',
   diff: { easy: '쉬움', normal: '보통', hard: '어려움' } as Record<'easy' | 'normal' | 'hard', string>,
   again: '다시 출정',

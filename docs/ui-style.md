@@ -58,3 +58,8 @@
 ## 글꼴 (2026-10-02 승인 A)
 - 한국어 글씨는 갈무리11(`public/fonts/Galmuri11.woff2`, Lee Minseo, SIL OFL 1.1 — 라이선스 `public/fonts/OFL.txt`). Do Hyeon은 굵어서 작은 글씨에서 "함락"이 "함탁"처럼 뭉개졌다. 영어는 Do Hyeon, 일본어 DotGothic16, 중국어 Noto Sans 그대로. 전투 캔버스 글씨도 CSS `--font`를 따른다(`battleCanvas.tsx` `uiFont`).
 - 후보 https://claude.ai/artifact/L4xMRvXpCi66CZWcJ75KiW
+
+## 강화 창 A안 (2026-10-02 승인)
+- 위에 ×1·×10·최대 고르기(브라우저에 기억, `upgrade.mult`) → 모든 줄 버튼이 그 횟수로. 줄마다 초상화·이름·레벨·별·능력치 숫자(오르는 양 없이)와 버튼 하나(골드/영혼석 아이콘 + 숫자, 여러 번이면 +n).
+- 스킬 설명·다음 레벨 능력치·용사 보너스 변화는 초상화(작은 ?)를 누르면 뜨는 작은 창에서만. 성 줄은 "다음: 2층 열림/○○ 합류/마왕 강화", 용사 머리글 오른쪽에 약탈·방어 +n%.
+- 강화 창 스크롤은 닫았다 열어도 그대로. 후보 https://claude.ai/artifact/CNVoFiwmADqueQyAWeiybn
