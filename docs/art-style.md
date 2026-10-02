@@ -151,3 +151,6 @@
 - `public/**/*.png`는 pyoxipng(level 4, safe strip)로 무손실 압축: 2.7MB → 0.65MB, 152장 모두 픽셀 비교로 같음 확인. pngjs로 새로 만든 그림은 압축이 약하니 넣은 뒤 다시 돌린다:
   `python -c "import oxipng,pathlib;[oxipng.optimize(p,level=4,strip=oxipng.StripChunks.safe()) for p in pathlib.Path('public').rglob('*.png')]"`
 - 안 쓰는 그림(함정 아이콘, 폐기 상품 아이콘, 예비 UI 조각)은 `art/unused/`로 옮김.
+
+## 컷신 마왕 교체 (2026-10-02 승인)
+- 컷 3·4의 마왕을 게임 속 마왕 특징(불타는 왕관·검은 가시 갑옷·휜 뿔·붉은 박쥐 날개)으로 다시 그림: pixflux 240×240, 컷 3 seed 2401, 컷 4 seed 2411. 컷 3은 머리 위 "불붙은 전구"의 불꽃만 직접 지워 전구로(). 탈락 후보 . 코드에서 .

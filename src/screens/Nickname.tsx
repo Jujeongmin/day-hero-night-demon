@@ -21,7 +21,7 @@ export default function Nickname(props: { api: Api; onDone: () => Promise<void>;
 
   return (
     <div className="nick-screen">
-      <img className="nick-lord" src="cutscene/cut3.png?v=2" alt="" draggable={false} />
+      <img className="nick-lord" src="cutscene/cut3.png?v=3" alt="" draggable={false} />
       <section className="nick-box">
         <h2>{T.nick.title}</h2>
         <input

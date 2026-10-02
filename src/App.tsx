@@ -312,7 +312,14 @@ export default function App() {
         break;
       case 'result':
         title = panel.result.won ? T.victory : T.defeat;
-        body = <Result result={panel.result} onClose={() => { setPanel(null); emitTut('result_closed'); }} />;
+        body = (
+          <Result
+            result={panel.result}
+            onClose={() => { setPanel(null); emitTut('result_closed'); }}
+            // 튜토리얼 중에는 다시 출정을 숨긴다(확인으로만 다음 단계)
+            onAgain={stage === 'done' ? () => setPanel({ name: 'match' }) : undefined}
+          />
+        );
         break;
       case 'upgrade':
         title = T.panels.upgrade;

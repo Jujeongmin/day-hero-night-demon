@@ -2,7 +2,7 @@
 const FIRST_SCREEN = [
   'sprites/bg_night.png', 'sprites/tower.png', 'sprites/lord_idle.png', 'sprites/slime_idle.png', 'sprites/skeleton_idle.png',
   'ui/frame_sq.png', 'ui/bar.png', 'ui/pill.png', 'ui/button_big.png?v=2', 'ui/settings.png', 'ui/crest.png', 'ui/knob.png',
-  'ui/imp_front.png', 'ui/bubble.png', 'cutscene/cut1.png?v=2',
+  'ui/imp_front.png', 'ui/bubble.png', 'cutscene/cut1.png?v=3',
 ];
 
 /** 그림을 받으며 (받은 수, 전체 수)를 알린다. 끝나면 resolve. 한 장이 오래 걸려도 timeoutMs 뒤에는 끝낸다 */

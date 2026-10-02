@@ -10,6 +10,7 @@ export const ko = {
   upMany: { ten: '×10', max: (n: number) => `최대 +${n}` },
   castleHint: '몬스터 칸·층이 늘고 마왕이 강해진다',
   diff: { easy: '쉬움', normal: '보통', hard: '어려움' } as Record<'easy' | 'normal' | 'hard', string>,
+  again: '다시 출정',
   idleBtn: '방치 보상',
   claimIdle: (g: number) => `방치 수입 받기 (+${F(g)})`,
   sortie: '출정',

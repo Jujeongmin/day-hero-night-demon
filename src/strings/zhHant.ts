@@ -11,6 +11,7 @@ export const zhHant: Strings = {
   upMany: { ten: '×10', max: (n: number) => `最大 +${n}` },
   castleHint: '增加欄位與樓層，魔王變強',
   diff: { easy: '簡單', normal: '普通', hard: '困難' } as Record<'easy' | 'normal' | 'hard', string>,
+  again: '再次出征',
   idleBtn: '掛機獎勵',
   claimIdle: (g: number) => `領取放置收益 (+${F(g)})`,
   sortie: '出征',

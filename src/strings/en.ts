@@ -11,6 +11,7 @@ export const en: Strings = {
   upMany: { ten: '×10', max: (n: number) => `Max +${n}` },
   castleHint: 'More slots and floors, stronger lord',
   diff: { easy: 'Easy', normal: 'Normal', hard: 'Hard' } as Record<'easy' | 'normal' | 'hard', string>,
+  again: 'Raid again',
   idleBtn: 'Idle loot',
   claimIdle: (g: number) => `Collect idle income (+${F(g)})`,
   sortie: 'Raid',

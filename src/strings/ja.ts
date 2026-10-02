@@ -11,6 +11,7 @@ export const ja: Strings = {
   upMany: { ten: '×10', max: (n: number) => `最大 +${n}` },
   castleHint: '枠と階が増え、魔王が強くなる',
   diff: { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' } as Record<'easy' | 'normal' | 'hard', string>,
+  again: 'もう一度出撃',
   idleBtn: '放置報酬',
   claimIdle: (g: number) => `放置収入を受け取る (+${F(g)})`,
   sortie: '出撃',
