@@ -178,9 +178,10 @@ canvas.battle {
 }
 .raid-sheet { height: auto; }
 .progress { gap: 4px; }
-.progress span { flex: 1; text-align: center; font-size: 13px; border: 6px solid transparent; border-image: url(/ui/bar.png) 10 fill / 6px stretch; filter: brightness(.6); }
-.progress span.done { filter: brightness(.9); color: var(--muted); }
-.progress span.now { filter: brightness(1.3); color: var(--gold); }
+/* 공략 층 진행: 시즌 패스 막대처럼 반듯한 직사각형(UI 키트 막대는 가장자리가 흐려 보여서, 2026-10-02 사용자). 지난 층은 어두운 금, 지금 층은 금색 */
+.progress span { flex: 1; text-align: center; font-size: 13px; line-height: 20px; color: var(--muted); background: #1a0810; border: 2px solid #05030a; }
+.progress span.done { color: #e8d9a8; background: #6b5418; box-shadow: inset 0 -2px 0 #4a3a10; }
+.progress span.now { color: #1c1206; background: var(--gold); box-shadow: inset 0 -3px 0 #b8860b, inset 0 2px 0 #fff0a8; }
 
 @media (prefers-reduced-motion: reduce) {
   .sprite, .float-idle { animation: none; }
