@@ -149,6 +149,8 @@ export default function CastleScene(props: {
   // 시즌 패스: 지금 받을 수 있는 보상이 있나(서버 planPassClaim과 같은 계산)
   const passPlan = planPassClaim(s.season, s.siege?.best ?? 1);
   const passReady = passPlan.gold > 0 || passPlan.soul > 0 || passPlan.skins.length > 0;
+  // 받을 칸 수(무료 줄 + 패스 줄). 빨간 알림 배지에 숫자로 (2026-10-02 사용자)
+  const passCount = (passPlan.claimed.free - s.season.claimed.free) + (passPlan.claimed.pass - s.season.claimed.pass);
 
   async function act(fn: () => Promise<unknown>, after?: () => void) {
     if (busy) return;
@@ -306,7 +308,7 @@ export default function CastleScene(props: {
           <button className={`pill pass-btn ${passReady ? 'ready' : ''}`} onClick={onPass} aria-label={T.products.season_pass[0]}>
             <img src="icons/prod_season_pass.png" alt="" draggable={false} />
             <b>{passTier(s.season.honor)}/{BALANCE.passTiers.length}</b>
-            {passReady && <i className="dot" />}
+            {passReady && <i className="dot">{passCount > 0 ? passCount : '!'}</i>}
           </button>
         )}
         {/* 방치 보상: 패스 아래 보물상자 버튼(2026-10-02 승인 A). 받을 것이 없으면 흐리게 */}

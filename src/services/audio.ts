@@ -2,7 +2,8 @@
 export type Bgm = 'bgm_home' | 'bgm_battle';
 export type Sfx =
   | 'sfx_tap' | 'sfx_attack' | 'sfx_hit' | 'sfx_ult' | 'sfx_win'
-  | 'sfx_lose' | 'sfx_raided' | 'sfx_purchase' | 'sfx_lord';
+  | 'sfx_lose' | 'sfx_raided' | 'sfx_purchase' | 'sfx_lord'
+  | 'sfx_summon' | 'sfx_epic' | 'sfx_legend';
 
 const PREFS_KEY = 'audio.prefs';
 const LEGACY_MUTE_KEY = 'audio.muted';
@@ -84,10 +85,12 @@ export function playBgm(name: Bgm | null): void {
 }
 
 /** 원본이 긴 효과음은 여기서 잘라 쓴다 (ms). 파일은 손대지 않는다. */
-const SFX_MAX_MS: Partial<Record<Sfx, number>> = { sfx_win: 2500 };
+/** 소환 시작음은 카드 11장이 다 뒤집힐 때쯤(약 3초) 줄여서 끈다 */
+const SFX_MAX_MS: Partial<Record<Sfx, number>> = { sfx_win: 2500, sfx_summon: 3000 };
 const FADE_MS = 400;
 /** 원본이 유난히 큰 효과음의 음량 배율. 옥좌 입장음은 평균 −11.8 dB로 효과음 중 가장 커서(타격음 −24 dB) 0.4배(≈ −8 dB)로 줄인다 (2026-09-30 사용자: 너무 크다) */
-const SFX_GAIN: Partial<Record<Sfx, number>> = { sfx_lord: 0.4 };
+/** 소환 시작음은 길게(3초) 깔려 카드 탭 소리와 겹쳐서 0.7배 (2026-10-02 측정: 평균 −20 dB, 영웅 −26 dB, 전설 −21 dB로 기존보다 크지 않음) */
+const SFX_GAIN: Partial<Record<Sfx, number>> = { sfx_lord: 0.4, sfx_summon: 0.7 };
 const sfxVolume = (name: Sfx) => prefs.sfxVol * (SFX_GAIN[name] ?? 1);
 
 export function sfx(name: Sfx): void {

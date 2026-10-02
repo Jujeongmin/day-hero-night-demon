@@ -318,6 +318,7 @@ export const ja: Strings = {
     ten: '10+1回',
     result: '召喚結果',
     ok: 'OK',
+    skipAnim: '演出スキップ',
     skip: 'すべて表示',
     fresh: 'NEW',
     look: (name: string) => `外見: ${name}`,

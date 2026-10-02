@@ -250,6 +250,22 @@ const tools = {
     persist();
     location.reload();
   },
+  /** 이번 시즌 명예 바꾸기(패스 단계 확인용): localServer.honor(450) */
+  honor(n: number) {
+    const s = store.users[account] as { season?: { honor: number } } | undefined;
+    if (!s?.season) return;
+    s.season.honor = n;
+    persist();
+    location.reload();
+  },
+  /** 튜토리얼 단계 바꾸기(화면 확인용): localServer.stage('match_sortie') */
+  stage(at: string) {
+    const s = store.users[account] as { onboarding?: { at: string; nicknameSet: boolean } } | undefined;
+    if (!s) return;
+    s.onboarding = { at, nicknameSet: true };
+    persist();
+    location.reload();
+  },
   /** 튜토리얼을 끝난 것으로(화면 확인용) */
   done() {
     const s = store.users[account] as { onboarding?: unknown; introDone?: boolean } | undefined;

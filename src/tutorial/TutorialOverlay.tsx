@@ -39,6 +39,9 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
   const step = TUT_STEPS[stage];
   const [box, setBox] = useState<Box | null>(null);
   const [gaveUp, setGaveUp] = useState(false);
+  // 마지막 출정(match_sortie)에서 상대를 누르면 서버 응답을 기다리는 동안에도 말풍선을 바로 걷는다
+  const [launched, setLaunched] = useState(false);
+  useEffect(() => setLaunched(false), [stage]);
   const boxRef = useRef<Box | null>(null);
   const talkRef = useRef<HTMLDivElement>(null);
   const [talkH, setTalkH] = useState(0);
@@ -94,7 +97,7 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
     );
   }
 
-  if (gaveUp) return null;
+  if (gaveUp || launched) return null;
 
   const press = () => {
     if (step.targets.length === 0) {
@@ -102,7 +105,9 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
       if (to) onAdvance(to);
       return;
     }
-    findTarget(step.targets)?.click();
+    const el = findTarget(step.targets);
+    if (stage === 'match_sortie' && el?.dataset.tut === 'match-first') setLaunched(true);
+    el?.click();
   };
 
   const pad = 6;

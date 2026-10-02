@@ -318,6 +318,7 @@ export const en: Strings = {
     ten: '10+1×',
     result: 'Summon results',
     ok: 'OK',
+    skipAnim: 'Skip animation',
     skip: 'Show all',
     fresh: 'NEW',
     look: (name: string) => `Look: ${name}`,

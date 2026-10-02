@@ -83,7 +83,9 @@ select { font: inherit; }
 .pass-btn b { color: var(--gold); font-weight: 400; }
 .pass-btn.ready { animation: passGlow 1.6s ease-in-out infinite; }
 @keyframes passGlow { 50% { filter: brightness(1.35) drop-shadow(0 0 5px #ffcf4d); } }
-.pass-btn .dot { position: absolute; right: -4px; top: -4px; width: 9px; height: 9px; background: var(--ruby); border: 1px solid #000; border-radius: 50%; }
+.pass-btn .dot { position: absolute; right: -10px; top: -10px; z-index: 1; min-width: 18px; height: 18px; padding: 0 4px; display: grid; place-items: center; background: var(--ruby); border: 2px solid #000; border-radius: 9px; color: #fff; font-style: normal; font-size: 12px; line-height: 1; box-shadow: 0 0 6px #ff4a5eaa; animation: dotPop 1.2s ease-in-out infinite; }
+@keyframes dotPop { 50% { transform: scale(1.15); } }
+@media (prefers-reduced-motion: reduce) { .pass-btn .dot { animation: none; } }
 .scene-foot { position: absolute; left: 0; right: 0; bottom: 10px; z-index: 3; display: flex; justify-content: center; padding-inline: 12px; }
 .scene-foot .btn.big { min-width: 62%; }
 
@@ -544,3 +546,8 @@ button.pill.ticket.buy:disabled { animation: none; filter: grayscale(0.6) bright
 .look-chip em { font-style: normal; color: var(--hp); }
 .look-chip:hover:not(:disabled) { border-color: #d9a0ff; color: #fff; }
 .look .look-bonus { font-style: normal; font-size: 11px; line-height: 1; color: var(--hp); }
+.summon-opts { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; }
+.summon-skip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 4px; background: none; border: 0; color: var(--bone); font: inherit; font-size: 14px; }
+.summon-skip .box { width: 18px; height: 18px; display: grid; place-items: center; border: 2px solid #c9ae9a; border-radius: 3px; background: #0006; color: var(--gold); font-size: 13px; line-height: 1; }
+.summon-skip.on .box { border-color: var(--gold); }
+.summon-where { color: var(--muted); font-size: 12px; }

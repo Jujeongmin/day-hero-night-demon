@@ -327,6 +327,7 @@ export const ko = {
     ten: '10+1회',
     result: '소환 결과',
     ok: '확인',
+    skipAnim: '연출 건너뛰기',
     skip: '모두 보기',
     fresh: 'NEW',
     look: (name: string) => `외형: ${name}`,

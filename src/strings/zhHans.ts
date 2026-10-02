@@ -318,6 +318,7 @@ export const zhHans: Strings = {
     ten: '10+1次',
     result: '召唤结果',
     ok: '确定',
+    skipAnim: '跳过演出',
     skip: '全部显示',
     fresh: 'NEW',
     look: (name: string) => `外观: ${name}`,

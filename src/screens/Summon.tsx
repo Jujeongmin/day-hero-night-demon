@@ -18,6 +18,21 @@ const legendSprite = (l: string) => `lord_${l}`;
 
 const pct = (p: number) => `${Math.round(p * 1000) / 10}%`;
 
+/** 연출 건너뛰기(2026-10-02 사용자): 이 기기에만 기억한다 */
+const SKIP_KEY = 'summon.skip';
+function loadSkip(): boolean {
+  try { return localStorage.getItem(SKIP_KEY) === '1'; } catch { return false; }
+}
+function saveSkip(on: boolean): void {
+  try { localStorage.setItem(SKIP_KEY, on ? '1' : '0'); } catch { /* 저장 못 해도 이번 판은 그대로 */ }
+}
+
+/** 결과에서 가장 높은 등급 소리(건너뛰기일 때 한 번만) */
+function bestSound(results: SummonResult[]): void {
+  if (results.some((r) => r.grade === 'legend')) sfx('sfx_legend');
+  else if (results.some((r) => r.grade === 'epic')) sfx('sfx_epic');
+}
+
 /**
  * 소환 의식(2026-10-02 승인: 탑 왼쪽 제단 아이콘 → 전체 화면 제단, 뿔 해골 제단 그림).
  * 위: 제단과 남은 천장·확률 보기. 아래: 1회·10+1회 버튼. 얻은 외형은 강화 창의 몬스터 줄에서 입힌다(2026-10-02 사용자).
@@ -36,6 +51,7 @@ export default function Summon(props: {
   const [results, setResults] = useState<SummonResult[] | null>(null);
   const [shown, setShown] = useState(0);
   const [rates, setRates] = useState(false);
+  const [skip, setSkip] = useState(loadSkip);
   // 결과를 받은 뒤 서버 기록 기준 남은 천장(새로고침 전에도 맞게)
   const [toPity, setToPity] = useState<number | null>(null);
 
@@ -45,9 +61,11 @@ export default function Summon(props: {
   useEffect(() => {
     if (!results || shown >= results.length) return;
     const id = window.setTimeout(() => {
+      // 2026-10-02 사용자 고른 소리: 카드마다 탭, 영웅 Magic sparkle whoosh, 전설 Achievement win drums
       const r = results[shown];
-      if (r.grade === 'legend') sfx('sfx_lord');
-      else if (r.grade === 'epic') sfx('sfx_ult');
+      sfx('sfx_tap');
+      if (r.grade === 'legend') sfx('sfx_legend');
+      else if (r.grade === 'epic') sfx('sfx_epic');
       setShown((n) => n + 1);
     }, shown === 0 ? 400 : REVEAL_MS);
     return () => window.clearTimeout(id);
@@ -63,9 +81,15 @@ export default function Summon(props: {
     setBusy(true);
     try {
       const r = await api.summon(kind);
-      sfx('sfx_purchase');
       setToPity(r.toPity);
-      setShown(0);
+      if (skip) {
+        // 건너뛰기: 카드를 모두 연 채로, 가장 높은 등급 소리만
+        setShown(r.results.length);
+        bestSound(r.results);
+      } else {
+        sfx('sfx_summon');
+        setShown(0);
+      }
       setResults(r.results);
     } catch (e) {
       onError(errorText(e));
@@ -107,7 +131,12 @@ export default function Summon(props: {
             <span><img src="icons/soul.png" alt="" draggable={false} />{B.costTen}</span>
           </button>
         </div>
-        <small className="summon-where">{T.summon.wearWhere}</small>
+        <div className="summon-opts">
+          <button className={`summon-skip ${skip ? 'on' : ''}`} aria-pressed={skip} onClick={() => { setSkip(!skip); saveSkip(!skip); }}>
+            <span className="box">{skip ? '✓' : ''}</span>{T.summon.skipAnim}
+          </button>
+          <small className="summon-where">{T.summon.wearWhere}</small>
+        </div>
       </div>
 
       {rates && (

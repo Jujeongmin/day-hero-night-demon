@@ -208,7 +208,8 @@ export default function App() {
       advancing.current = null;
     }
   };
-  const tutorial = isTutorialStage(stage) && <TutorialOverlay stage={stage} onAdvance={(to) => void advance(to)} />;
+  // 마지막 출정 단계(match_sortie)는 공략이 끝나야 서버가 다음 단계로 넘긴다. 공략 중에는 "출정!" 말풍선을 바로 숨긴다
+  const tutorial = isTutorialStage(stage) && !(raiding && stage === 'match_sortie') && <TutorialOverlay stage={stage} onAdvance={(to) => void advance(to)} />;
 
   if (stage === 'cutscene') {
     return (

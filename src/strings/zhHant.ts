@@ -318,6 +318,7 @@ export const zhHant: Strings = {
     ten: '10+1次',
     result: '召喚結果',
     ok: '確定',
+    skipAnim: '跳過演出',
     skip: '全部顯示',
     fresh: 'NEW',
     look: (name: string) => `外觀: ${name}`,

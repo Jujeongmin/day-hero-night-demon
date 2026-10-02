@@ -15,5 +15,8 @@
 | sfx_raided.mp3 | Ominous drums | Mixkit | https://mixkit.co/free-sound-effects/game/ (id 227) |
 | sfx_purchase.mp3 | Winning a coin, video game | Mixkit | https://mixkit.co/free-sound-effects/game/ (id 2069) |
 | sfx_lord.mp3 | Giant monster roar | Mixkit | https://mixkit.co/free-sound-effects/monster/ (id 1972) |
+| sfx_summon.mp3 | Magic spell mystery whoosh | Mixkit | https://mixkit.co/free-sound-effects/magic/ (id 2345) |
+| sfx_epic.mp3 | Magic sparkle whoosh | Mixkit | https://mixkit.co/free-sound-effects/magic/ (id 2350) |
+| sfx_legend.mp3 | Achievement win drums | Mixkit | https://mixkit.co/free-sound-effects/discover/achievement/ (id 555) |
 
-승인: 2026-09-28. BGM은 반복 재생한다. bgm_battle은 원곡 그대로(1:44). bgm_home은 2026-09-30 원곡 끝 96.13초부터 약 10초 동안 이어지는 3.5kHz 고음(반복 때 "삐" 소리)을 잘라 0.12~96.08초만 남기고 끝 60ms 페이드아웃, 192kbps로 다시 인코딩(1:36, 2.3MB). 도구: Python `imageio_ffmpeg`에 든 ffmpeg. 후보 청취 페이지: https://claude.ai/artifact/UwtiJnXNMepcBuFet79DBK
+승인: 2026-09-28. 소환 효과음 3종은 2026-10-02 승인(후보 https://claude.ai/artifact/J3ep6NZRChMeLMcrcSvisS, 소환 시작음은 코드에서 3초에 줄여 끈다). BGM은 반복 재생한다. bgm_battle은 원곡 그대로(1:44). bgm_home은 2026-09-30 원곡 끝 96.13초부터 약 10초 동안 이어지는 3.5kHz 고음(반복 때 "삐" 소리)을 잘라 0.12~96.08초만 남기고 끝 60ms 페이드아웃, 192kbps로 다시 인코딩(1:36, 2.3MB). 도구: Python `imageio_ffmpeg`에 든 ffmpeg. 후보 청취 페이지: https://claude.ai/artifact/UwtiJnXNMepcBuFet79DBK

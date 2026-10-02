@@ -1,0 +1,145 @@
+<title>소환 효과음 후보</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<style>
+/* 레이아웃: 소리 자리 3개 × 후보 3개 카드, 위에 고른 조합으로 10+1 흐름 재생. 게임과 같은 밤 색 한 테마 */
+:root {
+  color-scheme: dark;
+  --page: #120c18; --card: #1d1526; --ink: #ece4f2; --muted: #a99bb5; --line: #33283f;
+  --gold: #ffcf4d; --epic: #c070ff; --rare: #5aa8ff; --ruby: #ff4a5e;
+  --game: 'Do Hyeon', 'Malgun Gothic', sans-serif;
+  --body: 'IBM Plex Sans KR', system-ui, sans-serif;
+}
+body { background: var(--page); color: var(--ink); font: 15px/1.6 var(--body); }
+main { max-width: 900px; margin: 0 auto; padding-block: 28px 64px; padding-inline: 16px; display: grid; gap: 32px; }
+h1, h2 { font-family: var(--game); font-weight: 400; margin: 0; text-wrap: balance; }
+h1 { font-size: 30px; } h2 { font-size: 21px; }
+p { margin: 0; max-width: 65ch; }
+.lede, .note { color: var(--muted); } .note { font-size: 13px; }
+section { display: grid; gap: 12px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.cand { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: grid; gap: 8px; }
+.cand.pick { border-color: var(--gold); }
+.cand h3 { margin: 0; font-family: var(--game); font-weight: 400; font-size: 17px; }
+.cand h3 small { font-family: var(--body); font-size: 12px; color: var(--muted); margin-left: 6px; }
+.cand p { font-size: 13px; color: var(--muted); }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+button { font: 15px var(--game); color: var(--ink); background: #2a1f36; border: 1px solid #4a3a5c; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+button:hover { border-color: var(--gold); }
+button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+button.on { background: #3b2a12; border-color: var(--gold); color: var(--gold); }
+.rec { font: 600 11px var(--body); color: #1c1206; background: var(--gold); padding: 2px 6px; border-radius: 4px; }
+.flow { background: var(--card); border: 1px solid var(--gold); border-radius: 8px; padding: 14px; display: grid; gap: 12px; }
+.cards { display: flex; gap: 6px; flex-wrap: wrap; }
+.card { width: 40px; height: 52px; border-radius: 5px; background: #2a2033; border: 1px solid #4a3a5c; display: grid; place-items: center; font: 13px var(--game); color: var(--muted); transition: transform .2s; }
+.card.open { color: var(--ink); background: #3a2a44; }
+.card.open.epic { box-shadow: 0 0 10px var(--epic); color: #e7c8ff; }
+.card.open.legend { box-shadow: 0 0 14px var(--gold); color: var(--gold); }
+.card.open.rare { box-shadow: 0 0 6px var(--rare); }
+@media (prefers-reduced-motion: no-preference) { .card.open { transform: rotateY(360deg); } }
+.decide { border: 1px solid var(--gold); border-radius: 6px; padding: 14px 16px; display: grid; gap: 6px; }
+.decide h2 { color: var(--gold); font-size: 19px; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+</style>
+<main>
+  <header style="display:grid;gap:8px">
+    <h1>소환 효과음 후보</h1>
+    <p class="lede">모두 Mixkit(기존 효과음과 같은 곳·같은 라이선스) 미리듣기 음원입니다. 자리마다 하나씩 고르면 아래 "10+1 흐름"에서 이어서 들어 볼 수 있습니다. 소리는 처음 누를 때부터 납니다.</p>
+  </header>
+
+  <section class="flow" aria-label="10+1 흐름 미리듣기">
+    <h2>10+1 흐름 들어 보기</h2>
+    <p class="note">시작 소리 → 카드 11장이 0.15초마다 뒤집힘(5번째 영웅, 11번째 전설). 지금 고른 조합으로 재생합니다.</p>
+    <div class="cards" id="cards"></div>
+    <div class="row"><button id="play-flow" type="button">▶ 흐름 재생</button><span class="note" id="picked"></span></div>
+  </section>
+
+  <section>
+    <h2>① 소환 시작 <span class="note">버튼을 누르고 제단 수정이 빛날 때</span></h2>
+    <div class="grid" data-slot="start">
+      <div class="cand" data-id="2345"><h3>Magic spell mystery whoosh <small>5초</small></h3><p>낮게 깔리는 신비한 바람 소리. 어두운 제단과 잘 맞습니다.</p><div class="row"><button type="button" data-play="2345">▶ 듣기</button><button type="button" data-pick>고르기</button><span class="rec">추천</span></div></div>
+      <div class="cand" data-id="2343"><h3>Cinematic whoosh magic gust <small>7초</small></h3><p>영화처럼 크게 몰아치는 돌풍. 웅장하지만 길어서 카드가 다 뒤집힐 때까지 이어집니다.</p><div class="row"><button type="button" data-play="2343">▶ 듣기</button><button type="button" data-pick>고르기</button></div></div>
+      <div class="cand" data-id="879"><h3>Arcane chain spell <small>5초</small></h3><p>사슬이 감기는 듯한 마법 시전. 의식 느낌이 강합니다.</p><div class="row"><button type="button" data-play="879">▶ 듣기</button><button type="button" data-pick>고르기</button></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>② 영웅 카드 <span class="note">5.5% · 장비 외형</span></h2>
+    <div class="grid" data-slot="epic">
+      <div class="cand" data-id="2350"><h3>Magic sparkle whoosh <small>3초</small></h3><p>반짝이며 휙 지나가는 소리. 보라 빛과 어울립니다.</p><div class="row"><button type="button" data-play="2350">▶ 듣기</button><button type="button" data-pick>고르기</button><span class="rec">추천</span></div></div>
+      <div class="cand" data-id="3082"><h3>Magic sparkle poof hit <small>3초</small></h3><p>펑 하고 터지는 반짝임. 카드가 열리는 순간이 또렷합니다.</p><div class="row"><button type="button" data-play="3082">▶ 듣기</button><button type="button" data-pick>고르기</button></div></div>
+      <div class="cand" data-id="873"><h3>Light spell <small>2초</small></h3><p>짧고 밝은 마법음. 10+1에서 여러 장이 나와도 덜 시끄럽습니다.</p><div class="row"><button type="button" data-play="873">▶ 듣기</button><button type="button" data-pick>고르기</button></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>③ 전설 카드 <span class="note">0.5% · 타락 대악마</span></h2>
+    <div class="grid" data-slot="legend">
+      <div class="cand" data-id="658"><h3>Choir magic shine <small>4초</small></h3><p>성가대 합창과 빛. "드디어 나왔다"는 무게감이 있습니다.</p><div class="row"><button type="button" data-play="658">▶ 듣기</button><button type="button" data-pick>고르기</button><span class="rec">추천</span></div></div>
+      <div class="cand" data-id="555"><h3>Achievement win drums <small>5초</small></h3><p>북소리로 치는 승리 연주. 지금 마왕 포효(공격 소리)와 섞여도 힘이 있습니다.</p><div class="row"><button type="button" data-play="555">▶ 듣기</button><button type="button" data-pick>고르기</button></div></div>
+      <div class="cand" data-id="270"><h3>Fantasy game success notification <small>3초</small></h3><p>판타지 게임 성공 알림. 가볍고 밝은 편입니다.</p><div class="row"><button type="button" data-play="270">▶ 듣기</button><button type="button" data-pick>고르기</button></div></div>
+    </div>
+  </section>
+
+  <section class="decide">
+    <h2>정해 주실 것</h2>
+    <ul>
+      <li>① 소환 시작 · ② 영웅 · ③ 전설에 쓸 소리 하나씩 (추천: 2345 · 2350 · 658)</li>
+      <li>카드 한 장마다 나는 작은 "탁" 소리도 넣을지 (지금 게임의 탭 소리를 재사용)</li>
+    </ul>
+  </section>
+</main>
+<script>
+(() => {
+  const files = ['2345', '2343', '879', '2350', '3082', '873', '658', '555', '270'];
+  const audio = {};
+  for (const id of files) { const a = new Audio(id + '.mp3'); a.preload = 'auto'; audio[id] = a; }
+  let current = null;
+  const play = (id) => {
+    const a = audio[id];
+    if (!a) return;
+    const b = a.cloneNode();
+    b.play().catch(() => {});
+    return b;
+  };
+  const picked = { start: '2345', epic: '2350', legend: '658' };
+  const mark = () => {
+    document.querySelectorAll('[data-slot]').forEach((g) => {
+      const slot = g.dataset.slot;
+      g.querySelectorAll('.cand').forEach((c) => {
+        const on = c.dataset.id === picked[slot];
+        c.classList.toggle('pick', on);
+        const btn = c.querySelector('[data-pick]');
+        btn.classList.toggle('on', on);
+        btn.textContent = on ? '고름' : '고르기';
+      });
+    });
+    document.getElementById('picked').textContent = `시작 ${picked.start} · 영웅 ${picked.epic} · 전설 ${picked.legend}`;
+  };
+  document.addEventListener('click', (e) => {
+    const p = e.target.closest('[data-play]');
+    if (p) { if (current) current.pause(); current = play(p.dataset.play); return; }
+    const k = e.target.closest('[data-pick]');
+    if (k) { const c = k.closest('.cand'); picked[c.closest('[data-slot]').dataset.slot] = c.dataset.id; mark(); }
+  });
+  const cardsEl = document.getElementById('cards');
+  const grades = ['', 'rare', '', '', 'epic', '', 'rare', '', '', '', 'legend'];
+  const label = { '': '+10', rare: '+30', epic: '영웅', legend: '전설' };
+  const draw = () => { cardsEl.innerHTML = grades.map(() => '<div class="card">?</div>').join(''); };
+  draw();
+  let timers = [];
+  document.getElementById('play-flow').addEventListener('click', () => {
+    timers.forEach(clearTimeout); timers = []; draw();
+    play(picked.start);
+    const cards = [...cardsEl.children];
+    grades.forEach((g, i) => {
+      timers.push(setTimeout(() => {
+        cards[i].className = 'card open ' + g;
+        cards[i].textContent = label[g];
+        if (g === 'epic') play(picked.epic);
+        if (g === 'legend') play(picked.legend);
+      }, 400 + i * 150 + (i >= 10 ? 250 : 0)));
+    });
+  });
+  mark();
+})();
+</script>
