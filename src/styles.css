@@ -283,8 +283,9 @@ canvas.battle {
 /* 시즌 패스 트랙: 4단계씩 카드, 위 무료 · 아래 패스 */
 .pass-prog { display: flex; align-items: center; gap: 6px; font-size: 13px; }
 .pass-prog img { width: 18px; height: 18px; image-rendering: pixelated; }
-.pass-bar { flex: 1; height: 14px; border: 5px solid transparent; border-image: url(/ui/bar.png) 10 fill / 5px stretch; image-rendering: pixelated; position: relative; }
-.pass-bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--gold); }
+/* 패스 단계 막대: 음량 슬라이더처럼 반듯한 직사각형(UI 키트 막대는 가장자리가 흐려 보여서, 2026-10-02 사용자) */
+.pass-bar { flex: 1; height: 14px; position: relative; background: #1a0810; border: 2px solid #05030a; }
+.pass-bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--gold); box-shadow: inset 0 -3px 0 #b8860b, inset 0 2px 0 #fff0a8; }
 .pass-track { display: flex; align-items: stretch; gap: 4px; }
 .pass-arrow { width: 30px; flex: none; }
 .pass-cards { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; min-width: 0; }

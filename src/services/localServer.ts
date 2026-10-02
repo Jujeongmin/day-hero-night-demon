@@ -258,6 +258,18 @@ const tools = {
     persist();
     location.reload();
   },
+  /** 시즌 패스를 안 산 상태로(이 브라우저의 모든 로컬 계정): 패스 끔, 패스 줄 받은 단계 0, 패스로 받은 흑룡 회수. localServer.unpass() */
+  unpass() {
+    for (const u of Object.values(store.users) as { season?: { pass: boolean; claimed: { free: number; pass: number } }; skins?: string[]; lordSkin?: string | null }[]) {
+      if (!u?.season) continue;
+      u.season.pass = false;
+      u.season.claimed = { ...u.season.claimed, pass: 0 };
+      if (u.skins) u.skins = u.skins.filter((k) => k !== 'dragon');
+      if (u.lordSkin === 'dragon') u.lordSkin = null;
+    }
+    persist();
+    location.reload();
+  },
   /** 튜토리얼 단계 바꾸기(화면 확인용): localServer.stage('match_sortie') */
   stage(at: string) {
     const s = store.users[account] as { onboarding?: { at: string; nicknameSet: boolean } } | undefined;
