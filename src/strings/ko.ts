@@ -6,6 +6,7 @@ export const ko = {
   loading: '불러오는 중…',
   gold: '골드',
   soul: '영혼석',
+  icons: { rank: '순위', rankN: (n: number) => `${n}위`, log: '기록' },
   idleBtn: '방치 보상',
   claimIdle: (g: number) => `방치 수입 받기 (+${F(g)})`,
   sortie: '출정',

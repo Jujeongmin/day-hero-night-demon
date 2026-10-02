@@ -7,6 +7,7 @@ export const ja: Strings = {
   loading: '読み込み中…',
   gold: 'ゴールド',
   soul: '魂石',
+  icons: { rank: '順位', rankN: (n: number) => `${n}位`, log: '記録' },
   idleBtn: '放置報酬',
   claimIdle: (g: number) => `放置収入を受け取る (+${F(g)})`,
   sortie: '出撃',

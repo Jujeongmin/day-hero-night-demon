@@ -76,9 +76,14 @@ export default function CastleScene(props: {
   onPass: () => void;
   /** 소환 의식 열기(탑 왼쪽 제단 아이콘) */
   onSummon: () => void;
+  /** 순위(리그) 창·방어 기록 창 열기(탑 왼쪽 아이콘, 2026-10-02) */
+  onRank: () => void;
+  onLog: () => void;
+  /** 내 브래킷 순위(모르면 null) */
+  rank: number | null;
   onError: (msg: string) => void;
 }) {
-  const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onSiegeRank, onPass, onSummon, onError } = props;
+  const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onSiegeRank, onPass, onSummon, onRank, onLog, rank, onError } = props;
   const s = home.state;
   const [busy, setBusy] = useState(false);
   const [choose, setChoose] = useState(false);
@@ -149,6 +154,8 @@ export default function CastleScene(props: {
   // 시즌 패스: 지금 받을 수 있는 보상이 있나(서버 planPassClaim과 같은 계산)
   const passPlan = planPassClaim(s.season, s.siege?.best ?? 1);
   const passReady = passPlan.gold > 0 || passPlan.soul > 0 || passPlan.skins.length > 0;
+  // 기록 배지: 지금 복수할 수 있는 침입(실제 플레이어가 이겼고, 24시간 안, 아직 복수 안 함)
+  const revengeable = s.raidLog.filter((e) => !e.npc && e.attackerWon && !e.revenged && Date.now() - e.at < BALANCE.revengeWindowMs).length;
   // 받을 칸 수(무료 줄 + 패스 줄). 빨간 알림 배지에 숫자로 (2026-10-02 사용자)
   const passCount = (passPlan.claimed.free - s.season.claimed.free) + (passPlan.claimed.pass - s.season.claimed.pass);
 
@@ -296,11 +303,24 @@ export default function CastleScene(props: {
 
       {/* 오른쪽 위: 방치 수입 받기, 그 아래 시즌 패스(2026-09-30 승인 A안: 단계 표시, 받을 보상이 있으면 빨간 점·빛) */}
       {/* 소환 제단 (2026-10-02 승인: 탑 왼쪽 아이콘). 튜토리얼이 끝난 뒤에만 */}
+      {/* 왼쪽 줄(2026-10-02 승인 A): 소환 → 순위(내 순위 숫자) → 기록(복수할 수 있는 침입 수 배지). 튜토리얼이 끝난 뒤에만 */}
       {(s.onboarding?.at ?? 'done') === 'done' && (
-        <button className="summon-entry" onClick={onSummon} aria-label={T.summon.open}>
-          <img src="ui/summon.png" alt="" draggable={false} />
-          <span>{T.summon.open}</span>
-        </button>
+        <div className="float-left">
+          <button className="summon-entry" onClick={onSummon} aria-label={T.summon.open}>
+            <img src="ui/summon.png" alt="" draggable={false} />
+            <span>{T.summon.open}</span>
+          </button>
+          <button className="side-icon rank-entry" onClick={onRank} aria-label={T.icons.rank}>
+            <img src="ui/rank.png" alt="" draggable={false} />
+            {rank !== null && <b>{T.icons.rankN(rank)}</b>}
+            <span>{T.icons.rank}</span>
+          </button>
+          <button className="side-icon log-entry" onClick={onLog} aria-label={T.icons.log}>
+            <img src="ui/log.png" alt="" draggable={false} />
+            {revengeable > 0 && <i className="badge">{revengeable}</i>}
+            <span>{T.icons.log}</span>
+          </button>
+        </div>
       )}
 
       <div className="float-right">

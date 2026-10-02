@@ -7,6 +7,7 @@ export const en: Strings = {
   loading: 'Loading…',
   gold: 'Gold',
   soul: 'Soulstones',
+  icons: { rank: 'Rank', rankN: (n: number) => `#${n}`, log: 'Log' },
   idleBtn: 'Idle loot',
   claimIdle: (g: number) => `Collect idle income (+${F(g)})`,
   sortie: 'Raid',

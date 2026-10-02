@@ -7,6 +7,7 @@ export const zhHant: Strings = {
   loading: '載入中…',
   gold: '金幣',
   soul: '魂石',
+  icons: { rank: '排名', rankN: (n: number) => `第${n}名`, log: '紀錄' },
   idleBtn: '掛機獎勵',
   claimIdle: (g: number) => `領取放置收益 (+${F(g)})`,
   sortie: '出征',

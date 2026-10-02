@@ -7,6 +7,7 @@ export const zhHans: Strings = {
   loading: '加载中…',
   gold: '金币',
   soul: '魂石',
+  icons: { rank: '排名', rankN: (n: number) => `第${n}名`, log: '记录' },
   idleBtn: '挂机奖励',
   claimIdle: (g: number) => `领取挂机收益 (+${F(g)})`,
   sortie: '出征',

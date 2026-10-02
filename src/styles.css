@@ -477,7 +477,8 @@ button.pill.ticket.buy:disabled { animation: none; filter: grayscale(0.6) bright
 @media (prefers-reduced-motion: reduce) { button.pill.ticket.buy { animation: none; } }
 
 /* 소환 의식 (2026-10-02 승인: 탑 왼쪽 제단 아이콘 → 전체 화면 뿔 해골 제단, 결과 카드는 창틀 그림 + 등급 빛) */
-.summon-entry { position: absolute; left: 6px; top: 96px; z-index: 3; width: 54px; padding: 0; background: none; border: 0; display: grid; justify-items: center; color: #e7c8ff; font-size: 12px; text-shadow: 0 1px 0 #000, 0 0 3px #000; }
+.float-left { position: absolute; left: 6px; top: 96px; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.summon-entry { position: relative; width: 54px; padding: 0; background: none; border: 0; display: grid; justify-items: center; color: #e7c8ff; font-size: 12px; text-shadow: 0 1px 0 #000, 0 0 3px #000; }
 .summon-entry img { width: 44px; height: auto; image-rendering: pixelated; filter: drop-shadow(0 0 5px #c070ffcc); animation: summon-glow 2.4s ease-in-out infinite; }
 .summon-entry:hover img { filter: drop-shadow(0 0 8px #d9a0ff) brightness(1.15); }
 @keyframes summon-glow { 50% { filter: drop-shadow(0 0 9px #c070ff) brightness(1.1); } }
@@ -551,3 +552,11 @@ button.pill.ticket.buy:disabled { animation: none; filter: grayscale(0.6) bright
 .summon-skip .box { width: 18px; height: 18px; display: grid; place-items: center; border: 2px solid #c9ae9a; border-radius: 3px; background: #0006; color: var(--gold); font-size: 13px; line-height: 1; }
 .summon-skip.on .box { border-color: var(--gold); }
 .summon-where { color: var(--muted); font-size: 12px; }
+
+/* 순위·기록 아이콘(2026-10-02 승인: 왼쪽 줄, 뿔 트로피·두루마리) */
+.side-icon { position: relative; width: 54px; padding: 0; background: none; border: 0; display: grid; justify-items: center; color: #f0dcae; font-size: 12px; line-height: 1.05; text-shadow: 0 1px 0 #000, 0 0 3px #000; }
+.side-icon img { width: 38px; height: auto; image-rendering: pixelated; }
+.side-icon:hover img { filter: brightness(1.15); }
+.rank-entry img { filter: drop-shadow(0 0 4px #ffcf4daa); }
+.rank-entry b { font-weight: 400; color: var(--gold); font-size: 15px; }
+.side-icon .badge { position: absolute; right: 4px; top: -4px; min-width: 18px; height: 18px; padding: 0 4px; display: grid; place-items: center; background: var(--ruby); border: 2px solid #000; border-radius: 9px; color: #fff; font-style: normal; font-size: 11px; line-height: 1; box-shadow: 0 0 6px #ff4a5eaa; }

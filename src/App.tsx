@@ -28,10 +28,11 @@ import { isTutorialStage } from './tutorial/steps';
 import TutorialOverlay from './tutorial/TutorialOverlay';
 
 type Tab = 'upgrade' | 'log' | 'league' | 'shop';
+/** 아래 탭은 강화·상점 두 개(2026-10-02). 리그(순위)·기록은 탑 왼쪽 아이콘 */
 export type Panel =
   | { name: Exclude<Tab, 'league'> } | { name: 'league'; tab?: LeagueTab } | { name: 'match' } | { name: 'settings' } | { name: 'floor'; floor: number } | { name: 'result'; result: EndResult };
 
-const TABS: Tab[] = ['upgrade', 'log', 'league', 'shop'];
+const TABS: Tab[] = ['upgrade', 'shop'];
 
 function samePanel(a: Panel, b: Panel): boolean {
   if (a.name === 'floor' && b.name === 'floor') return a.floor === b.floor;
@@ -66,6 +67,28 @@ export default function App() {
   const [raiding, setRaiding] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
   const [summonOpen, setSummonOpen] = useState(false);
+  // 내 브래킷 순위: 홈 아이콘에 숫자로. 홈을 열 때·공략이 끝났을 때·2분마다 가볍게 받아 온다(강화마다 받지 않는다)
+  const [rank, setRank] = useState<number | null>(null);
+  const rankBusy = useRef(false);
+  const loadRank = useCallback(async () => {
+    if (!api || rankBusy.current) return;
+    rankBusy.current = true;
+    try {
+      const l = await api.getLeague();
+      setRank(l.bracket.find((r) => r.me)?.rank ?? null);
+    } catch {
+      // 순위는 못 받아도 게임은 계속
+    } finally {
+      rankBusy.current = false;
+    }
+  }, [api]);
+  const rankReady = !!home && (home.state.onboarding?.at ?? 'done') === 'done';
+  useEffect(() => {
+    if (!rankReady) return;
+    void loadRank();
+    const id = window.setInterval(() => void loadRank(), 120_000);
+    return () => window.clearInterval(id);
+  }, [rankReady, loadRank]);
   const [toast, setToast] = useState<string | null>(null);
   // 이 기기에서 언어를 고른 적이 있나(처음이면 컷신 전에 고르는 화면)
   const [langPicked, setLangPicked] = useState(() => savedLang() !== null);
@@ -249,7 +272,7 @@ export default function App() {
         <Raid
           api={api}
           home={home}
-          onEnd={(result) => { setRaiding(false); setPanel({ name: 'result', result }); void refresh(); }}
+          onEnd={(result) => { setRaiding(false); setPanel({ name: 'result', result }); void refresh(); void loadRank(); }}
           onRefresh={refresh}
           onError={onError}
         />
@@ -284,7 +307,7 @@ export default function App() {
         body = <Log api={api} home={home} onRefresh={refresh} onRaid={startRaid} onError={onError} />;
         break;
       case 'league':
-        title = T.panels.league;
+        title = T.icons.rank;
         body = <League key={panel.tab ?? 'rank'} api={api} home={home} initialTab={panel.tab} onRefresh={refresh} onError={onError} />;
         break;
       case 'settings':
@@ -314,6 +337,9 @@ export default function App() {
         onSiegeRank={() => setPanel({ name: 'league', tab: 'siege' })}
         onPass={() => setPanel({ name: 'league', tab: 'track' })}
         onSummon={() => { setPanel(null); setSummonOpen(true); }}
+        onRank={() => toggle({ name: 'league' })}
+        onLog={() => toggle({ name: 'log' })}
+        rank={rank}
         onError={onError}
       />
       {panel && (
