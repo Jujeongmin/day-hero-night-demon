@@ -67,8 +67,11 @@ describe('onboarding', () => {
     expect(canAdvance('raid_sortie', 'raid_ult')).toBe(true);
     expect(canAdvance('raid_ult', 'place_floor')).toBe(true);
     expect(canAdvance('upgrade_one', 'match_sortie')).toBe(true);
-    expect(canAdvance('upgrade_one', 'end')).toBe(false);
-    expect(canAdvance('match_sortie', 'end')).toBe(false);
+    // 2026-10-02: 첫 공략 결과를 닫으면 바로 끝으로(배치·강화는 의뢰가 안내)
+    expect(canAdvance('raid_result', 'end')).toBe(true);
+    expect(canAdvance('upgrade_one', 'end')).toBe(true);
+    expect(canAdvance('nickname', 'end')).toBe(false);
+    expect(canAdvance('end', 'end')).toBe(false);
     expect(canAdvance('end', 'done')).toBe(true);
     expect(canAdvance('place_slot', 'raid_sortie')).toBe(false);
     expect(canAdvance('done', 'done')).toBe(false);

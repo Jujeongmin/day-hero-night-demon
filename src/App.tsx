@@ -298,9 +298,18 @@ export default function App() {
     toggle({ name: 'floor', floor });
     emitTut('floor_opened');
   };
-  // 의뢰의 "가기": 그 일을 하는 곳으로
-  const goQuest = (go: QuestGo) => {
+  // 의뢰의 "가기": 그 일을 하는 곳으로 가서, 눌러야 할 버튼을 잠깐 반짝인다
+  const goQuest = (go: QuestGo, hint?: string) => {
     if (!home) return;
+    if (hint) {
+      window.setTimeout(() => {
+        const el = document.querySelector(hint);
+        if (!el) return;
+        el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        el.classList.add('hint-pulse');
+        window.setTimeout(() => el.classList.remove('hint-pulse'), 3200);
+      }, 450);
+    }
     if (go === 'upgrade') setPanel({ name: 'upgrade' });
     else if (go === 'match') setPanel({ name: 'match' });
     else if (go === 'floor') {

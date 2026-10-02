@@ -470,8 +470,13 @@ describe('quests', () => {
     await server.$onItemPurchased({ account: 't60-quest', purchaseId: 'p-t60', productId: 'soul_chest', quantity: 1 });
     await server.buyGold('gold_chest');
     for (let i = 0; i < 4; i++) await server.upgrade('monster', 'slime');
+    // 첫 의뢰 = 1층 3칸 채우기
+    expect(await fails(server.claimGuide())).toBe(true);
+    await server.setFloor(0, ['slime', 'skeleton', 'werewolf'], null);
     const g = await server.claimGuide();
     expect(g.soul).toBe(10);
+    // 그다음 슬라임 Lv.5는 위에서 이미 채웠다
+    expect((await server.claimGuide()).soul).toBe(10);
     expect(await fails(server.claimGuide())).toBe(true);
     await server.upgradeMany('monster', 'skeleton', 6);
     expect((await server.claimDaily('upgrade')).soul).toBe(5);

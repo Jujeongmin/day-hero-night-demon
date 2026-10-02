@@ -126,7 +126,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
       );
     }
     return (
-      <div className="up-row" key={id}>
+      <div className="up-row" key={id} data-unit={id}>
         <button className="up-pt" onClick={open} aria-label={T.up.info}>
           <Portrait id={portrait} label={label} />
           <i>?</i>
@@ -174,7 +174,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
           <button key={m} className={`btn small ${mult === m ? 'on' : ''}`} onClick={() => setMult(m)}>{T.up[m]}</button>
         ))}
       </div>
-      <div className="up-row">
+      <div className="up-row" data-unit="castle">
         <span className="up-pt"><Portrait id="castle" label={T.throne} /></span>
         <span className="up-nm"><b>{T.castleLevel(s.castle.level)}</b>{nextCastle && <small>{nextCastle}</small>}</span>
         <button className="btn small up-bt" disabled={busy || castleCost === null || home.gold < castleCost} onClick={() => act(() => api.upgrade('castle', null))}>

@@ -106,6 +106,8 @@ export function canAdvance(from: OnboardingStage, to: OnboardingStage): boolean 
   if (from === 'end') return to === 'done';
   const first = ONBOARDING_ORDER.indexOf('raid_sortie');
   const last = ONBOARDING_ORDER.indexOf('match_sortie');
+  // 2026-10-02: 첫 공략 결과를 닫으면 바로 끝(end)으로. 배치·강화는 의뢰가 안내한다
+  if (to === 'end') return a >= first && a <= last;
   return a >= first && a < last && b <= last;
 }
 

@@ -163,7 +163,7 @@ export const ja: Strings = {
     upgradeTab: '金貨で手下を強く！',
     upgradeOne: '一度強化してみましょう。',
     matchSortie: '今度は本物の他人の城です。出撃！',
-    end: 'あとはお任せします、魔王様。(押して開始)',
+    end: 'では下の「次にやること」に従ってください、魔王様！',
   },
   cutscene: {
     skip: 'スキップ',

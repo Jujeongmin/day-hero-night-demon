@@ -165,7 +165,7 @@ export const ko = {
     upgradeTab: '금화로 부하를 강하게!',
     upgradeOne: '한 번 강화해 보시지요.',
     matchSortie: '이번엔 진짜 남의 성입니다. 출정!',
-    end: '이제 알아서 하십쇼, 마왕님. (눌러서 시작)',
+    end: '이제 아래 「다음 할 일」을 따라가 보십쇼, 마왕님!',
   },
   cutscene: {
     skip: '건너뛰기',

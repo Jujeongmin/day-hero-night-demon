@@ -6,10 +6,25 @@ import {
 import { BALANCE, type MonsterId } from '../../server/src/catalog';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { sfx } from '../services/audio';
+import { emitTut } from '../tutorial/bus';
 import { T } from '../strings/ko';
 
-/** 의뢰를 누르면 가는 곳 */
+/** 의뢰를 누르면 가는 곳. hint = 그곳에서 반짝일 버튼(CSS 선택자) */
 export type QuestGo = 'upgrade' | 'match' | 'floor' | 'idle' | 'summon' | 'home';
+
+/** 그 일을 하려면 눌러야 할 버튼 */
+export function guideHint(step: GuideStep): string | undefined {
+  switch (step.kind) {
+    case 'unit': return `.up-row[data-unit="${step.id}"] .up-bt`;
+    case 'castle': return '.up-row[data-unit="castle"] .up-bt';
+    case 'anyLevel': case 'stars': return '[data-tut="upgrade-first"]';
+    case 'wins': return '[data-tut="match-first"]';
+    case 'filled': return '[data-tut="pick-first"]';
+    case 'summon': return '.summon-foot button';
+    default: return undefined;
+  }
+}
+const DAILY_HINT: Partial<Record<DailyId, string>> = { sortie: '[data-tut="match-first"]', win: '[data-tut="match-first"]', upgrade: '[data-tut="upgrade-first"]' };
 
 export function guideGo(step: GuideStep): QuestGo {
   switch (step.kind) {
@@ -60,7 +75,7 @@ function useClaim(onRefresh: () => Promise<void>, onError: (m: string) => void) 
 /**
  * 출정 왼쪽 아래 "다음 할 일" 카드(2026-10-02 승인 A). 누르면 그 일을 하는 곳으로, 다 했으면 금빛으로 깜빡이며 받기
  */
-export function QuestCard(props: { api: Api; home: HomeData; onGo: (go: QuestGo) => void; onRefresh: () => Promise<void>; onError: (m: string) => void }) {
+export function QuestCard(props: { api: Api; home: HomeData; onGo: (go: QuestGo, hint?: string) => void; onRefresh: () => Promise<void>; onError: (m: string) => void }) {
   const { api, home } = props;
   const { busy, run } = useClaim(props.onRefresh, props.onError);
   const q = questsOf(home.state, Date.now());
@@ -71,10 +86,14 @@ export function QuestCard(props: { api: Api; home: HomeData; onGo: (go: QuestGo)
     <button
       className={`quest-card ${done ? 'done' : ''}`}
       disabled={busy}
-      onClick={() => (done ? void run(() => api.claimGuide()) : props.onGo(guideGo(step)))}
+      data-tut="quest-card"
+      onClick={() => {
+        emitTut('quest_opened');
+        if (done) void run(() => api.claimGuide());
+        else props.onGo(guideGo(step), guideHint(step));
+      }}
       aria-label={guideText(step)}
     >
-      <img src="ui/quest.png" alt="" draggable={false} />
       <span className="quest-card-txt">
         <small>{T.quest.next}</small>
         <b>{guideText(step)}</b>
@@ -86,7 +105,7 @@ export function QuestCard(props: { api: Api; home: HomeData; onGo: (go: QuestGo)
 }
 
 /** 의뢰 창(가운데): 일일 의뢰만(2026-10-02 사용자). 성장 의뢰는 출정 옆 카드로만 */
-export default function Quests(props: { api: Api; home: HomeData; onGo: (go: QuestGo) => void; onRefresh: () => Promise<void>; onError: (m: string) => void }) {
+export default function Quests(props: { api: Api; home: HomeData; onGo: (go: QuestGo, hint?: string) => void; onRefresh: () => Promise<void>; onError: (m: string) => void }) {
   const { api, home } = props;
   const { busy, run } = useClaim(props.onRefresh, props.onError);
   const q = questsOf(home.state, Date.now());
@@ -107,7 +126,7 @@ export default function Quests(props: { api: Api; home: HomeData; onGo: (go: Que
         </span>
         {claimed ? <span className="btn small quest-bt" aria-disabled>{T.quest.done}</span>
           : done ? <button className="btn small gold glow quest-bt" disabled={busy} onClick={() => void run(onClaim)}>{T.quest.claim}</button>
-            : go ? <button className="btn small quest-bt" onClick={() => props.onGo(go)}>{T.quest.go}</button>
+            : go ? <button className="btn small quest-bt" onClick={() => props.onGo(go, DAILY_HINT[key as DailyId])}>{T.quest.go}</button>
               : <span className="btn small quest-bt" aria-disabled>…</span>}
       </div>
     );

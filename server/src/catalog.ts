@@ -247,6 +247,8 @@ export const BALANCE = {
   quests: {
     daily: { sortie: 3, win: 1, upgrade: 10, idle: 1, soulEach: 5, soulAll: 20 },
     guide: [
+      // 2026-10-02: 튜토리얼에서 배치를 빼고 첫 의뢰로(1층 3칸)
+      { kind: 'filled', target: 3, soul: 10, gold: 1000 },
       { kind: 'unit', id: 'slime', target: 5, soul: 10, gold: 1000 },
       { kind: 'wins', target: 3, soul: 10, gold: 1000 },
       { kind: 'castle', target: 2, soul: 10, gold: 1000 },

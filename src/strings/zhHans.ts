@@ -163,7 +163,7 @@ export const zhHans: Strings = {
     upgradeTab: '用金币让手下变强！',
     upgradeOne: '强化一次看看吧。',
     matchSortie: '这次是真正别人的城堡。出征！',
-    end: '接下来就交给您了，魔王大人。(点击开始)',
+    end: '接下来跟着下面的「下一步」走吧，魔王大人！',
   },
   cutscene: {
     skip: '跳过',

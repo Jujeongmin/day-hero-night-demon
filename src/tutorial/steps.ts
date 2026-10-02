@@ -3,7 +3,7 @@ import { T, type Strings } from '../strings/ko';
 
 export type TutEvent =
   | 'raid_started' | 'battle_over' | 'result_closed'
-  | 'floor_opened' | 'floor_saved' | 'upgrade_opened' | 'upgraded' | 'tapped';
+  | 'floor_opened' | 'floor_saved' | 'upgrade_opened' | 'upgraded' | 'tapped' | 'quest_opened';
 
 /** targets: 빛낼 대상의 data-tut 값. 앞에서부터 화면에 있는 첫 번째를 쓴다. */
 /** passive: 덮개 없이 말풍선만 띄우고 누르기를 막지 않는다(저절로 진행되는 장면). near: 말풍선을 이것 바로 아래에 둔다 */
@@ -24,19 +24,20 @@ export const TUT_STEPS: Partial<Record<OnboardingStage, TutStep>> = {
   upgrade_one: step({ targets: ['upgrade-first'] }, 'upgradeOne'),
   // 강화 창이 열려 있으면 출정 버튼이 숨으므로 먼저 창을 닫게 한다
   match_sortie: step({ targets: ['match-first', 'sortie', 'panel-close'] }, 'matchSortie'),
-  end: step({ targets: [] }, 'end'),
+  // 2026-10-02 사용자: 튜토리얼은 첫 공략까지만. 끝에서 다음 할 일 카드를 가리키고, 배치·강화는 의뢰가 안내한다
+  end: step({ targets: ['quest-card'] }, 'end'),
 };
 
 const NEXT: Partial<Record<OnboardingStage, Partial<Record<TutEvent, OnboardingStage>>>> = {
   raid_sortie: { raid_started: 'raid_ult' },
   // 궁극기를 눌러도 결과창이 뜰 때까지(전투 끝) 기다린다
   raid_ult: { battle_over: 'raid_result' },
-  raid_result: { result_closed: 'place_floor' },
+  raid_result: { result_closed: 'end' },
   place_floor: { floor_opened: 'place_slot' },
   place_slot: { floor_saved: 'upgrade_tab' },
   upgrade_tab: { upgrade_opened: 'upgrade_one' },
   upgrade_one: { upgraded: 'match_sortie' },
-  end: { tapped: 'done' },
+  end: { tapped: 'done', quest_opened: 'done' },
 };
 
 export function nextStage(stage: OnboardingStage, ev: TutEvent): OnboardingStage | null {

@@ -163,7 +163,7 @@ export const zhHant: Strings = {
     upgradeTab: '用金幣讓手下變強！',
     upgradeOne: '強化一次看看吧。',
     matchSortie: '這次是真正別人的城堡。出征！',
-    end: '接下來就交給您了，魔王大人。(按一下開始)',
+    end: '接下來跟著下面的「下一步」走吧，魔王大人！',
   },
   cutscene: {
     skip: '跳過',

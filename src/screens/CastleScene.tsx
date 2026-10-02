@@ -82,7 +82,7 @@ export default function CastleScene(props: {
   onRank: () => void;
   onLog: () => void;
   onQuest: () => void;
-  onQuestGo: (go: QuestGo) => void;
+  onQuestGo: (go: QuestGo, hint?: string) => void;
   /** 상점(오른쪽 줄 보석 상자, 2026-10-02). tab = 처음 열 탭(재화 "+") */
   onShop: (tab?: 'soul' | 'gold') => void;
   /** 내 브래킷 순위(모르면 null) */
@@ -164,7 +164,7 @@ export default function CastleScene(props: {
   const passReady = passPlan.gold > 0 || passPlan.soul > 0 || passPlan.skins.length > 0;
   // 기록 배지: 지금 복수할 수 있는 침입(실제 플레이어가 이겼고, 24시간 안, 아직 복수 안 함)
   const questBadge = claimableQuests(s, Date.now());
-  const showQuest = !s.run && (s.onboarding?.at ?? 'done') === 'done';
+  const showQuest = !s.run && ['done', 'end'].includes(s.onboarding?.at ?? 'done');
   const revengeable = s.raidLog.filter((e) => !e.npc && e.attackerWon && !e.revenged && Date.now() - e.at < BALANCE.revengeWindowMs).length;
   // 받을 칸 수(무료 줄 + 패스 줄). 빨간 알림 배지에 숫자로 (2026-10-02 사용자)
   const passCount = (passPlan.claimed.free - s.season.claimed.free) + (passPlan.claimed.pass - s.season.claimed.pass);

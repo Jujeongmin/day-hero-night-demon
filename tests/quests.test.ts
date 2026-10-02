@@ -37,17 +37,23 @@ describe('quests (2026-10-02)', () => {
 
   it('guide steps go in order, the server checks progress, and the list keeps going forever', () => {
     const s = defaultState('a', 0, 's1');
-    expect(guideStep(0)).toMatchObject({ kind: 'unit', id: 'slime', target: 5 });
+    // 첫 의뢰는 1층 3칸 채우기(튜토리얼에서 배치를 뺐다), 그다음 슬라임 Lv.5
+    expect(guideStep(0)).toMatchObject({ kind: 'filled', target: 3 });
+    expect(guideStep(1)).toMatchObject({ kind: 'unit', id: 'slime', target: 5 });
     expect(() => planClaimGuide(s, DAY)).toThrow('QUEST_NOT_DONE');
-    s.roster.slime = { level: 5 };
+    s.castle.floors[0].monsters = ['slime', 'skeleton', 'werewolf'];
     const got = planClaimGuide(s, DAY);
     expect(got.soul).toBe(10);
     expect(got.gold).toBeGreaterThanOrEqual(1000);
     expect(got.quests.guide).toBe(1);
+    s.quests = got.quests;
+    expect(() => planClaimGuide(s, DAY)).toThrow('QUEST_NOT_DONE');
+    s.roster.slime = { level: 5 };
+    expect(planClaimGuide(s, DAY).quests.guide).toBe(2);
     // 각성한 몬스터는 레벨 숫자가 1이어도 레벨 목표를 채운 것으로
     const t = defaultState('b', 0, 's1');
     t.stars = { slime: 1 };
-    expect(guideValue(t, questsOf(t, DAY), guideStep(0))).toBe(5);
+    expect(guideValue(t, questsOf(t, DAY), guideStep(1))).toBe(5);
     const n = BALANCE.quests.guide.length;
     expect(guideStep(n).kind).toBe('siege');
     expect(guideStep(n + 1).kind).toBe('wins');
@@ -58,7 +64,7 @@ describe('quests (2026-10-02)', () => {
   it('the badge counts what can be claimed now', () => {
     const s = defaultState('a', 0, 's1');
     expect(claimableQuests(s, DAY)).toBe(0);
-    s.roster.slime = { level: 5 };
+    s.castle.floors[0].monsters = ['slime', 'skeleton', 'werewolf'];
     s.quests = bumpQuests(s, DAY, { daily: 'idle', idle: true });
     expect(claimableQuests(s, DAY)).toBe(2);
   });

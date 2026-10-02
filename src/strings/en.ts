@@ -163,7 +163,7 @@ export const en: Strings = {
     upgradeTab: 'Spend gold to make your minions stronger!',
     upgradeOne: 'Try one upgrade.',
     matchSortie: "This time it's a real player's castle. Raid!",
-    end: "The rest is up to you, my lord. (Tap to start)",
+    end: 'Now follow "Next" down below, my lord!',
   },
   cutscene: {
     skip: 'Skip',
