@@ -18,6 +18,6 @@ describe('catalog', () => {
   });
 
   it('season epoch is 2026-10-12 UTC', () => {
-    expect(new Date(BALANCE.seasonEpoch).toISOString()).toBe('2026-10-12T00:00:00.000Z');
+    expect(new Date(BALANCE.seasonEpoch).toISOString()).toBe('2026-10-05T15:00:00.000Z');
   });
 });

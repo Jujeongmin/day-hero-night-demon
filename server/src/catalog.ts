@@ -139,7 +139,8 @@ export const BALANCE = {
   lordDefeatSoul: 3,
   startGold: 300,
   seasonMs: 14 * 86_400_000,
-  seasonEpoch: Date.UTC(2026, 9, 12),
+  /** 첫 시즌 시작 = 출시일 2026-10-06 한국 시간 0시(= 10-05 15:00 UTC), 2026-10-02 사용자 결정. 14일 단위 */
+  seasonEpoch: Date.UTC(2026, 9, 5, 15),
   bracketSize: 30,
   /** 시즌 패스 트랙: 명예 이만큼마다 1단계 (2026-09-29 승인) */
   passTierHonor: 150,
