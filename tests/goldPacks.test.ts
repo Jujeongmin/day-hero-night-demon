@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../server/src/catalog';
-import { goldPackAmount, unitUpgradeCost, waveGold } from '../server/src/growth';
+import { goldPackAmount, levelCost, waveGold } from '../server/src/growth';
 import { PRODUCTS } from '../server/src/purchases';
 
 const PACKS = ['gold_pouch', 'gold_chest', 'gold_coffer', 'gold_vault'] as const;
@@ -9,7 +9,7 @@ describe('gold packs (2026-09-30: D = larger of siege hours and upgrades; 2026-1
   it('early game pays the siege-hours amount, late game the upgrade-count amount', () => {
     const p = BALANCE.goldPacks.gold_pouch;
     const hours = (best: number) => waveGold(best) * BALANCE.goldPackHourWaves * p.hours;
-    const ups = (lvl: number) => unitUpgradeCost(lvl)! * p.upgrades;
+    const ups = (lvl: number) => levelCost(lvl) * p.upgrades;
     expect(goldPackAmount('gold_pouch', 5, 1)).toBe(Math.max(hours(5), ups(1)));
     expect(goldPackAmount('gold_pouch', 5, 1)).toBe(hours(5));
     expect(goldPackAmount('gold_pouch', 55, 51)).toBe(ups(51));

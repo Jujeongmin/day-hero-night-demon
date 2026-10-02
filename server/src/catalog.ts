@@ -98,8 +98,16 @@ export const BALANCE = {
     /** 층 수가 늘어나는 NPC 등급 */
     npcTwoFloorsFrom: 11,
     npcThreeFloorsFrom: 31,
+    /** 레벨 1→50 한 바퀴 = 옛 곡선 25레벨분(2026-10-02 사용자 "25레벨분"). 강화 한 번 ≈ 옛 0.51레벨(능력치 +7.4%) */
+    cycleLevels: 25,
+    /** NPC·공성 침입자 계산에 쓰던 옛 최대 레벨(그 위는 배수로 더 곱한다). 결과는 그대로 */
+    legacyCap: 100,
   },
-  maxUnitLevel: 100,
+  /**
+   * 보이는 최대 레벨(2026-10-02 사용자: 100 → 50). 레벨 50이면 강화 대신 각성(영혼석) → 별 +1, 레벨 숫자만 1로(능력치는 그대로).
+   * 계산은 성장 레벨(growth.ts effLevel)로 한다: Lv1→50 한 바퀴 = 옛 곡선 growth.cycleLevels 레벨분
+   */
+  maxUnitLevel: 50,
   maxCastleLevel: 10,
   maxRounds: 30,
   ultChargePerRound: 34,
@@ -190,10 +198,11 @@ export const BALANCE = {
   },
   /**
    * 각성(별, 2026-10-01 사용자 승인 "추천대로", 후보표 https://claude.ai/artifact/CADy1vbru2Q9eTAXgQsgcE).
-   * 몬스터·마왕마다 별 1~20, 별 하나마다 모든 능력치 ×1.1(레벨과 따로 곱한다). 비용은 영혼석:
-   * 별 n개째 = n이 highFrom 미만이면 costLow × n, 아니면 costHigh × n (한 마리 별 20까지 17,150)
+   * 2026-10-02 사용자 변경: 몬스터·용사는 레벨 50에서만 각성, 각성하면 레벨 숫자만 1로(능력치 유지). 별 최대 125(금별 5개).
+   * 별 하나마다 모든 능력치 ×1.1(성장 레벨과 따로). 마왕은 성 레벨에 묶여 있어 언제든 각성(×1.1만). 비용은 영혼석:
+   * 별 n개째 = n이 highFrom 미만이면 costLow × n, 아니면 costHigh × n (무과금은 막히게, 지금 표 그대로)
    */
-  awaken: { maxStars: 20, statPerStar: 1.1, costLow: 30, costHigh: 100, highFrom: 11 },
+  awaken: { maxStars: 125, statPerStar: 1.1, costLow: 30, costHigh: 100, highFrom: 11 },
   /** 영혼석 묶음(반복 구매, 2026-10-01 승인). 100 VX당 30·36·40·45·50. VIP 묶음 보너스가 붙는다. vx는 표시·검증용 */
   soulPacks: {
     soul_pouch: { vx: 100, soul: 30 },

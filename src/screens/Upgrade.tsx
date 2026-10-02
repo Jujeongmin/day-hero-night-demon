@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { BALANCE, HEROES, MONSTERS, type HeroId, type MonsterId, type SkillId, type Stats } from '../../server/src/catalog';
 import { castleUpgradeCost, heroBonusLevels, unitUpgradeCost } from '../../server/src/economy';
-import { awakenCost, formatNum, lordLevel, starMult } from '../../server/src/growth';
-import type { StarUnit } from '../../server/src/state';
+import { awakenCost, formatNum, lordLevel } from '../../server/src/growth';
+import { heroGrowth, type StarUnit } from '../../server/src/state';
 import { Portrait } from '../render/Sprite';
 import { StarRow } from '../render/stars';
 import { monsterSpriteId } from '../render/skins';
@@ -11,7 +11,6 @@ import { errorText, type Api, type HomeData } from '../services/api';
 import { emitTut } from '../tutorial/bus';
 import { T } from '../strings/ko';
 
-export type UpgradeTab = 'up' | 'awaken';
 
 /** 별 수 배지(각성). 0이면 그리지 않는다 */
 export function Stars(props: { n?: number }) {
@@ -19,21 +18,11 @@ export function Stars(props: { n?: number }) {
   return <StarRow n={props.n} size={12} className="star-count" />;
 }
 
-/** 강화 창: 강화(골드) | 각성(영혼석) 두 탭 */
+/** 강화 창(2026-10-02 사용자): 골드로 레벨 50까지, 레벨 50이면 같은 버튼이 각성(영혼석)으로 바뀐다. 마왕 각성은 성 줄 아래 */
 export default function Upgrade(props: {
   api: Api; home: HomeData; onRefresh: () => Promise<void>; onError: (m: string) => void; onShop: () => void;
 }) {
-  const [tab, setTab] = useState<UpgradeTab>('up');
-  return (
-    <>
-      <div className="row">
-        {([['up', T.awaken.upTab], ['awaken', T.awaken.tab]] as [UpgradeTab, string][]).map(([id, label]) => (
-          <button key={id} className={`btn small ${tab === id ? 'on' : ''}`} onClick={() => setTab(id)}>{label}</button>
-        ))}
-      </div>
-      {tab === 'up' ? <UpgradeList {...props} /> : <AwakenList {...props} />}
-    </>
-  );
+  return <UpgradeList {...props} />;
 }
 
 function useAct(onRefresh: () => Promise<void>, onError: (m: string) => void) {
@@ -54,42 +43,7 @@ function useAct(onRefresh: () => Promise<void>, onError: (m: string) => void) {
   return { busy, act };
 }
 
-/** 각성: 마왕 + 보유 몬스터. 별 하나마다 능력치 ×1.1, 영혼석 */
-function AwakenList(props: { api: Api; home: HomeData; onRefresh: () => Promise<void>; onError: (m: string) => void; onShop: () => void }) {
-  const { api, home } = props;
-  const s = home.state;
-  const { busy, act } = useAct(props.onRefresh, props.onError);
-  const units: StarUnit[] = ['lord', ...(Object.keys(s.roster) as MonsterId[])];
-  const x = (n: number) => (Math.round(starMult(n) * 100) / 100).toFixed(2);
-  return (
-    <>
-      <div className="line">
-        <small className="hero-desc">{T.awaken.hint}</small>
-        <button className="btn small" onClick={props.onShop}>{T.awaken.buySoul}</button>
-      </div>
-      {units.map((id) => {
-        const n = s.stars?.[id] ?? 0;
-        const cost = awakenCost(n + 1);
-        return (
-          <div className="line unit-line" key={id}>
-            <span className="item">
-              <Portrait id={id} label={T.units[id]} />
-              <span>
-                {T.units[id]} <Stars n={n} />
-                <small className="hero-next">{T.awaken.mult(x(n), cost === null ? null : x(n + 1))}</small>
-              </span>
-            </span>
-            <button className="btn small" disabled={busy || cost === null || home.soul < cost} onClick={() => act(() => api.awaken(id))}>
-              {cost === null ? T.awaken.max : T.awaken.btn(cost)}
-            </button>
-          </div>
-        );
-      })}
-    </>
-  );
-}
-
-function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise<void>; onError: (m: string) => void }) {
+function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise<void>; onError: (m: string) => void; onShop: () => void }) {
   const { api, home, onRefresh, onError } = props;
   const s = home.state;
   const { busy, act } = useAct(onRefresh, onError);
@@ -102,8 +56,11 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
     const looks = BALANCE.summon.gear.filter((g) => g.split(':')[0] === id && s.gear?.owned.includes(g));
     const worn = s.gear?.worn[id as MonsterId];
     const nextLook = looks.length === 0 ? null : worn ? looks[looks.indexOf(worn) + 1] ?? null : looks[0];
-    const cost = unitUpgradeCost(level);
-    const { now, gain } = unitStats(unit.stats, level);
+    const stars = s.stars?.[id as StarUnit] ?? 0;
+    const cost = unitUpgradeCost(level, stars);
+    // 레벨 50: 같은 자리 버튼이 각성(영혼석)으로. 각성하면 레벨 숫자만 1로, 능력치는 이어진다
+    const awaken = cost === null ? awakenCost(stars + 1) : null;
+    const { now, gain } = unitStats(unit.stats, level, stars, id in MONSTERS && worn ? BALANCE.summon.gearStatMult : 1);
     const stat = (k: keyof Stats) => (
       <span className="stat" key={k}>
         <img src={`icons/stat_${k}.png`} alt={T.stats[k]} draggable={false} />
@@ -126,24 +83,41 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
             )}
           </span>
         </span>
-        <button className="btn small" data-tut={first ? 'upgrade-first' : undefined} disabled={busy || cost === null || home.gold < cost} onClick={() => act(onUp)}>
-          {cost === null ? T.maxLevel : T.upgradeBtn(cost)}
-        </button>
+        {cost !== null ? (
+          <button className="btn small" data-tut={first ? 'upgrade-first' : undefined} disabled={busy || home.gold < cost} onClick={() => act(onUp)}>
+            {T.upgradeBtn(cost)}
+          </button>
+        ) : (
+          <button className="btn small awaken-btn" disabled={busy || awaken === null || home.soul < awaken} onClick={() => act(() => api.awaken(id))}>
+            {awaken === null ? T.awaken.max : T.awaken.btn(awaken)}
+          </button>
+        )}
       </div>
     );
   };
 
   const castleCost = castleUpgradeCost(s.castle.level);
   // 약탈 골드·공성 방어 보너스(%). 둘 다 레벨당 1%(BALANCE.heroLootPerLevel = heroSiegePerLevel)
-  const heroPct = Math.round(heroBonusLevels(s.heroes) * BALANCE.heroLootPerLevel * 100);
+  // 강화 한 번 = 성장 레벨 25/49 → 보너스 약 +0.5%. 소수 한 자리로 보여 준다
+  const pct1 = (x: number) => Math.round(x * 10) / 10;
+  const heroPct = pct1(heroBonusLevels(heroGrowth(s)) * BALANCE.heroLootPerLevel * 100);
+  const heroPctNext = pct1(heroPct + (BALANCE.growth.cycleLevels / (BALANCE.maxUnitLevel - 1)) * BALANCE.heroLootPerLevel * 100);
+  const lordAwaken = awakenCost((s.stars?.lord ?? 0) + 1);
   const soulMonsters = (Object.keys(MONSTERS) as MonsterId[]).filter((id) => 'soul' in MONSTERS[id].unlock && !s.roster[id]);
 
   return (
     <>
       <div className="line">
-        <span className="item"><Portrait id="castle" label={T.throne} />{T.castleLevel(s.castle.level)} <small className="muted">{T.lordLevel(lordLevel(s.castle.level))}</small> <Stars n={s.stars?.lord} /></span>
+        <span className="item"><Portrait id="castle" label={T.throne} />{T.castleLevel(s.castle.level)} <small className="muted">{T.lordLevel(lordLevel(s.castle.level))}</small></span>
         <button className="btn small" disabled={busy || castleCost === null || home.gold < castleCost} onClick={() => act(() => api.upgrade('castle', null))}>
           {castleCost === null ? T.maxLevel : T.upgradeBtn(castleCost)}
+        </button>
+      </div>
+      {/* 마왕 각성: 성 레벨에 묶여 있어 언제든(별마다 ×1.1) */}
+      <div className="line">
+        <span className="item"><Portrait id="lord" label={T.units.lord} /><span>{T.units.lord} <Stars n={s.stars?.lord} /><small className="hero-next">{T.awaken.lordHint}</small></span></span>
+        <button className="btn small awaken-btn" disabled={busy || lordAwaken === null || home.soul < lordAwaken} onClick={() => act(() => api.awaken('lord'))}>
+          {lordAwaken === null ? T.awaken.max : T.awaken.btn(lordAwaken)}
         </button>
       </div>
       <h4>{T.monstersTitle}</h4>
@@ -151,7 +125,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
       {/* 용사: 공략 파티. 누구를 강화하든 약탈 골드·공성 방어가 1%씩(용사 레벨 합 − 3). 지금 값과 강화 뒤 값을 숫자로 보여 준다 */}
       <h4>{T.heroesTitle}</h4>
       <p className="hero-desc">{T.siege.heroHint}<br /><b>{T.siege.heroBonus(heroPct)}</b></p>
-      {(Object.keys(s.heroes) as HeroId[]).map((id) => row(id, T.units[id], s.heroes[id].level, () => api.upgrade('hero', id), false, HEROES[id], unitUpgradeCost(s.heroes[id].level) === null ? undefined : T.siege.heroNext(heroPct)))}
+      {(Object.keys(s.heroes) as HeroId[]).map((id) => row(id, T.units[id], s.heroes[id].level, () => api.upgrade('hero', id), false, HEROES[id], unitUpgradeCost(s.heroes[id].level, s.stars?.[id] ?? 0) === null ? undefined : T.siege.heroNext(heroPct, heroPctNext)))}
       {soulMonsters.length > 0 && <h4>{T.recruitTitle}</h4>}
       {soulMonsters.map((id) => {
         const unlock = MONSTERS[id].unlock as { soul: number };

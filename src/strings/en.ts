@@ -193,7 +193,7 @@ export const en: Strings = {
     power: 'Power',
     heroHint: 'Your raiding party. Stronger heroes rob castles more easily',
     heroBonus: (p: number) => `Now: loot gold +${p}% · siege defense +${p}%`,
-    heroNext: (p: number) => `Upgrade: loot gold & siege defense +${p}% → +${p + 1}%`,
+    heroNext: (p: number, next: number) => `Upgrade: loot gold & siege defense +${p}% → +${next}%`,
   },
   ads: {
     watch: (label: string) => `${label} (ad)`,
@@ -235,6 +235,8 @@ export const en: Strings = {
     NO_SORTIE: 'No sortie tickets left today. You can buy more with gold',
     NO_SOUL: 'Not enough soulstones',
     MAX_STARS: 'Already fully awakened',
+    AWAKEN_FIRST: 'Level 50 reached. Awaken to keep growing',
+    LEVEL_FIRST: 'Reach level 50 to awaken',
     generic: 'Something went wrong. Please try again in a moment.',
   } as Record<string, string>,
   serverMsg: {
@@ -299,12 +301,13 @@ export const en: Strings = {
     hint: 'Each star multiplies all stats by 1.1. Costs soulstones and stays after a reset.',
     btn: (soul: number) => `Awaken (${F(soul)} soulstones)`,
     max: 'Fully awakened',
+    lordHint: 'Separate from castle level, ×1.1 stats per star',
     mult: (now: string, next: string | null) => (next ? `Stats ×${now} → ×${next}` : `Stats ×${now}`),
     buySoul: 'Get soulstones',
   },
   news: {
     vip10: (name: string) => `${name} reached VIP 10!`,
-    star20: (name: string) => `${name} awakened a unit to 20 stars!`,
+    star20: (name: string) => `${name} reached five gold stars!`,
     champion: (name: string) => `${name} finished last season 1st overall and became the Overlord!`,
   } as Record<string, (name: string) => string>,
   summon: {

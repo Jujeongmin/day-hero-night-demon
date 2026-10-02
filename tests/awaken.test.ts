@@ -2,50 +2,60 @@ import { describe, expect, it } from 'vitest';
 import { BALANCE, LORD, MONSTERS, scaleStats } from '../server/src/catalog';
 import { planAwaken } from '../server/src/castle';
 import { castlePower, snapshotPower } from '../server/src/economy';
-import { awakenCost, lordLevel, starMult, unitPower } from '../server/src/growth';
+import { awakenCost, effLevel, lordLevel, starMult, unitPower } from '../server/src/growth';
 import { activeTitle, seasonRewardSoul, titleForGlobalRank } from '../server/src/league';
 import { grantFor, soulPackAmount, SOUL_PACKS } from '../server/src/purchases';
 import { floorEnemies } from '../server/src/raid';
 import { fightWave } from '../server/src/siege';
 import { defaultState, resetState, resolveFloors } from '../server/src/state';
 
-describe('awakening (2026-10-01 approved: stars 1–20, ×1.1 each, paid in soul)', () => {
-  it('star n costs 30n up to 10 and 100n from 11; one unit to 20 stars = 17,150', () => {
-    expect([1, 5, 10, 11, 15, 20].map((n) => awakenCost(n))).toEqual([30, 150, 300, 1100, 1500, 2000]);
+describe('awakening (2026-10-02: level 50 then awaken, level back to 1, stars up to 125)', () => {
+  it('star n costs 30n up to 10 and 100n from 11, up to star 125', () => {
+    expect([1, 5, 10, 11, 15, 20, 125].map((n) => awakenCost(n))).toEqual([30, 150, 300, 1100, 1500, 2000, 12500]);
     expect(awakenCost(0)).toBeNull();
-    expect(awakenCost(21)).toBeNull();
-    let sum = 0;
-    for (let n = 1; n <= 20; n++) sum += awakenCost(n)!;
-    expect(sum).toBe(17_150);
+    expect(awakenCost(126)).toBeNull();
   });
 
-  it('each star multiplies stats by 1.1', () => {
+  it('each star multiplies stats by 1.1, capped at 125 stars', () => {
     expect(starMult(0)).toBe(1);
     expect(starMult(undefined)).toBe(1);
     expect(starMult(10)).toBeCloseTo(2.5937, 3);
-    expect(starMult(25)).toBe(starMult(20));
+    expect(starMult(130)).toBe(starMult(125));
   });
 
-  it('owned monsters and the lord can be awakened; unknown or unowned cannot', () => {
+  it('a monster or hero awakens only at level 50 and goes back to level 1; the lord any time', () => {
     const s = defaultState('a', 0, 's1');
-    expect(planAwaken(s, 'slime')).toEqual({ soul: 30, patch: { stars: { slime: 1 } } });
+    expect(() => planAwaken(s, 'slime')).toThrow('LEVEL_FIRST');
+    const at50 = { ...s, roster: { ...s.roster, slime: { level: 50 } } };
+    expect(planAwaken(at50, 'slime')).toEqual({ soul: 30, patch: { stars: { slime: 1 }, roster: { slime: { level: 1 }, skeleton: { level: 1 } } } });
+    const hero50 = { ...s, heroes: { ...s.heroes, archer: { level: 50 } } };
+    expect(planAwaken(hero50, 'archer').patch.heroes?.archer).toEqual({ level: 1 });
     expect(planAwaken({ ...s, stars: { lord: 10 } }, 'lord')).toEqual({ soul: 1100, patch: { stars: { lord: 11 } } });
     expect(() => planAwaken(s, 'dragon')).toThrow();
     expect(() => planAwaken(s, 'nope')).toThrow();
-    expect(() => planAwaken({ ...s, stars: { slime: 20 } }, 'slime')).toThrow('MAX_STARS');
+    expect(() => planAwaken({ ...at50, stars: { slime: 125 } }, 'slime')).toThrow('MAX_STARS');
+  });
+
+  it('stats carry over: star 1 level 1 is stronger than level 50 before awakening', () => {
+    // 성장 레벨은 그대로 이어지고, 별 ×1.1만큼 더 세진다
+    const before = unitPower(scaleStats(MONSTERS.slime.stats, effLevel(50, 0)));
+    const after = unitPower(scaleStats(MONSTERS.slime.stats, effLevel(1, 1), starMult(1)));
+    expect(after).toBeGreaterThan(before);
+    expect(effLevel(50, 0)).toBeCloseTo(1 + 25, 6);
+    expect(effLevel(1, 1)).toBeCloseTo(1 + 25, 6);
   });
 
   it('stars reach the castle floors, battles, siege and power', () => {
     const s = { ...defaultState('a', 0, 's1'), stars: { slime: 5, lord: 3 } };
     const floors = resolveFloors(s);
-    expect(floors[0].monsters).toEqual([{ id: 'slime', level: 1, stars: 5 }, { id: 'skeleton', level: 1 }]);
+    expect(floors[0].monsters).toEqual([{ id: 'slime', level: effLevel(1, 5), stars: 5 }, { id: 'skeleton', level: 1 }]);
     const snap = { owner: 'a', nickname: 'x', castleLevel: 1, floors, throneEmpty: false, shadow: false, lordStars: 3 };
     expect(floorEnemies(snap, 0)[0].mult).toBeCloseTo(starMult(5));
     expect(floorEnemies(snap, 0)[1].mult).toBeUndefined();
     expect(floorEnemies(snap, 1)[0].mult).toBeCloseTo(starMult(3));
     const plain = castlePower(1, resolveFloors(defaultState('a', 0, 's1')));
     const lordGain = unitPower(scaleStats(LORD.stats, lordLevel(1), starMult(3))) - unitPower(scaleStats(LORD.stats, lordLevel(1)));
-    const slimeGain = unitPower(scaleStats(MONSTERS.slime.stats, 1, starMult(5))) - unitPower(scaleStats(MONSTERS.slime.stats, 1));
+    const slimeGain = unitPower(scaleStats(MONSTERS.slime.stats, effLevel(1, 5), starMult(5))) - unitPower(scaleStats(MONSTERS.slime.stats, 1));
     expect(castlePower(1, floors, 3)).toBe(Math.round(plain + lordGain + slimeGain));
     expect(snapshotPower(snap)).toBe(castlePower(1, floors, 3));
   });

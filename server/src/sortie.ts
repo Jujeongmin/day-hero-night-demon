@@ -15,8 +15,8 @@ export function sortiesLeft(s: Pick<UserState, 'daily'>, now: number): number {
 }
 
 /** 입장권 한 장 골드 값: 내 몬스터 평균 레벨의 NPC 공략 전리품 × 0.5 */
-export function sortieTicketCost(s: Pick<UserState, 'roster'>): number {
-  return Math.max(1, Math.round(npcLoot(avgMonsterLevel(s.roster)) * BALANCE.sortieTicketLootMult));
+export function sortieTicketCost(s: Pick<UserState, 'roster' | 'stars'>): number {
+  return Math.max(1, Math.round(npcLoot(avgMonsterLevel(s.roster, s.stars ?? {})) * BALANCE.sortieTicketLootMult));
 }
 
 /** 오늘 마왕 처치 영혼석을 더 받을 수 있는 횟수 */

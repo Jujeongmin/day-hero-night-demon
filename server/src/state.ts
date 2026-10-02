@@ -1,4 +1,5 @@
-import { MONSTERS, type HeroId, type MonsterId, type Tactic } from './catalog';
+import { BALANCE, MONSTERS, type HeroId, type MonsterId, type Tactic } from './catalog';
+import { awakenCost, effLevel, starMult } from './growth';
 import type { FloorBattle } from './battle';
 
 /** 함정은 2026-09-29 폐기. 옛 저장본의 trap 칸은 읽지 않는다. */
@@ -9,8 +10,8 @@ export interface ResolvedFloor {
   monsters: { id: MonsterId; level: number; stars?: number; gear?: string }[];
 }
 
-/** 각성 대상: 몬스터 6종 + 마왕 */
-export type StarUnit = MonsterId | 'lord';
+/** 각성 대상: 몬스터 + 용사 + 마왕 (2026-10-02 용사도 레벨 50 → 각성) */
+export type StarUnit = MonsterId | HeroId | 'lord';
 
 /** 시즌 패스 보유자의 한정 마왕 외형. 표시용이며 전투 수치에는 영향이 없다. */
 /** skull = 시즌 패스, dragon = 패스 10단계 영구, lava·demon = VIP 5·8 전용 (2026-09-30), summon1 = 소환 전설 (2026-10-02) */
@@ -146,6 +147,8 @@ export interface UserState {
   summon?: { pulls: number; sinceHigh: number };
   /** 몬스터 장비 외형(소환 영웅): 가진 것, 몬스터마다 입힌 것. 표시용, 초기화해도 남는다 */
   gear?: { owned: string[]; worn: Partial<Record<MonsterId, string>> };
+  /** 성장 곡선 판. 2 = 레벨 50 + 각성 순환(2026-10-02). 옛 판은 불러올 때 한 번 바꾼다(server.ts migrateGrowth) */
+  growthV?: number;
   /** 매칭용 공개 정보(castles 컬렉션)를 새 전투력 단위로 다시 쓴 판. 2 = 큰 숫자 성장(2026-09-29) */
   castleSyncV?: number;
 }
@@ -194,6 +197,7 @@ export function defaultState(account: string, now: number, seasonId: string): Us
     processedPurchases: [],
     vip: { spent: 0 },
     stars: {},
+    growthV: 2,
     onboarding: { at: 'cutscene', nicknameSet: false },
     ads: { day: '', counts: {} },
     perks: { speed3: false, premium: false },
@@ -210,7 +214,8 @@ export function resolveFloors(s: UserState): ResolvedFloor[] {
       .map((id) => {
         const stars = s.stars?.[id] ?? 0;
         const gear = s.gear?.worn[id];
-        return { id, level: s.roster[id]?.level ?? 1, ...(stars > 0 ? { stars } : {}), ...(gear ? { gear } : {}) };
+        // level = 성장 레벨(보이는 레벨 + 별). 능력치 계산은 이 값으로, 별 ×1.1은 stars로 따로
+        return { id, level: effLevel(s.roster[id]?.level ?? 1, stars), ...(stars > 0 ? { stars } : {}), ...(gear ? { gear } : {}) };
       }),
   }));
 }
@@ -276,4 +281,46 @@ export function resetState(s: UserState, now: number): UserState {
     // 최고 단계는 순위·단계 보상 기준이라 초기화해도 남긴다(보상을 다시 받지 못하게)
     siege: { ...fresh.siege, best: s.siege.best },
   };
+}
+
+/** 용사 셋의 성장 레벨과 별 배수(전투·NPC 등급·공성 방어·전리품 보너스용) */
+export function heroGrowth(s: Pick<UserState, 'heroes' | 'stars'>): Record<HeroId, { level: number; mult: number }> {
+  const out = {} as Record<HeroId, { level: number; mult: number }>;
+  for (const id of Object.keys(s.heroes) as HeroId[]) {
+    const stars = s.stars?.[id] ?? 0;
+    out[id] = { level: effLevel(s.heroes[id].level, stars), mult: starMult(stars) };
+  }
+  return out;
+}
+
+/**
+ * 옛 성장 곡선(레벨 1~100, 영혼석으로 산 몬스터 별) → 레벨 50 + 각성 순환(2026-10-02).
+ * 옛 레벨 L = 성장 레벨 L로 보고 별·보이는 레벨로 나눈다. 옛 몬스터 별은 의미가 달라져서 영혼석으로 돌려준다(마왕 별은 그대로)
+ */
+export function migrateGrowth(s: UserState): { patch: Partial<UserState>; refundSoul: number } | null {
+  if ((s.growthV ?? 1) >= 2) return null;
+  const per = BALANCE.maxUnitLevel - 1;
+  const split = (oldLevel: number) => {
+    const steps = Math.round((Math.max(1, oldLevel) - 1) * per / BALANCE.growth.cycleLevels);
+    return { stars: Math.min(BALANCE.awaken.maxStars, Math.floor(steps / per)), level: (steps % per) + 1 };
+  };
+  let refundSoul = 0;
+  const stars: Partial<Record<StarUnit, number>> = { ...(s.stars?.lord ? { lord: s.stars.lord } : {}) };
+  for (const [id, n] of Object.entries(s.stars ?? {})) {
+    if (id === 'lord' || !n) continue;
+    for (let k = 1; k <= Math.min(n, 20); k++) refundSoul += awakenCost(k) ?? 0;
+  }
+  const roster: UserState['roster'] = {};
+  for (const [id, m] of Object.entries(s.roster) as [MonsterId, { level: number }][]) {
+    const r = split(m.level);
+    roster[id] = { level: r.level };
+    if (r.stars > 0) stars[id] = r.stars;
+  }
+  const heroes = { ...s.heroes };
+  for (const id of Object.keys(heroes) as HeroId[]) {
+    const r = split(heroes[id].level);
+    heroes[id] = { level: r.level };
+    if (r.stars > 0) stars[id] = r.stars;
+  }
+  return { patch: { roster, heroes, stars, growthV: 2 }, refundSoul };
 }

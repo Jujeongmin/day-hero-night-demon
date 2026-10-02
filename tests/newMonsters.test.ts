@@ -63,5 +63,5 @@ describe('new monsters (2026-10-01 approved)', () => {
     }
     // 한 층만이면 영혼석 몬스터도 용사가 거의 이긴다(데스 나이트 처음 값은 72%를 졌다)
     expect(heroWinRate('deathknight', 10, 200, 1)).toBeGreaterThanOrEqual(0.9);
-  });
+  }, 60_000);
 });

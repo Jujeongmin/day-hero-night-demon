@@ -7,8 +7,8 @@ import { vipPerks } from './vip';
 
 /** 공성 단계의 침입 파도: 기사·궁수·성직자, 레벨 = 단계, 능력치 ×0.5. 최대 레벨을 넘으면 단계마다 ×1.15 더 */
 export function siegeWave(stage: number): HeroSpec[] {
-  const level = Math.min(BALANCE.maxUnitLevel, stage);
-  const over = Math.max(0, stage - BALANCE.maxUnitLevel);
+  const level = Math.min(BALANCE.growth.legacyCap, stage);
+  const over = Math.max(0, stage - BALANCE.growth.legacyCap);
   const mult = BALANCE.growth.invaderMult * Math.pow(BALANCE.growth.statGrowth, over);
   return HERO_ORDER.map((id) => ({ id, level, mult }));
 }

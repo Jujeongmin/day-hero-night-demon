@@ -20,9 +20,9 @@ export function npcCastle(tier: number, seedKey: string): CastleSnapshot {
   const t = Math.max(1, Math.floor(tier));
   let s = seedFrom('npc', t, seedKey);
   const floorsCount = t >= G.npcThreeFloorsFrom ? 3 : t >= G.npcTwoFloorsFrom ? 2 : 1;
-  const level = Math.min(BALANCE.maxUnitLevel, t);
-  // 최대 레벨을 넘는 등급은 등급마다 ×1.15 더
-  const over = Math.pow(G.statGrowth, Math.max(0, t - BALANCE.maxUnitLevel));
+  const level = Math.min(G.legacyCap, t);
+  // 옛 최대 레벨을 넘는 등급은 등급마다 ×1.15 더
+  const over = Math.pow(G.statGrowth, Math.max(0, t - G.legacyCap));
   const mult = Math.round(G.npcMultByFloors[floorsCount - 1] * over * 1000) / 1000;
   const floors: ResolvedFloor[] = [];
   for (let i = 0; i < floorsCount; i++) {
@@ -58,7 +58,7 @@ export function npcRaids(p: {
   const due = Math.floor((p.now - p.lastRaidAt) / BALANCE.npcRaidEveryMs);
   const count = Math.max(0, Math.min(BALANCE.npcRaidMax, due));
   // 습격해 오는 용사 = 내 성 몬스터 평균 레벨(비슷한 세기)
-  const heroLevel = Math.min(BALANCE.maxUnitLevel, avgMonsterLevel(p.floors));
+  const heroLevel = avgMonsterLevel(p.floors);
   const raids: { at: number; attackerWon: boolean }[] = [];
   for (let i = 0; i < count; i++) {
     const at = p.lastRaidAt + (i + 1) * BALANCE.npcRaidEveryMs;

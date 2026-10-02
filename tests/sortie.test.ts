@@ -17,8 +17,9 @@ describe('sortie tickets and lord soul cap (2026-10-01 user decision)', () => {
   });
 
   it('a ticket costs half an NPC raid loot at my average monster level', () => {
+    // 보이는 레벨 20 = 성장 레벨 1 + 19 × 25/49
     const s = { ...defaultState('a', NOW, 's1'), roster: { slime: { level: 20 }, skeleton: { level: 20 } } };
-    expect(sortieTicketCost(s)).toBe(Math.round(npcLoot(20) * BALANCE.sortieTicketLootMult));
+    expect(sortieTicketCost(s)).toBe(Math.round(npcLoot(Math.floor(1 + 19 * 25 / 49)) * BALANCE.sortieTicketLootMult));
   });
 
   it('lord-kill soul is paid 10 times a day', () => {

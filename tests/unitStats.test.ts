@@ -6,10 +6,11 @@ describe('unitStats', () => {
   it('shows current stats and what the next level adds', () => {
     const r = unitStats(MONSTERS.slime.stats, 1);
     expect(r.now).toEqual({ hp: 120, atk: 11, def: 8, spd: 2 });
-    expect(r.gain).toEqual({ hp: 18, atk: 2, def: 1, spd: 0 });
+    // 강화 한 번 = 옛 25/49레벨(능력치 약 +7.4%)
+    expect(r.gain).toEqual({ hp: 9, atk: 1, def: 1, spd: 0 });
   });
   it('no gain at max level', () => {
-    expect(unitStats(HEROES.knight.stats, 100).gain).toBe(null);
+    expect(unitStats(HEROES.knight.stats, 50).gain).toBe(null);
   });
 });
 

@@ -57,11 +57,12 @@ describe('economy', () => {
     expect(npcLoot(0)).toBe(npcLoot(1));
   });
 
-  it('unit upgrade starts at 50 and grows ×1.3, null at max level 100', () => {
-    expect(unitUpgradeCost(1)).toBe(50);
-    expect(unitUpgradeCost(2)).toBe(65);
-    expect(unitUpgradeCost(99)).toBeGreaterThan(1e9);
-    expect(unitUpgradeCost(100)).toBeNull();
+  it('one upgrade = 25/49 of an old level; level 50 has no upgrade (awaken instead); stars keep raising the cost', () => {
+    expect(unitUpgradeCost(1)).toBe(Math.round(50 * 25 / 49));
+    expect(unitUpgradeCost(2)! / unitUpgradeCost(1)!).toBeCloseTo(Math.pow(1.3, 25 / 49), 1);
+    expect(unitUpgradeCost(49)).not.toBeNull();
+    expect(unitUpgradeCost(50)).toBeNull();
+    expect(unitUpgradeCost(1, 1)!).toBeGreaterThan(unitUpgradeCost(49, 0)!);
   });
 
   it('castle upgrade = 3 × the ten lord levels it adds, null at max', () => {

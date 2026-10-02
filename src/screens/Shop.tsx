@@ -21,7 +21,7 @@ export default function Shop(props: {
   const { api, home, onRefresh, onToast } = props;
   const supplyLeft = adsLeft(home.state, 'daily_supply', Date.now());
   const best = home.state.siege?.best ?? 1;
-  const avgLevel = avgMonsterLevel(home.state.roster);
+  const avgLevel = avgMonsterLevel(home.state.roster, home.state.stars ?? {});
   const [goldBusy, setGoldBusy] = useState(false);
   async function buyGold(id: string) {
     if (goldBusy) return;

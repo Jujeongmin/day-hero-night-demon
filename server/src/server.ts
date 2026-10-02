@@ -19,7 +19,7 @@ import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from '
 import { rngNext, seedFrom } from './rng';
 import { planSummon, planWearGear, pullsToPity, summonOf } from './summon';
 import {
-  canAdvance, dayKey, defaultState, isNew, isStage, resetState, resolveFloors, withDefaults,
+  canAdvance, dayKey, defaultState, heroGrowth, isNew, isStage, migrateGrowth, resetState, resolveFloors, withDefaults,
   type CastleSnapshot, type OnboardingState, type RaidLogEntry, type Run, type Target, type UserState,
 } from './state';
 
@@ -38,7 +38,17 @@ async function withLocks<T>(accounts: string[], fn: () => Promise<T>): Promise<T
 /** 락 안에서만 부른다. 처음 보는 계정이면 기본 상태·시작 골드·매칭 정보를 만든다. */
 async function loadState(account: string, now: number): Promise<UserState> {
   const raw = await $global.getUserState(account);
-  if (!isNew(raw)) return withDefaults(raw as UserState);
+  if (!isNew(raw)) {
+    const s = withDefaults(raw as UserState);
+    // 옛 성장 곡선(레벨 100) 계정은 레벨 50 + 각성 순환으로 한 번 바꾼다(2026-10-02). 옛 몬스터 별 영혼석은 돌려준다
+    const m = migrateGrowth(s);
+    if (!m) return s;
+    const next = { ...s, ...m.patch };
+    await save(account, m.patch);
+    if (m.refundSoul > 0) await $asset.mint('soul', m.refundSoul, account);
+    await syncCastle(account, next);
+    return next;
+  }
   const s = defaultState(account, now, seasonIdAt(now));
   await $global.updateUserState(account, s);
   await $asset.mint('gold', BALANCE.startGold, account);
@@ -76,7 +86,7 @@ async function balances(account: string): Promise<{ gold: number; soul: number }
 
 function npcTargets(s: UserState, now: number): Target[] {
   // 고정 등급(모두에게 같은 난이도): 용사 평균 레벨 −1 / 같음 / +1
-  return npcTiersFor(s.heroes).map((tier, i) => {
+  return npcTiersFor(heroGrowth(s)).map((tier, i) => {
     const c = npcCastle(tier, `${dayKey(now)}-${i}`);
     return {
       id: c.owner, nickname: c.nickname, power: snapshotPower(c),
@@ -100,7 +110,8 @@ const AD_CLAIMS = 'ad_claims';
 const SIEGE_BEST = 'siege_best';
 /** 소환 결과 기록(확률형 아이템 결과 보관). id = 계정:그때까지 뽑은 수 */
 const SUMMON_LOG = 'summon_log';
-const CASTLE_SYNC_V = 2;
+/** 3 = 레벨 50 + 각성 순환(2026-10-02). 성장 레벨로 매칭 전투력을 다시 쓴다 */
+const CASTLE_SYNC_V = 3;
 
 async function adClaimed(requestId: string): Promise<boolean> {
   try {
@@ -374,7 +385,7 @@ async function recordSiegeBest(me: string, s: UserState, oldBest: number): Promi
 async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[]; soul: number; lastLog?: FloorLog[] }> {
   const r = runSiege({
     account: me, stage: s.siege.stage, lastWaveAt: s.siege.lastWaveAt, now,
-    castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes), lordStars: lordStarsOf(s), vip: vipOf(s),
+    castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), vip: vipOf(s),
   });
   if (r.lastWaveAt === s.siege.lastWaveAt) return { s, waves: [], soul: 0 };
   const last = r.waves[r.waves.length - 1];
@@ -470,7 +481,7 @@ export class Server {
       const block = siegeCallBlock({ lastWaveAt: s.siege.lastWaveAt, lastWon: s.siege.lastWon, speed: sp, now });
       if (block) throw new Error(block);
       const r = fightWave({
-        account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(s.heroes), lordStars: lordStarsOf(s), record: true,
+        account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), record: true,
       });
       const siege = { stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.stage), lastWon: r.won };
       await save(me, { siege });
@@ -598,7 +609,7 @@ export class Server {
           : null,
         // 자리를 비운 동안 처음 넘은 10단계 보상(영혼석). 화면에 한 번 알린다
         siegeSoul,
-        power: displayPower(s.castle.level, resolveFloors(s), s.heroes, lordStarsOf(s)),
+        power: displayPower(s.castle.level, resolveFloors(s), heroGrowth(s), lordStarsOf(s)),
         seasonEndsAt: seasonEndsAt(now),
         // 전체 알림: 최근 하루 것 최대 5개. 이미 본 것은 화면이 거른다
         news: await recentNews(now),
@@ -687,7 +698,7 @@ export class Server {
       const s = await loadState(me, now);
       const soul = BALANCE.goldPacks[id].soul;
       if (!(await $asset.has('soul', soul))) throw new Error('NO_SOUL');
-      const gold = goldPackAmount(id, s.siege.best, avgMonsterLevel(s.roster));
+      const gold = goldPackAmount(id, s.siege.best, avgMonsterLevel(s.roster, s.stars));
       await $asset.burn('soul', soul);
       await $asset.mint('gold', gold);
       return { soul, gold };
@@ -789,7 +800,7 @@ export class Server {
       const s = await loadState(me, now);
       if (!s.run) throw new Error('공략 중이 아니다');
       if (!TACTICS.includes(tactic as Tactic)) throw new Error('잘못된 전술이다');
-      const r = beginFloor(s.run, tactic as Tactic, s.heroes);
+      const r = beginFloor(s.run, tactic as Tactic, heroGrowth(s));
       await save(me, { run: r.run });
       return { run: r.run, events: r.events, status: runStatus(r.run) };
     });
@@ -844,7 +855,7 @@ export class Server {
         loot = await settleDefender(me, s, run, won, now);
       }
       // 용사 레벨 보너스: 상대가 잃는 양과 별개로 서버가 새로 준다
-      const bonus = won ? heroLootBonus(loot, s.heroes) : 0;
+      const bonus = won ? heroLootBonus(loot, heroGrowth(s)) : 0;
       if (bonus) await $asset.mint('gold', bonus);
       loot += bonus;
       const result = await finishRun(me, s, run, won, loot, now);

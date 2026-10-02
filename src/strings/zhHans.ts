@@ -193,7 +193,7 @@ export const zhHans: Strings = {
     power: '战力',
     heroHint: '攻略时出战的我方队伍。越强越容易抢下别人的城堡',
     heroBonus: (p: number) => `当前 掠夺金币 +${p}% · 攻城防守 +${p}%`,
-    heroNext: (p: number) => `强化后 掠夺金币・攻城防守 +${p}% → +${p + 1}%`,
+    heroNext: (p: number, next: number) => `强化后 掠夺金币・攻城防守 +${p}% → +${next}%`,
   },
   ads: {
     watch: (label: string) => `${label} (广告)`,
@@ -235,6 +235,8 @@ export const zhHans: Strings = {
     NO_SORTIE: '今天的出征券已用完，可用金币购买',
     NO_SOUL: '魂石不足',
     MAX_STARS: '已经完全觉醒',
+    AWAKEN_FIRST: '已达50级，觉醒后才能继续提升',
+    LEVEL_FIRST: '达到50级才能觉醒',
     generic: '出了点问题，请稍后再试。',
   } as Record<string, string>,
   serverMsg: {
@@ -299,12 +301,13 @@ export const zhHans: Strings = {
     hint: '每颗星让全部能力×1.1。消耗魂石，重置后仍保留。',
     btn: (soul: number) => `觉醒（魂石 ${F(soul)}）`,
     max: '已完全觉醒',
+    lordHint: '与城堡等级分开，每颗星能力×1.1',
     mult: (now: string, next: string | null) => (next ? `能力 ×${now} → ×${next}` : `能力 ×${now}`),
     buySoul: '购买魂石',
   },
   news: {
     vip10: (name: string) => `${name} 达到 VIP 10！`,
-    star20: (name: string) => `${name} 完成了20星觉醒！`,
+    star20: (name: string) => `${name}觉醒到五颗金星！`,
     champion: (name: string) => `${name} 拿下上赛季全服第1名，成为「霸王」！`,
   } as Record<string, (name: string) => string>,
   summon: {

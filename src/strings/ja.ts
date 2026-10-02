@@ -193,7 +193,7 @@ export const ja: Strings = {
     power: '戦闘力',
     heroHint: '攻略で戦う自分のパーティー。強いほど他人の城を楽に襲える',
     heroBonus: (p: number) => `現在 略奪ゴールド +${p}% · 攻城防衛 +${p}%`,
-    heroNext: (p: number) => `強化すると 略奪ゴールド・攻城防衛 +${p}% → +${p + 1}%`,
+    heroNext: (p: number, next: number) => `強化すると 略奪ゴールド・攻城防衛 +${p}% → +${next}%`,
   },
   ads: {
     watch: (label: string) => `${label} (広告)`,
@@ -235,6 +235,8 @@ export const ja: Strings = {
     NO_SORTIE: '今日の出撃券を使い切った。ゴールドで買える',
     NO_SOUL: '魂石が足りない',
     MAX_STARS: 'すでに最大覚醒だ',
+    AWAKEN_FIRST: 'レベル50。覚醒するとさらに上がる',
+    LEVEL_FIRST: 'レベル50になると覚醒できる',
     generic: '問題が起きた。少し後でもう一度試してください。',
   } as Record<string, string>,
   serverMsg: {
@@ -299,12 +301,13 @@ export const ja: Strings = {
     hint: '星ひとつごとに全能力×1.1。魂石を使い、リセットしても残る。',
     btn: (soul: number) => `覚醒（魂石 ${F(soul)}）`,
     max: '最大覚醒',
+    lordHint: '城レベルとは別に、星ごとに能力×1.1',
     mult: (now: string, next: string | null) => (next ? `能力 ×${now} → ×${next}` : `能力 ×${now}`),
     buySoul: '魂石を買う',
   },
   news: {
     vip10: (name: string) => `${name}さんがVIP 10になった！`,
-    star20: (name: string) => `${name}さんが星20の覚醒を達成した！`,
+    star20: (name: string) => `${name}さんが金の星5つに覚醒した！`,
     champion: (name: string) => `${name}さんが前シーズン全体1位の「覇王」になった！`,
   } as Record<string, (name: string) => string>,
   summon: {

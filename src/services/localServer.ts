@@ -233,6 +233,15 @@ const tools = {
     s.summon = { pulls: Math.max(s.summon?.pulls ?? 0, sinceHigh), sinceHigh };
     persist();
   },
+  /** 몬스터·용사 보이는 레벨 바꾸기(각성 확인용): localServer.lv('slime', 50) */
+  lv(id: string, level: number) {
+    const s = store.users[account] as { roster?: Record<string, { level: number }>; heroes?: Record<string, { level: number }> } | undefined;
+    if (!s) return;
+    if (s.roster?.[id]) s.roster[id] = { level };
+    else if (s.heroes?.[id]) s.heroes[id] = { level };
+    persist();
+    location.reload();
+  },
   /** 장비 외형 하나 주기('slime:crown' 등, 화면 확인용) */
   gear(id: string) {
     const s = store.users[account] as { gear?: { owned: string[]; worn: Record<string, string> } } | undefined;

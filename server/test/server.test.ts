@@ -24,9 +24,9 @@ describe('home & economy', () => {
   test('upgrade spends gold and raises the level', async (server) => {
     server.connect({ account: 't5-carol' });
     await server.getHome();
-    expect((await server.upgrade('monster', 'slime')).cost).toBe(50);
+    expect((await server.upgrade('monster', 'slime')).cost).toBe(26);
     const home = await server.getHome();
-    expect(home.gold).toBe(250);
+    expect(home.gold).toBe(274);
     expect(home.state.roster.slime.level).toBe(2);
   });
 
@@ -372,18 +372,19 @@ describe('awakening & soul packs (2026-10-01)', () => {
     expect(home.soul).toBe(180);
     expect(home.state.vip.spent).toBe(500);
     const before = home.power;
-    expect((await server.awaken('slime')).soul).toBe(30);
+    // 몬스터는 레벨 50이 되어야 각성(2026-10-02), 마왕은 언제든
+    expect(await fails(server.awaken('slime'))).toBe(true);
     expect((await server.awaken('lord')).soul).toBe(30);
     expect((await server.awaken('lord')).soul).toBe(60);
     expect(await fails(server.awaken('dragon'))).toBe(true);
     home = await server.getHome();
-    expect(home.soul).toBe(60);
-    expect(home.state.stars).toEqual({ slime: 1, lord: 2 });
+    expect(home.soul).toBe(90);
+    expect(home.state.stars).toEqual({ lord: 2 });
     expect(home.power).toBeGreaterThan(before);
     await server.resetProgress('초기화');
     home = await server.getHome();
-    expect(home.state.stars).toEqual({ slime: 1, lord: 2 });
-    expect(home.soul).toBe(60);
+    expect(home.state.stars).toEqual({ lord: 2 });
+    expect(home.soul).toBe(90);
   });
 
   test('home carries a news list and the league a hall of fame', async (server) => {

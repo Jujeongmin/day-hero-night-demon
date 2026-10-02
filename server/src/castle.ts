@@ -20,15 +20,15 @@ export function planUpgrade(
   if (kind === 'monster') {
     const m = s.roster[id as MonsterId];
     if (!m) throw new Error('보유하지 않은 몬스터다');
-    const cost = unitUpgradeCost(m.level);
-    if (cost === null) throw new Error('최대 레벨이다');
+    const cost = unitUpgradeCost(m.level, s.stars?.[id as MonsterId] ?? 0);
+    if (cost === null) throw new Error('AWAKEN_FIRST');
     return { cost, patch: { roster: { ...s.roster, [id as MonsterId]: { level: m.level + 1 } } } };
   }
   if (kind === 'hero') {
     if (!id || !(id in HEROES)) throw new Error('없는 용사다');
     const h = s.heroes[id as HeroId];
-    const cost = unitUpgradeCost(h.level);
-    if (cost === null) throw new Error('최대 레벨이다');
+    const cost = unitUpgradeCost(h.level, s.stars?.[id as HeroId] ?? 0);
+    if (cost === null) throw new Error('AWAKEN_FIRST');
     return { cost, patch: { heroes: { ...s.heroes, [id as HeroId]: { level: h.level + 1 } } } };
   }
   throw new Error('잘못된 강화 종류다');
@@ -54,13 +54,27 @@ export function planRecruit(s: UserState, monsterId: string): { soul: number; pa
   return { soul: def.unlock.soul, patch: { roster: { ...s.roster, [def.id]: { level: 1 } } } };
 }
 
-/** 각성 별 하나: 보유 몬스터나 마왕. 영혼석 비용과 새 별 기록 */
-export function planAwaken(s: UserState, unit: string): { soul: number; patch: Pick<UserState, 'stars'> } {
-  if (unit !== 'lord' && !(unit in MONSTERS)) throw new Error('없는 유닛이다');
-  if (unit !== 'lord' && !s.roster[unit as MonsterId]) throw new Error('보유하지 않은 몬스터다');
+/**
+ * 각성 별 하나(2026-10-02 사용자): 몬스터·용사는 레벨 50일 때만, 각성하면 보이는 레벨이 1로(능력치는 성장 레벨로 이어진다).
+ * 마왕은 성 레벨에 묶여 있어 언제든. 영혼석 비용과 바뀐 상태
+ */
+export function planAwaken(s: UserState, unit: string): { soul: number; patch: Partial<Pick<UserState, 'stars' | 'roster' | 'heroes'>> & Pick<UserState, 'stars'> } {
+  const isMonster = unit in MONSTERS;
+  const isHero = unit in HEROES;
+  if (unit !== 'lord' && !isMonster && !isHero) throw new Error('없는 유닛이다');
+  if (isMonster && !s.roster[unit as MonsterId]) throw new Error('보유하지 않은 몬스터다');
   const key = unit as StarUnit;
   const now = s.stars?.[key] ?? 0;
   const soul = awakenCost(now + 1);
   if (soul === null) throw new Error('MAX_STARS');
-  return { soul, patch: { stars: { ...(s.stars ?? {}), [key]: now + 1 } } };
+  const stars = { ...(s.stars ?? {}), [key]: now + 1 };
+  if (isMonster) {
+    if (s.roster[unit as MonsterId]!.level < BALANCE.maxUnitLevel) throw new Error('LEVEL_FIRST');
+    return { soul, patch: { stars, roster: { ...s.roster, [unit]: { level: 1 } } } };
+  }
+  if (isHero) {
+    if (s.heroes[unit as HeroId].level < BALANCE.maxUnitLevel) throw new Error('LEVEL_FIRST');
+    return { soul, patch: { stars, heroes: { ...s.heroes, [unit]: { level: 1 } } } };
+  }
+  return { soul, patch: { stars } };
 }

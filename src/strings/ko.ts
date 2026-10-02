@@ -195,7 +195,7 @@ export const ko = {
     power: '전투력',
     heroHint: '공략 때 싸우는 내 파티다. 강할수록 남의 성을 쉽게 턴다',
     heroBonus: (p: number) => `지금 약탈 골드 +${p}% · 공성 방어 +${p}%`,
-    heroNext: (p: number) => `강화하면 약탈 골드·공성 방어 +${p}% → +${p + 1}%`,
+    heroNext: (p: number, next: number) => `강화하면 약탈 골드·공성 방어 +${p}% → +${next}%`,
   },
   ads: {
     watch: (label: string) => `${label} (광고)`,
@@ -237,6 +237,8 @@ export const ko = {
     NO_SORTIE: '오늘 출정 입장권을 다 썼다. 골드로 더 살 수 있다',
     NO_SOUL: '영혼석이 부족하다',
     MAX_STARS: '이미 최대 각성이다',
+    AWAKEN_FIRST: '레벨 50이다. 각성해야 더 오른다',
+    LEVEL_FIRST: '레벨 50이 되어야 각성할 수 있다',
     generic: '문제가 생겼다. 잠시 후 다시 시도해줘.',
   } as Record<string, string>,
   /** 서버가 한국어 문장으로 던지는 오류 → 이 언어 문장. 없으면 errors.generic */
@@ -308,12 +310,13 @@ export const ko = {
     hint: '별 하나마다 모든 능력치 ×1.1. 영혼석을 쓰고, 초기화해도 남는다.',
     btn: (soul: number) => `각성 (영혼석 ${F(soul)})`,
     max: '최대 각성',
+    lordHint: '성 레벨과 따로, 별마다 능력치 ×1.1',
     mult: (now: string, next: string | null) => (next ? `능력치 ×${now} → ×${next}` : `능력치 ×${now}`),
     buySoul: '영혼석 사기',
   },
   news: {
     vip10: (name: string) => `${name}님이 VIP 10에 올랐다!`,
-    star20: (name: string) => `${name}님이 별 20 각성을 해냈다!`,
+    star20: (name: string) => `${name}님이 금별 5개 각성을 해냈다!`,
     champion: (name: string) => `${name}님이 지난 시즌 전체 1위 「패왕」이 되었다!`,
   } as Record<string, (name: string) => string>,
   summon: {

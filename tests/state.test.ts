@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canAdvance, dayKey, defaultState, isNew, nicknameFor, resolveFloors, resetState, withDefaults, type UserState } from '../server/src/state';
+import { canAdvance, dayKey, defaultState, isNew, nicknameFor, resolveFloors, resetState, withDefaults, type UserState, migrateGrowth } from '../server/src/state';
 
 describe('state', () => {
   it('treats empty or unversioned state as new', () => {
@@ -33,7 +33,7 @@ describe('state', () => {
     const s = defaultState('0xaaaa1111', 0, 's1');
     s.roster.slime = { level: 5 };
     expect(resolveFloors(s)).toEqual([
-      { monsters: [{ id: 'slime', level: 5 }, { id: 'skeleton', level: 1 }] },
+      { monsters: [{ id: 'slime', level: 1 + 4 * 25 / 49 }, { id: 'skeleton', level: 1 }] },
     ]);
   });
 });
@@ -105,5 +105,18 @@ describe('resetState', () => {
     expect(r.introDone).toBe(false);
     expect(r.raidLog).toEqual([]);
     expect(r.run).toBe(null);
+  });
+});
+
+describe('growth migration (2026-10-02: level 100 → level 50 + awakening)', () => {
+  it('splits an old level into stars and a visible level and refunds old monster stars', () => {
+    const s = { ...defaultState('a', 0, 's1'), growthV: undefined, roster: { slime: { level: 61 }, skeleton: { level: 1 } }, stars: { slime: 3, lord: 2 } };
+    const m = migrateGrowth(s)!;
+    // 옛 Lv61 = 60 × 49/25 = 117.6 → 118번 강화 = 별 2 + Lv21
+    expect(m.patch.roster).toEqual({ slime: { level: 21 }, skeleton: { level: 1 } });
+    expect(m.patch.stars).toEqual({ lord: 2, slime: 2 });
+    expect(m.refundSoul).toBe(30 + 60 + 90);
+    expect(migrateGrowth({ ...s, ...m.patch })).toBeNull();
+    expect(migrateGrowth(defaultState('b', 0, 's1'))).toBeNull();
   });
 });

@@ -73,11 +73,11 @@ function settle(run: Run, events: BattleEvent[]): { run: Run; events: BattleEven
   };
 }
 
-export function beginFloor(run: Run, tactic: Tactic, heroes: Record<HeroId, { level: number }>): { run: Run; events: BattleEvent[] } {
+export function beginFloor(run: Run, tactic: Tactic, heroes: Record<HeroId, { level: number; mult?: number }>): { run: Run; events: BattleEvent[] } {
   if (runStatus(run) !== 'choose_tactic') throw new Error('지금은 전술을 고를 수 없다');
   const party = HERO_ORDER
     .filter((id) => (run.heroesHp[id] ?? 1) > 0)
-    .map((id) => ({ id, level: heroes[id].level, hp: run.heroesHp[id] }));
+    .map((id) => ({ id, level: heroes[id].level, hp: run.heroesHp[id], ...(heroes[id].mult && heroes[id].mult !== 1 ? { mult: heroes[id].mult } : {}) }));
   const f = run.floor;
   const { battle, events } = createFloorBattle({
     heroes: party,

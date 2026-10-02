@@ -9,6 +9,15 @@ import { BALANCE } from './catalog';
 
 const G = BALANCE.growth;
 
+/**
+ * 성장 레벨(옛 곡선 기준, 소수 가능): 보이는 레벨 1~50과 별을 합친다. 별 하나 = 한 바퀴(옛 cycleLevels 레벨분).
+ * 능력치·비용·NPC 등급·전리품은 모두 이 값으로 계산한다(2026-10-02)
+ */
+export function effLevel(level: number, stars = 0): number {
+  const per = BALANCE.maxUnitLevel - 1;
+  return 1 + (Math.max(0, stars) * per + Math.max(1, level) - 1) * (G.cycleLevels / per);
+}
+
 /** 레벨 배수: Lv1 = 1, 레벨마다 ×1.15 */
 export function statMult(level: number): number {
   return Math.pow(G.statGrowth, Math.max(0, level - 1));
@@ -42,10 +51,16 @@ export function waveGold(stage: number): number {
   return Math.round(3 * G.goldPerInvader * Math.pow(G.goldGrowth, Math.max(0, stage - 1)));
 }
 
-/** 유닛 강화 1회 비용(level → level+1). 최대 레벨이면 null */
-export function unitUpgradeCost(level: number): number | null {
+/** 옛 곡선의 1레벨 강화 비용(성장 레벨 기준, 골드 묶음 "강화 M번치" 계산용) */
+export function levelCost(eff: number): number {
+  return Math.round(G.unitCostBase * Math.pow(G.costGrowth, Math.max(0, eff - 1)));
+}
+
+/** 유닛 강화 1회 비용(보이는 level → level+1, 별 stars). 레벨 50이면 null(각성할 차례) */
+export function unitUpgradeCost(level: number, stars = 0): number | null {
   if (level >= BALANCE.maxUnitLevel) return null;
-  return Math.round(G.unitCostBase * Math.pow(G.costGrowth, level - 1));
+  const cost = Math.round(G.unitCostBase * Math.pow(G.costGrowth, effLevel(level, stars) - 1) * (G.cycleLevels / (BALANCE.maxUnitLevel - 1)));
+  return Number.isFinite(cost) ? Math.max(1, cost) : null;
 }
 
 /** 성 강화 비용 = 마왕이 오르는 10레벨치 유닛 강화 비용 합 × castleCostFactor. 최대 성 레벨이면 null */
@@ -76,17 +91,17 @@ export function unitPower(stats: { hp: number; atk: number; def: number }): numb
   return (stats.hp + 5 * stats.atk + 5 * stats.def) / 10;
 }
 
-/** 큰 숫자 표시: 1234 → 1.2k, 3400000 → 3.4m, 1.1b */
+/** 큰 숫자 표시: 1234 → 1.2k, 3.4m, 1.1b, 2t, 그 위로 aa·ab…zz(1000배마다) */
 export function formatNum(n: number): string {
+  if (!Number.isFinite(n)) return '∞';
   const a = Math.abs(n);
-  const units: [number, string][] = [[1e12, 't'], [1e9, 'b'], [1e6, 'm'], [1e3, 'k']];
-  for (const [v, u] of units) {
-    if (a >= v) {
-      const x = n / v;
-      return `${x >= 100 ? Math.floor(x) : Math.floor(x * 10) / 10}${u}`;
-    }
-  }
-  return String(Math.round(n));
+  if (a < 1e3) return String(Math.round(n));
+  const tier = Math.min(Math.floor(Math.log10(a) / 3), 4 + 26 * 26);
+  const small = ['', 'k', 'm', 'b', 't'];
+  const i = tier - 5;
+  const u = tier < 5 ? small[tier] : String.fromCharCode(97 + Math.floor(i / 26)) + String.fromCharCode(97 + (i % 26));
+  const x = n / Math.pow(1000, tier);
+  return `${x >= 100 ? Math.floor(x) : Math.floor(x * 10) / 10}${u}`;
 }
 
 export type GoldPackId = keyof typeof BALANCE.goldPacks;
@@ -96,13 +111,12 @@ export const GOLD_PACK_IDS = Object.keys(BALANCE.goldPacks) as GoldPackId[];
 export function goldPackAmount(id: GoldPackId, bestStage: number, avgMonsterLevel: number): number {
   const p = BALANCE.goldPacks[id];
   const hours = waveGold(Math.max(1, bestStage)) * BALANCE.goldPackHourWaves * p.hours;
-  const lvl = Math.min(BALANCE.maxUnitLevel - 1, Math.max(1, Math.floor(avgMonsterLevel)));
-  const ups = unitUpgradeCost(lvl)! * p.upgrades;
+  const ups = levelCost(Math.max(1, avgMonsterLevel)) * p.upgrades;
   return Math.max(hours, ups);
 }
 
 /** 보유 몬스터 평균 레벨(내림). 몬스터가 없으면 1 */
-export function avgMonsterLevel(roster: Partial<Record<string, { level: number }>>): number {
-  const lv = Object.values(roster).filter((m): m is { level: number } => !!m).map((m) => m.level);
+export function avgMonsterLevel(roster: Partial<Record<string, { level: number }>>, stars: Partial<Record<string, number>> = {}): number {
+  const lv = Object.entries(roster).filter((e): e is [string, { level: number }] => !!e[1]).map(([id, m]) => effLevel(m.level, stars[id] ?? 0));
   return lv.length === 0 ? 1 : Math.floor(lv.reduce((a, b) => a + b, 0) / lv.length);
 }
