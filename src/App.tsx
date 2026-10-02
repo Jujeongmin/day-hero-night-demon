@@ -379,7 +379,7 @@ export default function App() {
           </button>
         ))}
       </nav>
-      {summonOpen && <Summon api={api} home={home} onClose={() => setSummonOpen(false)} onRefresh={refresh} onError={onError} />}
+      {summonOpen && <Summon api={api} home={home} onClose={() => setSummonOpen(false)} onShop={() => { setSummonOpen(false); setPanel({ name: 'shop' }); }} onRefresh={refresh} onError={onError} />}
       {tutorial}
       {toast && <div className="toast">{toast}</div>}
     </div>

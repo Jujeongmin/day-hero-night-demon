@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { BALANCE, HEROES, MONSTERS, type HeroId, type MonsterId, type SkillId, type Stats } from '../../server/src/catalog';
 import { castleUpgradeCost, heroBonusLevels, unitUpgradeCost } from '../../server/src/economy';
-import { awakenCost, formatNum, lordLevel } from '../../server/src/growth';
+import { awakenCost, formatNum } from '../../server/src/growth';
+import { planUpgradeMany } from '../../server/src/castle';
 import { heroGrowth, type StarUnit } from '../../server/src/state';
 import { Portrait } from '../render/Sprite';
 import { StarRow } from '../render/stars';
@@ -47,6 +48,11 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
   const { api, home, onRefresh, onError } = props;
   const s = home.state;
   const { busy, act } = useAct(onRefresh, onError);
+  // 영혼석이 모자라면 알림과 함께 상점(영혼석 묶음)으로 (2026-10-02)
+  const needSoul = () => {
+    onError(T.errors.NO_SOUL);
+    props.onShop();
+  };
 
   const row = (
     id: string, label: string, level: number, onUp: () => Promise<unknown>, first: boolean,
@@ -60,6 +66,10 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
     const cost = unitUpgradeCost(level, stars);
     // 레벨 50: 같은 자리 버튼이 각성(영혼석)으로. 각성하면 레벨 숫자만 1로, 능력치는 이어진다
     const awaken = cost === null ? awakenCost(stars + 1) : null;
+    // 몬스터·용사: 지금 골드로 몇 번 올릴 수 있나(서버 planUpgradeMany와 같은 계산)
+    const manyKind = id in MONSTERS ? 'monster' as const : id in HEROES ? 'hero' as const : null;
+    const count = (n: number) => (manyKind ? planUpgradeMany(s, manyKind, id, n, home.gold).times : 0);
+    const many = manyKind && cost !== null ? { kind: manyKind, ten: count(10), max: count(BALANCE.maxUnitLevel) } : null;
     const { now, gain } = unitStats(unit.stats, level, stars, id in MONSTERS && worn ? BALANCE.summon.gearStatMult : 1);
     const stat = (k: keyof Stats) => (
       <span className="stat" key={k}>
@@ -84,11 +94,20 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
           </span>
         </span>
         {cost !== null ? (
-          <button className="btn small" data-tut={first ? 'upgrade-first' : undefined} disabled={busy || home.gold < cost} onClick={() => act(onUp)}>
-            {T.upgradeBtn(cost)}
-          </button>
+          <span className="up-btns">
+            <button className="btn small" data-tut={first ? 'upgrade-first' : undefined} disabled={busy || home.gold < cost} onClick={() => act(onUp)}>
+              {T.upgradeBtn(cost)}
+            </button>
+            {/* 여러 번 강화(2026-10-02 사용자): ×10, 최대 = 지금 골드로 레벨 50까지 */}
+            {many && (
+              <span className="row">
+                <button className="btn small" disabled={busy || many.ten < 2} onClick={() => act(() => api.upgradeMany(many.kind, id, 10))}>{T.upMany.ten}</button>
+                <button className="btn small" disabled={busy || many.max < 2} onClick={() => act(() => api.upgradeMany(many.kind, id, BALANCE.maxUnitLevel))}>{T.upMany.max(many.max)}</button>
+              </span>
+            )}
+          </span>
         ) : (
-          <button className="btn small awaken-btn" disabled={busy || awaken === null || home.soul < awaken} onClick={() => act(() => api.awaken(id))}>
+          <button className="btn small awaken-btn" disabled={busy || awaken === null} onClick={() => (awaken !== null && home.soul < awaken ? needSoul() : act(() => api.awaken(id)))}>
             {awaken === null ? T.awaken.max : T.awaken.btn(awaken)}
           </button>
         )}
@@ -108,7 +127,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
   return (
     <>
       <div className="line">
-        <span className="item"><Portrait id="castle" label={T.throne} />{T.castleLevel(s.castle.level)} <small className="muted">{T.lordLevel(lordLevel(s.castle.level))}</small></span>
+        <span className="item"><Portrait id="castle" label={T.throne} />{T.castleLevel(s.castle.level)} <small className="muted">{T.castleHint}</small></span>
         <button className="btn small" disabled={busy || castleCost === null || home.gold < castleCost} onClick={() => act(() => api.upgrade('castle', null))}>
           {castleCost === null ? T.maxLevel : T.upgradeBtn(castleCost)}
         </button>
@@ -116,7 +135,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
       {/* 마왕 각성: 성 레벨에 묶여 있어 언제든(별마다 ×1.1) */}
       <div className="line">
         <span className="item"><Portrait id="lord" label={T.units.lord} /><span>{T.units.lord} <Stars n={s.stars?.lord} /><small className="hero-next">{T.awaken.lordHint}</small></span></span>
-        <button className="btn small awaken-btn" disabled={busy || lordAwaken === null || home.soul < lordAwaken} onClick={() => act(() => api.awaken('lord'))}>
+        <button className="btn small awaken-btn" disabled={busy || lordAwaken === null} onClick={() => (lordAwaken !== null && home.soul < lordAwaken ? needSoul() : act(() => api.awaken('lord')))}>
           {lordAwaken === null ? T.awaken.max : T.awaken.btn(lordAwaken)}
         </button>
       </div>

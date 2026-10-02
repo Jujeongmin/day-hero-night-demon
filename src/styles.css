@@ -560,3 +560,10 @@ button.pill.ticket.buy:disabled { animation: none; filter: grayscale(0.6) bright
 .rank-entry img { filter: drop-shadow(0 0 4px #ffcf4daa); }
 .rank-entry b { font-weight: 400; color: var(--gold); font-size: 15px; }
 .side-icon .badge { position: absolute; right: 4px; top: -4px; min-width: 18px; height: 18px; padding: 0 4px; display: grid; place-items: center; background: var(--ruby); border: 2px solid #000; border-radius: 9px; color: #fff; font-style: normal; font-size: 11px; line-height: 1; box-shadow: 0 0 6px #ff4a5eaa; }
+.up-btns { display: flex; flex-direction: column; align-items: stretch; gap: 3px; flex: none; }
+.up-btns .row { gap: 3px; }
+.up-btns .row .btn { flex: 1; min-height: 26px; }
+.diff { display: inline-block; padding: 0 5px; border-radius: 4px; font-size: 11px; line-height: 1.5; border: 1px solid; }
+.diff.easy { color: var(--hp); border-color: #3cf07a88; }
+.diff.normal { color: var(--gold); border-color: #ffcf4d88; }
+.diff.hard { color: var(--ruby); border-color: #ff4a5e88; }

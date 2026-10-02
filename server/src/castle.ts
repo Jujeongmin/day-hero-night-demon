@@ -34,6 +34,35 @@ export function planUpgrade(
   throw new Error('잘못된 강화 종류다');
 }
 
+/**
+ * 몬스터·용사 여러 번 강화(2026-10-02 사용자: ×10·최대). 가진 골드 안에서, 레벨 50(각성할 차례)이나 count번까지.
+ * 한 번도 못 하면 times 0. 비용 합과 마지막 상태를 돌려준다
+ */
+export function planUpgradeMany(
+  s: UserState, kind: 'monster' | 'hero', id: string, count: number, gold: number,
+): { cost: number; times: number; patch: Partial<UserState> } {
+  let cur = s;
+  let cost = 0;
+  let times = 0;
+  let patch: Partial<UserState> = {};
+  const limit = Math.max(1, Math.min(BALANCE.maxUnitLevel, Math.floor(count)));
+  while (times < limit) {
+    let step: { cost: number; patch: Partial<UserState> };
+    try {
+      step = planUpgrade(cur, kind, id);
+    } catch (e) {
+      if (times === 0) throw e;
+      break;
+    }
+    if (cost + step.cost > gold) break;
+    cost += step.cost;
+    times += 1;
+    patch = { ...patch, ...step.patch };
+    cur = { ...cur, ...step.patch };
+  }
+  return { cost, times, patch };
+}
+
 export function validateFloor(s: UserState, index: number, monsters: unknown): FloorLayout {
   if (!Number.isInteger(index) || index < 0 || index >= Math.min(floorsUnlocked(s.castle.level), s.castle.floors.length)) {
     throw new Error('잠긴 층이다');

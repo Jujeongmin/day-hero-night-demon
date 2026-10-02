@@ -292,7 +292,8 @@ export default function CastleScene(props: {
         lastWave={lastWave}
         replaying={replaying}
         replayResult={replay.result}
-        compact={panelOpen}
+        // 튜토리얼 중에는 공성 단계 표시·바로 부르기를 숨긴다(시선이 흩어지지 않게, 2026-10-02)
+        compact={panelOpen || (s.onboarding?.at ?? 'done') !== 'done'}
         onCall={calling ? null : callWave}
         lastWon={s.siege?.lastWon}
         speed={speed}
@@ -332,7 +333,7 @@ export default function CastleScene(props: {
           </button>
         )}
         {/* 방치 보상: 패스 아래 보물상자 버튼(2026-10-02 승인 A). 받을 것이 없으면 흐리게 */}
-        {(home.idlePreview > 0 || (s.onboarding?.at ?? 'done') === 'done') && (
+        {(s.onboarding?.at ?? 'done') === 'done' && (
           <button
             className={`idle-entry ${home.idlePreview > 0 ? 'ready' : 'empty'}`}
             disabled={busy || home.idlePreview <= 0}

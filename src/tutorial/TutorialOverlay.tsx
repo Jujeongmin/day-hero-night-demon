@@ -67,7 +67,10 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
     const tick = (now: number) => {
       const el = findTarget(anchors);
       const r = el?.getBoundingClientRect();
-      const sheet = el?.closest('.sheet')?.getBoundingClientRect();
+      // 누를 곳이 창 안이면 그 창, 창 밖(아래 탭 등)인데 창이 열려 있으면 그 창 위에 말풍선을 붙여 창 내용을 가리지 않는다
+      const own = el?.closest('.sheet')?.getBoundingClientRect();
+      const open = document.querySelector('.sheet')?.getBoundingClientRect();
+      const sheet = own ?? (open && r && r.top > open.top ? open : undefined);
       const next = r ? { left: r.left, top: r.top, width: r.width, height: r.height, ...(sheet ? { sheetTop: sheet.top } : {}) } : null;
       if (!sameBox(next, boxRef.current)) {
         boxRef.current = next;

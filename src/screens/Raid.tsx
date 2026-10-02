@@ -140,7 +140,8 @@ export default function Raid(props: {
       </header>
       <div className="sheet-body">
         <div className="row">
-          <button
+          {/* 부활권이 있을 때만(2026-10-02: 쓸 수 없는 "보유 0" 버튼은 숨김) */}
+          {revives > 0 && <button
             className="btn"
             disabled={run.reviveUsed || revives < 1}
             onClick={() => call(async () => {
@@ -150,7 +151,7 @@ export default function Raid(props: {
             })}
           >
             {T.revive(revives)}
-          </button>
+          </button>}
           {revives < 1 && !run.reviveUsed && (
             <AdButton
               api={api}

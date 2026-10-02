@@ -79,6 +79,7 @@ export function createApi(server: RemoteServer) {
     upgrade: (kind: 'castle' | 'monster' | 'hero', id: string | null) => call<{ cost: number }>('upgrade', [kind, id]),
     setFloor: (index: number, monsters: (string | null)[]) => call<{ floor: unknown }>('setFloor', [index, monsters]),
     recruit: (monsterId: string) => call<{ soul: number }>('recruit', [monsterId]),
+    upgradeMany: (kind: 'monster' | 'hero', id: string, count: number) => call<{ cost: number; times: number }>('upgradeMany', [kind, id, count]),
     awaken: (unit: string) => call<{ soul: number }>('awaken', [unit]),
     buySortie: () => call<{ cost: number }>('buySortie'),
     buyGold: (packId: string) => call<{ soul: number; gold: number }>('buyGold', [packId]),

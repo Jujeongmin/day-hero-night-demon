@@ -1,5 +1,5 @@
 import { BALANCE, HERO_ORDER, TACTICS, type HeroId, type Tactic } from './catalog';
-import { planAwaken, planRecruit, planUpgrade, validateFloor } from './castle';
+import { planAwaken, planRecruit, planUpgrade, planUpgradeMany, validateFloor } from './castle';
 import { castlePower, displayPower, heroLootBonus, idleIncome, lootAmount, npcLoot, pvpLootCap, siegeDefenseMult, snapshotPower } from './economy';
 import { avgMonsterLevel, goldPackAmount, GOLD_PACK_IDS, waveGold, type GoldPackId } from './growth';
 import { dailyOf, lordSoulLeft, sortiesLeft, sortieTicketCost } from './sortie';
@@ -656,6 +656,24 @@ export class Server {
       await save(me, patch);
       await syncCastle(me, { ...s, ...patch });
       return { cost };
+    });
+  }
+
+  /** 몬스터·용사를 한 번에 여러 레벨(count = 10, 최대는 50). 가진 골드만큼, 레벨 50에서 멈춘다. 서버 호출 한 번 */
+  async upgradeMany(kind: string, id: string, count: number) {
+    const me = $sender.account;
+    if (kind !== 'monster' && kind !== 'hero') throw new Error('잘못된 강화 종류다');
+    if (!Number.isFinite(count) || count < 1) throw new Error('잘못된 횟수다');
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      const { gold } = await balances(me);
+      const { cost, times, patch } = planUpgradeMany(s, kind, String(id), count, gold);
+      if (times === 0) throw new Error('골드가 부족하다');
+      await $asset.burn('gold', cost);
+      await save(me, patch);
+      await syncCastle(me, { ...s, ...patch });
+      return { cost, times };
     });
   }
 

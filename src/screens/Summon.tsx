@@ -42,10 +42,12 @@ export default function Summon(props: {
   api: Api;
   home: HomeData;
   onClose: () => void;
+  /** 영혼석이 모자랄 때 상점(영혼석 묶음)으로 */
+  onShop: () => void;
   onRefresh: () => Promise<void>;
   onError: (msg: string) => void;
 }) {
-  const { api, home, onClose, onRefresh, onError } = props;
+  const { api, home, onClose, onShop, onRefresh, onError } = props;
   const s = home.state;
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<SummonResult[] | null>(null);
@@ -75,7 +77,9 @@ export default function Summon(props: {
     if (busy) return;
     const cost = kind === 'ten' ? B.costTen : B.costOne;
     if (home.soul < cost) {
+      // 막다른 길 대신 영혼석 묶음으로 바로 (2026-10-02)
       onError(T.errors.NO_SOUL);
+      onShop();
       return;
     }
     setBusy(true);
