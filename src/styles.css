@@ -543,3 +543,4 @@ button.pill.ticket.buy:disabled { animation: none; filter: grayscale(0.6) bright
 .look-chip { margin-top: 2px; padding: 0 6px; background: #0006; border: 1px solid #c070ff88; border-radius: 4px; color: #e7c8ff; font: inherit; font-size: 12px; }
 .look-chip em { font-style: normal; color: var(--hp); }
 .look-chip:hover:not(:disabled) { border-color: #d9a0ff; color: #fff; }
+.look .look-bonus { font-style: normal; font-size: 11px; line-height: 1; color: var(--hp); }

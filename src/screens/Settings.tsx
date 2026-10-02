@@ -147,6 +147,8 @@ export default function Settings(props: {
               >
                 <Portrait id={lordSpriteId(l === 'base' ? undefined : l)} label={T.settings.looks[l]} />
                 <small>{T.settings.looks[l]}</small>
+                {/* 기본이 아닌 외형은 마왕 능력치 +10% (2026-10-02 사용자) */}
+                {l !== 'base' && <em className="look-bonus">+{Math.round((BALANCE.summon.gearStatMult - 1) * 100)}%</em>}
               </button>
             ))}
           </div>
