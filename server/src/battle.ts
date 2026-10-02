@@ -25,8 +25,10 @@ export interface Fighter {
   web: number;
   stun: number;
   ghost: boolean;
-  /** 입힌 장비 외형(소환). 표시용이라 능력치와 상관없다 */
+  /** 입힌 장비 외형(소환). 시트 고르기용(능력치 +10%는 mult에 이미 들어 있다) */
   gear?: string;
+  /** 각성 별(머리 위 표시용, 능력치는 mult에 이미 들어 있다) */
+  stars?: number;
 }
 
 export interface FloorBattle {
@@ -58,7 +60,7 @@ export interface FloorLog {
 }
 
 export interface HeroSpec { id: HeroId; level: number; hp?: number; mult?: number }
-export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number; gear?: string }
+export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number; gear?: string; stars?: number }
 
 function makeFighter(
   key: string, side: Side, kind: UnitKind, level: number, row: 'front' | 'back',
@@ -85,12 +87,13 @@ export function createFloorBattle(input: {
   input.enemies.forEach((e, i) => {
     if (e.id === 'lord') {
       const s = scaleStats(LORD.stats, e.level, e.mult ?? 1);
-      fighters.push(makeFighter(`e${i}:lord`, 'enemy', 'lord', e.level, 'front', s, s.hp, LORD.skill, LORD.cooldown));
+      const f = makeFighter(`e${i}:lord`, 'enemy', 'lord', e.level, 'front', s, s.hp, LORD.skill, LORD.cooldown);
+      fighters.push(e.stars ? { ...f, stars: e.stars } : f);
     } else {
       const def = MONSTERS[e.id];
       const s = scaleStats(def.stats, e.level, e.mult ?? 1);
       const f = makeFighter(`e${i}:${e.id}`, 'enemy', e.id, e.level, i === 0 ? 'front' : 'back', s, s.hp, def.skill, def.cooldown);
-      fighters.push(e.gear ? { ...f, gear: e.gear } : f);
+      fighters.push({ ...f, ...(e.gear ? { gear: e.gear } : {}), ...(e.stars ? { stars: e.stars } : {}) });
     }
   });
   const battle: FloorBattle = {

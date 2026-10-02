@@ -522,3 +522,24 @@ button.pill.ticket.buy:disabled { animation: none; filter: grayscale(0.6) bright
 @keyframes card-shake { 25% { translate: -2px 0; } 50% { translate: 2px 0; } 75% { translate: -1px 0; } }
 .summon-over .btn.big { min-width: 160px; }
 @media (prefers-reduced-motion: reduce) { .summon-entry img, .summon-cards .card { animation: none !important; } }
+
+/* 방치 보상 버튼 (2026-10-02 승인 A: 패스 아래 보물상자, 소환 아이콘과 같은 꼴) */
+.idle-entry { width: 64px; padding: 0; background: none; border: 0; display: grid; justify-items: center; color: #f0dcae; text-shadow: 0 1px 0 #000, 0 0 3px #000; }
+.idle-entry img { width: 44px; height: 44px; image-rendering: pixelated; }
+.idle-entry b { font-weight: 400; color: var(--gold); font-size: 15px; line-height: 1; }
+.idle-entry small { font-size: 11px; }
+.idle-entry.ready img { animation: idle-glow 2s ease-in-out infinite; }
+.idle-entry.ready:hover img { filter: drop-shadow(0 0 8px #ffcf4d) brightness(1.15); }
+.idle-entry.empty { cursor: default; }
+.idle-entry.empty img { filter: grayscale(.6) brightness(.65); }
+.idle-entry.empty b { color: var(--muted); }
+@keyframes idle-glow { 0%, 100% { filter: drop-shadow(0 0 3px #ffcf4d99); } 50% { filter: drop-shadow(0 0 8px #ffcf4d) brightness(1.1); } }
+@media (prefers-reduced-motion: reduce) { .idle-entry.ready img { animation: none; } }
+
+/* 각성 별(2026-10-02 사용자: 머리 위에 작게, 동 5 = 은 1, 은 5 = 금 1) */
+.star-row { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
+.star-row img { width: auto; image-rendering: pixelated; filter: drop-shadow(0 1px 0 #000); }
+.unit-stars { display: flex; margin: 0 auto 1px; pointer-events: none; }
+.look-chip { margin-top: 2px; padding: 0 6px; background: #0006; border: 1px solid #c070ff88; border-radius: 4px; color: #e7c8ff; font: inherit; font-size: 12px; }
+.look-chip em { font-style: normal; color: var(--hp); }
+.look-chip:hover:not(:disabled) { border-color: #d9a0ff; color: #fff; }

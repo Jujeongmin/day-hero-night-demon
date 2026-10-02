@@ -1,6 +1,6 @@
 import { simulateAuto, type FloorLog, type HeroSpec } from './battle';
 import { BALANCE, HERO_ORDER } from './catalog';
-import { lordLevel, starMult, waveGold } from './growth';
+import { lordLevel, monsterMult, starMult, waveGold } from './growth';
 import { seedFrom } from './rng';
 import type { ResolvedFloor } from './state';
 import { vipPerks } from './vip';
@@ -17,7 +17,7 @@ export function siegeWave(stage: number): HeroSpec[] {
 function defenseOf(castleLevel: number, floors: ResolvedFloor[], mult: number, lordStars = 0) {
   const m = (k: number) => (k === 1 ? {} : { mult: k });
   return [
-    ...floors.map((f) => ({ enemies: f.monsters.map((u) => ({ id: u.id, level: u.level, ...m(mult * starMult(u.stars)), ...(u.gear ? { gear: u.gear } : {}) })) })),
+    ...floors.map((f) => ({ enemies: f.monsters.map((u) => ({ id: u.id, level: u.level, ...m(mult * monsterMult(u.stars, u.gear)), ...(u.gear ? { gear: u.gear } : {}) })) })),
     { enemies: [{ id: 'lord' as const, level: lordLevel(castleLevel), ...m(mult * starMult(lordStars)) }] },
   ];
 }

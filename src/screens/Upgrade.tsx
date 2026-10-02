@@ -4,6 +4,7 @@ import { castleUpgradeCost, heroBonusLevels, unitUpgradeCost } from '../../serve
 import { awakenCost, formatNum, lordLevel, starMult } from '../../server/src/growth';
 import type { StarUnit } from '../../server/src/state';
 import { Portrait } from '../render/Sprite';
+import { StarRow } from '../render/stars';
 import { monsterSpriteId } from '../render/skins';
 import { skillText, unitStats } from '../render/unitStats';
 import { errorText, type Api, type HomeData } from '../services/api';
@@ -14,8 +15,8 @@ export type UpgradeTab = 'up' | 'awaken';
 
 /** 별 수 배지(각성). 0이면 그리지 않는다 */
 export function Stars(props: { n?: number }) {
-  if (!props.n) return null;
-  return <span className="star-count"><img src="ui/star.png" alt="" draggable={false} />{props.n}</span>;
+  // 2026-10-02 사용자: 동별 5개 = 은별 1개, 은별 5개 = 금별 1개
+  return <StarRow n={props.n} size={12} className="star-count" />;
 }
 
 /** 강화 창: 강화(골드) | 각성(영혼석) 두 탭 */
@@ -120,7 +121,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
             {note && <small className="hero-next">{note}</small>}
             {looks.length > 0 && (
               <button className="look-chip" disabled={busy} onClick={() => act(() => api.wearGear(id, nextLook))}>
-                {T.summon.look(worn ? T.summon.gear[worn] : T.summon.baseLook)} ▸
+                {T.summon.look(worn ? T.summon.gear[worn] : T.summon.baseLook)}{worn && <em> +{Math.round((BALANCE.summon.gearStatMult - 1) * 100)}%</em>} ▸
               </button>
             )}
           </span>

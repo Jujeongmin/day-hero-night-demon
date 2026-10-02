@@ -233,6 +233,14 @@ const tools = {
     s.summon = { pulls: Math.max(s.summon?.pulls ?? 0, sinceHigh), sinceHigh };
     persist();
   },
+  /** 장비 외형 하나 주기('slime:crown' 등, 화면 확인용) */
+  gear(id: string) {
+    const s = store.users[account] as { gear?: { owned: string[]; worn: Record<string, string> } } | undefined;
+    if (!s) return;
+    s.gear = { owned: [...new Set([...(s.gear?.owned ?? []), id])], worn: s.gear?.worn ?? {} };
+    persist();
+    location.reload();
+  },
   /** 튜토리얼을 끝난 것으로(화면 확인용) */
   done() {
     const s = store.users[account] as { onboarding?: unknown; introDone?: boolean } | undefined;

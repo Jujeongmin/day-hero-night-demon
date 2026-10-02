@@ -4,6 +4,12 @@ import type { LordSkin } from '../../server/src/state';
 import { sfx } from '../services/audio';
 import { sfxForFx } from './sfxMap';
 import { auraBlur, AURA, lordSpriteId, monsterSpriteId } from './skins';
+import { starTiers, type StarTier } from './stars';
+
+const starImages: Record<StarTier, HTMLImageElement> = (() => {
+  const make = (t: StarTier) => { const i = new Image(); i.src = `ui/star_${t}.png`; return i; };
+  return typeof Image === 'undefined' ? ({} as Record<StarTier, HTMLImageElement>) : { gold: make('gold'), silver: make('silver'), bronze: make('bronze') };
+})();
 import SPRITES from './sprites.json';
 import { buildFrames, preHp, type Fx } from './timeline';
 
@@ -87,6 +93,18 @@ function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, sprite: string, ani
   ctx.restore();
 }
 
+/** 각성 별: 체력바 바로 위에 작게(동 5 = 은 1, 은 5 = 금 1). 아래 끝이 y */
+function drawStars(ctx: CanvasRenderingContext2D, n: number | undefined, x: number, y: number) {
+  const tiers = starTiers(n);
+  if (tiers.length === 0) return;
+  const size = 7;
+  const left = x - (tiers.length * size) / 2;
+  tiers.forEach((t, i) => {
+    const img = starImages[t];
+    if (img.complete && img.naturalWidth > 0) ctx.drawImage(img, left + i * size, y - size, size, size);
+  });
+}
+
 /** 체력바 위치: 대기 그림의 머리 위 4px. 그림 영역을 모르면 예전처럼 발에서 50px 위 */
 function hpBarY(sprite: string, footY: number): number {
   const s = strips[`${sprite}_idle`];
@@ -132,6 +150,7 @@ function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: numbe
     const barY = hpBarY(sprite, p.y);
 
     if (hp > 0) {
+      drawStars(ctx, f.stars, p.x, barY - 2);
       ctx.fillStyle = '#000a';
       ctx.fillRect(p.x - 15, barY, 30, 4);
       ctx.fillStyle = f.side === 'hero' ? '#3cf07a' : '#ff5a5a';

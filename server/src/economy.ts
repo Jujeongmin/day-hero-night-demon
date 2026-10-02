@@ -1,5 +1,5 @@
 import { BALANCE, LORD, MONSTERS, scaleStats } from './catalog';
-import { idlePerHour, lordLevel, npcLoot, starMult, unitPower } from './growth';
+import { idlePerHour, lordLevel, monsterMult, npcLoot, starMult, unitPower } from './growth';
 import type { CastleSnapshot, ResolvedFloor } from './state';
 import { vipPerks } from './vip';
 
@@ -49,7 +49,7 @@ export function siegeDefenseMult(heroes: Record<string, { level: number }>): num
 /** 성 전투력 = 층 몬스터 + 마왕의 (체력 + 공격×5 + 방어×5) ÷ 10 합. 시작 편성이 100. 매칭에도 쓴다 */
 export function castlePower(castleLevel: number, floors: ResolvedFloor[], lordStars = 0): number {
   let p = unitPower(scaleStats(LORD.stats, lordLevel(castleLevel), starMult(lordStars)));
-  for (const f of floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, starMult(m.stars)));
+  for (const f of floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, monsterMult(m.stars, m.gear)));
   return Math.round(p);
 }
 
@@ -57,7 +57,7 @@ export function castlePower(castleLevel: number, floors: ResolvedFloor[], lordSt
 export function snapshotPower(c: CastleSnapshot): number {
   const mult = c.mult ?? 1;
   let p = c.throneEmpty && !c.shadow ? 0 : unitPower(scaleStats(LORD.stats, c.lordLevel ?? lordLevel(c.castleLevel), mult * (c.throneEmpty ? 0.5 : 1) * starMult(c.lordStars)));
-  for (const f of c.floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, mult * starMult(m.stars)));
+  for (const f of c.floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, mult * monsterMult(m.stars, m.gear)));
   return Math.round(p);
 }
 

@@ -20,6 +20,11 @@ export function starMult(stars: number | undefined): number {
   return Math.pow(BALANCE.awaken.statPerStar, n);
 }
 
+/** 몬스터 능력치 배수: 각성 별 × 입은 장비 외형(소환, 2026-10-02 사용자 +10%) */
+export function monsterMult(stars: number | undefined, gear: string | undefined): number {
+  return starMult(stars) * (gear ? BALANCE.summon.gearStatMult : 1);
+}
+
 /** 별 n개째를 다는 영혼석. 최대 별을 넘으면 null */
 export function awakenCost(nextStar: number): number | null {
   const a = BALANCE.awaken;

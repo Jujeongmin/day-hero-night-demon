@@ -7,6 +7,7 @@ export const zhHans: Strings = {
   loading: '加载中…',
   gold: '金币',
   soul: '魂石',
+  idleBtn: '挂机奖励',
   claimIdle: (g: number) => `领取挂机收益 (+${F(g)})`,
   sortie: '出征',
   introSortie: '出征复仇',

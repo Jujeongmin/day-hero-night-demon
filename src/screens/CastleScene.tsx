@@ -10,6 +10,7 @@ import Sprite from '../render/Sprite';
 import { adsLeft } from '../services/ads';
 import { chooseLordSkin, passTier, planPassClaim } from '../../server/src/pass';
 import { lordSpriteId, monsterSpriteId } from '../render/skins';
+import { StarRow } from '../render/stars';
 import { nextSpeed, type Speed } from '../render/speed';
 import { errorText, type Api, type HomeData, type SiegeWave } from '../services/api';
 import { buy } from '../services/shop';
@@ -197,6 +198,7 @@ export default function CastleScene(props: {
         {/* 옥좌에서 싸우는 동안은 아래 재생 층이 마왕을 그린다 */}
         {!throneFight && (
           <div className={`unit-at lord-at ${rubyAura ? 'aura ruby' : lordSkin ? 'aura' : ''}`} style={at(50, THRONE.stand)}>
+            <StarRow n={s.stars?.lord} className="unit-stars" />
             {!s.run && <span className="lord-hp"><span style={{ width: `${(replaying ? 1 : lordHp) * 100}%` }} /></span>}
             {/* 옛 연출(성문 앞 싸움) 동안에는 마왕도 공격 동작 */}
             <Sprite id={lordSpriteId(lordSkin)} anim={defending && !replaying ? 'attack' : 'idle'} label={T.units.lord} scale={unitScale} />
@@ -211,6 +213,7 @@ export default function CastleScene(props: {
               {/* 싸우는 층은 재생 층이 그린다. 이미 뚫린 층의 몬스터는 파도가 끝날 때까지 쓰러진 채로 */}
               {!locked && replay.floor !== i && floor.monsters.map((m, j) => m && (
                 <div className={`unit-at ${replay.cleared.includes(i) ? 'rp-fallen' : ''}`} key={j} style={at(SLOT_X[j], tier.stand)}>
+                  {!replay.cleared.includes(i) && <StarRow n={s.stars?.[m]} className="unit-stars" />}
                   {replay.cleared.includes(i)
                     ? <Sprite id={monsterSpriteId(m, s.gear?.worn[m])} anim="death" className="once" label={T.units[m]} flip scale={unitScale} />
                     : <Sprite id={monsterSpriteId(m, s.gear?.worn[m])} anim={defending && !replaying && i === 0 ? 'attack' : 'idle'} label={T.units[m]} flip scale={unitScale} />}
@@ -241,6 +244,7 @@ export default function CastleScene(props: {
               {units.map((u) => (
                 // 침입자는 층을 옮겨도 같은 칸(위층으로 올라가는 모습), 몬스터는 층마다 새로 선다
                 <div key={u.side === 'hero' ? u.key : `${replay.floor}:${u.key}`} className={`unit-at rp-unit ${u.side} ${u.dead ? 'dead' : ''}`} style={at(pos(u), tier.stand)}>
+                  {!u.dead && u.side === 'enemy' && <StarRow n={s.stars?.[u.kind as keyof typeof s.stars]} className="unit-stars" />}
                   {!u.dead && <span className="rp-hp"><span style={{ width: `${(u.hp / u.maxHp) * 100}%` }} /></span>}
                   <span key={`${u.key}:${u.hits}`} className={`rp-body ${u.hits > 0 ? 'rp-hit' : ''} ${u.attacking ? 'rp-lunge' : ''}`}>
                     <Sprite
@@ -298,20 +302,24 @@ export default function CastleScene(props: {
       )}
 
       <div className="float-right">
-        {home.idlePreview > 0 && (
-          <button
-            className="btn gold float-idle"
-            disabled={busy}
-            onClick={() => (doubleLeft > 0 ? setChoose(!choose) : act(() => api.claimIdle()))}
-          >
-            +{formatNum(home.idlePreview)}
-          </button>
-        )}
         {(s.onboarding?.at ?? 'done') === 'done' && (
           <button className={`pill pass-btn ${passReady ? 'ready' : ''}`} onClick={onPass} aria-label={T.products.season_pass[0]}>
             <img src="icons/prod_season_pass.png" alt="" draggable={false} />
             <b>{passTier(s.season.honor)}/{BALANCE.passTiers.length}</b>
             {passReady && <i className="dot" />}
+          </button>
+        )}
+        {/* 방치 보상: 패스 아래 보물상자 버튼(2026-10-02 승인 A). 받을 것이 없으면 흐리게 */}
+        {(home.idlePreview > 0 || (s.onboarding?.at ?? 'done') === 'done') && (
+          <button
+            className={`idle-entry ${home.idlePreview > 0 ? 'ready' : 'empty'}`}
+            disabled={busy || home.idlePreview <= 0}
+            onClick={() => (doubleLeft > 0 ? setChoose(!choose) : act(() => api.claimIdle()))}
+            aria-label={T.claimIdle(home.idlePreview)}
+          >
+            <img src="ui/idle.png" alt="" draggable={false} />
+            <b>+{formatNum(home.idlePreview)}</b>
+            <small>{T.idleBtn}</small>
           </button>
         )}
       </div>

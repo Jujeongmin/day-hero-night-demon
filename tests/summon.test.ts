@@ -27,8 +27,8 @@ describe('summon rates', () => {
   it('a single summon maps the roll onto grades', () => {
     expect(planSummon(fresh, 'one', always(0.001), POOLS).results[0].grade).toBe('legend');
     expect(planSummon(fresh, 'one', always(0.03), POOLS).results[0].grade).toBe('epic');
-    expect(planSummon(fresh, 'one', always(0.2), POOLS).results[0]).toEqual({ grade: 'rare', soul: 50 });
-    expect(planSummon(fresh, 'one', always(0.9), POOLS).results[0]).toEqual({ grade: 'common', soul: 15 });
+    expect(planSummon(fresh, 'one', always(0.2), POOLS).results[0]).toEqual({ grade: 'rare', soul: 30 });
+    expect(planSummon(fresh, 'one', always(0.9), POOLS).results[0]).toEqual({ grade: 'common', soul: 10 });
   });
 
   it('over many pulls lands near the published rates', () => {
@@ -66,7 +66,7 @@ describe('summon costs and soul', () => {
 
   it('soul gained is the sum of the results', () => {
     const ten = planSummon(fresh, 'ten', always(0.9), POOLS);
-    expect(ten.soul).toBe(10 * 15);
+    expect(ten.soul).toBe(10 * 10);
   });
 });
 
@@ -76,24 +76,24 @@ describe('summon items and duplicates', () => {
     expect(first.results[0]).toEqual({ grade: 'epic', soul: 0, item: 'slime:crown' });
     expect(first.patch.gear?.owned).toEqual(['slime:crown']);
     const again = planSummon({ ...fresh, ...first.patch }, 'one', always(0.03), POOLS);
-    expect(again.results[0]).toEqual({ grade: 'epic', soul: 150, item: 'slime:crown', dup: true });
+    expect(again.results[0]).toEqual({ grade: 'epic', soul: 30, item: 'slime:crown', dup: true });
   });
 
-  it('the legendary look goes into lord skins; a duplicate pays 1,500', () => {
+  it('the legendary look goes into lord skins; a duplicate pays 300', () => {
     const first = planSummon(fresh, 'one', always(0.001), POOLS);
     expect(first.patch.skins).toEqual(['summon1']);
     const again = planSummon({ ...fresh, ...first.patch }, 'one', always(0.001), POOLS);
-    expect(again.results[0]).toEqual({ grade: 'legend', soul: 1500, item: 'summon1', dup: true });
+    expect(again.results[0]).toEqual({ grade: 'legend', soul: 300, item: 'summon1', dup: true });
   });
 
   it('a duplicate inside the same 10+1 also turns into soul', () => {
     const ten = planSummon(fresh, 'ten', always(0.03), { gear: ['slime:crown'], legend: ['summon1'] });
     expect(ten.results.filter((r) => !r.dup)).toHaveLength(1);
-    expect(ten.soul).toBe(10 * 150);
+    expect(ten.soul).toBe(10 * 30);
   });
 
   it('with no gear drawn yet, an epic pays soul', () => {
-    expect(planSummon(fresh, 'one', always(0.03), { gear: [], legend: ['summon1'] }).results[0]).toEqual({ grade: 'epic', soul: 150, dup: true });
+    expect(planSummon(fresh, 'one', always(0.03), { gear: [], legend: ['summon1'] }).results[0]).toEqual({ grade: 'epic', soul: 30, dup: true });
   });
 });
 
@@ -161,5 +161,28 @@ describe('gear catalog', () => {
     const per: Record<string, number> = {};
     for (const g of gear) per[g.split(':')[0]] = (per[g.split(':')[0]] ?? 0) + 1;
     expect(per).toEqual({ slime: 2, skeleton: 2, imp: 2, necro: 2, spider: 2, dragon: 2 });
+  });
+});
+
+describe('summon economy (2026-10-02)', () => {
+  it('once every look is owned, a summon returns less soul than it costs', () => {
+    const rand = seeded(99);
+    const all = { gear: { owned: [...BALANCE.summon.gear], worn: {} }, skins: [...BALANCE.summon.legendLooks], summon: undefined };
+    let s = all as Parameters<typeof planSummon>[0];
+    let got = 0;
+    const n = 20_000;
+    for (let k = 0; k < n; k++) {
+      const r = planSummon(s, 'one', rand);
+      got += r.soul;
+      s = { ...s, summon: r.patch.summon };
+    }
+    expect(got / n).toBeLessThan(BALANCE.summon.costOne * 0.75);
+  });
+
+  it('worn gear gives that monster +10% stats', async () => {
+    const { monsterMult } = await import('../server/src/growth');
+    expect(monsterMult(0, undefined)).toBe(1);
+    expect(monsterMult(0, 'slime:crown')).toBeCloseTo(1.1);
+    expect(monsterMult(1, 'slime:crown')).toBeCloseTo(1.21);
   });
 });

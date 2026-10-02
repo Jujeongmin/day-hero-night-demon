@@ -208,11 +208,13 @@ export const BALANCE = {
    * 영웅·전설이 나오면 다시 0부터. 확률·천장은 소환 화면과 상점에 그대로 보여 준다.
    * 영웅 = 몬스터 장비 외형(gear, "몬스터:장비"), 전설 = 소환 한정 마왕 외형(legendLooks). 이미 가졌으면 영혼석으로 바꿔 준다.
    * 2026-10-02 사용자: 색만 바꾼 외형은 싸 보인다 → 장비를 씌운 외형. 처음 6종 × 2 = 12종 승인(후보 https://claude.ai/artifact/Y9di8vwfnjjUuGcNWgDzqb)
+   * 2026-10-02 사용자: 중복 보상을 낮춤(다 모은 뒤 소환이 영혼석을 불리지 않게, 평균 약 20/30) · 외형을 입은 몬스터 능력치 ×gearStatMult
    */
   summon: {
     costOne: 30, costTen: 300, tenPulls: 11,
     rates: { common: 0.7, rare: 0.24, epic: 0.055, legend: 0.005 },
-    commonSoul: 15, rareSoul: 50, epicDupSoul: 150, legendDupSoul: 1500,
+    commonSoul: 10, rareSoul: 30, epicDupSoul: 30, legendDupSoul: 300,
+    gearStatMult: 1.1,
     pity: 10,
     gear: [
       'slime:crown', 'slime:helm', 'skeleton:royal', 'skeleton:dread', 'imp:king', 'imp:warlock',

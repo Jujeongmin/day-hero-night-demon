@@ -7,6 +7,7 @@ export const zhHant: Strings = {
   loading: '載入中…',
   gold: '金幣',
   soul: '魂石',
+  idleBtn: '掛機獎勵',
   claimIdle: (g: number) => `領取放置收益 (+${F(g)})`,
   sortie: '出征',
   introSortie: '出征復仇',
