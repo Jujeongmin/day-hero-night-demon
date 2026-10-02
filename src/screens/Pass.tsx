@@ -29,7 +29,8 @@ function PassOffer(props: { best: number; item?: ShopItem }) {
     <div className="pass-offer">
       <div className="pass-stage">
         <span className="pass-tag">{T.pass.only}</span>
-        <Sprite id="lord_dragon" scale={1.4} label={T.pass.dragon} />
+        {/* 유료 외형 오라(홈 탑 꼭대기와 같은 .aura) */}
+        <span className="aura"><Sprite id="lord_dragon" scale={1.4} label={T.pass.dragon} /></span>
         <span className="pass-look"><b>{T.pass.dragon}</b><small>{T.pass.dragonKeep}</small></span>
       </div>
       <div className="pass-perks">
