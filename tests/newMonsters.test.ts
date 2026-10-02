@@ -30,19 +30,19 @@ function firstRounds(enemy: MonsterId, rounds: number): BattleEvent[] {
 }
 
 describe('new monsters (2026-10-01 approved)', () => {
-  it('golem and banshee unlock with castle level 5 and 7, vampire and death knight cost 300 and 500 soul', () => {
-    expect(MONSTERS.golem.unlock).toEqual({ castleLevel: 5 });
-    expect(MONSTERS.banshee.unlock).toEqual({ castleLevel: 7 });
+  it('golem and banshee unlock with castle level 4 (moved from 5 and 7 on 2026-10-02), vampire and death knight cost 300 and 500 soul', () => {
+    expect(MONSTERS.golem.unlock).toEqual({ castleLevel: 4 });
+    expect(MONSTERS.banshee.unlock).toEqual({ castleLevel: 4 });
     expect(planRecruit(defaultState('a', 0, 's1'), 'vampire').soul).toBe(300);
     expect(planRecruit(defaultState('a', 0, 's1'), 'deathknight').soul).toBe(500);
   });
 
-  it('castles already past level 5 or 7 get the new free monsters on load', () => {
+  it('castles already at level 4 get the free monsters on load', () => {
     const s = defaultState('a', 0, 's1');
-    const high = withDefaults({ ...s, castle: { ...s.castle, level: 7 } });
+    const high = withDefaults({ ...s, castle: { ...s.castle, level: 4 } });
     expect(high.roster.golem).toEqual({ level: 1 });
     expect(high.roster.banshee).toEqual({ level: 1 });
-    expect(withDefaults({ ...s, castle: { ...s.castle, level: 5 } }).roster.banshee).toBeUndefined();
+    expect(withDefaults({ ...s, castle: { ...s.castle, level: 3 } }).roster.banshee).toBeUndefined();
   });
 
   it('skills fire: thorns reflect, scream stuns, lifesteal heals, execute hits the weakest twice as hard', () => {

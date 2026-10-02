@@ -73,6 +73,9 @@ export function validateFloor(s: UserState, index: number, monsters: unknown): F
     if (typeof m !== 'string' || !s.roster[m as MonsterId]) throw new Error('보유하지 않은 몬스터다');
     return m as MonsterId;
   });
+  // 2026-10-02 사용자: 성 전체에서 한 몬스터는 한 칸만. 같은 층 안 중복은 막고, 다른 층에 있던 것은 setFloor가 옮긴다
+  const placed = cleaned.filter((m): m is MonsterId => m !== null);
+  if (new Set(placed).size !== placed.length) throw new Error('DUP_MONSTER');
   return { monsters: cleaned };
 }
 

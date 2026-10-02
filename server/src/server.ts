@@ -721,7 +721,8 @@ export class Server {
       const s = await loadState(me, now);
       if (s.run) throw new Error('공략 중에는 편성을 바꿀 수 없다');
       const floor = validateFloor(s, index, monsters);
-      const floors = s.castle.floors.map((f, i) => (i === index ? floor : f));
+      // 한 몬스터는 성 전체에서 한 칸: 이 층에 놓은 몬스터는 다른 층에서 빠진다(옮기기)
+      const floors = s.castle.floors.map((f, i) => (i === index ? floor : { monsters: f.monsters.map((m) => (m && floor.monsters.includes(m) ? null : m)) }));
       const patch: Partial<UserState> = { castle: { ...s.castle, floors } };
       await save(me, patch);
       await syncCastle(me, { ...s, ...patch });

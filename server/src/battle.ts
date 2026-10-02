@@ -327,13 +327,21 @@ function castSkill(b: FloorBattle, f: Fighter, events: BattleEvent[]): boolean {
       for (const t of foes) strike(b, f, t, mult, t.def, events, f.skill);
       return foes.length > 0;
     }
-    case 'double_shot': {
+    case 'double_shot':
+    case 'frenzy': {
+      // 연사(궁수)·광란(늑대인간): 두 번 친다(60%씩)
       for (let i = 0; i < 2; i++) {
         const t = chooseTarget(b, f);
         if (!t) break;
-        strike(b, f, t, 0.6, t.def, events, 'double_shot');
+        strike(b, f, t, f.skill === 'frenzy' ? SKILL_NUMBERS.frenzyHit : 0.6, t.def, events, f.skill);
       }
       return true;
+    }
+    case 'gaze': {
+      // 심연의 눈: 적 전체를 약하게(50%)
+      const foes = alive(b, other(f.side));
+      for (const t of foes) strike(b, f, t, SKILL_NUMBERS.gazeMult, t.def, events, 'gaze');
+      return foes.length > 0;
     }
     case 'heal': {
       const allies = alive(b, f.side).sort((a, c) => a.hp / a.maxHp - c.hp / c.maxHp);

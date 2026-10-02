@@ -56,6 +56,7 @@ export const en: Strings = {
   floor: (n: number) => `Floor ${n}`,
   emptySlot: 'Empty',
   clearSlot: 'Clear',
+  placedAt: (n: number) => `F${n}`,
   logTitle: 'Defense log',
   logDefended: (name: string) => `Held off ${name}`,
   logRobbed: (name: string, g: number) => (g > 0 ? `Robbed by ${name} (−${F(g)})` : `Robbed by ${name}`),
@@ -150,6 +151,8 @@ export const en: Strings = {
     double_shot: (cd: number) => `Double Shot: every ${cd} turns, shoots twice (60% each)`,
     heal: (cd: number) => `Heal: every ${cd} turns, restores 25% HP to the most hurt ally`,
     dark_wave: (cd: number) => `Dark Wave: every ${cd} turns, hits all enemies (80%)`,
+    frenzy: (cd: number) => `Frenzy: every ${cd} turns, claws twice (60% each)`,
+    gaze: (cd: number) => `Abyss Gaze: every ${cd} turns, hits all enemies (50%)`,
   } as Record<string, (cd: number) => string>,
   tut: {
     raidSortie: "Let's start by robbing the guild castle next door!",
@@ -298,7 +301,7 @@ export const en: Strings = {
     '다시 시도해줘': 'Please try again',
   } as Record<string, string>,
   units: {
-    slime: 'Slime', skeleton: 'Skeleton', imp: 'Imp', spider: 'Spider', necro: 'Necromancer', dragon: 'Baby Dragon', golem: 'Stone Golem', banshee: 'Banshee', vampire: 'Vampire', deathknight: 'Death Knight',
+    slime: 'Slime', skeleton: 'Skeleton', imp: 'Imp', spider: 'Spider', necro: 'Necromancer', dragon: 'Baby Dragon', golem: 'Stone Golem', banshee: 'Banshee', vampire: 'Vampire', deathknight: 'Death Knight', werewolf: 'Werewolf', mushroom: 'Plague Shroom', eye: 'Abyss Eye',
     knight: 'Knight', archer: 'Archer', priest: 'Priest', lord: 'Demon Lord',
   } as Record<string, string>,
   fx: { taunt: 'Taunt', web: 'Web', stun: 'Stun', down: 'Down', raise: 'Risen as a wraith', cleared: 'Floor cleared' } as Record<string, string>,

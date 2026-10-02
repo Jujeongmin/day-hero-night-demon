@@ -56,6 +56,7 @@ export const zhHant: Strings = {
   floor: (n: number) => `${n}樓`,
   emptySlot: '空位',
   clearSlot: '移除',
+  placedAt: (n: number) => `${n}層`,
   logTitle: '防守紀錄',
   logDefended: (name: string) => `擋下了${name}的入侵`,
   logRobbed: (name: string, g: number) => (g > 0 ? `被${name}搶了 (−${F(g)})` : `被${name}搶了`),
@@ -150,6 +151,8 @@ export const zhHant: Strings = {
     double_shot: (cd: number) => `連射: 每${cd}回合，射擊兩次 (各60%)`,
     heal: (cd: number) => `治癒: 每${cd}回合，為傷勢最重的隊友恢復25%體力`,
     dark_wave: (cd: number) => `暗黑波動: 每${cd}回合，攻擊全體敵人 (80%)`,
+    frenzy: (cd: number) => `狂亂: 每${cd}回合，抓兩次 (各60%)`,
+    gaze: (cd: number) => `深淵凝視: 每${cd}回合，攻擊全體敵人 (50%)`,
   } as Record<string, (cd: number) => string>,
   tut: {
     raidSortie: '先從隔壁公會的城堡開始搶吧！',
@@ -298,7 +301,7 @@ export const zhHant: Strings = {
     '다시 시도해줘': '請再試一次',
   } as Record<string, string>,
   units: {
-    slime: '史萊姆', skeleton: '骷髏兵', imp: '小惡魔', spider: '蜘蛛', necro: '死靈法師', dragon: '幼龍', golem: '岩石魔像', banshee: '女妖', vampire: '吸血鬼', deathknight: '死亡騎士',
+    slime: '史萊姆', skeleton: '骷髏兵', imp: '小惡魔', spider: '蜘蛛', necro: '死靈法師', dragon: '幼龍', golem: '岩石魔像', banshee: '女妖', vampire: '吸血鬼', deathknight: '死亡騎士', werewolf: '狼人', mushroom: '瘟疫蘑菇', eye: '深淵之眼',
     knight: '騎士', archer: '弓箭手', priest: '聖職者', lord: '魔王',
   } as Record<string, string>,
   fx: { taunt: '嘲諷', web: '蛛網', stun: '暈眩', down: '倒下', raise: '化為亡靈復活', cleared: '突破樓層' } as Record<string, string>,

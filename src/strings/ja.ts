@@ -56,6 +56,7 @@ export const ja: Strings = {
   floor: (n: number) => `${n}階`,
   emptySlot: '空き',
   clearSlot: '外す',
+  placedAt: (n: number) => `${n}階`,
   logTitle: '防衛記録',
   logDefended: (name: string) => `${name}の侵入を防いだ`,
   logRobbed: (name: string, g: number) => (g > 0 ? `${name}に奪われた (−${F(g)})` : `${name}に奪われた`),
@@ -150,6 +151,8 @@ export const ja: Strings = {
     double_shot: (cd: number) => `連射: ${cd}ターンごとに2回撃つ (各60%)`,
     heal: (cd: number) => `治癒: ${cd}ターンごとに一番傷ついた味方の体力を25%回復`,
     dark_wave: (cd: number) => `暗黒波動: ${cd}ターンごとに敵全体を攻撃 (80%)`,
+    frenzy: (cd: number) => `狂乱: ${cd}ターンごとに2回引っかく (各60%)`,
+    gaze: (cd: number) => `深淵の凝視: ${cd}ターンごとに敵全体を攻撃 (50%)`,
   } as Record<string, (cd: number) => string>,
   tut: {
     raidSortie: 'まずは隣町のギルドの城から襲いましょう！',
@@ -298,7 +301,7 @@ export const ja: Strings = {
     '다시 시도해줘': 'もう一度試してください',
   } as Record<string, string>,
   units: {
-    slime: 'スライム', skeleton: '骸骨兵', imp: 'インプ', spider: 'クモ', necro: 'ネクロマンサー', dragon: '子ドラゴン', golem: 'ストーンゴーレム', banshee: 'バンシー', vampire: '吸血鬼', deathknight: 'デスナイト',
+    slime: 'スライム', skeleton: '骸骨兵', imp: 'インプ', spider: 'クモ', necro: 'ネクロマンサー', dragon: '子ドラゴン', golem: 'ストーンゴーレム', banshee: 'バンシー', vampire: '吸血鬼', deathknight: 'デスナイト', werewolf: '狼男', mushroom: '疫病キノコ', eye: '深淵の目',
     knight: '騎士', archer: '弓兵', priest: '聖職者', lord: '魔王',
   } as Record<string, string>,
   fx: { taunt: '挑発', web: '蜘蛛の糸', stun: '気絶', down: 'ダウン', raise: '亡霊として復活', cleared: '階を突破' } as Record<string, string>,

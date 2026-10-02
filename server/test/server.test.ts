@@ -34,8 +34,10 @@ describe('home & economy', () => {
     server.connect({ account: 't5-dave' });
     await server.getHome();
     expect(await fails(server.setFloor(0, ['dragon', null, null], null))).toBe(true);
-    const ok = await server.setFloor(0, ['skeleton', 'skeleton', 'slime'], 'spikes');
-    expect(ok.floor.monsters).toEqual(['skeleton', 'skeleton', 'slime']);
+    // 2026-10-02: 한 몬스터는 한 칸
+    expect(await fails(server.setFloor(0, ['skeleton', 'skeleton', 'slime'], null))).toBe(true);
+    const ok = await server.setFloor(0, ['skeleton', 'werewolf', 'slime'], 'spikes');
+    expect(ok.floor.monsters).toEqual(['skeleton', 'werewolf', 'slime']);
   });
 
   test('recruit without enough soul fails', async (server) => {

@@ -56,6 +56,7 @@ export const zhHans: Strings = {
   floor: (n: number) => `${n}层`,
   emptySlot: '空位',
   clearSlot: '移除',
+  placedAt: (n: number) => `${n}层`,
   logTitle: '防守记录',
   logDefended: (name: string) => `挡住了${name}的入侵`,
   logRobbed: (name: string, g: number) => (g > 0 ? `被${name}抢了 (−${F(g)})` : `被${name}抢了`),
@@ -150,6 +151,8 @@ export const zhHans: Strings = {
     double_shot: (cd: number) => `连射: 每${cd}回合，射击两次 (各60%)`,
     heal: (cd: number) => `治愈: 每${cd}回合，为伤势最重的队友恢复25%体力`,
     dark_wave: (cd: number) => `暗黑波动: 每${cd}回合，攻击全体敌人 (80%)`,
+    frenzy: (cd: number) => `狂乱: 每${cd}回合，抓两次 (各60%)`,
+    gaze: (cd: number) => `深渊凝视: 每${cd}回合，攻击全体敌人 (50%)`,
   } as Record<string, (cd: number) => string>,
   tut: {
     raidSortie: '先从隔壁公会的城堡开始抢吧！',
@@ -298,7 +301,7 @@ export const zhHans: Strings = {
     '다시 시도해줘': '请再试一次',
   } as Record<string, string>,
   units: {
-    slime: '史莱姆', skeleton: '骷髅兵', imp: '小恶魔', spider: '蜘蛛', necro: '死灵法师', dragon: '幼龙', golem: '岩石魔像', banshee: '女妖', vampire: '吸血鬼', deathknight: '死亡骑士',
+    slime: '史莱姆', skeleton: '骷髅兵', imp: '小恶魔', spider: '蜘蛛', necro: '死灵法师', dragon: '幼龙', golem: '岩石魔像', banshee: '女妖', vampire: '吸血鬼', deathknight: '死亡骑士', werewolf: '狼人', mushroom: '瘟疫蘑菇', eye: '深渊之眼',
     knight: '骑士', archer: '弓箭手', priest: '圣职者', lord: '魔王',
   } as Record<string, string>,
   fx: { taunt: '嘲讽', web: '蛛网', stun: '眩晕', down: '倒下', raise: '化为亡灵复活', cleared: '突破楼层' } as Record<string, string>,

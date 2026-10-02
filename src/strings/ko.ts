@@ -56,6 +56,7 @@ export const ko = {
   floor: (n: number) => `${n}층`,
   emptySlot: '빈 칸',
   clearSlot: '비우기',
+  placedAt: (n: number) => `${n}층`,
   logTitle: '방어 기록',
   logDefended: (name: string) => `${name}의 침입을 막았다`,
   logRobbed: (name: string, g: number) => (g > 0 ? `${name}에게 털렸다 (−${F(g)})` : `${name}에게 털렸다`),
@@ -152,6 +153,8 @@ export const ko = {
     double_shot: (cd: number) => `연사: ${cd}턴마다 두 번 쏜다(60%씩)`,
     heal: (cd: number) => `치유: ${cd}턴마다 가장 다친 아군을 체력 25% 회복`,
     dark_wave: (cd: number) => `암흑 파동: ${cd}턴마다 적 전체를 공격(80%)`,
+    frenzy: (cd: number) => `광란: ${cd}턴마다 두 번 할퀸다(60%씩)`,
+    gaze: (cd: number) => `심연의 응시: ${cd}턴마다 적 전체를 공격(50%)`,
   } as Record<string, (cd: number) => string>,
   tut: {
     raidSortie: '우선 옆 동네 길드 성부터 털어 봅시다!',
@@ -303,7 +306,7 @@ export const ko = {
   } as Record<string, string>,
   /** 유닛 이름(서버 catalog의 한국어 name 대신 id로 찾는다) */
   units: {
-    slime: '슬라임', skeleton: '해골병', imp: '임프', spider: '거미', necro: '네크로맨서', dragon: '새끼 용', golem: '돌 골렘', banshee: '밴시', vampire: '흡혈귀', deathknight: '데스 나이트',
+    slime: '슬라임', skeleton: '해골병', imp: '임프', spider: '거미', necro: '네크로맨서', dragon: '새끼 용', golem: '돌 골렘', banshee: '밴시', vampire: '흡혈귀', deathknight: '데스 나이트', werewolf: '늑대인간', mushroom: '역병 버섯', eye: '심연의 눈',
     knight: '기사', archer: '궁수', priest: '성직자', lord: '마왕',
   } as Record<string, string>,
   /** 전투 화면에 뜨는 글자 */

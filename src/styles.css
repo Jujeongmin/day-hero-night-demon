@@ -680,3 +680,7 @@ span.up-pt { cursor: default; }
 .quest-txt b { font-weight: 400; }
 .quest-txt small { color: var(--muted); font-size: 12px; }
 .quest-bt { flex: none; min-width: 58px; }
+/* 한 몬스터는 성 전체에서 한 칸(2026-10-02): 이미 놓인 몬스터는 몇 층에 있는지 작은 표, 고르면 이 칸으로 옮긴다 */
+.pick { position: relative; }
+.pick.placed { filter: brightness(.8); }
+.pick-at { position: absolute; top: -6px; right: -4px; font-style: normal; font-size: 10px; line-height: 1; padding: 1px 3px; color: #1c1206; background: var(--gold); border: 1px solid #000; }

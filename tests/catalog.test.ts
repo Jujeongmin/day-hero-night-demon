@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { BALANCE, HEROES, HERO_ORDER, MONSTERS, scaleStats } from '../server/src/catalog';
 
 describe('catalog', () => {
-  it('has 10 monsters and 3 heroes (4 added 2026-10-01)', () => {
-    expect(Object.keys(MONSTERS)).toHaveLength(10);
+  it('has 13 monsters and 3 heroes (4 added 2026-10-01, 3 free ones 2026-10-02)', () => {
+    expect(Object.keys(MONSTERS)).toHaveLength(13);
     expect(HERO_ORDER).toEqual(['knight', 'archer', 'priest']);
     expect(HEROES.knight.row).toBe('front');
   });

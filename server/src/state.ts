@@ -234,8 +234,18 @@ export function withDefaults(s: UserState): UserState {
   for (const m of Object.values(MONSTERS)) {
     if ('castleLevel' in m.unlock && m.unlock.castleLevel <= s.castle.level && !roster[m.id]) roster = { ...roster, [m.id]: { level: 1 } };
   }
+  // 2026-10-02: 한 몬스터는 성 전체에서 한 칸. 예전에 여러 칸에 놓았으면 처음 자리만 남긴다
+  const seen = new Set<MonsterId>();
+  const floors = s.castle.floors.map((f) => ({
+    monsters: f.monsters.map((m) => {
+      if (!m || seen.has(m)) return null;
+      seen.add(m);
+      return m;
+    }),
+  }));
   return {
     ...s, onboarding, profile, roster,
+    castle: { ...s.castle, floors },
     ads: s.ads ?? { day: '', counts: {} },
     perks: s.perks ?? { speed3: false, premium: false },
     season: { ...s.season, claimed: s.season.claimed ?? { free: 0, pass: 0 } },

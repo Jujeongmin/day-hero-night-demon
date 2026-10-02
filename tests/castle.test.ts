@@ -34,7 +34,9 @@ describe('castle rules', () => {
   });
 
   it('validateFloor accepts owned units and rejects everything else', () => {
-    expect(validateFloor(fresh(), 0, ['skeleton', 'skeleton', null])).toEqual({ monsters: ['skeleton', 'skeleton', null] });
+    expect(validateFloor(fresh(), 0, ['skeleton', 'slime', null])).toEqual({ monsters: ['skeleton', 'slime', null] });
+    // 2026-10-02: 한 몬스터는 한 칸
+    expect(() => validateFloor(fresh(), 0, ['skeleton', 'skeleton', null])).toThrow('DUP_MONSTER');
     expect(() => validateFloor(fresh(), 1, [null, null, null])).toThrow();
     expect(() => validateFloor(fresh(), 0, ['dragon', null, null])).toThrow();
     expect(() => validateFloor(fresh(), 0, ['slime', null])).toThrow();
