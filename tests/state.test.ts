@@ -76,7 +76,7 @@ describe('onboarding', () => {
 });
 
 describe('resetState', () => {
-  it('wipes progress, keeps purchases and nickname, and replays the click tutorial', () => {
+  it('wipes everything but the nickname and anti-farming records, and replays the click tutorial (2026-10-02)', () => {
     const s0 = defaultState('0xaaaa1111', 1, 's1');
     const s = {
       ...s0,
@@ -95,10 +95,12 @@ describe('resetState', () => {
     const r = resetState(s, 5_000);
     expect(r.castle).toEqual(s0.castle);
     expect(r.heroes).toEqual(s0.heroes);
-    expect(r.roster).toEqual({ slime: { level: 1 }, skeleton: { level: 1 }, necro: { level: 1 }, dragon: { level: 1 } });
-    expect(r.idle).toEqual({ lastClaimAt: 5_000, lastRaidAt: 5_000, mult: 2 });
-    expect(r.credits).toEqual({ revive: 2, revenge: 3 }); // 옛 대역 횟수는 버린다
-    expect(r.season).toEqual({ id: 's1', bracketId: null, honor: 0, pass: true, rewardedFor: null, claimed: { free: 0, pass: 0 } });
+    expect(r.roster).toEqual(s0.roster);
+    expect(r.idle).toEqual({ lastClaimAt: 5_000, lastRaidAt: 5_000, mult: 1 });
+    expect(r.credits).toEqual({ revive: 0, revenge: 0 });
+    expect(r.season).toEqual({ id: 's1', bracketId: null, honor: 0, pass: false, rewardedFor: null, claimed: { free: 0, pass: 0 } });
+    expect(r.perks).toEqual({ speed3: false, premium: false });
+    expect(r.vip).toEqual({ spent: 0 });
     expect(r.profile).toEqual(s.profile);
     expect(r.processedPurchases).toEqual(['p1', 'p2']);
     expect(r.onboarding).toEqual({ at: 'raid_sortie', nicknameSet: true });

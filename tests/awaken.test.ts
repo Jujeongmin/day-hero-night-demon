@@ -71,9 +71,14 @@ describe('awakening (2026-10-02: level 50 then awaken, level back to 1, stars up
     expect(held(starred, 20)).toBeGreaterThan(held(plain, 0));
   });
 
-  it('reset keeps the stars', () => {
-    const s = { ...defaultState('a', 0, 's1'), stars: { slime: 4 } };
-    expect(resetState(s, 1).stars).toEqual({ slime: 4 });
+  it('reset wipes the stars too (2026-10-02 full reset); siege-best soul is not paid twice', () => {
+    const s0 = defaultState('a', 0, 's1');
+    const s = { ...s0, stars: { slime: 4 }, siege: { ...s0.siege, best: 12 } };
+    const r = resetState(s, 1);
+    expect(r.stars).toEqual({});
+    expect(r.siege.best).toBe(1);
+    expect(r.siege.rewardedBest).toBe(12);
+    expect(resetState({ ...r, siege: { ...r.siege, best: 5 } }, 2).siege.rewardedBest).toBe(12);
   });
 });
 

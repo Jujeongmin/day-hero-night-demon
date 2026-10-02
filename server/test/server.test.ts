@@ -279,7 +279,7 @@ describe('onboarding', () => {
 });
 
 describe('reset', () => {
-  test('reset wants the exact confirm word, refuses mid-raid, and keeps purchases', async (server) => {
+  test('reset wants the exact confirm word, refuses mid-raid, and wipes everything', async (server) => {
     server.connect({ account: 't21-reset' });
     await server.getHome();
     await server.upgrade('monster', 'slime');
@@ -381,10 +381,11 @@ describe('awakening & soul packs (2026-10-01)', () => {
     expect(home.soul).toBe(90);
     expect(home.state.stars).toEqual({ lord: 2 });
     expect(home.power).toBeGreaterThan(before);
+    // 2026-10-02: 초기화는 전부(별·영혼석까지)
     await server.resetProgress('초기화');
     home = await server.getHome();
-    expect(home.state.stars).toEqual({ lord: 2 });
-    expect(home.soul).toBe(90);
+    expect(home.state.stars).toEqual({});
+    expect(home.soul).toBe(0);
   });
 
   test('home carries a news list and the league a hall of fame', async (server) => {
@@ -442,7 +443,9 @@ describe('summon (2026-10-02)', () => {
     expect(home.soul).toBe(600 - 30 - 300 + one.soul + ten.soul);
     expect(home.state.summon.pulls).toBe(12);
     await server.resetProgress('초기화');
-    expect((await server.getHome()).state.summon.pulls).toBe(12);
+    const after = await server.getHome();
+    expect(after.state.summon?.pulls ?? 0).toBe(0);
+    expect(after.soul).toBe(0);
   });
 
   test('gear can only be worn when owned', async (server) => {

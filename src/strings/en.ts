@@ -150,7 +150,7 @@ export const en: Strings = {
     renameLeft: (n: number) => `${n} free change left`,
     rename: 'Change',
     reset: 'Reset data',
-    resetWarn: 'Your castle, levels, gold, log and this season’s honor go back to the start. Soulstones, awakening stars, paid monsters, 2× idle, the season pass, leftover items, your name and your best siege record stay. You will play the tutorial again. This cannot be undone.',
+    resetWarn: 'Everything goes back to the start: castle, levels, stars, gold, soulstones, looks, VIP, purchased items (3x speed, premium, season pass and more), records and siege best. Purchased items and currency are lost and cannot be restored or refunded. Only your nickname stays, and the tutorial starts again.',
     resetType: "Type 'RESET' to confirm",
     resetWord: 'RESET',
     resetGo: 'Reset',

@@ -134,7 +134,8 @@ export interface UserState {
   skins: string[];
   lordSkin: 'base' | LordSkin | null;
   /** 스테이지형 공성: 지금 단계, 마지막으로 처리한 파도 시각, 받지 않은 공성 골드. lastWon = 마지막 파도를 막았는가(없으면 막은 것으로 본다) */
-  siege: { stage: number; lastWaveAt: number; pendingGold: number; best: number; lastWon?: boolean };
+  /** rewardedBest = 공성 기록 영혼석을 이미 받은 단계(초기화 뒤 다시 받지 못하게, 보이지 않음) */
+  siege: { stage: number; lastWaveAt: number; pendingGold: number; best: number; lastWon?: boolean; rewardedBest?: number };
   /** VIP: 누적 결제 VX(결제 웹훅이 서버 가격표로 더한다). 등급은 vip.ts vipLevel */
   vip: { spent: number };
   /** 각성 별(몬스터·마왕). 영혼석으로 산다. 초기화해도 남는다 */
@@ -244,42 +245,32 @@ export function withDefaults(s: UserState): UserState {
   };
 }
 
-/** 설정의 데이터 초기화. 진행만 지우고 결제로 얻은 것·닉네임·중복 지급 방지 기록은 남긴다. */
+/**
+ * 설정의 데이터 초기화(2026-10-02 사용자: "일반 게임처럼 전부"). 결제한 상품·재화·VIP·외형·별까지 모두 처음으로.
+ * 남기는 것은 보이지 않는 악용 방지 기록뿐: 닉네임, 결제 중복 지급 방지, 오늘 받은 하루 보상 횟수,
+ * 이미 받은 시즌 보상·공성 기록 영혼석(rewardedBest). 영혼석·골드 잔액은 server.ts resetProgress가 지운다
+ */
 export function resetState(s: UserState, now: number): UserState {
   const fresh = defaultState('', now, s.season.id);
-  const paid: UserState['roster'] = {};
-  if (s.roster.necro) paid.necro = { level: 1 };
-  if (s.roster.dragon) paid.dragon = { level: 1 };
   return {
     ...fresh,
     profile: s.profile,
-    roster: { ...fresh.roster, ...paid },
-    idle: { ...fresh.idle, mult: s.idle.mult },
-    credits: { revive: s.credits.revive, revenge: s.credits.revenge },
     raidLog: [],
-    // 같은 날 첫 승리 영혼석·무료 복수 횟수를 초기화로 다시 받지 못하게 그대로 둔다
     firstWinDay: s.firstWinDay,
     revengeUsed: s.revengeUsed,
-    season: { ...fresh.season, id: s.season.id, pass: s.season.pass, rewardedFor: s.season.rewardedFor },
+    season: { ...fresh.season, id: s.season.id, rewardedFor: s.season.rewardedFor },
     // 초기화하면 클릭 튜토리얼을 처음부터 다시 보여 준다(컷신·닉네임은 건너뜀, 2026-09-29 사용자 요청)
     introDone: false,
     starterOffered: s.starterOffered,
     processedPurchases: s.processedPurchases,
-    // VIP 누적은 결제라 초기화해도 남긴다
-    vip: s.vip,
-    // 각성 별은 영혼석(결제 포함)으로 산 것이라 남긴다
-    stars: s.stars ?? {},
-    // 소환 천장·장비 외형도 영혼석으로 얻은 것이라 남긴다
-    summon: s.summon,
-    gear: s.gear,
     onboarding: { at: 'raid_sortie', nicknameSet: s.onboarding.nicknameSet },
-    // 오늘 광고 횟수는 초기화로 다시 받지 못하게, 영구 상품은 결제라 남긴다
     ads: s.ads,
-    perks: s.perks,
-    skins: s.skins,
-    lordSkin: s.lordSkin,
-    // 최고 단계는 순위·단계 보상 기준이라 초기화해도 남긴다(보상을 다시 받지 못하게)
-    siege: { ...fresh.siege, best: s.siege.best },
+    daily: s.daily,
+    siege: { ...fresh.siege, rewardedBest: Math.max(s.siege.best, s.siege.rewardedBest ?? 0) },
+    // 저장은 합치기라서 기본 상태에 없는 칸도 빈 값으로 적어야 옛 값이 지워진다
+    summon: { pulls: 0, sinceHigh: 0 },
+    gear: { owned: [], worn: {} },
+    title: null,
   };
 }
 

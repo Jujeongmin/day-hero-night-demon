@@ -374,8 +374,9 @@ async function addHonor(account: string, s: UserState, amount: number, now: numb
 /** 새 최고 단계면 처음 넘은 10단계 보상(영혼석)을 주고 순위표를 고친다. 락 안에서, siege 저장 뒤에 부른다. */
 async function recordSiegeBest(me: string, s: UserState, oldBest: number): Promise<number> {
   if (s.siege.best <= oldBest) return 0;
-  // 10단계 보상 + 새로 올린 최고 단계마다 siegeBestSoul (2026-10-01)
-  const soul = milestoneSoul(oldBest, s.siege.best) + (s.siege.best - oldBest) * BALANCE.siegeBestSoul;
+  // 10단계 보상 + 새로 올린 최고 단계마다 siegeBestSoul (2026-10-01). 초기화 전에 이미 받은 단계까지는 다시 주지 않는다
+  const paid = Math.max(oldBest, s.siege.rewardedBest ?? 0);
+  const soul = s.siege.best > paid ? milestoneSoul(paid, s.siege.best) + (s.siege.best - paid) * BALANCE.siegeBestSoul : 0;
   if (soul) await $asset.mint('soul', soul);
   await $global.addCollectionItem(SIEGE_BEST, { account: me, nickname: s.profile.nickname, best: s.siege.best, vip: vipOf(s) }, { id: me });
   return soul;
@@ -533,8 +534,14 @@ export class Server {
       const next = resetState(s, now);
       const b = await balances(me);
       if (b.gold > 0) await $asset.burn('gold', b.gold);
-      // 영혼석은 2026-10-01부터 결제(영혼석 묶음)로도 사서 초기화해도 남긴다
+      // 2026-10-02 사용자: 전부 초기화(결제로 산 영혼석도). 경고 문구에 복구·환불 불가를 적는다
+      if (b.soul > 0) await $asset.burn('soul', b.soul);
       await $asset.mint('gold', BALANCE.startGold);
+      try {
+        await $global.deleteCollectionItem(SIEGE_BEST, me);
+      } catch {
+        // 공성 순위 항목이 없으면 지울 것도 없다
+      }
       if (s.season.bracketId) {
         try {
           await $global.deleteCollectionItem(leagueCollection(s.season.id), me);
