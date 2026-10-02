@@ -156,7 +156,7 @@ async function buildSnapshot(target: string, now: number): Promise<CastleSnapsho
     owner: target,
     nickname: d.profile.nickname,
     castleLevel: d.castle.level,
-    floors: resolveFloors(d),
+    floors: resolveFloors(withDefaults(d)),
     throneEmpty: false,
     shadow: false,
     ...(lordStarsOf(withDefaults(d)) > 0 ? { lordStars: lordStarsOf(withDefaults(d)) } : {}),

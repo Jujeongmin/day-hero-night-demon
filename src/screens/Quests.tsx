@@ -75,18 +75,19 @@ export function QuestCard(props: { api: Api; home: HomeData; onGo: (go: QuestGo)
       aria-label={guideText(step)}
     >
       <img src="ui/quest.png" alt="" draggable={false} />
-      <small>{T.quest.next}</small>
-      <b>{guideText(step)}</b>
-      <span className="quest-bar"><i style={{ width: `${(value / step.target) * 100}%` }} /></span>
-      <span className="quest-rw"><img src="icons/soul.png" alt="" draggable={false} />{step.soul}{done && <em>{T.quest.claim}</em>}</span>
+      <span className="quest-card-txt">
+        <small>{T.quest.next}</small>
+        <b>{guideText(step)}</b>
+        <span className="quest-bar"><i style={{ width: `${(value / step.target) * 100}%` }} /></span>
+        <span className="quest-rw"><img src="icons/soul.png" alt="" draggable={false} />{step.soul}{done ? <em>{T.quest.claim}</em> : step.target > 1 && <span className="quest-n">{value}/{step.target}</span>}</span>
+      </span>
     </button>
   );
 }
 
-/** 의뢰 창(가운데): 성장 | 일일 */
+/** 의뢰 창(가운데): 일일 의뢰만(2026-10-02 사용자). 성장 의뢰는 출정 옆 카드로만 */
 export default function Quests(props: { api: Api; home: HomeData; onGo: (go: QuestGo) => void; onRefresh: () => Promise<void>; onError: (m: string) => void }) {
   const { api, home } = props;
-  const [tab, setTab] = useState<'guide' | 'daily'>('daily');
   const { busy, run } = useClaim(props.onRefresh, props.onError);
   const q = questsOf(home.state, Date.now());
   const best = home.state.siege?.best ?? 1;
@@ -112,27 +113,10 @@ export default function Quests(props: { api: Api; home: HomeData; onGo: (go: Que
     );
   };
 
-  const step = guideStep(q.guide);
-  const nextStep = guideStep(q.guide + 1);
-  const allDone = DAILY_IDS.every((d) => dailyDone(q, d));
   return (
     <>
-      <div className="row">
-        <button className={`btn small ${tab === 'guide' ? 'on' : ''}`} onClick={() => setTab('guide')}>{T.quest.tabs.guide}</button>
-        <button className={`btn small ${tab === 'daily' ? 'on' : ''}`} onClick={() => setTab('daily')}>{T.quest.tabs.daily}</button>
-      </div>
-      {tab === 'guide' ? (
-        <>
-          {line('g', guideText(step), guideValue(home.state, q, step), step.target, step.soul, scaledGold(step.gold, best), false, () => api.claimGuide(), step.kind === 'siege' ? null : guideGo(step))}
-          <small className="muted">{T.quest.after}: {guideText(nextStep)}</small>
-          {step.kind === 'siege' && <small className="muted">{T.quest.siegeWait}</small>}
-        </>
-      ) : (
-        <>
-          {DAILY_IDS.map((d) => line(d, T.quest.daily[d](dailyTarget(d)), q.daily.n[d] ?? 0, dailyTarget(d), BALANCE.quests.daily.soulEach, 0, q.daily.claimed.includes(d), () => api.claimDaily(d), DAILY_GO[d]))}
-          {line('all', T.quest.all, DAILY_IDS.filter((d) => dailyDone(q, d)).length, DAILY_IDS.length, BALANCE.quests.daily.soulAll, 0, q.daily.claimed.includes('all'), () => api.claimDaily('all'), allDone ? null : null)}
-        </>
-      )}
+      {DAILY_IDS.map((d) => line(d, T.quest.daily[d](dailyTarget(d)), q.daily.n[d] ?? 0, dailyTarget(d), BALANCE.quests.daily.soulEach, 0, q.daily.claimed.includes(d), () => api.claimDaily(d), DAILY_GO[d]))}
+      {line('all', T.quest.all, DAILY_IDS.filter((d) => dailyDone(q, d)).length, DAILY_IDS.length, BALANCE.quests.daily.soulAll, 0, q.daily.claimed.includes('all'), () => api.claimDaily('all'), null)}
     </>
   );
 }

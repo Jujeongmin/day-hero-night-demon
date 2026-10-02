@@ -164,6 +164,7 @@ export default function CastleScene(props: {
   const passReady = passPlan.gold > 0 || passPlan.soul > 0 || passPlan.skins.length > 0;
   // 기록 배지: 지금 복수할 수 있는 침입(실제 플레이어가 이겼고, 24시간 안, 아직 복수 안 함)
   const questBadge = claimableQuests(s, Date.now());
+  const showQuest = !s.run && (s.onboarding?.at ?? 'done') === 'done';
   const revengeable = s.raidLog.filter((e) => !e.npc && e.attackerWon && !e.revenged && Date.now() - e.at < BALANCE.revengeWindowMs).length;
   // 받을 칸 수(무료 줄 + 패스 줄). 빨간 알림 배지에 숫자로 (2026-10-02 사용자)
   const passCount = (passPlan.claimed.free - s.season.claimed.free) + (passPlan.claimed.pass - s.season.claimed.pass);
@@ -420,9 +421,9 @@ export default function CastleScene(props: {
         </div>
       )}
 
-      {!panelOpen && <div className="scene-foot">
-        {/* 다음 할 일 카드(2026-10-02 승인 A): 출정 왼쪽 아래 빈 언덕. 튜토리얼이 끝난 뒤에만 */}
-        {!s.run && (s.onboarding?.at ?? 'done') === 'done' && <QuestCard api={api} home={home} onGo={onQuestGo} onRefresh={onRefresh} onError={onError} />}
+      {!panelOpen && <div className={`scene-foot ${showQuest ? 'with-quest' : ''}`}>
+        {/* 다음 할 일 카드(2026-10-02 승인 A, 사용자: 출정을 줄이고 카드를 넓게). 튜토리얼이 끝난 뒤에만 */}
+        {showQuest && <QuestCard api={api} home={home} onGo={onQuestGo} onRefresh={onRefresh} onError={onError} />}
         {s.run ? (
           <button className="btn big" onClick={onRaid}>{T.resumeBtn}</button>
         ) : (

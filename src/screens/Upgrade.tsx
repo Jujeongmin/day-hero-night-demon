@@ -114,7 +114,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
       );
     } else if (plan && manyKind) {
       button = (
-        <button className="btn small up-bt" disabled={busy || plan.times === 0} onClick={() => act(() => api.upgradeMany(manyKind, id, manyCount))}>
+        <button className="btn small up-bt" data-tut={first ? 'upgrade-first' : undefined} disabled={busy || plan.times === 0} onClick={() => act(() => api.upgradeMany(manyKind, id, manyCount))}>
           {gold(plan.times === 0 ? cost : plan.cost)}{plan.times > 0 && <em>+{plan.times}</em>}
         </button>
       );

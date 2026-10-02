@@ -684,3 +684,13 @@ span.up-pt { cursor: default; }
 .pick { position: relative; }
 .pick.placed { filter: brightness(.8); }
 .pick-at { position: absolute; top: -6px; right: -4px; font-style: normal; font-size: 10px; line-height: 1; padding: 1px 3px; color: #1c1206; background: var(--gold); border: 1px solid #000; }
+/* 2026-10-02 사용자: 출정을 줄이고 다음 할 일 카드를 넓게(가로: 아이콘 + 글). 카드가 있을 때만 출정 버튼 왼쪽에 나란히 */
+.scene-foot.with-quest { justify-content: space-between; align-items: flex-end; gap: 6px; padding-inline: 6px; }
+.scene-foot.with-quest .sortie-wrap { flex: 1; min-width: 0; }
+.scene-foot.with-quest .quest-card { position: static; flex: 0 0 42%; max-width: 190px; width: auto; display: flex; align-items: center; gap: 6px; padding: 4px 6px; text-align: left; justify-items: initial; }
+.quest-card .quest-card-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.scene-foot.with-quest .quest-card b { font-size: 13px; line-height: 1.15; word-break: keep-all; overflow-wrap: anywhere; }
+.scene-foot.with-quest .quest-card small { font-size: 11px; }
+.quest-card .quest-n { color: var(--muted); margin-left: auto; }
+.scene-foot.with-quest .quest-card .quest-rw { width: 100%; }
+.scene-foot.with-quest .quest-card > img { width: 24px; flex: none; }
