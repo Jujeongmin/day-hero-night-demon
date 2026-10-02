@@ -136,3 +136,13 @@
 ## 보상 표시 · 출정 입장권 (2026-10-01 승인)
 - 보상(구매·광고·패스·공성 영혼석·방치 수입)은 알림 상자 대신, 오른 재화 필 아래에서 "+N"이 떠올랐다 사라진다(골드 금색·영혼석 보라·전투력 붉은색, 검은 테두리 글자). 필은 숫자가 올라가며 세어지고 번쩍인다(`src/render/CurrencyPill.tsx`). 오류·전체 알림·새 외형·부활/복수권은 상자 그대로.
 - 출정 버튼 오른쪽 위 입장권 필 `public/ui/ticket.png` = `art/ui/ticket/ticket_a.png`(양피지 표 + 붉은 해골 봉인, pixflux 32px seed 1901; 후보 b 철 토큰 1902). 0장이면 출정 버튼이 어두워지고 멈추며, 필이 "0/10 + 골드값"으로 바뀌어 누르면 골드로 한 장 산다.
+
+## 소환 그림 (2026-10-02 승인)
+- 장비 외형 12종(처음 6종 × 2): PixelLab `create_character_state`(해골병·임프 v2·네크로맨서) / `create_object_state`(슬라임·거미·새끼 용)로 같은 몬스터에 장비만 더함. 시트 `public/sprites/<몬스터>_<장비>_{idle,attack,death}.png`, 원본 정지 그림 `art/gear/`. 후보 https://claude.ai/artifact/Y9di8vwfnjjUuGcNWgDzqb
+  - 애니는 원래 몬스터와 같은 설명문(캐릭터: breathing-idle·v3 공격·falling-back-death, 오브젝트: v3 idle 4 · attack/death 6).
+  - 템플릿 애니가 가끔 불투명 회색 바탕을 붙인다 → `node scripts/key-bg.mjs <unit_anim> <r,g,b>`로 지움(공포의 갑옷 대기, 임프 왕 공격). 공포의 갑옷 쓰러짐은 템플릿이 갑옷을 벗겨서 v3로 다시 뽑음(첫 판 `art/frames/skeleton_dread_death_v1`).
+- 전설 마왕 「타락 대악마」(`lord_summon1_*`): `create_1_direction_object` 96px 4장 중 3번(푸른 불꽃 날개 넷·검은 가시 후광), object `079f8439-ed90-424e-85ee-ae7896b8a405`. 첫 대기는 날개가 한 프레임 짙은 파랑으로 바뀌어 `idle2`로 다시(첫 판 `art/frames/lord_summon1_idle_v1`). 후보 `art/lord/summon/`.
+- 소환 제단 `public/ui/summon_altar.png` = `art/ui/summon/altar_b.png`(pixflux 240×120 seed 2002, 뿔 해골 제단 + 보라 수정), 화면에서 3배(720×360)로 가운데 아래. 입구 아이콘 `public/ui/summon.png` = `icon_a.png`(seed 2011) 잘라낸 것. 후보 https://claude.ai/artifact/PptL7UMqr79nocGpBPifPr
+- 방치 보상 보물상자 `public/ui/idle.png` = `art/ui/idle/idle_a.png`(seed 2101). 후보 https://claude.ai/artifact/ByPf8EVcYCtUGRtTMkrad8
+- 각성 별 동·은·금 `public/ui/star_{bronze,silver,gold}.png`(pixflux 32px seed 2201~2203, 내용 영역만).
+- 로딩 키아트 `public/loading/key.png`: `key_b`의 옛 마왕을 달 색(252,39,99)으로 지우고(`art/loading/key_erased.png`) 게임 속 마왕 대기 첫 프레임을 발 y=126에 합성(`key_ourlord.png`).
