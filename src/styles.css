@@ -1,4 +1,5 @@
-/* 검은 쇠·뼈·붉은 보석 테마 (UI 그림은 PixelLab, public/ui/*.png). 글꼴 Do Hyeon */
+/* 검은 쇠·뼈·붉은 보석 테마 (UI 그림은 PixelLab, public/ui/*.png). 한국어 글꼴 갈무리11(2026-10-02 승인 A, OFL public/fonts/OFL.txt), 영어 Do Hyeon */
+@font-face { font-family: 'Galmuri11'; src: url(/fonts/Galmuri11.woff2) format('woff2'); font-display: swap; }
 /* 2026-09-29: 에디터 미리보기가 예전 CSS를 들고 있어 파일을 한 번 다시 저장함(상단 HUD·마왕 체력바 규칙 포함) */
 :root {
   color-scheme: dark;
@@ -10,7 +11,7 @@
   --gold: #ffcf4d;
   --ruby: #ff4a5e;
   --hp: #3cf07a;
-  --font: 'Do Hyeon', 'Malgun Gothic', sans-serif;
+  --font: 'Galmuri11', 'Do Hyeon', 'Malgun Gothic', sans-serif;
   /* frame_sq.png 가운데 색(스포이드). 창 안쪽을 이 한 색으로 칠한다 — 그림 가운데를 늘리면 오른쪽에 어두운 띠가 생긴다 */
   --panel: rgb(81, 20, 35);
 }
@@ -330,7 +331,8 @@ canvas.battle {
 /* 편성 중인 칸: 칸 전체를 금빛으로 물들인다 (2026-09-29 승인 A안) */
 .btn.slot.on { filter: sepia(1) saturate(2.6) hue-rotate(-12deg) brightness(1.15); }
 
-/* 언어 (2026-09-30). 글꼴은 <html lang>으로 갈린다: 일본어는 도트 글꼴 DotGothic16, 중국어는 Noto Sans(번체 TC·간체 SC) 700 한 굵기만 받는다. 라틴·한글은 Do Hyeon */
+/* 언어 (2026-09-30). 글꼴은 <html lang>으로 갈린다: 일본어는 도트 글꼴 DotGothic16, 중국어는 Noto Sans(번체 TC·간체 SC) 700 한 굵기만 받는다. 한국어는 갈무리11, 영어는 Do Hyeon */
+:root:lang(en) { --font: 'Do Hyeon', 'Malgun Gothic', sans-serif; }
 :root:lang(ja) { --font: 'DotGothic16', 'Do Hyeon', sans-serif; }
 :root:lang(zh-Hant) { --font: 'Do Hyeon', 'Noto Sans TC', sans-serif; }
 :root:lang(zh-Hans) { --font: 'Do Hyeon', 'Noto Sans SC', sans-serif; }

@@ -54,3 +54,7 @@
 - 패스 창(승인 A): 사기 전이면 맨 위에 "패스 전용" 판 + 흑룡(1.4배, 움직임) + "10단계 · 영구 소장", 아래 "가지고만 있어도 마왕 능력치 +10%", 패스 줄 보상 합(골드·영혼석), 큰 구매 버튼 위 붉은 띠 "영혼석 구매보다 +300%". 그 아래 단계 막대와 보상 트랙. 사면 미리보기는 숨는다.
 - 후보 https://claude.ai/artifact/DE3Z63FzjhvhoD5kDSzTHr
 - 진행 막대(시즌 패스 단계·공략 층 진행·로딩·VIP·음량)는 모두 검은 테두리 직사각형 + 채움색. UI 키트 `bar.png`는 가장자리가 흐려 보여 막대에는 쓰지 않는다(버튼·탭에만, 2026-10-02 사용자).
+
+## 글꼴 (2026-10-02 승인 A)
+- 한국어 글씨는 갈무리11(`public/fonts/Galmuri11.woff2`, Lee Minseo, SIL OFL 1.1 — 라이선스 `public/fonts/OFL.txt`). Do Hyeon은 굵어서 작은 글씨에서 "함락"이 "함탁"처럼 뭉개졌다. 영어는 Do Hyeon, 일본어 DotGothic16, 중국어 Noto Sans 그대로. 전투 캔버스 글씨도 CSS `--font`를 따른다(`battleCanvas.tsx` `uiFont`).
+- 후보 https://claude.ai/artifact/L4xMRvXpCi66CZWcJ75KiW

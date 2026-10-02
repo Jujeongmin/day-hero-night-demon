@@ -13,6 +13,14 @@ const starImages: Record<StarTier, HTMLImageElement> = (() => {
 import SPRITES from './sprites.json';
 import { buildFrames, preHp, type Fx } from './timeline';
 
+/** 캔버스 글씨도 화면 글꼴(언어별 CSS --font)을 따른다. 언어가 바뀔 때만 다시 읽는다 */
+let fontCache: { lang: string; font: string } | null = null;
+function uiFont(): string {
+  const lang = document.documentElement.lang;
+  if (!fontCache || fontCache.lang !== lang) fontCache = { lang, font: getComputedStyle(document.documentElement).getPropertyValue('--font').trim() || 'sans-serif' };
+  return fontCache.font;
+}
+
 const W = 240;
 const H = 200;
 const UNIT_SCALE = 0.8;
@@ -126,7 +134,7 @@ function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: numbe
     ctx.fillRect(0, 0, W, H);
   }
   const pos = positions(b);
-  ctx.font = '10px "Do Hyeon", sans-serif';
+  ctx.font = `10px ${uiFont()}`;
   ctx.textAlign = 'center';
   const idleFrame = Math.floor(now / IDLE_MS);
   const order = [...b.fighters].sort((a, c) => pos[a.key].y - pos[c.key].y);
@@ -166,7 +174,7 @@ function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: numbe
     }
   }
   if (v.fx && v.fx.key === null && v.fx.text) {
-    ctx.font = '18px "Do Hyeon", sans-serif';
+    ctx.font = `18px ${uiFont()}`;
     ctx.fillStyle = '#fff';
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 4;
