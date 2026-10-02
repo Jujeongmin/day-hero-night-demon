@@ -349,7 +349,7 @@ button[lang='zh-Hans'] { font-family: 'Noto Sans SC', sans-serif; }
 .loading { position: relative; height: 100%; overflow: hidden; background: #000 url(/loading/key.png) center / cover no-repeat; image-rendering: pixelated; }
 .loading::after { content: ''; position: absolute; inset: 0; background: linear-gradient(#000a 0%, #0000 30%, #0000 62%, #000d 100%); pointer-events: none; }
 .loading-title {
-  position: absolute; z-index: 2; left: 0; right: 0; top: 7%; margin: 0; padding-inline: 12px; text-align: center; font-weight: 400; font-size: clamp(34px, 11vw, 52px); line-height: 1.05; color: #ffe08a;
+  position: absolute; z-index: 2; left: 0; right: 0; top: 3%; margin: 0; padding-inline: 12px; text-align: center; font-weight: 400; font-size: clamp(32px, 10vw, 48px); line-height: 1.05; color: #ffe08a;
   text-shadow: 0 3px 0 #7a1020, 3px 0 0 #2a0610, -3px 0 0 #2a0610, 0 -3px 0 #2a0610, 0 6px 12px #000; animation: loadglow 2.4s ease-in-out infinite; text-wrap: balance;
 }
 .loading-title small { display: block; font-size: 0.55em; color: var(--text); margin-bottom: 6px; text-shadow: 0 2px 0 #2a0610, 2px 0 0 #2a0610, -2px 0 0 #2a0610, 0 -2px 0 #2a0610; }

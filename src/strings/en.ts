@@ -274,7 +274,7 @@ export const en: Strings = {
     tips: [
       'Tip: sieges keep going while you are away',
       'Tip: revenge wins give double honor',
-      'Tip: every hero upgrade adds +1% loot gold',
+      'Tip: hero upgrades raise your loot gold',
       'Tip: every new best siege stage gives soulstones',
     ],
   },
