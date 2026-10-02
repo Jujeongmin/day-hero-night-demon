@@ -22,3 +22,5 @@
 승인: 2026-09-28. 소환 효과음 3종은 2026-10-02 승인(후보 https://claude.ai/artifact/J3ep6NZRChMeLMcrcSvisS, 소환 시작음은 코드에서 3초에 줄여 끈다). BGM은 반복 재생한다. bgm_battle은 원곡 그대로(1:44). bgm_home은 2026-09-30 원곡 끝 96.13초부터 약 10초 동안 이어지는 3.5kHz 고음(반복 때 "삐" 소리)을 잘라 0.12~96.08초만 남기고 끝 60ms 페이드아웃, 192kbps로 다시 인코딩(1:36, 2.3MB). 도구: Python `imageio_ffmpeg`에 든 ffmpeg. 후보 청취 페이지: https://claude.ai/artifact/UwtiJnXNMepcBuFet79DBK
 
 최적화(2026-10-02): 원본은 `art/audio/source/`. 배포 파일은 ffmpeg(libmp3lame)로 128kbps 다시 인코딩(평균 음량 차이 1dB 안팎). sfx_win은 코드가 쓰는 2.5초까지(끝 0.4초 줄임), sfx_summon은 3초까지(끝 0.4초 줄임)만 남김. sfx_attack은 원래 87kbps라 원본 그대로. 전체 6.6MB → 3.6MB.
+
+- 2026-10-02 사용자: 배경음이 너무 커서 두 곡 모두 원본(`art/audio/source/`)에서 평균 -24dB로 줄여 128kbps로 다시 만듦(bgm_home -10.9dB, bgm_battle -4.5dB). 주소에 `?v=2`(`src/services/audio.ts` VERSION)를 붙여 옛 파일 캐시를 피한다.
