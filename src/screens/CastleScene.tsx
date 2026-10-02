@@ -79,8 +79,8 @@ export default function CastleScene(props: {
   /** 순위(리그) 창·방어 기록 창 열기(탑 왼쪽 아이콘, 2026-10-02) */
   onRank: () => void;
   onLog: () => void;
-  /** 상점(오른쪽 줄 보석 상자, 2026-10-02) */
-  onShop: () => void;
+  /** 상점(오른쪽 줄 보석 상자, 2026-10-02). tab = 처음 열 탭(재화 "+") */
+  onShop: (tab?: 'soul' | 'gold') => void;
   /** 내 브래킷 순위(모르면 null) */
   rank: number | null;
   onError: (msg: string) => void;
@@ -88,6 +88,8 @@ export default function CastleScene(props: {
   const { api, home, selected, panelOpen, onSettings, onRefresh, onRaid, onMatch, onFloor, onLocked, onSiegeRank, onPass, onSummon, onRank, onLog, onShop, rank, onError } = props;
   const s = home.state;
   const [busy, setBusy] = useState(false);
+  // 튜토리얼이 끝난 뒤에만 상점 바로가기(+)를 보인다
+  const tutorialOff = (s.onboarding?.at ?? 'done') === 'done';
   const [choose, setChoose] = useState(false);
   // 공성 연출: 성문 앞에서 싸우는 동안 1층 몬스터가 공격 동작
   const [defending, setDefending] = useState(false);
@@ -150,7 +152,7 @@ export default function CastleScene(props: {
   const towerRef = useRef<HTMLDivElement>(null);
   const k = useHeight(towerRef) / TOWER_H;
   const open = floorsUnlocked(s.castle.level);
-  const lordSkin = chooseLordSkin(s.lordSkin ?? null, s.skins ?? [], s.season.pass, vipOf(s));
+  const lordSkin = chooseLordSkin(s.lordSkin ?? null, s.skins ?? [], vipOf(s));
   // VIP 10: 마왕 테두리가 루비색으로 빛난다(외형과 상관없이)
   const rubyAura = vipOf(s) >= BALANCE.vip.rubyAura;
   // 시즌 패스: 지금 받을 수 있는 보상이 있나(서버 planPassClaim과 같은 계산)
@@ -191,7 +193,7 @@ export default function CastleScene(props: {
         <span className="hud-col">
           {/* 공성 배속은 골드 오른쪽 (2026-09-30 사용자 결정) */}
           <span className="hud-row">
-            <CurrencyPill icon="icons/gold.png" label={T.gold} value={home.gold} />
+            <CurrencyPill icon="icons/gold.png" label={T.gold} value={home.gold} onPlus={tutorialOff ? () => onShop('gold') : undefined} plusLabel={T.icons.shop} />
             <button className="pill speed" onClick={cycleSpeed}>{T.speed(speed)}</button>
             {!has3x && <button className="pill speed locked" onClick={() => buy('speed_x3')} aria-label={T.products.speed_x3[0]}>{T.speed(3)}</button>}
           </span>
@@ -200,7 +202,7 @@ export default function CastleScene(props: {
           )}
         </span>
         <button className="hud-icon" data-tut="settings" onClick={onSettings} aria-label={T.settings.title}><img src="ui/settings.png" alt="" draggable={false} /></button>
-        <CurrencyPill icon="icons/soul.png" label={T.soul} value={home.soul} tone="soul" />
+        <CurrencyPill icon="icons/soul.png" label={T.soul} value={home.soul} tone="soul" onPlus={tutorialOff ? () => onShop('soul') : undefined} plusLabel={T.icons.shop} />
       </header>
 
       <div className="tower" ref={towerRef}>
@@ -349,7 +351,7 @@ export default function CastleScene(props: {
         )}
         {/* 상점(2026-10-02 승인: 오른쪽 줄 패스 → 방치 → 상점, 뿔 달린 보석 상자) */}
         {(s.onboarding?.at ?? 'done') === 'done' && (
-          <button className="side-icon shop-entry" onClick={onShop} aria-label={T.icons.shop}>
+          <button className="side-icon shop-entry" onClick={() => onShop()} aria-label={T.icons.shop}>
             <img src="ui/shop.png" alt="" draggable={false} />
             <span>{T.icons.shop}</span>
           </button>

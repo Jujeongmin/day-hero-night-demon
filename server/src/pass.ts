@@ -27,13 +27,25 @@ export function planPassClaim(season: SeasonState, bestStage = 1): { gold: numbe
   return { gold, soul, skins, claimed: { free: Math.max(tier, season.claimed.free), pass: passTo } };
 }
 
-/** 다른 플레이어에게 보일 마왕 외형. 고른 외형이 보유 중일 때만, 안 골랐으면 패스 시즌엔 해골. */
-export function chooseLordSkin(chosen: 'base' | LordSkin | null, skins: string[], pass: boolean, vip = 0): LordSkin | undefined {
-  if (chosen === 'base') return undefined;
-  // VIP 전용 외형: 등급이 되면 고를 수 있다(BALANCE.vip.skins)
-  if (chosen === 'lava' || chosen === 'demon') return vip >= (BALANCE.vip.skins[chosen] ?? Infinity) ? chosen : pass ? 'skull' : undefined;
-  // 영구 소장 외형: 패스 10단계 흑룡, 소환 전설
-  if (chosen === 'dragon' || chosen === 'summon1' || chosen === 'lich' || chosen === 'abyss' || chosen === 'emperor') return skins.includes(chosen) ? chosen : pass ? 'skull' : undefined;
-  if (chosen === 'skull') return pass ? 'skull' : undefined;
-  return pass ? 'skull' : undefined;
+/** 패스 줄 영혼석이 같은 VX로 영혼석 주머니를 산 것보다 몇 % 더 많은지(패스 구매 버튼에 표시, 2026-10-02 사용자: +300%) */
+export function passSoulBonusPct(): number {
+  const soul = BALANCE.passTiers.reduce((a, t) => a + (t.pass.soul ?? 0), 0);
+  const pouch = BALANCE.soulPacks.soul_pouch;
+  return Math.round((soul / (BALANCE.productVx.season_pass * (pouch.soul / pouch.vx)) - 1) * 100);
+}
+
+/** 영구 소장 외형(패스 10단계 흑룡·소환 전설·시즌 1위)은 skins에, VIP 외형은 등급으로 열린다 */
+const KEPT_LOOKS = ['dragon', 'summon1', 'lich', 'abyss', 'emperor'] as const;
+
+/** 가진 마왕 외형 목록(보유 효과·외형 고르기). 해골 군주는 2026-10-02에 없앴다 */
+export function ownedLooks(skins: string[], vip = 0): LordSkin[] {
+  const out: LordSkin[] = KEPT_LOOKS.filter((k) => skins.includes(k));
+  for (const k of ['lava', 'demon'] as const) if (vip >= (BALANCE.vip.skins[k] ?? Infinity)) out.push(k);
+  return out;
+}
+
+/** 다른 플레이어에게 보일 마왕 외형. 고른 외형을 가졌을 때만, 아니면 기본(undefined). */
+export function chooseLordSkin(chosen: 'base' | LordSkin | null, skins: string[], vip = 0): LordSkin | undefined {
+  if (!chosen || chosen === 'base') return undefined;
+  return ownedLooks(skins, vip).includes(chosen) ? chosen : undefined;
 }

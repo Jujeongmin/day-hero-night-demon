@@ -16,7 +16,7 @@ export function monsterSpriteId(kind: string, gear: string | undefined): string 
   return monster === kind && `${id}_idle` in SPRITES ? id : kind;
 }
 
-/** 유료 외형(해골 군주·흑룡)은 몸 테두리가 보랏빛으로 천천히 빛난다 (2026-09-29 승인 D안). */
+/** 유료 외형(흑룡 등)은 몸 테두리가 보랏빛으로 천천히 빛난다 (2026-09-29 승인 D안). */
 export const AURA = { color: '#b04dff', minBlur: 3, maxBlur: 9, periodMs: 1600 };
 
 /** 지금 시각의 빛 번짐 크기(px) */

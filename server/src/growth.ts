@@ -34,9 +34,9 @@ export function monsterMult(stars: number | undefined, gear: string | undefined)
   return starMult(stars) * (gear ? BALANCE.summon.gearStatMult : 1);
 }
 
-/** 마왕 능력치 배수: 각성 별 × 외형(기본이 아닌 마왕 외형을 입으면 +10%, 2026-10-02 사용자) */
-export function lordMult(stars: number | undefined, look: boolean | undefined): number {
-  return starMult(stars) * (look ? BALANCE.summon.gearStatMult : 1);
+/** 마왕 능력치 배수: 각성 별 × 외형 보유 효과(가진 외형 하나마다 +10%, 2026-10-02 사용자) */
+export function lordMult(stars: number | undefined, looks: number | undefined): number {
+  return starMult(stars) * (1 + BALANCE.summon.lookOwnBonus * (looks ?? 0));
 }
 
 /** 별 n개째를 다는 영혼석. 최대 별을 넘으면 null */

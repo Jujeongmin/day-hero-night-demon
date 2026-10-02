@@ -188,17 +188,21 @@ describe('summon economy (2026-10-02)', () => {
 });
 
 describe('lord look bonus (2026-10-02)', () => {
-  it('any non-base lord look gives the lord +10% stats', async () => {
+  it('each owned lord look gives the lord +10% stats, worn or not', async () => {
     const { lordMult, starMult } = await import('../server/src/growth');
     const { castlePower, snapshotPower } = await import('../server/src/economy');
     const { defaultState, resolveFloors } = await import('../server/src/state');
-    expect(lordMult(0, false)).toBe(1);
-    expect(lordMult(0, true)).toBeCloseTo(1.1);
-    expect(lordMult(2, true)).toBeCloseTo(starMult(2) * 1.1);
+    expect(lordMult(0, 0)).toBe(1);
+    expect(lordMult(0, 1)).toBeCloseTo(1.1);
+    expect(lordMult(0, 3)).toBeCloseTo(1.3);
+    expect(lordMult(2, 2)).toBeCloseTo(starMult(2) * 1.2);
     const floors = resolveFloors(defaultState('a', 0, 's1'));
-    expect(castlePower(1, floors, 0, true)).toBeGreaterThan(castlePower(1, floors, 0, false));
+    expect(castlePower(1, floors, 0, 2)).toBeGreaterThan(castlePower(1, floors, 0, 1));
     const snap = { owner: 'a', nickname: 'x', castleLevel: 1, floors, throneEmpty: false, shadow: false };
-    expect(snapshotPower({ ...snap, lordSkin: 'summon1' as const })).toBe(castlePower(1, floors, 0, true));
-    expect(snapshotPower(snap)).toBe(castlePower(1, floors, 0, false));
+    // 새 스냅숏은 보유 수, 옛 스냅숏(lordLooks 없음)은 입은 외형이 있으면 1
+    expect(snapshotPower({ ...snap, lordLooks: 3 })).toBe(castlePower(1, floors, 0, 3));
+    expect(snapshotPower({ ...snap, lordSkin: 'summon1' as const })).toBe(castlePower(1, floors, 0, 1));
+    expect(snapshotPower({ ...snap, lordSkin: 'summon1' as const, lordLooks: 0 })).toBe(castlePower(1, floors, 0, 0));
+    expect(snapshotPower(snap)).toBe(castlePower(1, floors, 0, 0));
   });
 });

@@ -19,8 +19,9 @@ import League, { type LeagueTab } from './screens/League';
 import Settings from './screens/Settings';
 import Cutscene from './screens/Cutscene';
 import Summon from './screens/Summon';
+import Pass from './screens/Pass';
 import Nickname from './screens/Nickname';
-import { startShop, type ShopItem } from './services/shop';
+import { findItem, startShop, type ShopItem } from './services/shop';
 import { playBgm, sfx, unlockAudio } from './services/audio';
 import { preloadSprites } from './render/battleCanvas';
 import { emitTut } from './tutorial/bus';
@@ -30,7 +31,7 @@ import TutorialOverlay from './tutorial/TutorialOverlay';
 type Tab = 'upgrade' | 'log' | 'league' | 'shop';
 /** 아래 탭은 강화·상점 두 개(2026-10-02). 리그(순위)·기록은 탑 왼쪽 아이콘 */
 export type Panel =
-  | { name: Exclude<Tab, 'league'> } | { name: 'league'; tab?: LeagueTab } | { name: 'match' } | { name: 'settings' } | { name: 'floor'; floor: number } | { name: 'result'; result: EndResult };
+  | { name: Exclude<Tab, 'league'> } | { name: 'league'; tab?: LeagueTab } | { name: 'match' } | { name: 'pass' } | { name: 'settings' } | { name: 'floor'; floor: number } | { name: 'result'; result: EndResult };
 
 /** 2026-10-02: 상점도 오른쪽 줄 아이콘 → 전체 화면. 아래 탭은 강화 하나 */
 const TABS: Tab[] = ['upgrade'];
@@ -69,6 +70,8 @@ export default function App() {
   const [panel, setPanel] = useState<Panel | null>(null);
   const [summonOpen, setSummonOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
+  const [shopTab, setShopTab] = useState<'soul' | 'gold' | 'special'>('soul');
+  const openShop = (tab: 'soul' | 'gold' | 'special' = 'soul') => { setPanel(null); setSummonOpen(false); setShopTab(tab); setShopOpen(true); };
   // 내 브래킷 순위: 홈 아이콘에 숫자로. 홈을 열 때·공략이 끝났을 때·2분마다 가볍게 받아 온다(강화마다 받지 않는다)
   const [rank, setRank] = useState<number | null>(null);
   const rankBusy = useRef(false);
@@ -325,11 +328,15 @@ export default function App() {
         break;
       case 'upgrade':
         title = T.panels.upgrade;
-        body = <Upgrade api={api} home={home} onRefresh={refresh} onError={onError} onShop={() => { setPanel(null); setShopOpen(true); }} />;
+        body = <Upgrade api={api} home={home} onRefresh={refresh} onError={onError} onShop={() => openShop('soul')} />;
         break;
       case 'log':
         title = T.panels.log;
         body = <Log api={api} home={home} onRefresh={refresh} onRaid={startRaid} onError={onError} />;
+        break;
+      case 'pass':
+        title = T.products.season_pass[0];
+        body = <Pass api={api} home={home} item={findItem(shopItems, 'season_pass')} onRefresh={refresh} onToast={onError} />;
         break;
       case 'league':
         title = T.icons.rank;
@@ -341,6 +348,8 @@ export default function App() {
         break;
     }
   }
+
+  const centered = panel?.name === 'pass' || panel?.name === 'league' || panel?.name === 'log';
 
   return (
     <div className="app">
@@ -356,15 +365,15 @@ export default function App() {
         onFloor={openFloor}
         onLocked={() => setPanel({ name: 'upgrade' })}
         onSiegeRank={() => setPanel({ name: 'league', tab: 'siege' })}
-        onPass={() => setPanel({ name: 'league', tab: 'track' })}
+        onPass={() => toggle({ name: 'pass' })}
         onSummon={() => { setPanel(null); setSummonOpen(true); }}
-        onShop={() => { setPanel(null); setShopOpen(true); }}
+        onShop={(tab) => openShop(tab)}
         onRank={() => toggle({ name: 'league' })}
         onLog={() => toggle({ name: 'log' })}
         rank={rank}
         onError={onError}
       />
-      {panel && (
+      {panel && !centered && (
         <section className="sheet">
           <header className="sheet-head">
             <span>{title}</span>
@@ -372,6 +381,18 @@ export default function App() {
           </header>
           <div className="sheet-body">{body}</div>
         </section>
+      )}
+      {/* 패스·순위·기록은 화면 가운데 창(2026-10-02 사용자). 바깥을 누르면 닫힌다 */}
+      {panel && centered && (
+        <div className="modal-dim" onClick={(e) => { if (e.target === e.currentTarget) setPanel(null); }}>
+          <section className="sheet modal">
+            <header className="sheet-head">
+              <span>{title}</span>
+              <button className="close" data-tut="panel-close" onClick={() => setPanel(null)} aria-label={T.close}><img src="ui/close_x.png" alt="" draggable={false} /></button>
+            </header>
+            <div className="sheet-body">{body}</div>
+          </section>
+        </div>
       )}
       <nav className="tabs">
         {TABS.map((t) => (
@@ -385,8 +406,8 @@ export default function App() {
           </button>
         ))}
       </nav>
-      {shopOpen && <Shop api={api} home={home} items={shopItems} owned={ownedProducts(home.state)} onClose={() => setShopOpen(false)} onRefresh={refresh} onToast={onError} />}
-      {summonOpen && <Summon api={api} home={home} onClose={() => setSummonOpen(false)} onShop={() => { setSummonOpen(false); setShopOpen(true); }} onRefresh={refresh} onError={onError} />}
+      {shopOpen && <Shop key={shopTab} initialTab={shopTab} api={api} home={home} items={shopItems} owned={ownedProducts(home.state)} onClose={() => setShopOpen(false)} onRefresh={refresh} onToast={onError} />}
+      {summonOpen && <Summon api={api} home={home} onClose={() => setSummonOpen(false)} onShop={() => openShop('soul')} onRefresh={refresh} onError={onError} />}
       {tutorial}
       {toast && <div className="toast">{toast}</div>}
     </div>

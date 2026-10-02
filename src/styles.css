@@ -45,7 +45,7 @@ select { font: inherit; }
 .hud .pill { white-space: nowrap; }
 /* 골드·영혼석·전투력: 이름 대신 큰 아이콘이 필 왼쪽에 걸쳐 튀어나오고 숫자만 (2026-09-30 승인 B안, 언어와 상관없이 짧게) */
 .pill.cur { position: relative; display: inline-flex; align-items: center; min-width: 64px; padding-left: 22px; margin-left: 10px; }
-.pill.cur img { position: absolute; left: -16px; top: 50%; translate: 0 -50%; width: 34px; height: 34px; image-rendering: pixelated; filter: drop-shadow(0 2px 0 #000a); }
+.pill.cur > img { position: absolute; left: -16px; top: 50%; translate: 0 -50%; width: 34px; height: 34px; image-rendering: pixelated; filter: drop-shadow(0 2px 0 #000a); }
 .pill.cur b { font-size: 16px; }
 
 /* 위쪽은 재화 표시(약 44px)와 옥좌 위 마왕 머리가 들어갈 자리를, 아래는 출정 버튼(약 76px + 여백 10px)을 비운다 */
@@ -246,7 +246,7 @@ canvas.battle {
   .hud .pill { font-size: 13px; padding: 0 4px; }
   .hud .pill.speed { min-width: 28px; }
   .pill.cur { min-width: 50px; padding-left: 15px; margin-left: 9px; }
-  .pill.cur img { left: -14px; width: 28px; height: 28px; }
+  .pill.cur > img { left: -14px; width: 28px; height: 28px; }
   .pill.cur b { font-size: 14px; }
   .hud-icon { width: 42px; height: 36px; }
   .hud-icon img { width: 22px; height: 22px; }
@@ -255,7 +255,7 @@ canvas.battle {
   .hud .pill { border-width: 6px; border-image-width: 6px; padding: 0 3px; font-size: 12px; }
   .hud .pill.speed { min-width: 24px; }
   .pill.cur { min-width: 44px; padding-left: 12px; margin-left: 8px; }
-  .pill.cur img { left: -12px; width: 24px; height: 24px; }
+  .pill.cur > img { left: -12px; width: 24px; height: 24px; }
   .pill.cur b { font-size: 13px; }
   .hud-icon { width: 38px; height: 32px; border-width: 6px; border-image-width: 6px; }
   .hud-icon img { width: 20px; height: 20px; }
@@ -606,3 +606,30 @@ button.pill.ticket.buy:disabled { animation: none; filter: grayscale(0.6) bright
 .shop-price img { width: 18px; height: 18px; image-rendering: pixelated; }
 .shop-price:hover:not(:disabled) { filter: brightness(1.2); }
 .shop-price:disabled { color: var(--muted); filter: grayscale(.4); }
+/* 재화 "+" 상점 바로가기(2026-10-02): 출정 입장권 "+"와 같은 금색 글자 */
+.pill.cur { position: relative; }
+.pill-plus { margin: -3px -4px -3px 2px; width: 24px; height: 24px; padding: 0; background: none; border: 0; cursor: pointer; flex: none; }
+.pill-plus img { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+.pill-plus:hover { filter: brightness(1.25); }
+.pill-plus:active { transform: translateY(1px); }
+
+/* 가운데 창(패스·순위·기록, 2026-10-02 사용자): 화면을 어둡게 덮고 아래 창과 같은 틀·문장을 가운데에 */
+.modal-dim { position: absolute; inset: 0; z-index: 15; display: flex; align-items: center; justify-content: center; padding: 44px 10px 12px; background: #07030acc; }
+.sheet.modal { height: auto; max-height: 100%; width: 100%; margin-top: 0; border-bottom-width: 12px; border-image-width: 12px; }
+.sheet.modal .sheet-body { min-height: 0; }
+
+/* 패스 구매 미리보기(2026-10-02 승인 A): 흑룡 크게 + 보유 효과 + 보상 합 + 구매 버튼(+300% 띠) */
+.pass-offer { display: flex; flex-direction: column; gap: 6px; }
+.pass-stage { position: relative; display: flex; align-items: flex-end; justify-content: center; gap: 8px; padding: 6px 4px 4px; border: 8px solid transparent; border-image: url(/ui/pill.png) 8 fill / 8px stretch; image-rendering: pixelated; background: radial-gradient(ellipse at 40% 75%, #7a1b2f 0%, transparent 70%); }
+.pass-tag { position: absolute; top: 0; left: 2px; font-size: 12px; color: #fff; background: var(--ruby); border: 2px solid #000; padding: 0 6px; box-shadow: 0 2px 0 #000; }
+.pass-look { display: flex; flex-direction: column; padding-bottom: 14px; line-height: 1.2; }
+.pass-look b { font-weight: 400; font-size: 20px; color: var(--gold); text-shadow: 0 2px 0 #000; }
+.pass-look small { font-size: 12px; color: var(--muted); }
+.pass-perks { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+.pass-perks span { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.pass-perks img { width: 20px; height: 20px; image-rendering: pixelated; }
+.pass-perks b { font-weight: 400; color: var(--gold); margin-right: 6px; }
+.pass-buy { position: relative; min-height: 50px; margin-top: 8px; font-size: 20px; }
+.pass-value { position: absolute; top: -22px; right: -14px; z-index: 1; font-size: 13px; color: #fff; background: var(--ruby); border: 2px solid #000; padding: 0 6px; box-shadow: 0 2px 0 #000; transform: rotate(-4deg); white-space: nowrap; animation: valuePop 1.2s ease-in-out infinite; }
+@keyframes valuePop { 50% { transform: rotate(-4deg) scale(1.08); } }
+@media (prefers-reduced-motion: reduce) { .pass-value { animation: none; } }

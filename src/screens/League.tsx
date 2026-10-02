@@ -3,17 +3,16 @@ import { errorText, type Api, type HomeData, type LeagueData, type SiegeRankData
 import { T } from '../strings/ko';
 import { VipBadge } from '../render/Vip';
 import { displayName } from '../strings/i18n';
-import Pass from './Pass';
 import { seasonRewardSoul } from '../../server/src/league';
 
-export type LeagueTab = 'rank' | 'siege' | 'track';
+export type LeagueTab = 'rank' | 'siege';
 
-/** 리그 창: 순위 | 공성 | 패스 세 탭 */
+/** 순위 창: 순위 | 공성 두 탭(패스는 따로 가운데 창, 2026-10-02 사용자) */
 export default function League(props: {
   api: Api; home: HomeData; initialTab?: LeagueTab; onRefresh: () => Promise<void>; onError: (m: string) => void;
 }) {
   const [tab, setTab] = useState<LeagueTab>(props.initialTab ?? 'rank');
-  const tabs: [LeagueTab, string][] = [['rank', T.pass.rank], ['siege', T.siege.rankTab], ['track', T.pass.track]];
+  const tabs: [LeagueTab, string][] = [['rank', T.pass.rank], ['siege', T.siege.rankTab]];
   return (
     <>
       <div className="row">
@@ -23,7 +22,6 @@ export default function League(props: {
       </div>
       {tab === 'rank' && <Ranking api={props.api} onError={props.onError} />}
       {tab === 'siege' && <SiegeRanking api={props.api} onError={props.onError} />}
-      {tab === 'track' && <Pass api={props.api} home={props.home} onRefresh={props.onRefresh} onToast={props.onError} />}
     </>
   );
 }

@@ -18,6 +18,6 @@ describe('floorBgId', () => {
 describe('lordSpriteId', () => {
   it('uses the look sheet when it exists, otherwise the base lord', () => {
     expect(lordSpriteId(undefined)).toBe('lord');
-    expect(lordSpriteId('skull')).toBe('lord_skull');
+    expect(lordSpriteId('dragon')).toBe('lord_dragon');
   });
 });

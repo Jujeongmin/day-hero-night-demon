@@ -10,7 +10,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `starter_pack` | Starter Pack | 100 | 999999 | 1 | — | — | `art/products/starter_pack.png` | The Necromancer (brings your first fallen monster back once per fight) + gold + 30 soulstones. Gold grows with your best siege stage (5,000 at the start). One per account. Counts toward VIP. |
 | `recruit_dragon` | Baby Dragon | 300 | 999999 | 1 | — | — | `art/products/recruit_dragon.png` | Recruit the Baby Dragon, who breathes fire on every enemy. One per account. Counts toward VIP. |
-| `season_pass` | Season Pass | 400 | 999999 | — | — | — (아래 참고) | `art/products/season_pass.png` | Unlocks the pass track of this 2-week season: extra gold that grows with your siege stage, and the Black Dragon lord look to keep forever at tier 10. You also wear the Skull Sovereign look for the season. Counts toward VIP. |
+| `season_pass` | Season Pass | 400 | 999999 | — | — | — (아래 참고) | `art/products/season_pass.png` | Unlocks the pass track of this 2-week season: 480 soulstones (4x what the same VX buys as soulstones), extra gold that grows with your siege stage, and the Black Dragon lord look to keep forever at tier 10. Every Demon Lord look you own gives the lord +10% stats, worn or not. Counts toward VIP. |
 | `speed_x3` | 3x Speed | 300 | 999999 | 1 | — | — | `art/products/speed_x3.png` | 3x speed for raids and sieges, forever. While the game is open, siege waves come every 40 seconds instead of every 2 minutes. One per account. Counts toward VIP. |
 | `premium` | Premium Pass | 500 | 999999 | 1 | — | — | `art/products/premium.png` | Claim ad rewards instantly without watching ads (same daily limits). Forever. One per account. Counts toward VIP. |
 
@@ -46,7 +46,7 @@
 | Product ID | 이름 | 가격 | 설명 |
 |---|---|---|---|
 | `starter_pack` | 스타터팩 / Starter Pack | 100 VX | 네크로맨서(전투마다 처음 쓰러진 몬스터를 한 번 되살린다) + 골드 + 영혼석 30. 골드는 공성 최고 단계에 맞춰 커진다(처음 5,000). 계정당 1번. / The Necromancer (brings your first fallen monster back once per fight) + gold + 30 soulstones. Gold grows with your best siege stage (5,000 at the start). One per account. |
-| `season_pass` | 시즌 패스 / Season Pass | 400 VX | 이번 2주 시즌의 패스 줄을 연다: 공성 단계에 맞춰 커지는 추가 골드, 10단계에서 영구 소장 흑룡 마왕 외형. 시즌 동안 해골 군주 외형도 입는다. / Unlocks the pass track of this 2-week season: extra gold that grows with your siege stage, and the Black Dragon lord look to keep forever at tier 10. You also wear the Skull Sovereign look for the season. |
+| `season_pass` | 시즌 패스 / Season Pass | 400 VX | 이번 2주 시즌의 패스 줄을 연다: 영혼석 480개(같은 VX로 영혼석을 사는 것의 4배), 공성 단계에 맞춰 커지는 추가 골드, 10단계에서 영구 소장 흑룡 마왕 외형. 가진 마왕 외형마다 입지 않아도 마왕 능력치 +10%. / Unlocks the pass track of this 2-week season: 480 soulstones (4x what the same VX buys as soulstones), extra gold that grows with your siege stage, and the Black Dragon lord look to keep forever at tier 10. Every Demon Lord look you own gives the lord +10% stats, worn or not. |
 | `speed_x3` | 3배속 / 3x Speed | 300 VX | 공략·공성 3배속, 영구. 게임을 켜 둔 동안 공성 파도가 2분 대신 40초마다 온다. 계정당 1번. / 3x speed for raids and sieges, forever. While the game is open, siege waves come every 40 seconds instead of every 2 minutes. One per account. |
 | `premium` | 프리미엄 패스 / Premium Pass | 500 VX | 광고를 보지 않고 광고 보상을 바로 받는다(하루 한도는 같다). 영구. 계정당 1번. / Claim ad rewards instantly without watching ads (same daily limits). Forever. One per account. |
 
@@ -90,8 +90,11 @@
 
 - 시즌 경계: `BALANCE.seasonEpoch` = 2026-10-12 00:00 UTC부터 14일 단위.
 
-### 한정 마왕 외형 (구현됨, 2026-09-28)
-패스 보유자는 마왕이 **해골 머리 군주**(`lord_skull_*` 시트)로 보인다. 탑 꼭대기(내 화면)와 다른 플레이어가 내 성을 칠 때의 전투 화면 둘 다 바뀐다. 서버가 `CastleSnapshot.lordSkin = 'skull'`을 넣어 주고(`buildSnapshot`), 클라이언트는 `src/render/skins.ts`로 시트 이름을 고른다. 전투 수치는 그대로다. 시즌이 바뀌면 패스와 함께 사라진다.
+### 한정 마왕 외형
+- 2026-09-28~10-02: 패스 보유자는 시즌 동안 해골 머리 군주로 보였다. **2026-10-02 사용자 결정으로 없앴다**(시트는 `art/unused/lord_skull_*`). 이제 패스는 10단계 흑룡(영구)만 준다.
+- 2026-10-02: 마왕 외형 효과는 **보유 효과** — 가진 외형(흑룡·소환 전설·시즌 1위·VIP 용암/보라 날개) 하나마다 입지 않아도 마왕 능력치 +10%(`BALANCE.summon.lookOwnBonus`, `ownedLooks`). 스냅숏에 `lordLooks`(보유 수)를 넣는다.
+- 2026-10-02: 패스 줄 영혼석 480 = 400 VX로 영혼석 주머니를 산 것(120)의 4배. 패스 창 구매 버튼에 "영혼석 구매보다 +300%"(`passSoulBonusPct`).
+- **대시보드 할 일(사용자):** `season_pass` 설명을 위 표의 새 문장으로 바꿔 주세요(해골 군주 문장 삭제).
 
 ## 서버 지급 흐름
 - 결제가 끝나면 Verse8가 서버의 `$onItemPurchased({ account, purchaseId, productId, quantity, metadata })`를 부른다. 서버는 `processedPurchases`로 같은 `purchaseId`를 두 번 지급하지 않고 `{ success: true }`를 돌려준다.

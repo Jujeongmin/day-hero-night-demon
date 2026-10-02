@@ -142,19 +142,19 @@ export const BALANCE = {
   /** 첫 시즌 시작 = 출시일 2026-10-06 한국 시간 0시(= 10-05 15:00 UTC), 2026-10-02 사용자 결정. 14일 단위 */
   seasonEpoch: Date.UTC(2026, 9, 5, 15),
   bracketSize: 30,
-  /** 시즌 패스 트랙: 명예 이만큼마다 1단계 (2026-09-29 승인) */
+  /** 시즌 패스 트랙: 명예 이만큼마다 1단계 (2026-09-29 승인). 패스 줄 영혼석 합 480 = 같은 VX로 영혼석 주머니를 산 것의 4배(+300%, 2026-10-02 사용자) */
   passTierHonor: 150,
   passTiers: [
     { free: { gold: 500 }, pass: { gold: 2000 } },
-    { free: { soul: 5 }, pass: { soul: 20 } },
+    { free: { soul: 5 }, pass: { soul: 48 } },
     { free: { gold: 1000 }, pass: { gold: 4000 } },
-    { free: { soul: 5 }, pass: { soul: 30 } },
+    { free: { soul: 5 }, pass: { soul: 72 } },
     { free: { gold: 1500 }, pass: { gold: 6000 } },
-    { free: { soul: 10 }, pass: { soul: 40 } },
+    { free: { soul: 10 }, pass: { soul: 96 } },
     { free: { gold: 2000 }, pass: { gold: 8000 } },
-    { free: { soul: 10 }, pass: { soul: 50 } },
+    { free: { soul: 10 }, pass: { soul: 120 } },
     { free: { gold: 3000 }, pass: { gold: 10000 } },
-    { free: { soul: 20 }, pass: { soul: 60, skin: 'dragon' } },
+    { free: { soul: 20 }, pass: { soul: 144, skin: 'dragon' } },
   ] as { free: PassReward; pass: PassReward }[],
   /** VX 상품 1개당 지급량 (가격은 대시보드가 정한다) */
   starterGold: 5000,
@@ -226,6 +226,8 @@ export const BALANCE = {
     commonSoul: 10, rareSoul: 30, epicDupSoul: 30, legendDupSoul: 300,
     /** 장비 외형을 입은 몬스터·외형을 입은 마왕(기본 아닌 모든 마왕 외형) 능력치 배수 (2026-10-02 사용자) */
     gearStatMult: 1.1,
+    /** 마왕 외형 보유 효과: 가진 외형 하나마다 마왕 능력치 +10%(입지 않아도, 2026-10-02 사용자) */
+    lookOwnBonus: 0.1,
     pity: 10,
     gear: [
       'slime:crown', 'slime:helm', 'skeleton:royal', 'skeleton:dread', 'imp:king', 'imp:warlock',

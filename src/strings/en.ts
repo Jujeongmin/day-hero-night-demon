@@ -68,7 +68,7 @@ export const en: Strings = {
   purchased: 'Purchased',
   products: {
     starter_pack: ['Starter Pack', 'Necromancer + gold + 30 soulstones'],
-    season_pass: ['Season Pass', 'Pass track on the season rewards + a limited Demon Lord look'],
+    season_pass: ['Season Pass', 'Pass track on the season rewards + Black Dragon look at tier 10 (permanent, Demon Lord +10%)'],
     speed_x3: ['3× Speed', 'Raids and sieges play 3× faster (permanent)'],
     premium: ['Premium Pass', 'Rewards instantly with no ads (same daily limits, permanent)'],
     gold_pouch: ['Gold Pouch', 'Gold'],
@@ -162,7 +162,8 @@ export const en: Strings = {
     resetGo: 'Reset',
     resetDone: 'Data reset',
     lordLook: 'Demon Lord look',
-    looks: { base: 'Default', skull: 'Skull Sovereign', dragon: 'Black Dragon', lava: 'Lava Lord', demon: 'Violet-Winged Fiend', summon1: 'Fallen Archfiend', lich: 'Bone Dragon Lich King', abyss: 'One-Eyed Abyss Lord', emperor: 'Abyssal Emperor' } as Record<string, string>,
+    lookOwned: (n: number, pct: number) => `${n} looks owned · Demon Lord stats +${pct}% (applies without wearing)`,
+    looks: { base: 'Default', dragon: 'Black Dragon', lava: 'Lava Lord', demon: 'Violet-Winged Fiend', summon1: 'Fallen Archfiend', lich: 'Bone Dragon Lich King', abyss: 'One-Eyed Abyss Lord', emperor: 'Abyssal Emperor' } as Record<string, string>,
   },
   pass: {
     rank: 'Ranking',
@@ -174,6 +175,11 @@ export const en: Strings = {
     dragon: 'Black Dragon',
     passOnly: 'Pass',
     claimAll: 'Claim all',
+    only: 'Pass only',
+    dragonKeep: 'Tier 10 · yours forever',
+    ownBonus: 'Just owning it: Demon Lord stats ',
+    buy: 'Buy Pass',
+    value: (pct: number) => `+${pct}% vs buying soulstones`,
     got: (gold: number, soul: number, skin: boolean) =>
       `Claimed! ${[gold ? `${F(gold)} gold` : '', soul ? `${soul} soulstones` : '', skin ? 'Black Dragon look' : ''].filter(Boolean).join(' · ')}`,
   },

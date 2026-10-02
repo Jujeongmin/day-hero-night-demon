@@ -68,7 +68,7 @@ export const zhHant: Strings = {
   purchased: '已購買',
   products: {
     starter_pack: ['新手禮包', '死靈法師 + 金幣 + 魂石30'],
-    season_pass: ['賽季通行證', '賽季獎勵的通行證獎勵列 + 限定魔王外觀'],
+    season_pass: ['賽季通行證', '賽季獎勵的通行證獎勵列 + 10階黑龍外觀（永久，魔王 +10%）'],
     speed_x3: ['3倍速', '攻略與攻城快3倍 (永久)'],
     premium: ['高級通行證', '不看廣告直接領獎勵 (每日上限相同，永久)'],
     gold_pouch: ['金幣袋', '金幣'],
@@ -162,7 +162,8 @@ export const zhHant: Strings = {
     resetGo: '重置',
     resetDone: '已重置',
     lordLook: '魔王外觀',
-    looks: { base: '基本', skull: '骷髏君主', dragon: '黑龍', lava: '熔岩魔王', demon: '紫翼惡魔', summon1: '墮落大惡魔', lich: '骨龍巫妖王', abyss: '獨眼深淵君主', emperor: '深淵皇帝' } as Record<string, string>,
+    lookOwned: (n: number, pct: number) => `擁有外觀 ${n} 個 · 魔王屬性 +${pct}%（無需穿戴）`,
+    looks: { base: '基本', dragon: '黑龍', lava: '熔岩魔王', demon: '紫翼惡魔', summon1: '墮落大惡魔', lich: '骨龍巫妖王', abyss: '獨眼深淵君主', emperor: '深淵皇帝' } as Record<string, string>,
   },
   pass: {
     rank: '排名',
@@ -174,6 +175,11 @@ export const zhHant: Strings = {
     dragon: '黑龍',
     passOnly: '通行證',
     claimAll: '全部領取',
+    only: '通行證專屬',
+    dragonKeep: '第10階 · 永久擁有',
+    ownBonus: '只要擁有，魔王屬性 ',
+    buy: '購買通行證',
+    value: (pct: number) => `比購買魂石多 +${pct}%`,
     got: (gold: number, soul: number, skin: boolean) =>
       `已領取！ ${[gold ? `金幣 ${F(gold)}` : '', soul ? `魂石 ${soul}` : '', skin ? '黑龍外觀' : ''].filter(Boolean).join(' · ')}`,
   },

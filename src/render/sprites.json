@@ -334,39 +334,6 @@
       58
     ]
   },
-  "lord_skull_idle": {
-    "frames": 4,
-    "w": 96,
-    "h": 96,
-    "box": [
-      1,
-      4,
-      92,
-      91
-    ]
-  },
-  "lord_skull_attack": {
-    "frames": 7,
-    "w": 96,
-    "h": 96,
-    "box": [
-      0,
-      2,
-      95,
-      93
-    ]
-  },
-  "lord_skull_death": {
-    "frames": 7,
-    "w": 96,
-    "h": 96,
-    "box": [
-      2,
-      4,
-      92,
-      91
-    ]
-  },
   "bg_floor2": {
     "frames": 1,
     "w": 240,

@@ -13,7 +13,7 @@ import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun 
 import { planAdReward } from './ads';
 import type { FloorLog } from './battle';
 import { spendFor, vipOf, vipPerks } from './vip';
-import { chooseLordSkin, planPassClaim } from './pass';
+import { chooseLordSkin, ownedLooks, planPassClaim } from './pass';
 import { grantFor } from './purchases';
 import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from './siege';
 import { rngNext, seedFrom } from './rng';
@@ -65,9 +65,9 @@ function lordStarsOf(s: UserState): number {
   return s.stars?.lord ?? 0;
 }
 
-/** 기본이 아닌 마왕 외형을 입었나(능력치 +10%, 2026-10-02). 다른 사람에게 보이는 외형과 같은 규칙 */
-function lordLookOf(s: UserState, now = Date.now()): boolean {
-  return !!chooseLordSkin(s.lordSkin, s.skins, s.season.pass && s.season.id === seasonIdAt(now), vipOf(s));
+/** 가진 마왕 외형 수(하나마다 마왕 능력치 +10%, 입지 않아도, 2026-10-02 사용자) */
+function lordLooksOf(s: UserState): number {
+  return ownedLooks(s.skins ?? [], vipOf(s)).length;
 }
 
 /** 매칭용 공개 정보. 표시·매칭에만 쓰고 재화 판단에는 쓰지 않는다. */
@@ -77,7 +77,7 @@ async function syncCastle(account: string, s: UserState): Promise<void> {
     account,
     nickname: s.profile.nickname,
     castleLevel: s.castle.level,
-    power: castlePower(s.castle.level, floors, lordStarsOf(s), lordLookOf(s)),
+    power: castlePower(s.castle.level, floors, lordStarsOf(s), lordLooksOf(s)),
     floors,
     shieldUntil: s.shieldUntil,
     vip: vipOf(s),
@@ -121,8 +121,8 @@ const AD_CLAIMS = 'ad_claims';
 const SIEGE_BEST = 'siege_best';
 /** 소환 결과 기록(확률형 아이템 결과 보관). id = 계정:그때까지 뽑은 수 */
 const SUMMON_LOG = 'summon_log';
-/** 3 = 레벨 50 + 각성 순환(2026-10-02). 성장 레벨로 매칭 전투력을 다시 쓴다 */
-const CASTLE_SYNC_V = 3;
+/** 3 = 레벨 50 + 각성 순환, 4 = 마왕 외형 보유 효과(2026-10-02). 매칭 전투력을 다시 쓴다 */
+const CASTLE_SYNC_V = 4;
 
 async function adClaimed(requestId: string): Promise<boolean> {
   try {
@@ -161,8 +161,9 @@ async function buildSnapshot(target: string, now: number): Promise<CastleSnapsho
     ...(lordStarsOf(withDefaults(d)) > 0 ? { lordStars: lordStarsOf(withDefaults(d)) } : {}),
     ...(() => {
       const w = withDefaults(d);
-      const skin = chooseLordSkin(w.lordSkin, w.skins, w.season.pass && w.season.id === seasonIdAt(now), vipOf(w));
-      return skin ? { lordSkin: skin } : {};
+      const skin = chooseLordSkin(w.lordSkin, w.skins, vipOf(w));
+      const looks = lordLooksOf(w);
+      return { ...(skin ? { lordSkin: skin } : {}), lordLooks: looks };
     })(),
   };
 }
@@ -214,7 +215,7 @@ async function finishRun(me: string, s: UserState, run: Run, won: boolean, loot:
 }
 
 async function realTargets(me: string, s: UserState, now: number): Promise<Target[]> {
-  const power = castlePower(s.castle.level, resolveFloors(s), lordStarsOf(s), lordLookOf(s));
+  const power = castlePower(s.castle.level, resolveFloors(s), lordStarsOf(s), lordLooksOf(s));
   const rows = await $global.getCollectionItems('castles', {
     filters: [
       { field: 'power', operator: '>=', value: Math.floor(power * 0.8) },
@@ -397,7 +398,7 @@ async function recordSiegeBest(me: string, s: UserState, oldBest: number): Promi
 async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[]; soul: number; lastLog?: FloorLog[] }> {
   const r = runSiege({
     account: me, stage: s.siege.stage, lastWaveAt: s.siege.lastWaveAt, now,
-    castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLook: lordLookOf(s, now), vip: vipOf(s),
+    castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLooks: lordLooksOf(s), vip: vipOf(s),
   });
   if (r.lastWaveAt === s.siege.lastWaveAt) return { s, waves: [], soul: 0 };
   const last = r.waves[r.waves.length - 1];
@@ -493,7 +494,7 @@ export class Server {
       const block = siegeCallBlock({ lastWaveAt: s.siege.lastWaveAt, lastWon: s.siege.lastWon, speed: sp, now });
       if (block) throw new Error(block);
       const r = fightWave({
-        account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLook: lordLookOf(s, now), record: true,
+        account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLooks: lordLooksOf(s), record: true,
       });
       const siege = { stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.stage), lastWon: r.won };
       await save(me, { siege });
@@ -516,6 +517,8 @@ export class Server {
       if (plan.soul) await $asset.mint('soul', plan.soul);
       const skins = [...new Set([...s.skins, ...plan.skins])];
       await save(me, { season: { ...s.season, claimed: plan.claimed }, skins });
+      // 새 외형은 보유만으로 마왕이 세지니 매칭용 전투력도 다시 쓴다
+      if (skins.length > s.skins.length) await syncCastle(me, { ...s, skins });
       return { gold: plan.gold, soul: plan.soul, skins: plan.skins };
     });
   }
@@ -525,13 +528,11 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await loadState(me, now);
-      const vipSkinAt = BALANCE.vip.skins[skin];
-      const ok = skin === 'base' || (skin === 'skull' && s.season.pass) || ((skin === 'dragon' || BALANCE.summon.legendLooks.includes(skin) || Object.values(BALANCE.seasonChampionSkins).includes(skin)) && s.skins.includes(skin))
-        || (vipSkinAt !== undefined && vipOf(s) >= vipSkinAt);
+      const ok = skin === 'base' || (ownedLooks(s.skins, vipOf(s)) as string[]).includes(skin);
       if (!ok) throw new Error('SKIN_NOT_OWNED');
       const lordSkin = skin as UserState['lordSkin'];
+      // 능력치는 보유 효과라 입는 외형을 바꿔도 전투력은 그대로, 보이는 모습만 바뀐다
       await save(me, { lordSkin });
-      // 외형을 입으면 마왕 능력치 +10%라 매칭용 전투력도 다시 쓴다
       await syncCastle(me, { ...s, lordSkin });
       return { lordSkin };
     });
@@ -630,7 +631,7 @@ export class Server {
           : null,
         // 자리를 비운 동안 처음 넘은 10단계 보상(영혼석). 화면에 한 번 알린다
         siegeSoul,
-        power: displayPower(s.castle.level, resolveFloors(s), heroGrowth(s), lordStarsOf(s), lordLookOf(s, now)),
+        power: displayPower(s.castle.level, resolveFloors(s), heroGrowth(s), lordStarsOf(s), lordLooksOf(s)),
         seasonEndsAt: seasonEndsAt(now),
         // 전체 알림: 최근 하루 것 최대 5개. 이미 본 것은 화면이 거른다
         news: withNews === false ? [] : await recentNews(now),
@@ -774,6 +775,8 @@ export class Server {
       await $asset.burn('soul', plan.cost);
       if (plan.soul) await $asset.mint('soul', plan.soul);
       await save(me, plan.patch);
+      // 전설 외형을 새로 얻으면 마왕 보유 효과가 늘어 매칭용 전투력을 다시 쓴다
+      if (plan.patch.skins.length > s.skins.length) await syncCastle(me, { ...s, ...plan.patch });
       await $global.addCollectionItem(SUMMON_LOG, { account: me, at: now, kind, cost: plan.cost, results: plan.results }, { id: `${me}:${before}` });
       return { cost: plan.cost, soul: plan.soul, results: plan.results, summon: plan.patch.summon, toPity: pullsToPity(plan.patch) };
     });

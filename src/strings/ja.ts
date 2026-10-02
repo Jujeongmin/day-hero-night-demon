@@ -68,7 +68,7 @@ export const ja: Strings = {
   purchased: '購入済み',
   products: {
     starter_pack: ['スターターパック', 'ネクロマンサー + ゴールド + 魂石30'],
-    season_pass: ['シーズンパス', 'シーズン報酬のパス列 + 限定魔王スキン'],
+    season_pass: ['シーズンパス', 'シーズン報酬のパス列 + 10段階で黒竜スキン（永久、魔王 +10%）'],
     speed_x3: ['3倍速', '攻略・攻城が3倍速く (永久)'],
     premium: ['プレミアムパス', '広告なしですぐ報酬 (1日の上限は同じ、永久)'],
     gold_pouch: ['金貨の袋', 'ゴールド'],
@@ -162,7 +162,8 @@ export const ja: Strings = {
     resetGo: '初期化',
     resetDone: '初期化した',
     lordLook: '魔王の外見',
-    looks: { base: '基本', skull: '骸骨の君主', dragon: '黒竜', lava: '溶岩の魔王', demon: '紫翼の悪魔', summon1: '堕ちた大悪魔', lich: '骨竜リッチ王', abyss: '単眼の深淵君主', emperor: '深淵の皇帝' } as Record<string, string>,
+    lookOwned: (n: number, pct: number) => `外見 ${n}個所持 · 魔王能力 +${pct}%（着なくても適用）`,
+    looks: { base: '基本', dragon: '黒竜', lava: '溶岩の魔王', demon: '紫翼の悪魔', summon1: '堕ちた大悪魔', lich: '骨竜リッチ王', abyss: '単眼の深淵君主', emperor: '深淵の皇帝' } as Record<string, string>,
   },
   pass: {
     rank: '順位',
@@ -174,6 +175,11 @@ export const ja: Strings = {
     dragon: '黒竜',
     passOnly: 'パス',
     claimAll: 'すべて受け取る',
+    only: 'パス限定',
+    dragonKeep: '10段階 · 永久所持',
+    ownBonus: '持っているだけで魔王能力 ',
+    buy: 'パス購入',
+    value: (pct: number) => `魂石購入より +${pct}%`,
     got: (gold: number, soul: number, skin: boolean) =>
       `受け取った！ ${[gold ? `ゴールド ${F(gold)}` : '', soul ? `魂石 ${soul}` : '', skin ? '黒竜の外見' : ''].filter(Boolean).join(' · ')}`,
   },

@@ -67,7 +67,7 @@ export const ko = {
   purchased: '구매 완료',
   products: {
     starter_pack: ['스타터팩', '네크로맨서 + 골드 + 영혼석 30'],
-    season_pass: ['시즌 패스', '시즌 보상 트랙 패스 줄 + 한정 마왕 외형'],
+    season_pass: ['시즌 패스', '시즌 보상 트랙 패스 줄 + 10단계 흑룡 외형(영구, 마왕 +10%)'],
     speed_x3: ['3배속', '공략·공성을 3배 빠르게 (영구)'],
     premium: ['프리미엄 패스', '광고 없이 바로 보상 (하루 한도는 같음, 영구)'],
     gold_pouch: ['금화 주머니', '골드'],
@@ -164,7 +164,8 @@ export const ko = {
     resetGo: '초기화',
     resetDone: '초기화했다',
     lordLook: '마왕 외형',
-    looks: { base: '기본', skull: '해골 군주', dragon: '흑룡', lava: '용암 마왕', demon: '보라 날개 악마', summon1: '타락 대악마', lich: '뼈 용 리치 왕', abyss: '외눈 심연 군주', emperor: '심연 황제' } as Record<string, string>,
+    lookOwned: (n: number, pct: number) => `외형 ${n}개 보유 · 마왕 능력치 +${pct}% (입지 않아도 적용)`,
+    looks: { base: '기본', dragon: '흑룡', lava: '용암 마왕', demon: '보라 날개 악마', summon1: '타락 대악마', lich: '뼈 용 리치 왕', abyss: '외눈 심연 군주', emperor: '심연 황제' } as Record<string, string>,
   },
   pass: {
     rank: '순위',
@@ -176,6 +177,11 @@ export const ko = {
     dragon: '흑룡',
     passOnly: '패스',
     claimAll: '모두 받기',
+    only: '패스 전용',
+    dragonKeep: '10단계 · 영구 소장',
+    ownBonus: '가지고만 있어도 마왕 능력치 ',
+    buy: '패스 구매',
+    value: (pct: number) => `영혼석 구매보다 +${pct}%`,
     got: (gold: number, soul: number, skin: boolean) =>
       `받았다! ${[gold ? `골드 ${F(gold)}` : '', soul ? `영혼석 ${soul}` : '', skin ? '흑룡 외형' : ''].filter(Boolean).join(' · ')}`,
   },

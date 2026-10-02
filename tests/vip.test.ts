@@ -70,10 +70,9 @@ describe('VIP (2026-09-30 approved: cumulative VX, perks are time/convenience/st
   });
 
   it('VIP-only lord looks: lava from VIP 5, demon from VIP 8, otherwise fall back', () => {
-    expect(chooseLordSkin('lava', [], false, 5)).toBe('lava');
-    expect(chooseLordSkin('lava', [], false, 4)).toBeUndefined();
-    expect(chooseLordSkin('lava', [], true, 4)).toBe('skull');
-    expect(chooseLordSkin('demon', [], false, 8)).toBe('demon');
-    expect(chooseLordSkin('demon', [], false, 7)).toBeUndefined();
+    expect(chooseLordSkin('lava', [], 5)).toBe('lava');
+    expect(chooseLordSkin('lava', [], 4)).toBeUndefined();
+    expect(chooseLordSkin('demon', [], 8)).toBe('demon');
+    expect(chooseLordSkin('demon', [], 7)).toBeUndefined();
   });
 });

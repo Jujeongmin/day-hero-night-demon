@@ -33,17 +33,29 @@ describe('pass track', () => {
 
   it('the reward table matches the approved totals', () => {
     const sum = (k: 'free' | 'pass', f: 'gold' | 'soul') => BALANCE.passTiers.reduce((a, t) => a + (t[k][f] ?? 0), 0);
-    expect([sum('free', 'gold'), sum('free', 'soul'), sum('pass', 'gold'), sum('pass', 'soul')]).toEqual([8000, 50, 30000, 200]);
+    expect([sum('free', 'gold'), sum('free', 'soul'), sum('pass', 'gold'), sum('pass', 'soul')]).toEqual([8000, 50, 30000, 480]);
+  });
+
+  it('pass souls are 4x what the same VX buys as soul pouches (+300%)', async () => {
+    const { passSoulBonusPct } = await import('../server/src/pass');
+    expect(passSoulBonusPct()).toBe(300);
   });
 });
 
 describe('chooseLordSkin', () => {
-  it('uses the chosen look only if owned; skull needs this season\'s pass', () => {
-    expect(chooseLordSkin('dragon', ['dragon'], false)).toBe('dragon');
-    expect(chooseLordSkin('dragon', [], true)).toBe('skull');
-    expect(chooseLordSkin('skull', ['dragon'], false)).toBe(undefined);
-    expect(chooseLordSkin(null, [], true)).toBe('skull');
-    expect(chooseLordSkin('base', ['dragon'], true)).toBe(undefined);
+  it('uses the chosen look only if owned; no skull look any more (2026-10-02)', () => {
+    expect(chooseLordSkin('dragon', ['dragon'])).toBe('dragon');
+    expect(chooseLordSkin('dragon', [])).toBe(undefined);
+    expect(chooseLordSkin(null, ['dragon'])).toBe(undefined);
+    expect(chooseLordSkin('base', ['dragon'])).toBe(undefined);
+  });
+
+  it('ownedLooks: kept looks from skins plus VIP looks by level, skull never counts', async () => {
+    const { ownedLooks } = await import('../server/src/pass');
+    expect(ownedLooks([])).toEqual([]);
+    expect(ownedLooks(['dragon', 'skull', 'summon1'])).toEqual(['dragon', 'summon1']);
+    expect(ownedLooks(['lich'], 8)).toEqual(['lich', 'lava', 'demon']);
+    expect(ownedLooks([], 5)).toEqual(['lava']);
   });
 });
 
@@ -52,7 +64,7 @@ describe('season champion looks (2026-10-02)', () => {
     const { BALANCE } = await import('../server/src/catalog');
     const { chooseLordSkin } = await import('../server/src/pass');
     expect(BALANCE.seasonChampionSkins).toEqual({ s1: 'lich', s2: 'abyss', s3: 'emperor' });
-    expect(chooseLordSkin('lich', ['lich'], false)).toBe('lich');
-    expect(chooseLordSkin('abyss', [], false)).toBeUndefined();
+    expect(chooseLordSkin('lich', ['lich'])).toBe('lich');
+    expect(chooseLordSkin('abyss', [])).toBeUndefined();
   });
 });

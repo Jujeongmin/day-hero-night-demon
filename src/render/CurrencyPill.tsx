@@ -10,7 +10,7 @@ const POP_MS = 1300;
  * 오른 만큼은 필 아래에서 "+N"이 떠올랐다 사라진다(2026-10-01 승인: 보상 알림 상자 대신). tone = 글자 색.
  * 내려갈 때는 바로 바뀐다. 움직임 줄이기 설정이면 세지 않는다
  */
-export default function CurrencyPill(props: { icon: string; label: string; value: number; tone?: 'gold' | 'soul' | 'power' }) {
+export default function CurrencyPill(props: { icon: string; label: string; value: number; tone?: 'gold' | 'soul' | 'power'; onPlus?: () => void; plusLabel?: string }) {
   const { value } = props;
   const [shown, setShown] = useState(value);
   const [gain, setGain] = useState(false);
@@ -57,6 +57,8 @@ export default function CurrencyPill(props: { icon: string; label: string; value
       <img src={props.icon} alt="" draggable={false} />
       <b>{formatNum(shown)}</b>
       {pop && <i key={pop.key} className={`gain-pop ${props.tone ?? 'gold'}`} aria-hidden="true">+{formatNum(pop.amount)}</i>}
+      {/* "+"(PixelLab 보라 돌, 2026-10-02 승인 A): 누르면 상점 그 재화 탭으로 */}
+      {props.onPlus && <button className="pill-plus" onClick={props.onPlus} aria-label={props.plusLabel}><img src="ui/plus.png" alt="" draggable={false} /></button>}
     </span>
   );
 }

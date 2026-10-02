@@ -1,6 +1,6 @@
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { errorText, type Api, type HomeData } from '../services/api';
-import { chooseLordSkin } from '../../server/src/pass';
+import { chooseLordSkin, ownedLooks } from '../../server/src/pass';
 import { Portrait } from '../render/Sprite';
 import { lordSpriteId } from '../render/skins';
 import { getAudioPrefs, setAudioPrefs, type AudioPrefs } from '../services/audio';
@@ -69,20 +69,13 @@ export default function Settings(props: {
   const [askReset, setAskReset] = useState(false);
   const [busy, setBusy] = useState(false);
   const left = Math.max(0, 1 + vipPerks(vipOf(home.state)).nicknameExtra - (home.state.profile.nicknameChanges ?? 0));
-  // 마왕 외형: 기본 + 이번 시즌 패스(해골) + 영구 소장(흑룡). 기본만 있으면 칸을 숨긴다
+  // 마왕 외형: 기본 + 가진 외형(패스 10단계 흑룡·VIP·소환 전설·시즌 1위). 기본만 있으면 칸을 숨긴다
   const st = home.state;
-  const looks: ('base' | 'skull' | 'dragon' | 'lava' | 'demon' | 'summon1' | 'lich' | 'abyss' | 'emperor')[] = ['base'];
-  if (st.season.pass) looks.push('skull');
-  if (st.skins?.includes('dragon')) looks.push('dragon');
-  // VIP 전용 외형(5·8등급)
   const vipLv = vipOf(st);
-  if (vipLv >= BALANCE.vip.skins.lava) looks.push('lava');
-  if (vipLv >= BALANCE.vip.skins.demon) looks.push('demon');
-  // 소환 전설 외형
-  if (st.skins?.includes('summon1')) looks.push('summon1');
-  // 시즌 전체 1위 한정 외형
-  for (const c of ['lich', 'abyss', 'emperor'] as const) if (st.skins?.includes(c)) looks.push(c);
-  const current = chooseLordSkin(st.lordSkin ?? null, st.skins ?? [], st.season.pass, vipLv) ?? 'base';
+  const owned = ownedLooks(st.skins ?? [], vipLv);
+  const looks: ('base' | (typeof owned)[number])[] = ['base', ...owned];
+  const current = chooseLordSkin(st.lordSkin ?? null, st.skins ?? [], vipLv) ?? 'base';
+  const lookPct = Math.round(BALANCE.summon.lookOwnBonus * 100);
 
   const change = (patch: Partial<AudioPrefs>) => {
     setAudioPrefs(patch);
@@ -139,6 +132,8 @@ export default function Settings(props: {
       {looks.length > 1 && (
         <>
           <h4>{T.settings.lordLook}</h4>
+          {/* 보유 효과: 가진 외형 하나마다 마왕 +10%, 입지 않아도(2026-10-02 사용자) */}
+          <small className="muted">{T.settings.lookOwned(owned.length, owned.length * lookPct)}</small>
           <div className="looks">
             {looks.map((l) => (
               <button
@@ -149,8 +144,7 @@ export default function Settings(props: {
               >
                 <Portrait id={lordSpriteId(l === 'base' ? undefined : l)} label={T.settings.looks[l]} />
                 <small>{T.settings.looks[l]}</small>
-                {/* 기본이 아닌 외형은 마왕 능력치 +10% (2026-10-02 사용자) */}
-                {l !== 'base' && <em className="look-bonus">+{Math.round((BALANCE.summon.gearStatMult - 1) * 100)}%</em>}
+                {l !== 'base' && <em className="look-bonus">+{lookPct}%</em>}
               </button>
             ))}
           </div>

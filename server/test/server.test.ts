@@ -187,7 +187,7 @@ describe('purchases', () => {
 });
 
 describe('season pass look', () => {
-  test('a pass holder shows the skull lord to attackers', async (server) => {
+  test('the pass gives no skull look any more: attackers see the base lord with no owned looks', async (server) => {
     const D = `t15-pass-${Date.now()}`;
     const A = `t15-look-${Date.now()}`;
     server.connect({ account: D });
@@ -199,7 +199,8 @@ describe('season pass look', () => {
     await server.getHome();
     expect(!!(await findTarget(server, D))).toBe(true);
     const res = await server.startRaid(D, false);
-    expect(res.run.snapshot.lordSkin).toBe('skull');
+    expect(res.run.snapshot.lordSkin).toBeUndefined();
+    expect(res.run.snapshot.lordLooks).toBe(0);
     await server.endRaid(true);
   });
 });
@@ -337,6 +338,7 @@ describe('season pass track', () => {
     await server.getHome();
     expect(await fails(server.setLordSkin('dragon'))).toBe(true);
     expect(await fails(server.setLordSkin('gold'))).toBe(true);
+    expect(await fails(server.setLordSkin('skull'))).toBe(true);
     expect((await server.setLordSkin('base')).lordSkin).toBe('base');
   });
 });

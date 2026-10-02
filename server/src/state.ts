@@ -14,8 +14,8 @@ export interface ResolvedFloor {
 export type StarUnit = MonsterId | HeroId | 'lord';
 
 /** 시즌 패스 보유자의 한정 마왕 외형. 표시용이며 전투 수치에는 영향이 없다. */
-/** skull = 시즌 패스, dragon = 패스 10단계 영구, lava·demon = VIP 5·8 전용 (2026-09-30), summon1 = 소환 전설, lich·abyss·emperor = 시즌 1~3 전체 1위 (2026-10-02) */
-export type LordSkin = 'skull' | 'dragon' | 'lava' | 'demon' | 'summon1' | 'lich' | 'abyss' | 'emperor';
+/** dragon = 패스 10단계 영구, lava·demon = VIP 5·8 전용 (2026-09-30), summon1 = 소환 전설, lich·abyss·emperor = 시즌 1~3 전체 1위 (2026-10-02) */
+export type LordSkin = 'dragon' | 'lava' | 'demon' | 'summon1' | 'lich' | 'abyss' | 'emperor';
 
 export interface CastleSnapshot {
   owner: string;
@@ -26,6 +26,8 @@ export interface CastleSnapshot {
   throneEmpty: boolean;
   shadow: boolean;
   lordSkin?: LordSkin;
+  /** 마왕 외형 보유 수(하나마다 마왕 +10%). 옛 스냅숏은 없어서 lordSkin이 있으면 1로 친다 */
+  lordLooks?: number;
   /** NPC 등급 성 전용: 마왕 레벨(없으면 성 레벨로 계산)과 몬스터·마왕 능력치 배수 */
   lordLevel?: number;
   mult?: number;

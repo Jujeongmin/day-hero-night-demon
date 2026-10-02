@@ -1,0 +1,172 @@
+<meta charset="utf-8">
+<title>패스 창과 + 버튼</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<style>
+/* 레이아웃: 재화 + 버튼 후보 → 패스 창 2안(실제 홈 화면 위 모형) → 순위·기록. 게임과 같은 밤 색 한 테마 */
+:root {
+  color-scheme: dark;
+  --page: #120c18; --ink: #ece4f2; --muted: #a99bb5; --line: #2f2439;
+  --gold: #ffcf4d; --ruby: #ff4a5e; --hp: #3cf07a; --panel: rgb(81, 20, 35); --bone: #efe3c8;
+  --game: 'Do Hyeon', 'Malgun Gothic', sans-serif;
+  --body: 'IBM Plex Sans KR', system-ui, sans-serif;
+}
+body { background: var(--page); color: var(--ink); font: 15px/1.65 var(--body); }
+main { max-width: 980px; margin: 0 auto; padding-block: 28px 64px; padding-inline: 16px; display: grid; gap: 36px; }
+h1, h2, h3 { font-family: var(--game); font-weight: 400; margin: 0; text-wrap: balance; }
+h1 { font-size: 30px; } h2 { font-size: 22px; } h3 { font-size: 18px; }
+.rec { font: 600 11px var(--body); color: #1c1206; background: var(--gold); padding: 2px 6px; border-radius: 4px; vertical-align: 2px; }
+p { margin: 0; max-width: 65ch; }
+.lede, .note { color: var(--muted); } .note { font-size: 13px; }
+section { display: grid; gap: 14px; }
+.opts { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.opt { display: grid; gap: 8px; width: 320px; max-width: 100%; }
+.opt p { font-size: 14px; }
+
+/* + 버튼 후보 */
+.plus-row { display: flex; flex-wrap: wrap; gap: 18px; }
+.plus-c { display: grid; gap: 8px; justify-items: center; width: 200px; text-align: center; font-size: 14px; }
+.plus-c .big { width: 96px; height: 96px; image-rendering: pixelated; background: #221b29; border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
+.plus-c small { color: var(--muted); }
+.pill { border: 8px solid transparent; border-image: url(pill.png) 8 fill / 8px stretch; image-rendering: pixelated; padding: 0 2px 0 4px; display: inline-flex; align-items: center; gap: 4px; font: 15px var(--game); color: var(--bone); white-space: nowrap; }
+.pill > img { width: 22px; height: 22px; image-rendering: pixelated; }
+.pill .p { width: 22px; height: 22px; image-rendering: pixelated; margin-right: -4px; }
+
+/* 홈 화면 위 모형 */
+.phone { position: relative; width: 320px; height: 548px; max-width: 100%; overflow: hidden; border: 2px solid var(--line); border-radius: 18px; background: #0c0716 url(home.jpg) center top / cover; font-family: var(--game); color: var(--bone); }
+.dim { position: absolute; inset: 0; background: #07030acc; }
+.modal { position: absolute; left: 10px; right: 10px; top: 50%; translate: 0 -50%; border: 12px solid transparent; border-image: url(frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated; padding: 0 6px 8px; display: grid; gap: 6px; }
+.modal::before { content: ''; position: absolute; left: 50%; top: -38px; width: 140px; height: 42px; translate: -50% 0; background: url(crest.png) center / contain no-repeat; image-rendering: pixelated; }
+.mhead { display: flex; justify-content: space-between; align-items: center; font-size: 18px; }
+.mhead img { width: 24px; height: 24px; image-rendering: pixelated; }
+.stage { position: relative; display: flex; justify-content: center; align-items: flex-end; gap: 4px; padding: 8px 4px 6px; border: 8px solid transparent; border-image: url(pill.png) 8 fill / 8px stretch; image-rendering: pixelated; background: radial-gradient(ellipse at 50% 70%, #7a1b2f 0%, transparent 70%); }
+.look { display: grid; justify-items: center; font-size: 13px; line-height: 1.15; text-align: center; }
+.look b { font-weight: 400; color: var(--gold); font-size: 15px; }
+.look small { color: #c9ae9a; font-size: 11px; }
+.spr { image-rendering: pixelated; background-repeat: no-repeat; }
+.s4 { animation: f4 .8s steps(4) infinite; } .s5 { animation: f5 1s steps(5) infinite; }
+.x15 { width: 144px; height: 144px; background-size: auto 144px; --w: 144px; }
+.x12 { width: 112px; height: 112px; background-size: auto 112px; --w: 112px; }
+.x22 { width: 200px; height: 200px; background-size: auto 200px; --w: 200px; }
+.x10 { width: 96px; height: 96px; background-size: auto 96px; --w: 96px; }
+.x08 { width: 72px; height: 72px; background-size: auto 72px; --w: 72px; }
+@keyframes f4 { to { background-position-x: calc(var(--w) * -4); } }
+@keyframes f5 { to { background-position-x: calc(var(--w) * -5); } }
+.tag { position: absolute; top: 4px; left: 6px; font-size: 12px; color: #1c1206; background: var(--gold); padding: 0 6px; border-radius: 3px; }
+.perks { display: grid; gap: 2px; font-size: 14px; }
+.perks span { display: flex; align-items: center; gap: 6px; }
+.perks img { width: 20px; height: 20px; image-rendering: pixelated; }
+.perks b { color: var(--gold); font-weight: 400; }
+.buy { min-height: 44px; display: grid; place-items: center; font-size: 19px; color: var(--bone); border: 14px solid transparent; border-image: url(button_big.png) 20 fill / 14px stretch; image-rendering: pixelated; }
+.prog { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.prog img { width: 18px; height: 18px; image-rendering: pixelated; }
+.prog i { flex: 1; height: 8px; background: #2a0d16; border: 1px solid #000; position: relative; }
+.prog i::after { content: ''; position: absolute; inset: 0 70% 0 0; background: var(--gold); }
+.track { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.cell { display: grid; justify-items: center; gap: 2px; font-size: 11px; padding: 3px 0; border: 6px solid transparent; border-image: url(pill.png) 8 fill / 6px stretch; image-rendering: pixelated; }
+.cell img { width: 18px; height: 18px; image-rendering: pixelated; }
+.cell.lock { filter: brightness(.55); }
+.lbl { font-size: 12px; color: #c9ae9a; }
+.tabs2 { display: flex; gap: 4px; }
+.tabs2 span { flex: 1; text-align: center; padding: 2px 0; border: 8px solid transparent; border-image: url(bar.png) 10 fill / 8px stretch; image-rendering: pixelated; font-size: 14px; filter: brightness(.7); }
+.tabs2 span.on { filter: none; color: var(--gold); }
+.line { display: flex; justify-content: space-between; font-size: 14px; }
+.line.me { color: var(--gold); }
+.decide { border: 1px solid var(--gold); border-radius: 6px; padding: 14px 16px; display: grid; gap: 8px; }
+.decide h2 { color: var(--gold); font-size: 19px; }
+ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+</style>
+<main>
+  <header style="display:grid;gap:8px">
+    <h1>패스 창과 + 버튼</h1>
+    <p class="lede">재화 옆 "+" 버튼을 PixelLab 그림으로 바꾸고, 패스·순위·기록을 아래 창 대신 화면 가운데 창으로 띄웁니다. 패스 창은 "사면 무엇을 얻는지"를 맨 위에 크게 보여 줍니다.</p>
+  </header>
+
+  <section>
+    <h2>1. 재화 + 버튼</h2>
+    <p class="note">PixelLab으로 그린 32px 버튼입니다. 게임에서는 22px로 골드·영혼석 숫자 오른쪽에 붙습니다. 누르면 그 재화 탭으로 상점이 열립니다.</p>
+    <div class="plus-row">
+      <div class="plus-c"><img class="big" src="plus_1.png" alt=""><span class="pill"><img src="gold.png" alt="">234<img class="p" src="plus_1.png" alt=""></span><span class="pill"><img src="soul.png" alt="">91<img class="p" src="plus_1.png" alt=""></span>A. 보라 돌 + 금 테두리 <small>재화 표시 틀과 가장 잘 어울림</small></div>
+      <div class="plus-c"><img class="big" src="plus_2.png" alt=""><span class="pill"><img src="gold.png" alt="">234<img class="p" src="plus_2.png" alt=""></span><span class="pill"><img src="soul.png" alt="">91<img class="p" src="plus_2.png" alt=""></span>B. 초록 구슬 <small>"더하기"가 가장 또렷, 색이 튐</small></div>
+      <div class="plus-c"><img class="big" src="plus_3.png" alt=""><span class="pill"><img src="gold.png" alt="">234<img class="p" src="plus_3.png" alt=""></span><span class="pill"><img src="soul.png" alt="">91<img class="p" src="plus_3.png" alt=""></span>C. 붉은 루비 <small>마왕성 붉은 색, 눈에 잘 띔</small></div>
+      <div class="plus-c"><img class="big" src="plus_4.png" alt=""><span class="pill"><img src="gold.png" alt="">234<img class="p" src="plus_4.png" alt=""></span><span class="pill"><img src="soul.png" alt="">91<img class="p" src="plus_4.png" alt=""></span>D. 금화 <small>골드 아이콘과 비슷해 헷갈릴 수 있음</small></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. 패스 창 (가운데)</h2>
+    <p class="note">패스를 사면: 패스 10단계에서 <b>흑룡</b> 외형 영구 소장(해골 군주는 없앰) · 외형은 <b>가지고만 있어도</b> 마왕 능력치 +10%(외형마다) · 패스 줄 보상(골드 30k·영혼석 200, 무료 줄의 약 4배). 산 뒤에는 위 미리보기가 줄어들고 보상 트랙이 커집니다.</p>
+    <div class="opts">
+      <div class="opt">
+        <h3>A. 흑룡 + 효과 + 트랙 한 화면 <span class="rec">추천</span></h3>
+        <div class="phone"><div class="dim"></div>
+          <div class="modal">
+            <div class="mhead"><span>시즌 패스</span><img src="close_x.png" alt=""></div>
+            <div class="stage">
+              <span class="tag">패스 전용</span>
+                            <div class="look"><span class="spr s5 x15" style="background-image:url(lord_dragon_idle.png)"></span><b>흑룡</b><small>10단계 · 영구 소장</small></div>
+            </div>
+            <div class="perks">
+              <span><img src="skin_dragon.png" alt="">가지고만 있어도 마왕 능력치 <b>+10%</b></span>
+              <span><img src="gold.png" alt="">패스 보상 골드 <b>30k</b> · <img src="soul.png" alt="">영혼석 <b>200</b></span>
+            </div>
+            <span class="buy">패스 구매</span>
+            <div class="prog"><img src="honor.png" alt="">3단계<i></i>60/100</div>
+            <div class="track">
+              <div class="cell"><img src="gold.png" alt="">500</div><div class="cell"><img src="soul.png" alt="">5</div><div class="cell"><img src="gold.png" alt="">1k</div><div class="cell"><img src="soul.png" alt="">5</div>
+              <div class="cell lock"><img src="gold.png" alt="">2k</div><div class="cell lock"><img src="soul.png" alt="">20</div><div class="cell lock"><img src="gold.png" alt="">4k</div><div class="cell lock"><img src="soul.png" alt="">30</div>
+            </div>
+          </div>
+        </div>
+        <p>흑룡·효과·구매 버튼·보상 트랙이 한 화면에 다 보입니다. 지금 몇 단계인지도 바로 보여서 "조금만 더 하면 흑룡"이 읽힙니다.</p>
+      </div>
+      <div class="opt">
+        <h3>B. 흑룡 하나를 크게</h3>
+        <div class="phone"><div class="dim"></div>
+          <div class="modal">
+            <div class="mhead"><span>시즌 패스</span><img src="close_x.png" alt=""></div>
+            <div class="stage" style="flex-direction:column;align-items:center">
+              <span class="tag">패스 전용</span>
+              <span class="spr s5 x22" style="background-image:url(lord_dragon_idle.png)"></span>
+              <div class="look"><b>흑룡 · 가지고만 있어도 마왕 +10%</b><small>패스 10단계 · 영구 소장</small></div>
+            </div>
+            <div class="perks">
+              <span><img src="gold.png" alt="">골드 <b>30k</b> · <img src="soul.png" alt="">영혼석 <b>200</b> (무료의 4배)</span>
+            </div>
+            <span class="buy">패스 구매</span>
+            <span class="lbl">보상 트랙 ▶</span>
+          </div>
+        </div>
+        <p>흑룡을 아주 크게 보여 줘서 "갖고 싶다"를 노림. 보상 트랙은 "보상 트랙 ▶"을 눌러야 보입니다(산 뒤에는 바로 트랙).</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>3. 순위·기록 (가운데)</h2>
+    <p class="note">패스와 같은 가운데 창으로 띄웁니다. 순위 창은 "순위 | 공성" 두 탭만 있고 패스 탭은 빼서, 순위를 눌러도 패스가 섞이지 않습니다. 기록 창 내용은 지금 그대로입니다.</p>
+    <div class="opts">
+      <div class="opt">
+        <div class="phone"><div class="dim"></div>
+          <div class="modal">
+            <div class="mhead"><span>순위</span><img src="close_x.png" alt=""></div>
+            <div class="tabs2"><span class="on">순위</span><span>공성</span></div>
+            <div class="line"><span>시즌 1 · 내 명예 166</span><span>3일 남음</span></div>
+            <div class="line"><span>1. 어둠의군주</span><span>412</span></div>
+            <div class="line me"><span>2. 나</span><span>166</span></div>
+            <div class="line"><span>3. 해골왕</span><span>120</span></div>
+            <div class="line"><span>4. 그림자 마왕</span><span>88</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="decide">
+    <h2>정해 주실 것</h2>
+    <ul>
+      <li>+ 버튼: A 보라 돌(추천) / B 초록 구슬 / C 붉은 루비 / D 금화 / 다시 그리기</li>
+      <li>패스 창: A 외형 둘 나란히(추천) / B 흑룡 크게</li>
+      <li>순위·기록 가운데 창(순위에서 패스 탭 빼기): 이대로 진행</li>
+    </ul>
+  </section>
+</main>

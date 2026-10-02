@@ -1,10 +1,48 @@
 import { useState } from 'react';
 import { BALANCE, type PassReward } from '../../server/src/catalog';
 import { formatNum, scaledGold } from '../../server/src/growth';
-import { passTier, planPassClaim } from '../../server/src/pass';
+import { passSoulBonusPct, passTier, planPassClaim } from '../../server/src/pass';
+import Sprite from '../render/Sprite';
 import { errorText, type Api, type HomeData } from '../services/api';
-import { buy } from '../services/shop';
+import { buy, type ShopItem } from '../services/shop';
 import { T } from '../strings/ko';
+
+/** 패스 줄 보상 합(골드는 공성 최고 단계에 맞춰 커진다) */
+function passTotals(best: number) {
+  let gold = 0;
+  let soul = 0;
+  for (const t of BALANCE.passTiers) {
+    gold += scaledGold(t.pass.gold ?? 0, best);
+    soul += t.pass.soul ?? 0;
+  }
+  return { gold, soul };
+}
+
+/**
+ * 패스 구매 미리보기(2026-10-02 승인 A): 사면 얻는 흑룡(10단계 영구 소장)을 크게, 보유 효과와 패스 줄 보상 합,
+ * "영혼석 구매보다 +300%"를 구매 버튼 위에 보인다. 산 뒤에는 숨긴다.
+ */
+function PassOffer(props: { best: number; item?: ShopItem }) {
+  const { gold, soul } = passTotals(props.best);
+  const lookPct = Math.round(BALANCE.summon.lookOwnBonus * 100);
+  return (
+    <div className="pass-offer">
+      <div className="pass-stage">
+        <span className="pass-tag">{T.pass.only}</span>
+        <Sprite id="lord_dragon" scale={1.4} label={T.pass.dragon} />
+        <span className="pass-look"><b>{T.pass.dragon}</b><small>{T.pass.dragonKeep}</small></span>
+      </div>
+      <div className="pass-perks">
+        <span><img src="icons/skin_dragon.png" alt="" draggable={false} />{T.pass.ownBonus}<b>+{lookPct}%</b></span>
+        <span><img src="icons/gold.png" alt="" draggable={false} /><b>{formatNum(gold)}</b><img src="icons/soul.png" alt="" draggable={false} /><b>{formatNum(soul)}</b></span>
+      </div>
+      <button className="btn big pass-buy" disabled={props.item ? !props.item.purchasable : false} onClick={() => buy('season_pass')}>
+        <span className="pass-value">{T.pass.value(passSoulBonusPct())}</span>
+        {props.item ? `${T.pass.buy} · ${T.buyFor(props.item.price)}` : T.pass.buy}
+      </button>
+    </div>
+  );
+}
 
 const PAGE = 4;
 
@@ -24,7 +62,7 @@ function Reward(props: { r: PassReward; best: number; state: 'got' | 'ready' | '
 }
 
 /** 시즌 패스 보상 트랙: 위 줄 무료, 아래 줄 패스. 단계·받을 보상은 서버와 같은 순수 함수로 계산해 보여 주고, 지급은 서버가 한다. */
-export default function Pass(props: { api: Api; home: HomeData; onRefresh: () => Promise<void>; onToast: (m: string) => void }) {
+export default function Pass(props: { api: Api; home: HomeData; item?: ShopItem; onRefresh: () => Promise<void>; onToast: (m: string) => void }) {
   const { api, home, onRefresh, onToast } = props;
   const season = home.state.season;
   const tier = passTier(season.honor);
@@ -57,6 +95,7 @@ export default function Pass(props: { api: Api; home: HomeData; onRefresh: () =>
 
   return (
     <>
+      {!season.pass && <PassOffer best={best} item={props.item} />}
       <div className="pass-prog">
         <img src="icons/honor.png" alt="" draggable={false} />
         <span>{T.pass.tier(tier)}</span>

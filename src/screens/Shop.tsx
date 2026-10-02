@@ -25,10 +25,12 @@ const HERO_ORDER: ProductId[] = ['starter_pack', 'season_pass', 'soul_relic'];
  */
 export default function Shop(props: {
   api: Api; home: HomeData; items: ShopItem[]; owned: Set<string>;
+  /** 처음 열 탭(재화 "+"로 열면 그 재화) */
+  initialTab?: ShopTab;
   onClose: () => void; onRefresh: () => Promise<void>; onToast: (m: string) => void;
 }) {
   const { api, home, items, owned, onClose, onRefresh, onToast } = props;
-  const [tab, setTab] = useState<ShopTab>('soul');
+  const [tab, setTab] = useState<ShopTab>(props.initialTab ?? 'soul');
   const [goldBusy, setGoldBusy] = useState(false);
   const best = home.state.siege?.best ?? 1;
   const avgLevel = avgMonsterLevel(home.state.roster, home.state.stars ?? {});
