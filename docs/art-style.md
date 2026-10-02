@@ -154,3 +154,6 @@
 
 ## 컷신 마왕 교체 (2026-10-02 승인)
 - 컷 3·4의 마왕을 게임 속 마왕 특징(불타는 왕관·검은 가시 갑옷·휜 뿔·붉은 박쥐 날개)으로 다시 그림: pixflux 240×240, 컷 3 seed 2401, 컷 4 seed 2411. 컷 3은 머리 위 "불붙은 전구"의 불꽃만 직접 지워 전구로(`art/cutscene/v2/cut3_a_bulb.png`). 탈락 후보 `art/cutscene/v2/`. 코드에서 `?v=3`.
+
+## 시즌 1위 한정 외형 (2026-10-02 승인)
+- 소환 전설 후보(object 19d478ca 리뷰)의 남은 3장을 꺼냄: 시즌 1 뼈 용 리치 왕 `lord_lich_*`(object 0833ee80, 쓰러짐은 두 번째 판 death2, 첫 판 `art/frames/lord_lich_death_v1`), 시즌 2 외눈 심연 군주 `lord_abyss_*`(object b07a0262, 쓰러짐이 약해 다시 뽑을 만함), 시즌 3 심연 황제 `lord_emperor_*`(object 9d58c765). v3 idle 4 · attack/death 7.

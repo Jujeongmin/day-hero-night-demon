@@ -46,3 +46,13 @@ describe('chooseLordSkin', () => {
     expect(chooseLordSkin('base', ['dragon'], true)).toBe(undefined);
   });
 });
+
+describe('season champion looks (2026-10-02)', () => {
+  it('s1 lich, s2 abyss, s3 emperor; an owned champion look can be worn', async () => {
+    const { BALANCE } = await import('../server/src/catalog');
+    const { chooseLordSkin } = await import('../server/src/pass');
+    expect(BALANCE.seasonChampionSkins).toEqual({ s1: 'lich', s2: 'abyss', s3: 'emperor' });
+    expect(chooseLordSkin('lich', ['lich'], false)).toBe('lich');
+    expect(chooseLordSkin('abyss', [], false)).toBeUndefined();
+  });
+});

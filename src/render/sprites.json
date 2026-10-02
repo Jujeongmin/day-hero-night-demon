@@ -1069,10 +1069,76 @@
     "w": 96,
     "h": 96,
     "box": [
-      1,
       0,
-      95,
+      0,
+      96,
+      96
+    ]
+  },
+  "lord_emperor_idle": {
+    "frames": 4,
+    "w": 96,
+    "h": 96,
+    "box": [
+      0,
+      0,
+      72,
+      93
+    ]
+  },
+  "lord_emperor_attack": {
+    "frames": 7,
+    "w": 96,
+    "h": 96,
+    "box": [
+      0,
+      0,
+      96,
+      93
+    ]
+  },
+  "lord_emperor_death": {
+    "frames": 7,
+    "w": 96,
+    "h": 96,
+    "box": [
+      0,
+      0,
+      87,
+      93
+    ]
+  },
+  "lord_abyss_idle": {
+    "frames": 4,
+    "w": 96,
+    "h": 96,
+    "box": [
+      3,
+      2,
+      93,
       94
+    ]
+  },
+  "lord_abyss_attack": {
+    "frames": 7,
+    "w": 96,
+    "h": 96,
+    "box": [
+      1,
+      3,
+      95,
+      93
+    ]
+  },
+  "lord_abyss_death": {
+    "frames": 7,
+    "w": 96,
+    "h": 96,
+    "box": [
+      1,
+      3,
+      95,
+      93
     ]
   }
 }
