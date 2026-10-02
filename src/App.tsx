@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useMyLiveState, useServer } from './services/connection';
 import type { OnboardingStage, UserState } from '../server/src/state';
 import { createApi, errorText, type EndResult, type HomeData } from './services/api';
@@ -68,6 +68,16 @@ export default function App() {
   const [home, setHome] = useState<HomeData | null>(null);
   const [raiding, setRaiding] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
+  // 강화 창은 닫았다 다시 열어도 보던 스크롤 위치 그대로(2026-10-02 사용자)
+  const KEEP_SCROLL = ['upgrade'];
+  const scrollMemo = useRef<Record<string, number>>({});
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const panelName = panel?.name;
+  useLayoutEffect(() => {
+    if (panelName && KEEP_SCROLL.includes(panelName) && bodyRef.current) bodyRef.current.scrollTop = scrollMemo.current[panelName] ?? 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [panelName]);
+  const rememberScroll = (e: React.UIEvent<HTMLDivElement>) => { if (panelName && KEEP_SCROLL.includes(panelName)) scrollMemo.current[panelName] = e.currentTarget.scrollTop; };
   const [summonOpen, setSummonOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [shopTab, setShopTab] = useState<'soul' | 'gold' | 'special'>('soul');
@@ -379,7 +389,7 @@ export default function App() {
             <span>{title}</span>
             <button className="close" data-tut="panel-close" onClick={() => setPanel(null)} aria-label={T.close}><img src="ui/close_x.png" alt="" draggable={false} /></button>
           </header>
-          <div className="sheet-body">{body}</div>
+          <div className="sheet-body" ref={bodyRef} onScroll={rememberScroll}>{body}</div>
         </section>
       )}
       {/* 패스·순위·기록은 화면 가운데 창(2026-10-02 사용자). 바깥을 누르면 닫힌다 */}
