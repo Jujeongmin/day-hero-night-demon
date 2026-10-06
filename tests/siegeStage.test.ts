@@ -53,7 +53,7 @@ describe('siege waves', () => {
     for (let i = 1; i <= 3; i++) {
       // 파도가 도착하자마자 처리(게임을 켜 둔 동안)
       const r = runSiege({ account: 'a', stage, lastWaveAt: (i - 1) * W, now: i * W + 5, castleLevel: 10, floors: strong });
-      expect(r.waves).toEqual([{ at: i * W, won: true }]);
+      expect(r.waves).toEqual([{ at: i * W, won: true, stage: i }]);
       stage = r.stage;
       gold += r.gold;
     }
@@ -63,7 +63,7 @@ describe('siege waves', () => {
 
   it('while away the stage stays put; held waves still pay half (2026-10-06)', () => {
     const r = runSiege({ account: 'a', stage: 1, lastWaveAt: 0, now: 3 * W, castleLevel: 10, floors: strong });
-    expect(r.waves).toEqual([{ at: W, won: true }, { at: 2 * W, won: true }, { at: 3 * W, won: true }]);
+    expect(r.waves).toEqual([{ at: W, won: true, stage: 1 }, { at: 2 * W, won: true, stage: 1 }, { at: 3 * W, won: true, stage: 1 }]);
     // 처리 시각(3W) 기준으로 앞의 두 파도는 자리 비운 동안 도착 → 단계 그대로·절반, 마지막은 방금 도착 → 단계 +1·제값
     const half = (g: number) => Math.floor(g * BALANCE.awaySiegeGoldMult);
     expect(r.gold).toBe(half(waveGold(1)) + half(waveGold(1)) + waveGold(1));

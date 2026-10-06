@@ -729,3 +729,4 @@ span.up-pt { cursor: default; }
 /* 의뢰 "가기"로 온 곳에서 눌러야 할 버튼을 3번 반짝인다(2026-10-02) */
 .hint-pulse { animation: hintPulse 1s ease-in-out 3; }
 @keyframes hintPulse { 50% { filter: brightness(1.5) drop-shadow(0 0 8px #ffcf4d); transform: scale(1.06); } }
+.siege-challenge { animation: dotPop 1.4s ease-in-out infinite; }

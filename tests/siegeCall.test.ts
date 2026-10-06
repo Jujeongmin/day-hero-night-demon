@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../server/src/catalog';
-import { calledWaveGold, floorSpeedUp, SIEGE_REPLAY, siegeCallBlock, siegeReplayMs, siegeSpeed } from '../server/src/siege';
+import { calledWaveGold, floorSpeedUp, SIEGE_REPLAY, siegeAfter, siegeCallBlock, siegeFightStage, siegeReplayMs, siegeSpeed } from '../server/src/siege';
 
 const W = BALANCE.siegeWaveMs;
 const T0 = Date.UTC(2026, 9, 1, 3);
@@ -41,5 +41,23 @@ describe('continuous siege (2026-10-06)', () => {
     expect(calledWaveGold(1200, W / 6, 3)).toBe(600);
     expect(calledWaveGold(1200, 10 * W, 1)).toBe(1200);
     expect(calledWaveGold(0, W, 1)).toBe(0);
+  });
+});
+
+describe('repeat when blocked, challenge to go up (2026-10-06)', () => {
+  it('climbs while winning; a breach drops to the stage below and repeats it', () => {
+    expect(siegeAfter({ stage: 5, won: true })).toEqual({ stage: 6, farming: false });
+    expect(siegeAfter({ stage: 5, won: false })).toEqual({ stage: 4, farming: true });
+    // 반복 중에 막으면 그 단계 그대로(골드는 그대로 받는다)
+    expect(siegeAfter({ stage: 4, farming: true, won: true })).toEqual({ stage: 4, farming: true });
+    // 반복하던 단계도 뚫리면 한 단계 더 아래
+    expect(siegeAfter({ stage: 4, farming: true, won: false })).toEqual({ stage: 3, farming: true });
+  });
+
+  it('a challenge fights one stage up: win resumes climbing, loss keeps repeating', () => {
+    expect(siegeFightStage({ stage: 4, farming: true, challenge: true })).toBe(5);
+    expect(siegeFightStage({ stage: 4, farming: false, challenge: true })).toBe(4);
+    expect(siegeAfter({ stage: 4, farming: true, challenge: true, won: true })).toEqual({ stage: 6, farming: false });
+    expect(siegeAfter({ stage: 4, farming: true, challenge: true, won: false })).toEqual({ stage: 4, farming: true });
   });
 });

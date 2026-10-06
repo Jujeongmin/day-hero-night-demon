@@ -120,6 +120,24 @@ export function calledWaveGold(waveGoldFull: number, since: number, speed: Siege
   return Math.floor(waveGoldFull * Math.min(1, Math.max(0, since) * speed / BALANCE.siegeWaveMs));
 }
 
+/**
+ * 막히면 반복·도전(2026-10-06 사용자): 뚫리면 직전 단계로 내려가 그 단계를 반복(farming)하고 저절로 오르지 않는다.
+ * 반복 중 막은 파도도 골드를 준다. 도전(challenge)하면 다음 파도가 한 단계 위 — 깨면 다시 저절로 오르고, 지면 반복으로.
+ * stage = 다음에 싸울 단계(반복 중이면 반복하는 단계)
+ */
+export function siegeFightStage(p: { stage: number; farming?: boolean; challenge?: boolean }): number {
+  return Math.max(1, p.stage) + (p.farming && p.challenge ? 1 : 0);
+}
+
+/** 파도 결과 뒤의 단계·반복 여부 */
+export function siegeAfter(p: { stage: number; farming?: boolean; challenge?: boolean; won: boolean }): { stage: number; farming: boolean } {
+  const stage = Math.max(1, p.stage);
+  const fought = siegeFightStage(p);
+  const challenging = !!p.farming && !!p.challenge;
+  if (p.won) return p.farming && !challenging ? { stage, farming: true } : { stage: fought + 1, farming: false };
+  return challenging ? { stage, farming: true } : { stage: Math.max(1, fought - 1), farming: true };
+}
+
 /** 파도 하나: at 시각의 시드로 싸워 막았는지와 다음 단계·골드를 낸다. record면 실제 전투 기록(log)도 준다 */
 export function fightWave(p: { account: string; stage: number; at: number; castleLevel: number; floors: ResolvedFloor[]; mult?: number; lordStars?: number; lordLooks?: number; lordSkin?: string; record?: boolean }): { won: boolean; stage: number; gold: number; log?: FloorLog[] } {
   const stage = Math.max(1, p.stage);
@@ -140,16 +158,19 @@ export function runSiege(p: {
   lordSkin?: string;
   /** VIP 등급: 자리 비운 공성 골드 배수와 최대 시간 */
   vip?: number;
-}): { stage: number; peak: number; lastWaveAt: number; gold: number; waves: { at: number; won: boolean }[]; fresh: { stage: number; won: boolean }[]; lastLog?: FloorLog[] } {
+  /** 막혀서 반복 중인가 */
+  farming?: boolean;
+}): { stage: number; farming: boolean; peak: number; lastWaveAt: number; gold: number; waves: { at: number; won: boolean; stage: number }[]; fresh: { stage: number; won: boolean }[]; lastLog?: FloorLog[] } {
   const W = BALANCE.siegeWaveMs;
   const total = Math.max(0, Math.floor((p.now - p.lastWaveAt) / W));
   const perks = vipPerks(p.vip ?? 0);
   const cap = Math.floor((perks.capHours * 3_600_000) / W);
   const skip = Math.max(0, total - cap);
   let stage = Math.max(1, p.stage);
+  let farming = !!p.farming;
   let peak = stage;
   let gold = 0;
-  const waves: { at: number; won: boolean }[] = [];
+  const waves: { at: number; won: boolean; stage: number }[] = [];
   /** 게임을 켜 둔 동안 치른 파도(싸운 단계·결과): 막힘 제안 계산용 */
   const fresh: { stage: number; won: boolean }[] = [];
   let lastLog: FloorLog[] | undefined;
@@ -157,18 +178,18 @@ export function runSiege(p: {
     const at = p.lastWaveAt + i * W;
     // 마지막 파도만 전투 기록을 남긴다(홈 화면이 재생한다)
     const r = fightWave({ account: p.account, stage, at, castleLevel: p.castleLevel, floors: p.floors, mult: p.mult, lordStars: p.lordStars, lordLooks: p.lordLooks, lordSkin: p.lordSkin, record: i === total });
-    waves.push({ at, won: r.won });
+    waves.push({ at, won: r.won, stage });
     // 도착한 지 오래 지나 처리된 파도(자리 비운 동안)는 골드 절반, 단계는 그대로(2026-10-06 사용자: 방치 때 공성이 오르지 않게).
     // 단계는 게임을 켜 둔 동안 온 파도로만 오르내린다
     const away = p.now - at > BALANCE.awayGraceMs;
     gold += away ? Math.floor(r.gold * perks.awayMult) : r.gold;
     if (!away) {
       fresh.push({ stage, won: r.won });
-      stage = r.stage;
+      ({ stage, farming } = siegeAfter({ stage, farming, won: r.won }));
     }
     peak = Math.max(peak, stage);
     if (r.log) lastLog = r.log;
   }
-  const out = { stage, peak, lastWaveAt: p.lastWaveAt + total * W, gold, waves, fresh };
+  const out = { stage, farming, peak, lastWaveAt: p.lastWaveAt + total * W, gold, waves, fresh };
   return lastLog ? { ...out, lastLog } : out;
 }

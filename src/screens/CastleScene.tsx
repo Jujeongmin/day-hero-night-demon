@@ -187,6 +187,9 @@ export default function CastleScene(props: {
   const [calling, setCalling] = useState(false);
   // 실패하면 잠깐 쉬었다 다시(연속 실패로 서버를 두드리지 않게)
   const [retryAt, setRetryAt] = useState(0);
+  // 도전(2026-10-06): 막혀서 반복 중일 때 누르면 다음 파도가 한 단계 위
+  const [challenge, setChallenge] = useState(false);
+  const farming = s.siege?.farming === true;
   // 돌아왔을 때 요약 카드: 서버가 10분 넘게 밀린 파도를 처리한 응답에서 한 번만 띄운다
   const [away, setAway] = useState<NonNullable<HomeData['siegeAway']> | null>(null);
   useEffect(() => {
@@ -220,7 +223,7 @@ export default function CastleScene(props: {
   const lastWave = calledWave && (!served || calledWave.at > served.at) ? calledWave : served;
   // 공성 실제 전투 재생(탑 위). 막은 파도면 쓰러진 침입자마다 골드(파도 골드 ÷ 3). 파도 전 단계 = 막았으면 지금 −1, 뚫렸으면 +1
   const nowStage = s.siege?.stage ?? 1;
-  const waveStage = lastWave ? Math.max(1, lastWave.won ? nowStage - 1 : nowStage + 1) : nowStage;
+  const waveStage = lastWave?.stage ?? (lastWave ? Math.max(1, lastWave.won ? nowStage - 1 : nowStage + 1) : nowStage);
   // 오래 비웠다 돌아와 요약 카드가 뜨는 조회의 파도는 재생하지 않는다(카드와 겹치지 않게)
   const replayWave = lastWave === served && home.siegeAway ? null : lastWave;
   // 재생 진행 중 큰 단계(싸우는 층·뚫린 층·결과)만 받는다. 한 번 칠 때마다의 그림은 ReplayLayer 안에서만 다시 그린다
@@ -243,14 +246,15 @@ export default function CastleScene(props: {
     const id = window.setTimeout(() => {
       if (document.hidden) { setRetryAt(Date.now() + 3000); return; }
       setCalling(true);
-      api.callSiegeWave(speed)
-        .then((r) => { setCalledWave(r.wave); return onRefresh(); })
+      const ch = challenge && farming;
+      api.callSiegeWave(speed, ch)
+        .then((r) => { setCalledWave(r.wave); if (ch) setChallenge(false); return onRefresh(); })
         .catch(() => { setRetryAt(Date.now() + 5000); return onRefresh().catch(() => undefined); })
         .finally(() => setCalling(false));
     }, Math.max(0, wait));
     return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siegeOn, replaying, calling, speed, s.siege?.nextAt, retryAt]);
+  }, [siegeOn, replaying, calling, speed, s.siege?.nextAt, retryAt, challenge, farming]);
   const floorsCount = s.castle.floors.length;
   const throneFight = replay.floor !== null && replay.floor >= floorsCount;
   // 영구 2배(옛 상품) 계정은 광고 2배를 쓰지 않는다
@@ -372,6 +376,8 @@ export default function CastleScene(props: {
         // 튜토리얼 중에는 공성 단계 표시·바로 부르기를 숨긴다(시선이 흩어지지 않게, 2026-10-02)
         compact={panelOpen || (s.onboarding?.at ?? 'done') !== 'done'}
         speed={speed}
+        farming={farming}
+        onChallenge={challenge ? null : () => setChallenge(true)}
         onFighting={onDefending}
         onLordHp={onLordHp}
       />

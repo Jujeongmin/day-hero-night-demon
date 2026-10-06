@@ -249,6 +249,10 @@ export const ko = {
     later: '나중에',
   },
   siege: {
+    farm: (n: number) => `공성 ${n}단계 반복 중`,
+    challenge: (n: number) => `${n}단계 도전`,
+    challengeReady: '다음 파도에 도전',
+    breachedFarm: '막혔다! 아래 단계를 반복한다',
     stage: (n: number) => `공성 ${n}단계`,
     next: (n: number, ms: number) => `공성 ${n}단계 · ${Math.floor(ms / 60_000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`,
     breached: '옥좌 함락! 단계 하락',

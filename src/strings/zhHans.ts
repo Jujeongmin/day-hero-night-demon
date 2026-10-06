@@ -246,6 +246,10 @@ export const zhHans: Strings = {
     later: '稍后',
   },
   siege: {
+    farm: (n: number) => `攻城 第${n}阶 重复中`,
+    challenge: (n: number) => `挑战第${n}阶`,
+    challengeReady: '下一波挑战',
+    breachedFarm: '被突破！重复下一阶',
     stage: (n: number) => `攻城 第${n}阶`,
     next: (n: number, ms: number) => `攻城 第${n}阶 · ${Math.floor(ms / 60_000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`,
     breached: '王座失守！阶段下降',

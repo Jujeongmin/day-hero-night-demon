@@ -29,10 +29,13 @@ export default function Siege(props: {
   onLordHp: (ratio: number) => void;
   /** 아래 창이 열려 있으면 단계 표시·부르기 버튼을 숨긴다(1층을 가리지 않게) */
   compact: boolean;
+  /** 막혀서 아래 단계를 반복 중(2026-10-06). 도전 버튼: 누르면 다음 파도가 한 단계 위. 도전 대기 중이면 null */
+  farming: boolean;
+  onChallenge: (() => void) | null;
   /** 재생 배속. 배속 버튼은 화면 위 HUD(골드 오른쪽)에 있다 */
   speed: Speed;
 }) {
-  const { ground, paused, stage, best, onRank, lastWave, onFighting, onLordHp, compact, speed, replaying, replayResult } = props;
+  const { ground, paused, stage, best, onRank, lastWave, onFighting, onLordHp, compact, speed, replaying, replayResult, farming, onChallenge } = props;
   const [s, setS] = useState<SiegeState>(idleSiege);
   // 재생 중에는 싸우기 전 단계를 보여 주고, 끝나면 새 단계로 바꾼다
   const [shownStage, setShownStage] = useState(stage);
@@ -100,9 +103,14 @@ export default function Siege(props: {
         <>
           <div className="siege-stage">
             <button className="pill" onClick={onRank}>
-              {breached ? T.siege.breached : T.siege.stage(shownStage)}
+              {breached ? T.siege.breachedFarm : farming && !running ? T.siege.farm(shownStage) : T.siege.stage(shownStage)}
               {!breached && <small> · {T.siege.best(Math.max(best, shownStage))}</small>}
             </button>
+            {farming && !breached && (
+              <button className="btn small gold siege-challenge" disabled={!onChallenge} onClick={() => onChallenge?.()}>
+                {onChallenge ? T.siege.challenge(stage + 1) : T.siege.challengeReady}
+              </button>
+            )}
           </div>
         </>
       )}

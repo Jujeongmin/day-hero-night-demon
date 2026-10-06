@@ -246,6 +246,10 @@ export const ja: Strings = {
     later: 'あとで',
   },
   siege: {
+    farm: (n: number) => `攻城 ${n}段階 繰り返し中`,
+    challenge: (n: number) => `${n}段階に挑戦`,
+    challengeReady: '次の波で挑戦',
+    breachedFarm: '突破された！下の段階を繰り返す',
     stage: (n: number) => `攻城 ${n}段階`,
     next: (n: number, ms: number) => `攻城 ${n}段階 · ${Math.floor(ms / 60_000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`,
     breached: '玉座陥落！段階ダウン',

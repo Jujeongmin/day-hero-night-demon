@@ -246,6 +246,10 @@ export const en: Strings = {
     later: 'Later',
   },
   siege: {
+    farm: (n: number) => `Siege stage ${n} (repeating)`,
+    challenge: (n: number) => `Challenge stage ${n}`,
+    challengeReady: 'Challenging next wave',
+    breachedFarm: 'Breached! Repeating the stage below',
     stage: (n: number) => `Siege stage ${n}`,
     next: (n: number, ms: number) => `Siege stage ${n} · ${Math.floor(ms / 60_000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`,
     breached: 'Throne fell! Stage down',

@@ -12,7 +12,8 @@ export interface RemoteServer {
 }
 
 /** 공성 파도 하나. log = 서버가 실제로 싸운 기록(홈 화면이 재생). 옛 서버 응답에는 없다 */
-export interface SiegeWave { at: number; won: boolean; log?: FloorLog[] }
+/** stage = 싸운 단계(반복·도전, 2026-10-06). 옛 응답은 없다 */
+export interface SiegeWave { at: number; won: boolean; log?: FloorLog[]; stage?: number }
 
 export interface HomeData {
   state: UserState;
@@ -101,7 +102,7 @@ export function createApi(server: RemoteServer) {
     revive: () => call<RunResult>('revive'),
     endRaid: (abandon: boolean) => call<EndResult>('endRaid', [abandon]),
     getLeague: () => call<LeagueData>('getLeague'),
-    callSiegeWave: (speed: number) => call<{ wave: SiegeWave; gold: number; soul: number }>('callSiegeWave', [speed]),
+    callSiegeWave: (speed: number, challenge = false) => call<{ wave: SiegeWave; gold: number; soul: number }>('callSiegeWave', [speed, challenge]),
     getSiegeRanking: () => call<SiegeRankData>('getSiegeRanking'),
     claimSpendRewards: () => call<{ soul: number; look: string | null }>('claimSpendRewards'),
     claimPassRewards: () => call<{ gold: number; soul: number; skins: string[] }>('claimPassRewards'),
