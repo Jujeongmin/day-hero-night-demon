@@ -15,8 +15,8 @@ describe('unitStats', () => {
 });
 
 describe('skillText', () => {
-  it('describes each skill with its cooldown', () => {
-    expect(skillText('taunt', 3)).toContain('3');
+  it('describes each skill by how many attacks it takes (cooldown + 1, 2026-10-06)', () => {
+    expect(skillText('taunt', 3)).toContain('4');
     expect(skillText('raise', 0)).toContain('상시');
   });
 });

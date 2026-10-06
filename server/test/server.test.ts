@@ -60,7 +60,7 @@ describe('raid vs npc', () => {
     await server.startIntroRaid();
     const res = await server.autoPlay();
     expect(res.status).toBe('victory');
-    expect(res.steps.length).toBeGreaterThan(1);
+    expect(res.steps.length).toBeGreaterThanOrEqual(1); // 층마다 한 걸음(시각이 붙은 일들)
     expect((await server.autoPlay()).steps).toEqual([]);
     expect((await server.endRaid(false)).won).toBe(true);
   });

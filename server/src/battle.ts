@@ -29,6 +29,8 @@ export interface Fighter {
   gear?: string;
   /** 각성 별(머리 위 표시용, 능력치는 mult에 이미 들어 있다) */
   stars?: number;
+  /** 다음 공격 시각(전투 시작부터 ms) */
+  next: number;
   /** 마왕이 입은 외형(고유 효과 LOOK_EFFECTS) */
   look?: string;
   /** 리치 왕 부활을 이미 썼다 */
@@ -36,7 +38,10 @@ export interface Fighter {
 }
 
 export interface FloorBattle {
+  /** 지금까지 처리한 행동 수 */
   round: number;
+  /** 전투 시각(ms) */
+  t: number;
   rng: number;
   fighters: Fighter[];
   tactic: Tactic;
@@ -46,14 +51,15 @@ export interface FloorBattle {
   outcome: 'ongoing' | 'won' | 'lost';
 }
 
-export type BattleEvent =
-  | { t: 'attack'; from: string; to: string; dmg: number; skill?: SkillId }
+/** at: 일어난 전투 시각(ms). 화면이 이 시각에 맞춰 재생한다 */
+export type BattleEvent = ({
+  t: 'attack'; from: string; to: string; dmg: number; skill?: SkillId }
   | { t: 'heal'; from: string; to: string; amount: number }
   | { t: 'status'; to: string; status: 'taunt' | 'web' | 'stun'; rounds: number }
   | { t: 'down'; key: string }
   | { t: 'raise'; key: string; hp: number }
   | { t: 'ult'; hero: HeroId }
-  | { t: 'end'; outcome: 'won' | 'lost' };
+  | { t: 'end'; outcome: 'won' | 'lost' }) & { at?: number };
 
 /** 공성 한 층의 전투 기록: 시작 상태와 그 뒤 일어난 일 순서. 홈 화면이 그대로 재생한다 */
 export interface FloorLog {
@@ -79,8 +85,14 @@ function makeFighter(
   return {
     key, side, kind, level, row,
     maxHp: s.hp, hp: Math.min(hp, s.hp), atk: s.atk, def: s.def, spd: s.spd,
-    skill, cooldown, cd: cooldown, taunt: 0, web: 0, stun: 0, ghost: false,
+    skill, cooldown, cd: cooldown, taunt: 0, web: 0, stun: 0, ghost: false, next: 0,
   };
+}
+
+/** 공격 간격(ms): 속도가 빠를수록 짧다(거미줄에 걸리면 속도 −2) */
+export function attackIntervalMs(f: Pick<Fighter, 'spd' | 'web'>, t = 0): number {
+  const A = BALANCE.attackSpeed;
+  return Math.max(A.minMs, Math.round(A.baseMs * (1 + (A.refSpd - effSpd(f, t)) * A.perSpd)));
 }
 
 export function createFloorBattle(input: {
@@ -107,8 +119,10 @@ export function createFloorBattle(input: {
       fighters.push({ ...f, ...(e.gear ? { gear: e.gear } : {}), ...(e.stars ? { stars: e.stars } : {}) });
     }
   });
+  // 첫 공격은 간격의 절반쯤에, 한꺼번에 몰리지 않게 조금씩 어긋나게
+  fighters.forEach((f, i) => { f.next = Math.round(attackIntervalMs(f) * 0.5) + i * 40; });
   const battle: FloorBattle = {
-    round: 0, rng: input.seed >>> 0, fighters, tactic: input.tactic,
+    round: 0, t: 0, rng: input.seed >>> 0, fighters, tactic: input.tactic,
     ultCharge: 0, ultUsed: false, raiseUsed: false, outcome: 'ongoing',
   };
   const events: BattleEvent[] = [];
@@ -116,32 +130,47 @@ export function createFloorBattle(input: {
   return { battle, events };
 }
 
+/**
+ * 다음 행동 하나를 처리한다(2026-10-06 공격 속도 전투): 다음 공격 시각이 가장 이른 유닛이 공격하고, 그 시각으로 시계를 옮긴다.
+ * 이름은 옛 턴 방식에서 그대로 둔다. ult: 기가 찼으면 이 시각에 쓸 용사
+ */
 export function playRound(input: FloorBattle, ult: HeroId | null): { battle: FloorBattle; events: BattleEvent[] } {
   const b: FloorBattle = JSON.parse(JSON.stringify(input));
   const events: BattleEvent[] = [];
-  if (b.outcome !== 'ongoing') return { battle: b, events };
+  stepInPlace(b, ult, events);
+  return { battle: b, events };
+}
+
+/** playRound와 같지만 복사 없이 b를 바꾼다(한 판 전체를 계산할 때 행동마다 복사하면 느리다) */
+function stepInPlace(b: FloorBattle, ult: HeroId | null, out: BattleEvent[]): void {
+  if (b.outcome !== 'ongoing') return;
+  const events: BattleEvent[] = [];
+  const f = b.fighters
+    .filter((x) => x.hp > 0)
+    .reduce((m, x) => (x.next < m.next || (x.next === m.next && (effSpd(x, b.t) > effSpd(m, b.t) || (effSpd(x, b.t) === effSpd(m, b.t) && x.key < m.key))) ? x : m));
+  const now = Math.max(b.t, f.next);
+  if (!b.ultUsed) b.ultCharge = Math.min(100, b.ultCharge + (BALANCE.ultChargePerSec * (now - b.t)) / 1000);
+  b.t = now;
   b.round += 1;
-  if (ult && ultReady(b)) useUlt(b, ult, events);
-  const order = b.fighters
-    .filter((f) => f.hp > 0)
-    .sort((a, c) => effSpd(c) - effSpd(a) || a.key.localeCompare(c.key));
-  for (const f of order) {
-    if (b.outcome !== 'ongoing') break;
-    if (f.hp <= 0 || f.stun > 0) continue;
-    act(b, f, events);
-    checkOutcome(b, events);
-  }
-  for (const f of b.fighters) {
-    if (f.taunt > 0) f.taunt -= 1;
-    if (f.web > 0) f.web -= 1;
-    if (f.stun > 0) f.stun -= 1;
-  }
-  if (!b.ultUsed) b.ultCharge = Math.min(100, b.ultCharge + BALANCE.ultChargePerRound);
-  if (b.outcome === 'ongoing' && b.round >= BALANCE.maxRounds) {
+  if (b.t >= BALANCE.maxBattleMs) {
     b.outcome = 'lost';
     events.push({ t: 'end', outcome: 'lost' });
+  } else {
+    if (ult && ultReady(b)) useUlt(b, ult, events);
+    if (b.outcome === 'ongoing' && f.hp > 0) {
+      // 기절: 풀릴 때까지 다음 공격이 밀린다
+      if (f.stun > b.t) f.next = f.stun;
+      else {
+        act(b, f, events);
+        checkOutcome(b, events);
+        f.next = b.t + attackIntervalMs(f, b.t);
+      }
+    }
   }
-  return { battle: b, events };
+  for (const e of events) {
+    e.at = b.t;
+    out.push(e);
+  }
 }
 
 export function ultReady(b: FloorBattle): boolean {
@@ -189,10 +218,11 @@ export function simulateAuto(input: {
     const entry: FloorLog | undefined = log
       ? { floor: i, start: battle.fighters.map(({ key, side, kind, maxHp, hp: h, gear }) => ({ key, side, kind, maxHp, hp: h, ...(gear ? { gear } : {}) })), events: [...created.events] }
       : undefined;
+    // 만든 전투는 이 안에서만 쓰므로 복사 없이 진행한다
+    const evs: BattleEvent[] = entry ? entry.events : [];
     while (battle.outcome === 'ongoing') {
-      const r = playRound(battle, ultReady(battle) ? firstAliveHero(battle) : null);
-      battle = r.battle;
-      entry?.events.push(...r.events);
+      if (!entry) evs.length = 0;
+      stepInPlace(battle, ultReady(battle) ? firstAliveHero(battle) : null, evs);
     }
     if (entry) log!.push(entry);
     if (battle.outcome === 'lost') return done({ won: false, floorsCleared: i });
@@ -212,8 +242,9 @@ function other(side: Side): Side {
   return side === 'hero' ? 'enemy' : 'hero';
 }
 
-function effSpd(f: Fighter): number {
-  return f.spd - (f.web > 0 ? 2 : 0);
+/** 속도: 거미줄(web = 풀리는 시각)에 걸려 있으면 −2 */
+function effSpd(f: Pick<Fighter, 'spd' | 'web'>, t: number): number {
+  return f.spd - (f.web > t ? 2 : 0);
 }
 
 function pick<T>(b: FloorBattle, arr: T[]): T {
@@ -270,7 +301,7 @@ function checkOutcome(b: FloorBattle, events: BattleEvent[]): void {
 function chooseTarget(b: FloorBattle, f: Fighter): Fighter | null {
   const foes = alive(b, other(f.side));
   if (foes.length === 0) return null;
-  const taunting = foes.filter((x) => x.taunt > 0);
+  const taunting = foes.filter((x) => x.taunt > b.t);
   if (taunting.length) return taunting[0];
   if (f.skill === 'backline') {
     const back = foes.filter((x) => x.row === 'back');
@@ -302,16 +333,17 @@ function strike(b: FloorBattle, f: Fighter, t: Fighter, mult: number, def: numbe
   }
 }
 
-/** 이번 라운드에 a가 b보다 먼저 움직이는가(속도 순서와 같은 규칙) */
-function movesBefore(a: Fighter, c: Fighter): boolean {
-  return effSpd(a) > effSpd(c) || (effSpd(a) === effSpd(c) && a.key.localeCompare(c.key) < 0);
+/** 기절: stunMs 동안 공격하지 못한다(풀리는 시각을 stun에) */
+function stunFor(b: FloorBattle, t: Fighter, events: BattleEvent[]): void {
+  t.stun = Math.max(t.stun, b.t + BALANCE.attackSpeed.stunMs);
+  events.push({ t: 'status', to: t.key, status: 'stun', rounds: BALANCE.attackSpeed.stunMs / 1000 });
 }
 
 function castSkill(b: FloorBattle, f: Fighter, events: BattleEvent[]): boolean {
   switch (f.skill) {
     case 'taunt':
-      f.taunt = 2;
-      events.push({ t: 'status', to: f.key, status: 'taunt', rounds: 2 });
+      f.taunt = b.t + BALANCE.attackSpeed.tauntMs;
+      events.push({ t: 'status', to: f.key, status: 'taunt', rounds: BALANCE.attackSpeed.tauntMs / 1000 });
       return true;
     case 'pierce': {
       const t = chooseTarget(b, f);
@@ -322,16 +354,15 @@ function castSkill(b: FloorBattle, f: Fighter, events: BattleEvent[]): boolean {
     case 'web': {
       const t = chooseTarget(b, f);
       if (!t) return false;
-      t.web = 2;
-      events.push({ t: 'status', to: t.key, status: 'web', rounds: 2 });
+      t.web = b.t + BALANCE.attackSpeed.webMs;
+      events.push({ t: 'status', to: t.key, status: 'web', rounds: BALANCE.attackSpeed.webMs / 1000 });
       return true;
     }
     case 'scream': {
-      // 비명: 적 하나를 1턴 기절. 이번 라운드에 이미 움직인 적이면 다음 라운드까지 간다
+      // 비명: 적 하나를 잠깐 기절(stunMs)
       const t = chooseTarget(b, f);
       if (!t) return false;
-      t.stun = movesBefore(t, f) ? 2 : 1;
-      events.push({ t: 'status', to: t.key, status: 'stun', rounds: 1 });
+      stunFor(b, t, events);
       return true;
     }
     case 'execute': {
@@ -351,8 +382,7 @@ function castSkill(b: FloorBattle, f: Fighter, events: BattleEvent[]): boolean {
         strike(b, f, t, mult, t.def, events, f.skill);
         // 심연 군주: 파동에 맞고 버틴 적은 1턴 기절
         if (fx.waveStun && t.hp > 0) {
-          t.stun = movesBefore(t, f) ? 2 : 1;
-          events.push({ t: 'status', to: t.key, status: 'stun', rounds: 1 });
+          stunFor(b, t, events);
         }
       }
       return foes.length > 0;
@@ -423,8 +453,7 @@ function useUlt(b: FloorBattle, hero: HeroId, events: BattleEvent[]): void {
   events.push({ t: 'ult', hero });
   if (hero === 'knight') {
     for (const e of alive(b, 'enemy')) {
-      e.stun = 1;
-      events.push({ t: 'status', to: e.key, status: 'stun', rounds: 1 });
+      stunFor(b, e, events);
     }
   } else if (hero === 'archer') {
     for (const e of alive(b, 'enemy')) strike(b, f, e, 1.2, e.def, events);

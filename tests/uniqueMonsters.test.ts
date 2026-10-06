@@ -10,7 +10,8 @@ function firstRounds(enemies: MonsterId[], rounds: number): BattleEvent[] {
     enemies: enemies.map((id) => ({ id, level: 15 })), tactic: 'charge', seed: 11,
   });
   const all = [...events];
-  for (let i = 0; i < rounds && battle.outcome === 'ongoing'; i++) {
+  // 2026-10-06 공격 속도 전투: rounds초 동안
+  while (battle.t < rounds * 1000 && battle.outcome === 'ongoing') {
     const r = playRound(battle, null);
     battle = r.battle;
     all.push(...r.events);

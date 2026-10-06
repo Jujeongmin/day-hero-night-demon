@@ -12,7 +12,8 @@ export interface Fx {
   from?: string;
 }
 
-export interface Frame { hp: Record<string, number>; fx: Fx }
+/** at: 이 일이 일어난 전투 시각(ms). 화면이 이 시각에 맞춰 보여 준다 */
+export interface Frame { hp: Record<string, number>; fx: Fx; at: number }
 
 function maxHpOf(battle: FloorBattle): Record<string, number> {
   return Object.fromEntries(battle.fighters.map((f) => [f.key, f.maxHp]));
@@ -65,7 +66,7 @@ export function buildFrames(battle: FloorBattle, events: BattleEvent[]): Frame[]
       default:
         fx = { kind: 'end', key: null, text: '' };
     }
-    frames.push({ hp, fx });
+    frames.push({ hp, fx, at: e.at ?? 0 });
   }
   return frames;
 }

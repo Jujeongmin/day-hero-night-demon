@@ -11,6 +11,7 @@ export function unitStats(base: Stats, level: number, stars = 0, extra = 1): { n
   return { now, gain: { hp: next.hp - now.hp, atk: next.atk - now.atk, def: next.def - now.def, spd: next.spd - now.spd } };
 }
 
+/** 스킬 설명: 전투는 cooldown번 공격한 다음 공격에 스킬을 쓴다 → "공격 (cooldown+1)번마다" (2026-10-06 공격 속도 전투) */
 export function skillText(skill: SkillId, cooldown: number): string {
-  return T.skills[skill](cooldown);
+  return T.skills[skill](cooldown + 1);
 }

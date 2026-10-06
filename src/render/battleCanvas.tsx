@@ -215,32 +215,34 @@ export default function BattleCanvas(props: {
     const step = STEP_MS / props.speed;
     const view: View = { hp: hp0, fx: null, fxAt: start, downAt, step, lordSkin: props.lordSkin, bg: props.bg };
 
+    // 공격 속도 전투(2026-10-06): 일어난 일을 전투 시각(at)에 맞춰 보여 준다. 배속이면 시계가 그만큼 빨리 간다
     let i = 0;
+    let timer = 0;
     if (frames.length === 0) done.current();
-    const timer = frames.length === 0 ? 0 : window.setInterval(() => {
-      const f = frames[i];
-      const now = performance.now();
-      for (const k of Object.keys(f.hp)) if (view.hp[k] > 0 && f.hp[k] <= 0) view.downAt[k] = now;
-      view.hp = f.hp;
-      view.fx = f.fx;
-      view.fxAt = now;
-      const sound = sfxForFx(f.fx);
-      if (sound) sfx(sound);
-      i += 1;
-      if (i >= frames.length) {
-        window.clearInterval(timer);
-        window.setTimeout(() => done.current(), 300 / props.speed);
-      }
-    }, step);
-
+    const first = frames.length ? frames[0].at : 0;
+    const LEAD_MS = 250;
     let raf = 0;
     const loop = (now: number) => {
+      const clock = first - LEAD_MS + (now - start) * props.speed;
+      let sounded = false;
+      while (i < frames.length && frames[i].at <= clock) {
+        const f = frames[i];
+        for (const k of Object.keys(f.hp)) if (view.hp[k] > 0 && f.hp[k] <= 0) view.downAt[k] = now;
+        view.hp = f.hp;
+        view.fx = f.fx;
+        view.fxAt = now;
+        // 같은 순간에 여러 일이 겹치면 소리는 하나만
+        const sound = sfxForFx(f.fx);
+        if (sound && !sounded) { sfx(sound); sounded = true; }
+        i += 1;
+        if (i >= frames.length) timer = window.setTimeout(() => done.current(), 700 / props.speed);
+      }
       draw(ctx, b, view, now);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => {
-      window.clearInterval(timer);
+      window.clearTimeout(timer);
       cancelAnimationFrame(raf);
     };
   }, [props.battle, props.events, props.speed, props.lordSkin, props.bg]);

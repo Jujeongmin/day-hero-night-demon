@@ -40,7 +40,7 @@ describe('siege battle log (real fight replayed on the home screen)', () => {
         const last = i === log.length - 1;
         const loser = !plain.won && last ? 'hero' : 'enemy';
         for (const u of f.start.filter((x) => x.side === loser)) expect(hp[u.key]).toBe(0);
-        expect(f.events.at(-1)).toEqual({ t: 'end', outcome: loser === 'hero' ? 'lost' : 'won' });
+        expect(f.events.at(-1)).toMatchObject({ t: 'end', outcome: loser === 'hero' ? 'lost' : 'won' });
       });
     }
   });

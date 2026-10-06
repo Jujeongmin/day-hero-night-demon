@@ -90,12 +90,14 @@ describe('raid', () => {
 describe('autoRun: the whole raid in one call (2026-10-06)', () => {
   const twoFloors = () => startRun({ account: 'a', snapshot: snap({ castleLevel: 3, floors: [{ monsters: [{ id: 'slime', level: 2 }, { id: 'imp', level: 2 }] }, { monsters: [{ id: 'skeleton', level: 2 }] }] }), isRevenge: false, revengeLogId: null, now: 0 });
 
-  it('plays to victory or wipe, with a step for each floor start and each round', () => {
+  it('plays to victory or wipe, one step per floor with timed events (2026-10-06 attack speed)', () => {
     const r = autoRun(twoFloors(), heroes(10));
     expect(['victory', 'wiped']).toContain(runStatus(r.run));
-    expect(r.steps.length).toBeGreaterThan(3);
-    // 층 번호는 줄지 않고, 마지막 걸음의 전투가 끝나 있다
-    for (let i = 1; i < r.steps.length; i++) expect(r.steps[i].floor).toBeGreaterThanOrEqual(r.steps[i - 1].floor);
+    expect(r.steps.length).toBeGreaterThanOrEqual(1);
+    expect(r.steps.length).toBeLessThanOrEqual(3);
+    // 층 번호는 늘기만 하고, 층 안의 일은 시각 순이며, 마지막 걸음의 전투가 끝나 있다
+    for (let i = 1; i < r.steps.length; i++) expect(r.steps[i].floor).toBeGreaterThan(r.steps[i - 1].floor);
+    for (const st of r.steps) for (let i = 1; i < st.events.length; i++) expect(st.events[i].at!).toBeGreaterThanOrEqual(st.events[i - 1].at!);
     expect(r.steps[r.steps.length - 1].battle.outcome).not.toBe('ongoing');
   });
 

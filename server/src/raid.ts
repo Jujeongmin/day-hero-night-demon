@@ -107,7 +107,7 @@ export function reviveRun(run: Run): Run {
   return { ...run, reviveUsed: true, battle: null, tactic: null, heroesHp: hp };
 }
 
-/** 한 번에 계산한 공략의 한 걸음(층 시작 또는 한 라운드): 그 뒤의 전투 상태와 일어난 일. 화면이 순서대로 재생한다 */
+/** 한 번에 계산한 공략의 한 층: 그 층이 끝난 뒤의 전투 상태와 일어난 일(at = 전투 시각 ms). 화면이 시각에 맞춰 재생한다 */
 export interface RunStep { floor: number; battle: FloorBattle; events: BattleEvent[] }
 
 /**
@@ -117,20 +117,27 @@ export interface RunStep { floor: number; battle: FloorBattle; events: BattleEve
 export function autoRun(run: Run, heroes: Record<HeroId, { level: number; mult?: number }>): { run: Run; steps: RunStep[] } {
   const steps: RunStep[] = [];
   let r = run;
-  // 층 4개 × 최대 라운드 + 층 시작: 넉넉한 상한
-  for (let guard = 0; guard < 400; guard++) {
+  // 층마다: 시작(전술 자동) → 끝날 때까지 행동을 하나씩. 층 수 상한으로 멈춘다
+  for (let guard = 0; guard < 20; guard++) {
     const status = runStatus(r);
+    if (status !== 'choose_tactic' && status !== 'fighting') break;
     const floor = r.floor;
+    const events: BattleEvent[] = [];
+    let battle = r.battle;
     if (status === 'choose_tactic') {
       const x = beginFloor(r, autoTactic(r), heroes);
-      steps.push({ floor, battle: x.battle, events: x.events });
+      events.push(...x.events.map((e) => ({ ...e, at: 0 })));
+      battle = x.battle;
       r = x.run;
-    } else if (status === 'fighting') {
+    }
+    for (let n = 0; n < 5000 && runStatus(r) === 'fighting' && r.floor === floor; n++) {
       const b = r.battle!;
       const x = advanceRound(r, ultReady(b) ? firstAliveHero(b) : null);
-      steps.push({ floor, battle: x.battle, events: x.events });
+      events.push(...x.events);
+      battle = x.battle;
       r = x.run;
-    } else break;
+    }
+    steps.push({ floor, battle: battle!, events });
   }
   return { run: r, steps };
 }

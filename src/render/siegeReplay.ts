@@ -139,10 +139,13 @@ export function buildBeats(log: FloorLog[], held: boolean, perKill: number): Bea
         units: Object.fromEntries(f.start.map((u) => [u.key, { key: u.key, kind: u.kind, ...(u.gear ? { gear: u.gear } : {}), side: u.side, hp: u.hp, maxHp: u.maxHp, dead: u.hp <= 0, attacking: false, hits: 0 }])),
       }),
     });
-    // 사람이 많은 층(침입자 10명+)은 치고받는 박자를 줄여 파도 하나가 너무 길어지지 않게 한다(최소 0.35배)
-    const quick = Math.min(1, Math.max(0.35, 8 / f.start.length));
-    let prevFrom = '';
+    // 공격 속도 전투(2026-10-06): 박자 = 다음 일까지의 실제 전투 시간(at). 시각이 없는 옛 기록만 종류별 박자
     const evs = f.events;
+    const gap = (i: number, j: number, fallback: number) => {
+      const a = evs[i].at;
+      const n = evs[j]?.at;
+      return a !== undefined && n !== undefined ? Math.max(0, n - a) : fallback;
+    };
     for (let i = 0; i < evs.length; i++) {
       const e = evs[i];
       // 범위 공격(화염·암흑 파동 등): 한 번에 맞은 적 모두의 피해와 쓰러짐을 한 박자에 같이 보인다(2026-10-06 사용자: 범위 공격이면 같이 죽게)
@@ -157,17 +160,12 @@ export function buildBeats(log: FloorLog[], held: boolean, perKill: number): Bea
         }
         i = j - 1;
         const parts = group.map((g) => eventBeat(g, coinText)).filter((b): b is Beat => !!b);
-        const lordStarts = e.from.endsWith(':lord') && prevFrom !== e.from;
-        prevFrom = e.from;
-        beats.push({ ms: lordStarts ? BEAT_MS.lord : Math.round(BEAT_MS.aoe * quick), sfx: 'sfx_attack', apply: (s) => parts.reduce((acc, p) => p.apply(acc), s) });
+        beats.push({ ms: gap(i - group.length + 1, j, BEAT_MS.aoe), sfx: 'sfx_attack', apply: (s) => parts.reduce((acc, p) => p.apply(acc), s) });
         continue;
       }
       const b = eventBeat(e, coinText);
       if (!b) continue;
-      // 마왕이 새로 공격을 시작하면 공격 그림이 끝까지 보이게 길게, 줄이지 않는다
-      const lordStarts = e.t === 'attack' && e.from.endsWith(':lord') && prevFrom !== e.from;
-      if (e.t === 'attack') prevFrom = e.from;
-      beats.push(lordStarts ? { ...b, ms: BEAT_MS.lord } : e.t === 'ult' || e.t === 'end' ? b : { ...b, ms: Math.round(b.ms * quick) });
+      beats.push(e.t === 'end' ? b : { ...b, ms: gap(i, i + 1, b.ms) });
     }
   }
   beats.push({ ms: BEAT_MS.result, apply: (s) => ({ ...calm({ ...s, t: Number.MAX_SAFE_INTEGER }), result: held ? 'held' : 'breached' }) });

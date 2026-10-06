@@ -54,7 +54,8 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
 };
 
 /** 새 몬스터 기술 수치: 가시 바위 되돌림, 흡혈 회복, 처형 배수 */
-export const SKILL_NUMBERS = { thornsReflect: 0.3, lifesteal: 0.3, executeMult: 1.5, frenzyHit: 0.6, gazeMult: 0.5 } as const;
+/** 2026-10-06 공격 속도 전투로 바꾸며 흡혈 0.3→0.2, 처형 1.5→1.3(사용자 승인: 새끼 용과 비슷한 세기로) */
+export const SKILL_NUMBERS = { thornsReflect: 0.3, lifesteal: 0.2, executeMult: 1.3, frenzyHit: 0.6, gazeMult: 0.5 } as const;
 
 /**
  * 마왕 외형 고유 효과: 입은 외형 하나만 켜진다(2026-10-06 사용자 승인 표).
@@ -165,8 +166,16 @@ export const BALANCE = {
    */
   maxUnitLevel: 50,
   maxCastleLevel: 10,
-  maxRounds: 30,
-  ultChargePerRound: 34,
+  /**
+   * 공격 속도 전투(2026-10-06 사용자: 턴마다가 아니라 공격 속도로). 유닛마다 다음 공격 시각을 갖고 시간 순으로 싸운다.
+   * 공격 간격(ms) = baseMs × (1 + (refSpd − 속도) × perSpd): 속도 4가 1초, 7(도적·거미)이 0.76초, 1(골렘)이 1.24초(약 1.6배 차이).
+   * 스킬은 "공격 N번마다"(cooldown), 도발·거미줄·기절은 초(tauntMs·webMs·stunMs)
+   */
+  attackSpeed: { baseMs: 1000, refSpd: 4, perSpd: 0.08, minMs: 500, tauntMs: 2000, webMs: 2000, stunMs: 1000 },
+  /** 층 하나 전투 시간 상한(넘으면 침입한 쪽 패배) */
+  maxBattleMs: 30_000,
+  /** 궁극기 기 충전(초당) */
+  ultChargePerSec: 34,
   /** 층을 넘어갈 때 살아 있는 용사가 회복하는 최대 체력 비율 */
   floorRestHeal: 0.1,
   idleCapHours: 8,
