@@ -222,7 +222,7 @@ export const ja: Strings = {
   away: {
     title: '留守の間に',
     waves: (n: number, held: number) => `侵入 ${n}回 · 防衛 ${held}回`,
-    stage: (from: number, to: number) => `攻城 ${from}段階 → ${to}段階`,
+    stage: (from: number, to: number) => (from === to ? `攻城 ${from}段階 そのまま` : `攻城 ${from}段階 → ${to}段階`),
     gold: (g: number) => `たまったゴールド +${F(g)}`,
     later: 'あとで',
   },

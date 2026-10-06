@@ -225,7 +225,7 @@ export const ko = {
   away: {
     title: '자리를 비운 동안',
     waves: (n: number, held: number) => `침입 ${n}번 · 막음 ${held}번`,
-    stage: (from: number, to: number) => `공성 ${from}단계 → ${to}단계`,
+    stage: (from: number, to: number) => (from === to ? `공성 ${from}단계 유지` : `공성 ${from}단계 → ${to}단계`),
     gold: (g: number) => `쌓인 골드 +${F(g)}`,
     later: '나중에',
   },

@@ -30,9 +30,18 @@ describe('hero level bonuses', () => {
   it('stronger heroes hold siege stages that plain defenders lose', () => {
     const W = BALANCE.siegeWaveMs;
     const floors: ResolvedFloor[] = [{ monsters: [{ id: 'slime', level: 5 }, { id: 'skeleton', level: 5 }, { id: 'imp', level: 5 }] }];
-    const base = runSiege({ account: 'h', stage: 1, lastWaveAt: 0, now: 40 * W, castleLevel: 1, floors });
-    const buffed = runSiege({ account: 'h', stage: 1, lastWaveAt: 0, now: 40 * W, castleLevel: 1, floors, mult: 3 });
-    expect(buffed.peak).toBeGreaterThan(base.peak);
+    // 게임을 켜 둔 동안 파도를 하나씩 처리(자리 비운 동안은 단계가 오르지 않는다)
+    const climb = (mult: number) => {
+      let stage = 1;
+      let peak = 1;
+      for (let i = 1; i <= 40; i++) {
+        const r = runSiege({ account: 'h', stage, lastWaveAt: (i - 1) * W, now: i * W + 5, castleLevel: 1, floors, mult });
+        stage = r.stage;
+        peak = Math.max(peak, r.peak);
+      }
+      return peak;
+    };
+    expect(climb(3)).toBeGreaterThan(climb(1));
   });
 });
 

@@ -222,7 +222,7 @@ export const zhHans: Strings = {
   away: {
     title: '离开的这段时间',
     waves: (n: number, held: number) => `入侵 ${n}次 · 挡住 ${held}次`,
-    stage: (from: number, to: number) => `攻城 第${from}阶 → 第${to}阶`,
+    stage: (from: number, to: number) => (from === to ? `攻城 第${from}阶 不变` : `攻城 第${from}阶 → 第${to}阶`),
     gold: (g: number) => `累积金币 +${F(g)}`,
     later: '稍后',
   },

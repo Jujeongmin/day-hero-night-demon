@@ -47,23 +47,40 @@ describe('siege waves', () => {
     expect(siegeWave(102)[0].mult).toBeCloseTo(0.5 * 1.15 * 1.15 * 3 / Math.pow(20, 0.8), 3);
   });
 
-  it('holding climbs one stage per wave and pays the wave gold of each stage', () => {
+  it('with the game on, holding climbs one stage per wave and pays the full wave gold', () => {
+    let stage = 1;
+    let gold = 0;
+    for (let i = 1; i <= 3; i++) {
+      // 파도가 도착하자마자 처리(게임을 켜 둔 동안)
+      const r = runSiege({ account: 'a', stage, lastWaveAt: (i - 1) * W, now: i * W + 5, castleLevel: 10, floors: strong });
+      expect(r.waves).toEqual([{ at: i * W, won: true }]);
+      stage = r.stage;
+      gold += r.gold;
+    }
+    expect(stage).toBe(4);
+    expect(gold).toBe(waveGold(1) + waveGold(2) + waveGold(3));
+  });
+
+  it('while away the stage stays put; held waves still pay half (2026-10-06)', () => {
     const r = runSiege({ account: 'a', stage: 1, lastWaveAt: 0, now: 3 * W, castleLevel: 10, floors: strong });
     expect(r.waves).toEqual([{ at: W, won: true }, { at: 2 * W, won: true }, { at: 3 * W, won: true }]);
-    expect(r.stage).toBe(4);
-    // 처리 시각(3W) 기준으로 앞의 두 파도는 자리 비운 동안 도착 → 절반, 마지막은 방금 도착 → 제값
+    // 처리 시각(3W) 기준으로 앞의 두 파도는 자리 비운 동안 도착 → 단계 그대로·절반, 마지막은 방금 도착 → 단계 +1·제값
     const half = (g: number) => Math.floor(g * BALANCE.awaySiegeGoldMult);
-    expect(r.gold).toBe(half(waveGold(1)) + half(waveGold(2)) + waveGold(3));
+    expect(r.gold).toBe(half(waveGold(1)) + half(waveGold(1)) + waveGold(1));
+    expect(r.stage).toBe(2);
     expect(r.lastWaveAt).toBe(3 * W);
+    const breached = runSiege({ account: 'a', stage: 30, lastWaveAt: 0, now: 50 * W + 61_000, castleLevel: 1, floors: weak }); // 마지막 파도도 61초 전 도착 = 모두 자리 비운 동안
+    expect(breached.stage).toBe(30);
+    expect(breached.gold).toBe(0);
   });
 
   it('a breach drops a stage (never below 1) and pays nothing', () => {
-    const r = runSiege({ account: 'a', stage: 30, lastWaveAt: 0, now: 2 * W + 5, castleLevel: 1, floors: weak });
+    const r = runSiege({ account: 'a', stage: 30, lastWaveAt: 0, now: W + 5, castleLevel: 1, floors: weak });
     expect(r.waves.every((w) => !w.won)).toBe(true);
-    expect(r.stage).toBe(28);
+    expect(r.stage).toBe(29);
     expect(runSiege({ account: 'a', stage: 1, lastWaveAt: 0, now: W, castleLevel: 1, floors: [{ monsters: [] }], mult: 0.01 }).stage).toBe(1);
     expect(r.gold).toBe(0);
-    expect(r.lastWaveAt).toBe(2 * W);
+    expect(r.lastWaveAt).toBe(W);
   });
 
   it('catches up at most 8 hours of waves', () => {

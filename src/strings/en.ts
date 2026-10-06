@@ -222,7 +222,7 @@ export const en: Strings = {
   away: {
     title: 'While you were away',
     waves: (n: number, held: number) => `${n} attacks · ${held} held`,
-    stage: (from: number, to: number) => `Siege stage ${from} → ${to}`,
+    stage: (from: number, to: number) => (from === to ? `Siege stage ${from} held` : `Siege stage ${from} → ${to}`),
     gold: (g: number) => `Gold piled up +${F(g)}`,
     later: 'Later',
   },
