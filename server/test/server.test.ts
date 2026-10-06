@@ -373,7 +373,7 @@ describe('awakening & soul packs (2026-10-01)', () => {
     expect(await fails(server.awaken('slime'))).toBe(true);
     await server.$onItemPurchased({ account: acct, purchaseId: `p-soul-${acct}`, productId: 'soul_sack', quantity: 1 });
     let home = await server.getHome();
-    expect(home.soul).toBe(180);
+    expect(home.soul).toBe(360); // 첫 구매 2배
     expect(home.state.vip.spent).toBe(500);
     const before = home.power;
     // 몬스터는 레벨 50이 되어야 각성(2026-10-02), 마왕은 언제든
@@ -382,7 +382,7 @@ describe('awakening & soul packs (2026-10-01)', () => {
     expect((await server.awaken('lord')).soul).toBe(60);
     expect(await fails(server.awaken('dragon'))).toBe(true);
     home = await server.getHome();
-    expect(home.soul).toBe(90);
+    expect(home.soul).toBe(270);
     expect(home.state.stars).toEqual({ lord: 2 });
     expect(home.power).toBeGreaterThan(before);
     // 2026-10-02: 초기화는 전부(별·영혼석까지)
@@ -412,7 +412,7 @@ describe('sortie tickets & gold for soulstones (2026-10-01)', () => {
     expect(r.soul).toBe(30);
     expect(r.gold).toBeGreaterThan(0);
     const home = await server.getHome();
-    expect(home.soul).toBe(0);
+    expect(home.soul).toBe(30); // 첫 구매 2배(60) − 골드 주머니 30
     expect(home.gold).toBe(300 + r.gold);
     expect(await fails(server.buyGold('gold_mountain'))).toBe(true);
   });
@@ -444,7 +444,7 @@ describe('summon (2026-10-02)', () => {
     expect(ten.results.some((r: { grade: string }) => r.grade === 'epic' || r.grade === 'legend')).toBe(true);
     expect(ten.summon.pulls).toBe(12);
     const home = await server.getHome();
-    expect(home.soul).toBe(600 - 30 - 300 + one.soul + ten.soul);
+    expect(home.soul).toBe(1200 - 30 - 300 + one.soul + ten.soul); // 첫 구매 2배
     expect(home.state.summon.pulls).toBe(12);
     await server.resetProgress('초기화');
     const after = await server.getHome();

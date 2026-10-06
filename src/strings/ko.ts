@@ -45,7 +45,7 @@ export const ko = {
   castleHint: '몬스터 칸·층이 늘고 마왕이 강해진다',
   diff: { easy: '쉬움', normal: '보통', hard: '어려움' } as Record<'easy' | 'normal' | 'hard', string>,
   again: '다시 출정',
-  shop: { title: '마왕의 보물고', once: '한 번만', season: '이번 시즌', best: 'BEST', tabs: { soul: '영혼석', gold: '골드', special: '특별' } as Record<'soul' | 'gold' | 'special', string> },
+  shop: { firstX2: '첫 구매 2배', title: '마왕의 보물고', once: '한 번만', season: '이번 시즌', best: 'BEST', tabs: { soul: '영혼석', gold: '골드', special: '특별' } as Record<'soul' | 'gold' | 'special', string> },
   idleBtn: '방치 보상',
   claimIdle: (g: number) => `방치 수입 받기 (+${F(g)})`,
   sortie: '출정',

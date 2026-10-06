@@ -45,7 +45,7 @@ export const zhHant: Strings = {
   castleHint: '增加欄位與樓層，魔王變強',
   diff: { easy: '簡單', normal: '普通', hard: '困難' } as Record<'easy' | 'normal' | 'hard', string>,
   again: '再次出征',
-  shop: { title: '魔王寶庫', once: '限購一次', season: '本賽季', best: 'BEST', tabs: { soul: '魂石', gold: '金幣', special: '特別' } as Record<'soul' | 'gold' | 'special', string> },
+  shop: { firstX2: '首購雙倍', title: '魔王寶庫', once: '限購一次', season: '本賽季', best: 'BEST', tabs: { soul: '魂石', gold: '金幣', special: '特別' } as Record<'soul' | 'gold' | 'special', string> },
   idleBtn: '掛機獎勵',
   claimIdle: (g: number) => `領取放置收益 (+${F(g)})`,
   sortie: '出征',

@@ -129,6 +129,8 @@ export interface UserState {
   firstWinDay: string | null;
   starterOffered: boolean;
   processedPurchases: string[];
+  /** 처음 한 번 2배를 이미 받은 영혼석 묶음(상품 ID). 초기화해도 남는다 */
+  firstBuys?: string[];
   onboarding: OnboardingState;
   /** 광고 보상 오늘 횟수 (한국 시간 날짜) */
   ads: { day: string; counts: Partial<Record<string, number>> };
@@ -281,6 +283,7 @@ export function resetState(s: UserState, now: number): UserState {
     introDone: false,
     starterOffered: s.starterOffered,
     processedPurchases: s.processedPurchases,
+    firstBuys: s.firstBuys ?? [],
     onboarding: { at: 'raid_sortie', nicknameSet: s.onboarding.nicknameSet },
     ads: s.ads,
     daily: s.daily,

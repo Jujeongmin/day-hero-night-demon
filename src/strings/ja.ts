@@ -45,7 +45,7 @@ export const ja: Strings = {
   castleHint: '枠と階が増え、魔王が強くなる',
   diff: { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' } as Record<'easy' | 'normal' | 'hard', string>,
   again: 'もう一度出撃',
-  shop: { title: '魔王の宝物庫', once: '1回限り', season: '今シーズン', best: 'BEST', tabs: { soul: '魂石', gold: 'ゴールド', special: '特別' } as Record<'soul' | 'gold' | 'special', string> },
+  shop: { firstX2: '初回2倍', title: '魔王の宝物庫', once: '1回限り', season: '今シーズン', best: 'BEST', tabs: { soul: '魂石', gold: 'ゴールド', special: '特別' } as Record<'soul' | 'gold' | 'special', string> },
   idleBtn: '放置報酬',
   claimIdle: (g: number) => `放置収入を受け取る (+${F(g)})`,
   sortie: '出撃',

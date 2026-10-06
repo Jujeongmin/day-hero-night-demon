@@ -67,6 +67,7 @@ select { font: inherit; }
   border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated; font-size: 15px;
 }
 .stuck-card { gap: 4px; }
+.shop-amt s { opacity: .55; font-size: .75em; margin-right: 4px; }
 .stuck-tip { width: 100%; display: flex; align-items: center; gap: 6px; text-align: left; font-size: 13px; }
 .stuck-tip > span:nth-child(2) { flex: 1; min-width: 0; word-break: keep-all; }
 .stuck-tip .portrait { width: 38px; height: 38px; }

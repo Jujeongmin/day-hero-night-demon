@@ -91,9 +91,11 @@ describe('soul packs (2026-10-01 approved)', () => {
 
   it('the webhook pays soul times quantity with the VIP pack bonus', () => {
     const s = defaultState('a', 0, 's1');
-    expect(grantFor('soul_altar', 2, s)).toEqual({ patch: {}, gold: 0, soul: 4500 });
+    // 첫 구매는 그 한 개만 2배(2026-10-06)
+    expect(grantFor('soul_altar', 2, s)).toEqual({ patch: { firstBuys: ['soul_altar'] }, gold: 0, soul: 2250 * 3 });
+    expect(grantFor('soul_altar', 2, { ...s, firstBuys: ['soul_altar'] })).toEqual({ patch: {}, gold: 0, soul: 4500 });
     const vip10 = { ...s, vip: { spent: 100_000 } };
-    expect(grantFor('soul_relic', 1, vip10).soul).toBe(Math.floor(15000 * 1.25));
+    expect(grantFor('soul_relic', 1, { ...vip10, firstBuys: ['soul_relic'] }).soul).toBe(Math.floor(15000 * 1.25));
   });
 });
 

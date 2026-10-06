@@ -237,6 +237,8 @@ export const BALANCE = {
    * 별 n개째 = n이 highFrom 미만이면 costLow × n, 아니면 costHigh × n (무과금은 막히게, 지금 표 그대로)
    */
   awaken: { maxStars: 125, statPerStar: 1.1, costLow: 30, costHigh: 100, highFrom: 11 },
+  /** 영혼석 묶음마다 처음 한 번은 영혼석 2배(2026-10-06 "고액 결제 늘리기" 2번) */
+  firstBuyMult: 2,
   /** 영혼석 묶음(반복 구매, 2026-10-01 승인). 100 VX당 30·36·40·45·50. VIP 묶음 보너스가 붙는다. vx는 표시·검증용 */
   soulPacks: {
     soul_pouch: { vx: 100, soul: 30 },

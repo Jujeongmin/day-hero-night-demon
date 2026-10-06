@@ -72,6 +72,9 @@ export default function Shop(props: {
       </button>
     );
   };
+  // 묶음마다 처음 한 번은 영혼석 2배(서버 grantFor와 같은 규칙)
+  const firstBuy = (id: SoulPackId) => !(home.state.firstBuys ?? []).includes(id);
+  const soulGet = (id: SoulPackId) => soulPackAmount(id, vip) * (firstBuy(id) ? BALANCE.firstBuyMult : 1);
   const soulBonus = (id: SoulPackId) => {
     const p = BALANCE.soulPacks[id];
     const base = BALANCE.soulPacks.soul_pouch;
@@ -109,7 +112,7 @@ export default function Shop(props: {
             <img src={`products/${hero}.png`} alt="" draggable={false} />
             <div>
               <b>{T.products[hero][0]}</b>
-              <small>{hero === 'soul_relic' ? T.soulPackDesc(soulPackAmount('soul_relic', vip), soulBonus('soul_relic')) : descOf(hero)}</small>
+              <small>{hero === 'soul_relic' ? `${T.soulPackDesc(soulGet('soul_relic'), soulBonus('soul_relic'))}${firstBuy('soul_relic') ? ` · ${T.shop.firstX2}` : ''}` : descOf(hero)}</small>
               {priceButton(hero)}
             </div>
           </div>
@@ -125,9 +128,10 @@ export default function Shop(props: {
           <div className="shop-grid">
             {SOUL_IDS.filter((id) => vx(id)).map((id) => {
               const bonus = soulBonus(id);
+              const first = firstBuy(id);
               return card(id, id, T.products[id][0],
-                <span className="shop-amt soul">{formatNum(soulPackAmount(id, vip))}</span>,
-                priceButton(id), bonus > 0 ? (id === 'soul_altar' ? `BEST +${bonus}%` : `+${bonus}%`) : undefined, id === 'soul_altar');
+                <span className="shop-amt soul">{first && <s>{formatNum(soulPackAmount(id, vip))}</s>}{formatNum(soulGet(id))}</span>,
+                priceButton(id), first ? T.shop.firstX2 : bonus > 0 ? (id === 'soul_altar' ? `BEST +${bonus}%` : `+${bonus}%`) : undefined, id === 'soul_altar');
             })}
           </div>
         )}

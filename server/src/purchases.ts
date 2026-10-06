@@ -45,8 +45,14 @@ export function grantFor(productId: string, quantity: number, s: UserState): Gra
     case 'soul_sack':
     case 'soul_chest':
     case 'soul_altar':
-    case 'soul_relic':
-      return { patch: {}, gold: 0, soul: soulPackAmount(productId, vipOf(s)) * q };
+    case 'soul_relic': {
+      // 묶음마다 처음 한 번은 2배(그 한 개만)
+      const per = soulPackAmount(productId, vipOf(s));
+      const first = !(s.firstBuys ?? []).includes(productId);
+      return first
+        ? { patch: { firstBuys: [...(s.firstBuys ?? []), productId] }, gold: 0, soul: per * q + per * (BALANCE.firstBuyMult - 1) }
+        : { patch: {}, gold: 0, soul: per * q };
+    }
     default:
       throw new Error(`unknown product: ${productId}`);
   }

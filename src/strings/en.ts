@@ -45,7 +45,7 @@ export const en: Strings = {
   castleHint: 'More slots and floors, stronger lord',
   diff: { easy: 'Easy', normal: 'Normal', hard: 'Hard' } as Record<'easy' | 'normal' | 'hard', string>,
   again: 'Raid again',
-  shop: { title: "Demon Lord's Vault", once: 'One time', season: 'This season', best: 'BEST', tabs: { soul: 'Soulstones', gold: 'Gold', special: 'Special' } as Record<'soul' | 'gold' | 'special', string> },
+  shop: { firstX2: 'First buy ×2', title: "Demon Lord's Vault", once: 'One time', season: 'This season', best: 'BEST', tabs: { soul: 'Soulstones', gold: 'Gold', special: 'Special' } as Record<'soul' | 'gold' | 'special', string> },
   idleBtn: 'Idle loot',
   claimIdle: (g: number) => `Collect idle income (+${F(g)})`,
   sortie: 'Raid',

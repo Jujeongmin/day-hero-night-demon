@@ -39,3 +39,19 @@ describe('purchases', () => {
     expect(() => grantFor('free_gold', 1, fresh())).toThrow();
   });
 });
+
+describe('first purchase of each soulstone pack is doubled once (2026-10-06)', () => {
+  it('doubles one pack the first time, records it, then pays normally; other packs keep their own first bonus', async () => {
+    const { grantFor, soulPackAmount } = await import('../server/src/purchases');
+    const { defaultState } = await import('../server/src/state');
+    const s = defaultState('a', 0, 's1');
+    const per = soulPackAmount('soul_pouch', 0);
+    const g1 = grantFor('soul_pouch', 1, s);
+    expect(g1.soul).toBe(per * 2);
+    expect(g1.patch.firstBuys).toEqual(['soul_pouch']);
+    const after = { ...s, ...g1.patch };
+    expect(grantFor('soul_pouch', 1, after).soul).toBe(per);
+    expect(grantFor('soul_pouch', 3, s).soul).toBe(per * 4); // 3개 중 첫 하나만 2배
+    expect(grantFor('soul_relic', 1, after).soul).toBe(soulPackAmount('soul_relic', 0) * 2);
+  });
+});

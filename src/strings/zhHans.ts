@@ -45,7 +45,7 @@ export const zhHans: Strings = {
   castleHint: '增加栏位与楼层，魔王变强',
   diff: { easy: '简单', normal: '普通', hard: '困难' } as Record<'easy' | 'normal' | 'hard', string>,
   again: '再次出征',
-  shop: { title: '魔王宝库', once: '限购一次', season: '本赛季', best: 'BEST', tabs: { soul: '魂石', gold: '金币', special: '特别' } as Record<'soul' | 'gold' | 'special', string> },
+  shop: { firstX2: '首购双倍', title: '魔王宝库', once: '限购一次', season: '本赛季', best: 'BEST', tabs: { soul: '魂石', gold: '金币', special: '特别' } as Record<'soul' | 'gold' | 'special', string> },
   idleBtn: '挂机奖励',
   claimIdle: (g: number) => `领取挂机收益 (+${F(g)})`,
   sortie: '出征',
