@@ -192,6 +192,11 @@ export const BALANCE = {
    * 서버는 직전 파도 재생이 끝나기 전에는 막는다(siege.ts siegeCallBlock). 골드는 지난 파도부터 흐른 시간 × 배속 ÷ siegeWaveMs 만큼(시간당 골드는 2분 주기 때와 같다)
    */
   siegeRestMs: 2_500,
+  /**
+   * 단계적 해금(2026-10-06 사용자: 처음부터 강화 요소가 다 열려 있어 난잡하다). 처음엔 몬스터·성 강화만.
+   * 용사 강화 = 성 Lv heroesCastle, 소환 = 성 Lv summonCastle, 각성(몬스터·마왕) = 몬스터가 처음 Lv awakenLevel(이미 별이 있으면 열림)
+   */
+  unlocks: { heroesCastle: 2, summonCastle: 3, awakenLevel: 50 },
   /** 처음 도달한 10단계마다 영혼석 = 그 단계 수 (2026-09-29 승인). 계정당 한 번, 초기화해도 다시 받지 않는다 */
   siegeMilestoneEvery: 10,
   /** 용사 레벨(3명 합 − 3) 1마다: 공략 전리품 +1%(서버가 새로 지급), 공성 방어 능력치 +1% (2026-09-29 승인, 최대 레벨 100에 맞춰 +2%/+5%에서 낮춤) */
@@ -335,7 +340,8 @@ export const BALANCE = {
       { kind: 'filled', target: 3, soul: 10, gold: 1000 },
       { kind: 'unit', id: 'slime', target: 5, soul: 10, gold: 1000 },
       { kind: 'wins', target: 3, soul: 10, gold: 1000 },
-      { kind: 'castle', target: 2, soul: 10, gold: 1000 },
+      // 2026-10-06: 소환이 성 Lv 3에 열려서 소환 의뢰 앞의 성 의뢰를 2 → 3
+      { kind: 'castle', target: 3, soul: 10, gold: 1000 },
       { kind: 'filled', target: 6, soul: 10, gold: 1000 },
       { kind: 'idle', target: 1, soul: 10, gold: 1000 },
       { kind: 'summon', target: 1, soul: 20, gold: 3000 },

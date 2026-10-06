@@ -29,6 +29,8 @@ import { preloadSprites } from './render/battleCanvas';
 import { emitTut } from './tutorial/bus';
 import { isTutorialStage } from './tutorial/steps';
 import TutorialOverlay from './tutorial/TutorialOverlay';
+import { recommendedUpgrade } from './render/powerTips';
+import { FEATURE_IDS, featuresOf } from '../server/src/features';
 
 type Tab = 'upgrade' | 'log' | 'league' | 'shop';
 /** 아래 탭은 강화·상점 두 개(2026-10-02). 리그(순위)·기록은 탑 왼쪽 아이콘 */
@@ -37,6 +39,7 @@ export type Panel =
 
 /** 2026-10-02: 상점도 오른쪽 줄 아이콘 → 전체 화면. 아래 탭은 강화 하나 */
 const TABS: Tab[] = ['upgrade'];
+const FEATURES_SEEN_KEY = 'featuresSeen';
 
 function samePanel(a: Panel, b: Panel): boolean {
   if (a.name === 'floor' && b.name === 'floor') return a.floor === b.floor;
@@ -243,6 +246,21 @@ export default function App() {
   }, [onboardingAt]);
 
   // 막대: 연결 0~30%, 성 불러오기 30~60%, 그림 60~100%
+  // 새로 열린 기능 한 줄 안내(단계적 해금, 2026-10-06). 이 기기에서 처음이면 이미 열린 것은 조용히 기록만 한다
+  useEffect(() => {
+    if (!home || (home.state.onboarding?.at ?? 'done') !== 'done') return;
+    const on = featuresOf(home.state);
+    const open = FEATURE_IDS.filter((k) => on[k]);
+    const save = (ids: string[]) => { try { localStorage.setItem(FEATURES_SEEN_KEY, JSON.stringify(ids)); } catch { /* 저장 못 하면 다음에 다시 알린다 */ } };
+    let seen: string[] | null = null;
+    try { seen = JSON.parse(localStorage.getItem(FEATURES_SEEN_KEY) ?? 'null'); } catch { seen = null; }
+    if (!Array.isArray(seen)) { save(open); return; }
+    const fresh = open.filter((k) => !seen!.includes(k));
+    if (fresh.length === 0) return;
+    onError(T.unlocks[fresh[0]]);
+    save([...seen, ...fresh]);
+  }, [home, onError]);
+
   if (!connected || !api) return <Loading progress={0.12} label={T.load.connect} />;
   if (!home) return <Loading progress={0.4} label={T.load.home} />;
   if (!assetsDone || !minShown) return <Loading progress={0.6 + 0.4 * assets} label={T.load.assets} />;
@@ -451,6 +469,8 @@ export default function App() {
             onClick={() => { toggle({ name: t }); if (t === 'upgrade') emitTut('upgrade_opened'); }}
           >
             {T.tabs[t]}
+            {/* 지금 할 강화가 있으면 "추천"(2026-10-06). 튜토리얼 중·창이 열려 있으면 숨긴다 */}
+            {t === 'upgrade' && panel?.name !== 'upgrade' && (home.state.onboarding?.at ?? 'done') === 'done' && recommendedUpgrade(home.state, home.gold, home.soul) && <em className="tab-rec">{T.rec}</em>}
           </button>
         ))}
       </nav>

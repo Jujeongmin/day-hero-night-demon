@@ -1,3 +1,5 @@
+import { featuresOf } from '../../server/src/features';
+import { recommendedUpgrade } from '../render/powerTips';
 import { useState } from 'react';
 import { BALANCE, HEROES, MONSTERS, type HeroId, type MonsterId, type SkillId, type Stats } from '../../server/src/catalog';
 import { castleUpgradeCost, floorsUnlocked, heroBonusLevels, unitUpgradeCost } from '../../server/src/economy';
@@ -66,6 +68,9 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
   const { api, home, onRefresh, onError } = props;
   const s = home.state;
   const { busy, act } = useAct(onRefresh, onError);
+  // 단계적 해금과 지금 할 강화 하나(2026-10-06)
+  const on = featuresOf(s);
+  const rec = recommendedUpgrade(s, home.gold, home.soul);
   const [mult, setMultState] = useState<Mult>(savedMult);
   const [info, setInfo] = useState<Info | null>(null);
   const setMult = (m: Mult) => {
@@ -82,7 +87,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
 
   const row = (
     id: string, label: string, level: number, onUp: () => Promise<unknown>, first: boolean,
-    unit: { stats: Stats; skill: SkillId; cooldown: number }, note?: string,
+    unit: { stats: Stats; skill: SkillId; cooldown: number }, note?: string, role?: string,
   ) => {
     // 소환으로 얻은 장비 외형(강화 창에서 몬스터마다 입힌다). 누를 때마다 기본 → 외형 → … → 기본
     const looks = BALANCE.summon.gear.filter((g) => g.split(':')[0] === id && s.gear?.owned.includes(g));
@@ -126,13 +131,14 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
       );
     }
     return (
-      <div className="up-row" key={id} data-unit={id}>
+      <div className={`up-row ${rec?.unit === id ? 'rec' : ''}`} key={id} data-unit={id}>
         <button className="up-pt" onClick={open} aria-label={T.up.info}>
           <Portrait id={portrait} label={label} />
           <i>?</i>
         </button>
         <span className="up-nm">
-          <b>{label} {T.level(level)} <Stars n={stars} /></b>
+          <b>{label} {T.level(level)} <Stars n={stars} />{rec?.unit === id && <em className="rec-tag">{T.rec}</em>}</b>
+          {role && <small className="up-role">{role}</small>}
           <small className="stats">
             {(['hp', 'atk', 'def'] as const).map((k) => (
               <span className="stat" key={k}><img src={`icons/stat_${k}.png`} alt={T.stats[k]} draggable={false} />{formatNum(now[k])}</span>
@@ -174,26 +180,33 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
           <button key={m} className={`btn small ${mult === m ? 'on' : ''}`} onClick={() => setMult(m)}>{T.up[m]}</button>
         ))}
       </div>
-      <div className="up-row" data-unit="castle">
+      <div className={`up-row ${rec?.unit === 'castle' ? 'rec' : ''}`} data-unit="castle">
         <span className="up-pt"><Portrait id="castle" label={T.throne} /></span>
-        <span className="up-nm"><b>{T.castleLevel(s.castle.level)}</b>{nextCastle && <small>{nextCastle}</small>}</span>
+        <span className="up-nm"><b>{T.castleLevel(s.castle.level)}{rec?.unit === 'castle' && <em className="rec-tag">{T.rec}</em>}</b>{nextCastle && <small>{nextCastle}</small>}</span>
         <button className="btn small up-bt" disabled={busy || castleCost === null || home.gold < castleCost} onClick={() => act(() => api.upgrade('castle', null))}>
           {castleCost === null ? T.maxLevel : gold(castleCost)}
         </button>
       </div>
-      {/* 마왕 각성: 성 레벨에 묶여 있어 언제든(별마다 ×1.1) */}
-      <div className="up-row">
-        <span className="up-pt"><Portrait id="lord" label={T.units.lord} /></span>
-        <span className="up-nm"><b>{T.units.lord} <Stars n={s.stars?.lord} /></b><small>{T.up.lordShort}</small></span>
-        <button className="btn small up-bt awaken-btn" disabled={busy || lordAwaken === null} onClick={() => (lordAwaken !== null && home.soul < lordAwaken ? needSoul() : act(() => api.awaken('lord')))}>
-          {lordAwaken === null ? T.awaken.max : <>{soul(lordAwaken)} {T.up.awaken}</>}
-        </button>
-      </div>
+      {/* 마왕 각성: 성 레벨에 묶여 있어 언제든(별마다 ×1.1). 각성이 열린 뒤에만(단계적 해금, 2026-10-06) */}
+      {on.awaken && (
+        <div className={`up-row ${rec?.unit === 'lord' ? 'rec' : ''}`}>
+          <span className="up-pt"><Portrait id="lord" label={T.units.lord} /></span>
+          <span className="up-nm"><b>{T.units.lord} <Stars n={s.stars?.lord} />{rec?.unit === 'lord' && <em className="rec-tag">{T.rec}</em>}</b><small>{T.up.lordShort}</small></span>
+          <button className="btn small up-bt awaken-btn" disabled={busy || lordAwaken === null} onClick={() => (lordAwaken !== null && home.soul < lordAwaken ? needSoul() : act(() => api.awaken('lord')))}>
+            {lordAwaken === null ? T.awaken.max : <>{soul(lordAwaken)} {T.up.awaken}</>}
+          </button>
+        </div>
+      )}
       <h4>{T.monstersTitle}</h4>
       {(Object.keys(s.roster) as MonsterId[]).map((id, i) => row(id, T.units[id], s.roster[id]!.level, () => api.upgrade('monster', id), i === 0, MONSTERS[id]))}
-      {/* 용사: 누구를 강화하든 약탈 골드·공성 방어가 오른다. 지금 값은 머리글, 강화 뒤 값은 초상화 설명에 */}
-      <h4 className="up-sec"><span>{T.heroesTitle}</span><span>{T.up.heroBonus(heroPct)}</span></h4>
-      {(Object.keys(s.heroes) as HeroId[]).map((id) => row(id, T.units[id], s.heroes[id].level, () => api.upgrade('hero', id), false, HEROES[id], unitUpgradeCost(s.heroes[id].level, s.stars?.[id] ?? 0) === null ? undefined : T.siege.heroNext(heroPct, heroPctNext)))}
+      {/* 용사: 성 Lv 2에 열린다(단계적 해금). 맨 위 한 줄로 무엇인지, 줄마다 역할 한 줄(2026-10-06 사용자: 용사가 뭔지 모르겠다) */}
+      {on.heroes && (
+        <>
+          <h4 className="up-sec"><span>{T.heroesTitle}</span><span>{T.up.heroBonus(heroPct)}</span></h4>
+          <small className="up-intro">{T.heroIntro}</small>
+          {(Object.keys(s.heroes) as HeroId[]).map((id) => row(id, T.units[id], s.heroes[id].level, () => api.upgrade('hero', id), false, HEROES[id], unitUpgradeCost(s.heroes[id].level, s.stars?.[id] ?? 0) === null ? undefined : T.siege.heroNext(heroPct, heroPctNext), T.heroRole[id]))}
+        </>
+      )}
       {soulMonsters.length > 0 && <h4>{T.recruitTitle}</h4>}
       {soulMonsters.map((id) => {
         const unlock = MONSTERS[id].unlock as { soul: number };

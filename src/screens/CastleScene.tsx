@@ -22,6 +22,7 @@ import { claimableQuests } from '../../server/src/quests';
 import { QuestCard, type QuestGo } from './Quests';
 import { Portrait } from '../render/Sprite';
 import { powerTips, type Tip } from '../render/powerTips';
+import { featuresOf } from '../../server/src/features';
 
 /** tower.png(224×400) 안에서 몬스터가 딛는 선(%). 누르는 영역은 그 선 위 몬스터 키만큼. */
 const THRONE = { stand: 10.5 };
@@ -380,10 +381,12 @@ export default function CastleScene(props: {
       {/* 왼쪽 줄(2026-10-02 승인 A): 소환 → 순위(내 순위 숫자) → 기록(복수할 수 있는 침입 수 배지). 튜토리얼이 끝난 뒤에만 */}
       {(s.onboarding?.at ?? 'done') === 'done' && (
         <div className="float-left">
-          <button className="summon-entry" onClick={onSummon} aria-label={T.summon.open}>
-            <img src="ui/summon.png" alt="" draggable={false} />
-            <span>{T.summon.open}</span>
-          </button>
+          {featuresOf(s).summon && (
+            <button className="summon-entry" onClick={onSummon} aria-label={T.summon.open}>
+              <img src="ui/summon.png" alt="" draggable={false} />
+              <span>{T.summon.open}</span>
+            </button>
+          )}
           <button className="side-icon rank-entry" onClick={onRank} aria-label={T.icons.rank}>
             <img src="ui/rank.png" alt="" draggable={false} />
             {rank !== null && <b>{T.icons.rankN(rank)}</b>}
