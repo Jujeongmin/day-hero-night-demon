@@ -226,11 +226,11 @@ const tools = {
     notifyMine();
     return r;
   },
-  /** 천장 카운터 바꾸기: 마지막 영웅 이상 뒤로 n번 뽑은 것으로 */
-  pity(sinceHigh: number) {
-    const s = store.users[account] as { summon?: { pulls: number; sinceHigh: number } } | undefined;
+  /** 천장 카운터 바꾸기: 마지막 영웅 이상 뒤로 n번, 마지막 전설 뒤로 legend번 뽑은 것으로 */
+  pity(sinceHigh: number, sinceLegend = 0) {
+    const s = store.users[account] as { summon?: { pulls: number; sinceHigh: number; sinceLegend?: number } } | undefined;
     if (!s) return;
-    s.summon = { pulls: Math.max(s.summon?.pulls ?? 0, sinceHigh), sinceHigh };
+    s.summon = { pulls: Math.max(s.summon?.pulls ?? 0, sinceHigh, sinceLegend), sinceHigh, sinceLegend };
     persist();
   },
   /** 몬스터·용사 보이는 레벨 바꾸기(각성 확인용): localServer.lv('slime', 50) */

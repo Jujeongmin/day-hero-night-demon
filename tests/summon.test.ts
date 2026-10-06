@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../server/src/catalog';
-import { planSummon, planWearGear, pullsToPity, type SummonPools } from '../server/src/summon';
+import { planSummon, planWearGear, pullsToLegend, pullsToPity, type SummonPools } from '../server/src/summon';
 import { rngNext } from '../server/src/rng';
 
 const POOLS: SummonPools = { gear: ['slime:crown', 'slime:armor', 'imp:horns'], legend: ['summon1'] };
@@ -51,7 +51,7 @@ describe('summon costs and soul', () => {
     expect(ten.cost).toBe(300);
     expect(ten.results).toHaveLength(11);
     // 10번째 칸에서 천장(영웅), 11번째는 다시 1부터
-    expect(ten.patch.summon).toEqual({ pulls: 11, sinceHigh: 1 });
+    expect(ten.patch.summon).toEqual({ pulls: 11, sinceHigh: 1, sinceLegend: 11 });
   });
 
   it('every 10+1 holds at least one epic or better', () => {
@@ -103,7 +103,7 @@ describe('pity: epic or better within 10 (2026-10-02)', () => {
     expect(pullsToPity(s)).toBe(1);
     const r = planSummon(s, 'one', always(0.9), POOLS);
     expect(r.results[0].grade).toBe('epic');
-    expect(r.patch.summon).toEqual({ pulls: 10, sinceHigh: 0 });
+    expect(r.patch.summon).toEqual({ pulls: 10, sinceHigh: 0, sinceLegend: 1 });
     expect(pullsToPity(r.patch)).toBe(10);
   });
 
@@ -116,8 +116,8 @@ describe('pity: epic or better within 10 (2026-10-02)', () => {
 
   it('a natural epic or legend resets the counter', () => {
     const s = { ...fresh, summon: { pulls: 40, sinceHigh: 4 } };
-    expect(planSummon(s, 'one', always(0.03), POOLS).patch.summon).toEqual({ pulls: 41, sinceHigh: 0 });
-    expect(planSummon(s, 'one', always(0.001), POOLS).patch.summon).toEqual({ pulls: 41, sinceHigh: 0 });
+    expect(planSummon(s, 'one', always(0.03), POOLS).patch.summon).toEqual({ pulls: 41, sinceHigh: 0, sinceLegend: 1 });
+    expect(planSummon(s, 'one', always(0.001), POOLS).patch.summon).toEqual({ pulls: 41, sinceHigh: 0, sinceLegend: 0 });
   });
 
   it('over many pulls there is never a run of 10 without an epic or better', () => {
@@ -134,6 +134,35 @@ describe('pity: epic or better within 10 (2026-10-02)', () => {
     }
     // 천장 포함 실제 영웅 이상 비율 약 13%
     expect(high / n).toBeCloseTo(0.13, 2);
+  });
+});
+
+describe('legend pity: a legend within 100 (2026-10-06)', () => {
+  it('the 100th pull without a legend is a legend, then the counter restarts', () => {
+    const s = { ...fresh, summon: { pulls: 99, sinceHigh: 3, sinceLegend: 99 } };
+    expect(pullsToLegend(s)).toBe(1);
+    const r = planSummon(s, 'one', always(0.9), POOLS);
+    expect(r.results[0].grade).toBe('legend');
+    expect(r.patch.summon).toEqual({ pulls: 100, sinceHigh: 0, sinceLegend: 0 });
+    expect(pullsToLegend(r.patch)).toBe(100);
+  });
+
+  it('an old save without the legend counter starts at 0', () => {
+    expect(pullsToLegend({ summon: { pulls: 500, sinceHigh: 2 } })).toBe(100);
+  });
+
+  it('over many pulls there is never a run of 100 without a legend', () => {
+    const rand = seeded(777);
+    let s = fresh as Parameters<typeof planSummon>[0];
+    let run = 0;
+    for (let k = 0; k < 20_000; k++) {
+      const r = planSummon(s, k % 3 ? 'one' : 'ten', rand, POOLS);
+      s = { ...s, ...r.patch };
+      for (const x of r.results) {
+        if (x.grade === 'legend') run = 0; else run++;
+        expect(run).toBeLessThan(100);
+      }
+    }
   });
 });
 

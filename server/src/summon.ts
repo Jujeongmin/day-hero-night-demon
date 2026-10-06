@@ -10,15 +10,20 @@ export interface SummonPools { gear: readonly string[]; legend: readonly string[
 
 const POOLS: SummonPools = { gear: BALANCE.summon.gear, legend: BALANCE.summon.legendLooks };
 
-/** 소환 기록: 지금까지 뽑은 수, 마지막 영웅 이상 뒤로 뽑은 수(천장) */
-export function summonOf(s: Pick<UserState, 'summon'>): NonNullable<UserState['summon']> {
-  const r = s.summon as { pulls: number; sinceHigh?: number } | undefined;
-  return { pulls: r?.pulls ?? 0, sinceHigh: r?.sinceHigh ?? 0 };
+/** 소환 기록: 지금까지 뽑은 수, 마지막 영웅 이상 뒤로 뽑은 수(천장), 마지막 전설 뒤로 뽑은 수(전설 천장) */
+export function summonOf(s: Pick<UserState, 'summon'>): Required<NonNullable<UserState['summon']>> {
+  const r = s.summon as { pulls: number; sinceHigh?: number; sinceLegend?: number } | undefined;
+  return { pulls: r?.pulls ?? 0, sinceHigh: r?.sinceHigh ?? 0, sinceLegend: r?.sinceLegend ?? 0 };
 }
 
 /** 영웅 이상 확정까지 남은 소환 수(이번 소환을 포함해 센다) */
 export function pullsToPity(s: Pick<UserState, 'summon'>): number {
   return BALANCE.summon.pity - summonOf(s).sinceHigh;
+}
+
+/** 전설 확정까지 남은 소환 수(이번 소환을 포함해 센다) */
+export function pullsToLegend(s: Pick<UserState, 'summon'>): number {
+  return BALANCE.summon.legendPity - summonOf(s).sinceLegend;
 }
 
 function rollGrade(r: number): SummonGrade {
@@ -45,18 +50,22 @@ export function planSummon(
   const cost = kind === 'ten' ? B.costTen : B.costOne;
   const gearOwned = new Set(s.gear?.owned ?? []);
   const skins = new Set(s.skins);
-  let { pulls, sinceHigh } = summonOf(s);
+  let { pulls, sinceHigh, sinceLegend } = summonOf(s);
   const results: SummonResult[] = [];
   let highSeen = false;
   for (let i = 0; i < n; i++) {
     pulls += 1;
     sinceHigh += 1;
+    sinceLegend += 1;
     let grade: SummonGrade = rollGrade(rand());
     // 천장(영웅 이상 없이 pity번째) 또는 10+1의 마지막 칸(그때까지 영웅 이상이 없으면): 영웅 이상으로 다시 뽑는다(영웅:전설 비율 그대로)
     const forced = sinceHigh >= B.pity || (kind === 'ten' && i === n - 1 && !highSeen);
     if (forced && (grade === 'common' || grade === 'rare')) {
       grade = rand() < B.rates.legend / (B.rates.legend + B.rates.epic) ? 'legend' : 'epic';
     }
+    // 전설 천장: 전설 없이 legendPity번째는 전설
+    if (sinceLegend >= B.legendPity) grade = 'legend';
+    if (grade === 'legend') sinceLegend = 0;
     if (grade === 'epic' || grade === 'legend') highSeen = true;
     if (grade === 'epic' || grade === 'legend') sinceHigh = 0;
     if (grade === 'common') results.push({ grade, soul: B.commonSoul });
@@ -82,7 +91,7 @@ export function planSummon(
     soul: results.reduce((a, r) => a + r.soul, 0),
     results,
     patch: {
-      summon: { pulls, sinceHigh },
+      summon: { pulls, sinceHigh, sinceLegend },
       gear: { owned: [...gearOwned], worn: s.gear?.worn ?? {} },
       skins: [...skins],
     },

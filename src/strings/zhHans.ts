@@ -375,6 +375,7 @@ export const zhHans: Strings = {
   summon: {
     open: '召唤',
     pity: (n: number) => `距离英雄以上还有${n}次`,
+    legendPity: (n: number) => `距离传说还有${n}次`,
     rates: '概率',
     one: '1次',
     ten: '10+1次',
@@ -391,6 +392,7 @@ export const zhHans: Strings = {
     rewardOf: { common: '魂石 15', rare: '魂石 50', epic: '12种怪物装备外观之一', legend: '召唤限定魔王外观' },
     tenNote: '10+1次必得一个英雄以上。',
     pityNote: (n: number) => `连续没有英雄以上时，第${n}次召唤必得英雄以上；抽到后重新计算。`,
+    legendPityNote: (n: number) => `连续没有传说时，第${n}次召唤必得传说；抽到后重新计算。`,
     dupNote: (epic: number, legend: number) => `抽到已有的外观会换成魂石(英雄${epic}、传说${F(legend)})。`,
     gear: {
       'slime:crown': '史莱姆王', 'slime:helm': '骑士史莱姆', 'skeleton:royal': '骷髅王', 'skeleton:dread': '恐惧之铠',

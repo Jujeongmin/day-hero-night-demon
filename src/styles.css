@@ -501,6 +501,7 @@ button.pill.ticket.buy:disabled { animation: none; filter: grayscale(0.6) bright
 .summon-top .close img, .summon-rates .close img { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
 .summon-pity { display: grid; justify-items: center; gap: 2px; padding-bottom: 6px; text-shadow: 0 1px 0 #000, 0 0 4px #000; }
 .summon-pity b { font-weight: 400; color: var(--gold); font-size: 20px; }
+.summon-pity b.legend { font-size: 16px; color: #ffcf4d; }
 .summon-pity .link { font-size: 14px; text-decoration: underline; color: #e9dcff; }
 .summon-foot { flex: none; display: flex; flex-direction: column; gap: 6px; padding: 6px 8px 10px; border: 12px solid transparent; border-bottom-width: 6px; border-image: url(/ui/frame_sq.png) 10 / 12px 12px 6px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated; }
 .summon-foot h4 { margin: 0; font-weight: 400; font-size: 14px; color: var(--bone); }

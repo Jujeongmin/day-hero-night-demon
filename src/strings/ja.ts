@@ -375,6 +375,7 @@ export const ja: Strings = {
   summon: {
     open: '召喚',
     pity: (n: number) => `エピック以上まであと${n}回`,
+    legendPity: (n: number) => `レジェンドまであと${n}回`,
     rates: '確率',
     one: '1回',
     ten: '10+1回',
@@ -391,6 +392,7 @@ export const ja: Strings = {
     rewardOf: { common: '魂石 15', rare: '魂石 50', epic: 'モンスター装備外見12種のうち1つ', legend: '召喚限定の魔王外見' },
     tenNote: '10+1回はエピック以上が1つ確定。',
     pityNote: (n: number) => `エピック以上なしで${n}回目の召喚はエピック以上が確定。出たら数え直し。`,
+    legendPityNote: (n: number) => `レジェンドなしで${n}回目の召喚はレジェンドが確定。出たら数え直し。`,
     dupNote: (epic: number, legend: number) => `持っている外見が出たら魂石に変わる(エピック${epic}、伝説${F(legend)})。`,
     gear: {
       'slime:crown': 'スライム王', 'slime:helm': '騎士スライム', 'skeleton:royal': '骸骨王', 'skeleton:dread': '恐怖の鎧',

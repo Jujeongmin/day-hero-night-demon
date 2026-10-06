@@ -89,7 +89,7 @@ export function createApi(server: RemoteServer) {
     awaken: (unit: string) => call<{ soul: number }>('awaken', [unit]),
     buySortie: () => call<{ cost: number }>('buySortie'),
     buyGold: (packId: string) => call<{ soul: number; gold: number }>('buyGold', [packId]),
-    summon: (kind: 'one' | 'ten') => call<{ cost: number; soul: number; results: SummonResult[]; summon: { pulls: number; sinceHigh: number }; toPity: number }>('summon', [kind]),
+    summon: (kind: 'one' | 'ten') => call<{ cost: number; soul: number; results: SummonResult[]; summon: { pulls: number; sinceHigh: number; sinceLegend?: number }; toPity: number; toLegend: number }>('summon', [kind]),
     wearGear: (monster: string, gear: string | null) => call<{ gear: NonNullable<UserState['gear']> }>('wearGear', [monster, gear]),
     findTargets: () => call<Target[]>('findTargets'),
     startRaid: (targetId: string) => call<RunResult>('startRaid', [targetId]),

@@ -55,9 +55,10 @@ export default function Summon(props: {
   const [rates, setRates] = useState(false);
   const [skip, setSkip] = useState(loadSkip);
   // 결과를 받은 뒤 서버 기록 기준 남은 천장(새로고침 전에도 맞게)
-  const [toPity, setToPity] = useState<number | null>(null);
+  const [toPity, setToPity] = useState<{ high: number; legend: number } | null>(null);
 
-  const left = toPity ?? B.pity - (s.summon?.sinceHigh ?? 0);
+  const left = toPity?.high ?? B.pity - (s.summon?.sinceHigh ?? 0);
+  const leftLegend = toPity?.legend ?? B.legendPity - (s.summon?.sinceLegend ?? 0);
 
   // 카드를 한 장씩 뒤집는다. 영웅·전설 카드에서 소리
   useEffect(() => {
@@ -85,7 +86,7 @@ export default function Summon(props: {
     setBusy(true);
     try {
       const r = await api.summon(kind);
-      setToPity(r.toPity);
+      setToPity({ high: r.toPity, legend: r.toLegend });
       if (skip) {
         // 건너뛰기: 카드를 모두 연 채로, 가장 높은 등급 소리만
         setShown(r.results.length);
@@ -120,6 +121,7 @@ export default function Summon(props: {
         </div>
         <div className="summon-pity">
           <b>{T.summon.pity(left)}</b>
+          <b className="legend">{T.summon.legendPity(leftLegend)}</b>
           <button className="link" onClick={() => setRates(true)}>{T.summon.rates}</button>
         </div>
       </div>
@@ -158,6 +160,7 @@ export default function Summon(props: {
             ))}
             <small>{T.summon.tenNote}</small>
             <small>{T.summon.pityNote(B.pity)}</small>
+            <small>{T.summon.legendPityNote(B.legendPity)}</small>
             <small>{T.summon.dupNote(B.epicDupSoul, B.legendDupSoul)}</small>
           </div>
         </div>

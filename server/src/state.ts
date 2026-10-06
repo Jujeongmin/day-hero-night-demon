@@ -153,7 +153,7 @@ export interface UserState {
   /** 오늘(한국 시간) 출정 입장권·마왕 처치 영혼석 횟수 (sortie.ts) */
   daily?: { day: string; sorties: number; bought: number; lordSoul: number };
   /** 소환: 지금까지 뽑은 수, 마지막 영웅 이상 뒤로 뽑은 수(천장). 초기화해도 남는다 */
-  summon?: { pulls: number; sinceHigh: number };
+  summon?: { pulls: number; sinceHigh: number; sinceLegend?: number };
   /** 의뢰(2026-10-02): 성장 의뢰 번호·누적, 일일 의뢰 진행. server/src/quests.ts */
   quests?: import('./quests').QuestState;
   /** 몬스터 장비 외형(소환 영웅): 가진 것, 몬스터마다 입힌 것. 표시용, 초기화해도 남는다 */

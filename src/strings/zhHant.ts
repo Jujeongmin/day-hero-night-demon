@@ -375,6 +375,7 @@ export const zhHant: Strings = {
   summon: {
     open: '召喚',
     pity: (n: number) => `距離英雄以上還有${n}次`,
+    legendPity: (n: number) => `距離傳說還有${n}次`,
     rates: '機率',
     one: '1次',
     ten: '10+1次',
@@ -391,6 +392,7 @@ export const zhHant: Strings = {
     rewardOf: { common: '魂石 15', rare: '魂石 50', epic: '12種怪物裝備外觀之一', legend: '召喚限定魔王外觀' },
     tenNote: '10+1次必得一個英雄以上。',
     pityNote: (n: number) => `連續沒有英雄以上時，第${n}次召喚必得英雄以上；抽到後重新計算。`,
+    legendPityNote: (n: number) => `連續沒有傳說時，第${n}次召喚必得傳說；抽到後重新計算。`,
     dupNote: (epic: number, legend: number) => `抽到已有的外觀會換成魂石(英雄${epic}、傳說${F(legend)})。`,
     gear: {
       'slime:crown': '史萊姆王', 'slime:helm': '騎士史萊姆', 'skeleton:royal': '骷髏王', 'skeleton:dread': '恐懼之鎧',

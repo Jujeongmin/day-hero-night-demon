@@ -375,6 +375,7 @@ export const en: Strings = {
   summon: {
     open: 'Summon',
     pity: (n: number) => `Epic+ in ${n}`,
+    legendPity: (n: number) => `Legend in ${n}`,
     rates: 'Rates',
     one: '1×',
     ten: '10+1×',
@@ -391,6 +392,7 @@ export const en: Strings = {
     rewardOf: { common: '15 soulstones', rare: '50 soulstones', epic: 'One of 12 monster gear looks', legend: 'Summon-only Demon Lord look' },
     tenNote: '10+1 guarantees at least one Epic or better.',
     pityNote: (n: number) => `Your ${n}th summon without an Epic or better is guaranteed Epic or better. The count restarts whenever one drops.`,
+    legendPityNote: (n: number) => `Your ${n}th summon without a Legend is guaranteed Legend. The count restarts whenever one drops.`,
     dupNote: (epic: number, legend: number) => `A look you already own turns into soulstones (Epic ${epic}, Legendary ${F(legend)}).`,
     gear: {
       'slime:crown': 'Slime King', 'slime:helm': 'Knight Slime', 'skeleton:royal': 'Skeleton King', 'skeleton:dread': 'Dread Armor',

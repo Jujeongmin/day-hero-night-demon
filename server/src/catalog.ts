@@ -266,6 +266,8 @@ export const BALANCE = {
     /** 마왕 외형 보유 효과: 가진 외형 하나마다 마왕 능력치 +10%(입지 않아도, 2026-10-02 사용자) */
     lookOwnBonus: 0.1,
     pity: 10,
+    /** 전설 천장(2026-10-06 사용자, "고액 결제 늘리기" 4번): 전설 없이 legendPity번째 소환은 전설, 전설이 나오면 다시 0부터 */
+    legendPity: 100,
     gear: [
       'slime:crown', 'slime:helm', 'skeleton:royal', 'skeleton:dread', 'imp:king', 'imp:warlock',
       'necro:lich', 'necro:bone', 'spider:iron', 'spider:crown', 'dragon:knight', 'dragon:royal',

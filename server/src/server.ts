@@ -19,7 +19,7 @@ import { grantFor } from './purchases';
 import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from './siege';
 import { noteWall, WALL_BREACHES } from './offer';
 import { rngNext, seedFrom } from './rng';
-import { planSummon, planWearGear, pullsToPity, summonOf } from './summon';
+import { planSummon, planWearGear, pullsToLegend, pullsToPity, summonOf } from './summon';
 import {
   canAdvance, dayKey, defaultState, heroGrowth, isNew, isStage, migrateGrowth, resetState, resolveFloors, withDefaults,
   type CastleSnapshot, type OnboardingState, type RaidLogEntry, type Run, type Target, type UserState,
@@ -856,7 +856,7 @@ export class Server {
       // 전설 외형을 새로 얻으면 마왕 보유 효과가 늘어 매칭용 전투력을 다시 쓴다
       if (plan.patch.skins.length > s.skins.length) await syncCastle(me, { ...s, ...plan.patch });
       await $global.addCollectionItem(SUMMON_LOG, { account: me, at: now, kind, cost: plan.cost, results: plan.results }, { id: `${me}:${before}` });
-      return { cost: plan.cost, soul: plan.soul, results: plan.results, summon: plan.patch.summon, toPity: pullsToPity(plan.patch) };
+      return { cost: plan.cost, soul: plan.soul, results: plan.results, summon: plan.patch.summon, toPity: pullsToPity(plan.patch), toLegend: pullsToLegend(plan.patch) };
     });
   }
 
