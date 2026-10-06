@@ -321,7 +321,7 @@ canvas.battle {
 .siege-stage .btn { pointer-events: auto; font-size: 12px; min-height: 26px; }
 .invader.leaving { opacity: 0; transition: opacity 1.2s; }
 /* 공성 배속(--spd): 스프라이트 동작도 같은 배속으로 */
-.siege .sprite { animation-duration: calc(var(--frames) * 140ms / var(--spd, 1)); }
+.siege .sprite, .rp-layer .sprite { animation-duration: calc(var(--frames) * 140ms / var(--spd, 1)); }
 .siege .sprite.walking { animation-duration: calc(var(--frames) * 90ms / var(--spd, 1)); }
 .invader.leaving { transition-duration: calc(1.2s / var(--spd, 1)); }
 .hud .pill.speed { min-width: 34px; font: inherit; color: var(--text); }

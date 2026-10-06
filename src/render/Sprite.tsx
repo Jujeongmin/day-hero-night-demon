@@ -66,5 +66,6 @@ export default function Sprite(props: {
     '--strip': `${w * strip.frames}px`,
     transform: flip ? 'scaleX(-1)' : undefined,
   } as CSSProperties;
-  return <span className={`sprite ${still ? 'still' : ''} ${className}`} style={style} role="img" aria-label={label} />;
+  // key: 모습(대기→공격 등)이 바뀌면 새로 그려 그림을 첫 장면부터 다시 튼다(안 그러면 공격이 중간 장면부터 보인다)
+  return <span key={`${id}_${anim}`} className={`sprite ${still ? 'still' : ''} ${className}`} style={style} role="img" aria-label={label} />;
 }

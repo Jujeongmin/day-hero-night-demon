@@ -44,7 +44,8 @@ export interface Beat { ms: number; sfx?: Sfx; apply: (s: ReplayState) => Replay
 export const IDLE_REPLAY: ReplayState = { floor: null, units: {}, heroes: [], enemies: [], floats: [], result: null, cleared: [] };
 
 /** 박자 길이(1× 기준, ms) */
-export const BEAT_MS = { enter: 700, attack: 300, heal: 260, status: 160, down: 220, raise: 300, ult: 480, end: 420, result: 1500 };
+/** lord: 마왕이 공격을 시작하는 박자 — 공격 그림 7장(약 1초)이 끝까지 보이게 (2026-10-06 사용자 지적: 너무 빨라 안 보인다) */
+export const BEAT_MS = { enter: 700, attack: 300, lord: 1000, heal: 260, status: 160, down: 220, raise: 300, ult: 480, end: 420, result: 1500 };
 
 let floatSeq = 0;
 function float(s: ReplayState, key: string, text: string, kind: RFloat['kind']): ReplayState {
@@ -123,9 +124,14 @@ export function buildBeats(log: FloorLog[], held: boolean, perKill: number): Bea
     });
     // 사람이 많은 층(침입자 10명+)은 치고받는 박자를 줄여 파도 하나가 너무 길어지지 않게 한다(최소 0.35배)
     const quick = Math.min(1, Math.max(0.35, 8 / f.start.length));
+    let prevFrom = '';
     for (const e of f.events) {
       const b = eventBeat(e, coinText);
-      if (b) beats.push(e.t === 'ult' || e.t === 'end' ? b : { ...b, ms: Math.round(b.ms * quick) });
+      if (!b) continue;
+      // 마왕이 새로 공격을 시작하면(광역기의 첫 타) 공격 그림이 끝까지 보이게 길게, 줄이지 않는다
+      const lordStarts = e.t === 'attack' && e.from.endsWith(':lord') && prevFrom !== e.from;
+      if (e.t === 'attack') prevFrom = e.from;
+      beats.push(lordStarts ? { ...b, ms: BEAT_MS.lord } : e.t === 'ult' || e.t === 'end' ? b : { ...b, ms: Math.round(b.ms * quick) });
     }
   }
   beats.push({ ms: BEAT_MS.result, apply: (s) => ({ ...calm(s), result: held ? 'held' : 'breached' }) });
