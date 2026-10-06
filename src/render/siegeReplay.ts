@@ -19,8 +19,10 @@ export interface RUnit {
   hp: number;
   maxHp: number;
   dead: boolean;
-  /** 이번 박자에 공격 중 */
+  /** 공격 모습 중 */
   attacking: boolean;
+  /** 공격 모습을 이 재생 시각(1× ms)까지 유지 */
+  attackUntil?: number;
   /** 맞은 횟수(바뀔 때마다 번쩍임을 다시 튼다) */
   hits: number;
 }
@@ -37,6 +39,8 @@ export interface ReplayState {
   result: 'held' | 'breached' | null;
   /** 침입자가 이미 뚫고 지나간 층(그 층 몬스터는 파도가 끝날 때까지 쓰러진 채로 둔다) */
   cleared: number[];
+  /** 지금 박자의 재생 시각(1× 기준 ms) */
+  t?: number;
 }
 
 export interface Beat { ms: number; sfx?: Sfx; apply: (s: ReplayState) => ReplayState }
@@ -58,11 +62,21 @@ function unit(s: ReplayState, key: string, patch: (u: RUnit) => Partial<RUnit>):
   return { ...s, units: { ...s.units, [key]: { ...u, ...patch(u) } } };
 }
 
-/** 새 박자마다 공격 동작을 내린다(한 박자만 공격 모습) */
+/**
+ * 공격 모습 유지 시간(1× ms). 박자는 짧아도(침입자 많을 때 0.2초 미만) 공격 그림 7장이 거의 다 보이게
+ * 공격한 유닛은 이만큼 공격 모습을 유지한다 (2026-10-06 사용자 지적: 뒤쪽 몬스터가 공격을 안 하는 것처럼 보인다)
+ */
+export const ATTACK_HOLD_MS = 900;
+
+/** 공격 모습 시간이 지난 유닛만 대기 모습으로 내린다 */
 function calm(s: ReplayState): ReplayState {
-  if (!Object.values(s.units).some((u) => u.attacking)) return s;
-  return { ...s, units: Object.fromEntries(Object.entries(s.units).map(([k, u]) => [k, u.attacking ? { ...u, attacking: false } : u])) };
+  const t = s.t ?? 0;
+  if (!Object.values(s.units).some((u) => u.attacking && (u.attackUntil ?? 0) <= t)) return s;
+  return { ...s, units: Object.fromEntries(Object.entries(s.units).map(([k, u]) => [k, u.attacking && (u.attackUntil ?? 0) <= t ? { ...u, attacking: false } : u])) };
 }
+
+/** 공격 모습으로(이미 공격 중이면 시간만 늘린다) */
+const strike = (s: ReplayState) => (): Partial<RUnit> => ({ attacking: true, attackUntil: (s.t ?? 0) + ATTACK_HOLD_MS });
 
 function eventBeat(e: BattleEvent, coinText: string | null): Beat | null {
   switch (e.t) {
@@ -70,14 +84,14 @@ function eventBeat(e: BattleEvent, coinText: string | null): Beat | null {
       return {
         ms: BEAT_MS.attack, sfx: 'sfx_attack',
         apply: (s) => float(
-          unit(unit(calm(s), e.from, () => ({ attacking: true })), e.to, (u) => ({ hp: Math.max(0, u.hp - e.dmg), hits: u.hits + 1 })),
+          unit(unit(calm(s), e.from, strike(s)), e.to, (u) => ({ hp: Math.max(0, u.hp - e.dmg), hits: u.hits + 1 })),
           e.to, `−${formatNum(e.dmg)}`, 'dmg',
         ),
       };
     case 'heal':
       return {
         ms: BEAT_MS.heal,
-        apply: (s) => float(unit(unit(calm(s), e.from, () => ({ attacking: true })), e.to, (u) => ({ hp: Math.min(u.maxHp, u.hp + e.amount) })), e.to, `+${formatNum(e.amount)}`, 'heal'),
+        apply: (s) => float(unit(unit(calm(s), e.from, strike(s)), e.to, (u) => ({ hp: Math.min(u.maxHp, u.hp + e.amount) })), e.to, `+${formatNum(e.amount)}`, 'heal'),
       };
     case 'status':
       return { ms: BEAT_MS.status, apply: (s) => float(calm(s), e.to, T.fx[e.status], 'fx') };
@@ -94,7 +108,7 @@ function eventBeat(e: BattleEvent, coinText: string | null): Beat | null {
     case 'raise':
       return { ms: BEAT_MS.raise, apply: (s) => float(unit(calm(s), e.key, () => ({ dead: false, hp: e.hp })), e.key, T.fx.raise, 'fx') };
     case 'ult':
-      return { ms: BEAT_MS.ult, sfx: 'sfx_ult', apply: (s) => float(unit(calm(s), `h:${e.hero}`, () => ({ attacking: true })), `h:${e.hero}`, T.ult[e.hero], 'ult') };
+      return { ms: BEAT_MS.ult, sfx: 'sfx_ult', apply: (s) => float(unit(calm(s), `h:${e.hero}`, strike(s)), `h:${e.hero}`, T.ult[e.hero], 'ult') };
     case 'end':
       return { ms: BEAT_MS.end, apply: calm };
     default:
@@ -134,9 +148,15 @@ export function buildBeats(log: FloorLog[], held: boolean, perKill: number): Bea
       beats.push(lordStarts ? { ...b, ms: BEAT_MS.lord } : e.t === 'ult' || e.t === 'end' ? b : { ...b, ms: Math.round(b.ms * quick) });
     }
   }
-  beats.push({ ms: BEAT_MS.result, apply: (s) => ({ ...calm(s), result: held ? 'held' : 'breached' }) });
+  beats.push({ ms: BEAT_MS.result, apply: (s) => ({ ...calm({ ...s, t: Number.MAX_SAFE_INTEGER }), result: held ? 'held' : 'breached' }) });
   beats.push({ ms: 0, apply: () => IDLE_REPLAY });
-  return beats;
+  // 박자마다 재생 시각(1× ms)을 알려 준다: 공격 모습을 박자 수가 아니라 시간으로 유지하려고
+  let t = 0;
+  return beats.map((b) => {
+    const at = t;
+    t += b.ms;
+    return { ...b, apply: (s: ReplayState) => b.apply({ ...s, t: at }) };
+  });
 }
 
 /** 떠오르는 글자는 이만큼 뒤에 목록에서 뺀다 */
