@@ -16,7 +16,7 @@ import { spendFor, vipOf, vipPerks } from './vip';
 import { championLookFor, chooseLordSkin, lookUnits, ownedLooks, planPassClaim } from './pass';
 import { bumpQuests, planClaimDaily, planClaimGuide } from './quests';
 import { grantFor } from './purchases';
-import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from './siege';
+import { calledWaveGold, fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeReplayMs, siegeSpeed } from './siege';
 import { noteWall, WALL_BREACHES } from './offer';
 import { rngNext, seedFrom } from './rng';
 import { addSpend, planSpendClaim, spendOf } from './spend';
@@ -546,7 +546,7 @@ export class Server {
     });
   }
 
-  /** 공성 파도를 지금 바로 부른다(무료). 다음 파도까지 20초 이하 남았거나 직전 파도가 뚫렸을 때만(siegeCallBlock). speed = 화면 배속 */
+  /** 이어지는 공성의 다음 파도(2026-10-06). 화면이 재생을 끝내면 부른다. 최소 간격은 siegeCallBlock, 골드는 흐른 시간만큼. speed = 화면 배속 */
   async callSiegeWave(speed?: number) {
     const me = $sender.account;
     return withLocks([me], async () => {
@@ -554,14 +554,18 @@ export class Server {
       const { s } = await advanceSiege(me, await loadState(me, now), now);
       const sp = siegeSpeed(speed, s.perks?.speed3 === true);
       if (sp === null) throw new Error('NO_SPEED3');
-      const block = siegeCallBlock({ lastWaveAt: s.siege.lastWaveAt, lastWon: s.siege.lastWon, speed: sp, now });
+      const block = siegeCallBlock({ nextAt: s.siege.nextAt, now });
       if (block) throw new Error(block);
-      const r = fightWave({
+      const fought = fightWave({
         account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLooks: lordLooksOf(s), lordSkin: wornLookOf(s), record: true,
       });
+      // 골드는 지난 파도부터 흐른 시간만큼(시간당 골드는 예전 2분 주기와 같다)
+      const r = { ...fought, gold: calledWaveGold(fought.gold, now - s.siege.lastWaveAt, sp) };
       const wall = noteWall(s.siege.wall, [{ stage: s.siege.stage, won: r.won }]);
       const { wall: _old, ...keep } = s.siege;
-      const siege = { ...keep, stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.stage), lastWon: r.won, ...(wall ? { wall } : {}) };
+      // 이 파도의 재생이 끝나기 전에는 다음 파도를 부를 수 없다(배속이면 그만큼 일찍, 화면 시계 차이로 10% 여유)
+      const nextAt = now + Math.round((siegeReplayMs(r.log ?? []) / sp) * 0.9);
+      const siege = { ...keep, stage: r.stage, lastWaveAt: now, nextAt, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.stage), lastWon: r.won, ...(wall ? { wall } : {}) };
       await save(me, { siege });
       const soul = await recordSiegeBest(me, { ...s, siege }, s.siege.best);
       await recordSiegeSeason(me, { ...s, siege }, r.stage, now);

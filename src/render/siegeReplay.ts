@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { BattleEvent, FloorLog } from '../../server/src/battle';
 import { formatNum } from '../../server/src/growth';
+import { floorSpeedUp, SIEGE_REPLAY } from '../../server/src/siege';
 import { sfx, type Sfx } from '../services/audio';
 import { T } from '../strings/ko';
 
@@ -52,7 +53,7 @@ export const IDLE_REPLAY: ReplayState = { floor: null, units: {}, heroes: [], en
 /** 범위 공격: 맞은 적 모두가 한 박자에 같이 맞고 같이 쓰러진다 */
 const AOE_SKILLS = new Set<string>(['breath', 'dark_wave']);
 
-export const BEAT_MS = { enter: 700, attack: 300, aoe: 600, lord: 1000, heal: 260, status: 160, down: 220, raise: 300, ult: 480, end: 420, result: 1500 };
+export const BEAT_MS = { enter: SIEGE_REPLAY.enterMs, attack: 300, aoe: 600, lord: 1000, heal: 260, status: 160, down: 220, raise: 300, ult: 480, end: SIEGE_REPLAY.endMs, result: SIEGE_REPLAY.resultMs };
 
 let floatSeq = 0;
 function float(s: ReplayState, key: string, text: string, kind: RFloat['kind']): ReplayState {
@@ -141,10 +142,12 @@ export function buildBeats(log: FloorLog[], held: boolean, perKill: number): Bea
     });
     // 공격 속도 전투(2026-10-06): 박자 = 다음 일까지의 실제 전투 시간(at). 시각이 없는 옛 기록만 종류별 박자
     const evs = f.events;
+    // 약한 침입자가 많은 낮은 단계는 한 층이 20초 넘게 걸린다: 층 전투가 FLOOR_TARGET_MS보다 길면 최대 3배까지 빠르게(이어지는 공성이 늘어지지 않게)
+    const k = floorSpeedUp(evs[evs.length - 1]?.at ?? 0);
     const gap = (i: number, j: number, fallback: number) => {
       const a = evs[i].at;
       const n = evs[j]?.at;
-      return a !== undefined && n !== undefined ? Math.max(0, n - a) : fallback;
+      return a !== undefined && n !== undefined ? Math.round(Math.max(0, n - a) / k) : fallback;
     };
     for (let i = 0; i < evs.length; i++) {
       const e = evs[i];

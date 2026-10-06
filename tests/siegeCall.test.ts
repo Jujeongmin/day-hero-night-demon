@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../server/src/catalog';
-import { siegeCallBlock, siegeSpeed } from '../server/src/siege';
+import { calledWaveGold, floorSpeedUp, SIEGE_REPLAY, siegeCallBlock, siegeReplayMs, siegeSpeed } from '../server/src/siege';
 
 const W = BALANCE.siegeWaveMs;
 const T0 = Date.UTC(2026, 9, 1, 3);
@@ -16,33 +16,30 @@ describe('siegeSpeed', () => {
   });
 });
 
-describe('siegeCallBlock', () => {
-  it('after a held wave: only in the last 20 seconds before the next wave', () => {
-    const base = { lastWaveAt: T0, lastWon: true, speed: 1 as const };
-    expect(siegeCallBlock({ ...base, now: T0 + 30_000 })).toBe('SIEGE_TOO_SOON');
-    expect(siegeCallBlock({ ...base, now: T0 + W - 20_001 })).toBe('SIEGE_TOO_SOON');
-    expect(siegeCallBlock({ ...base, now: T0 + W - 20_000 })).toBe(null);
-    expect(siegeCallBlock({ ...base, now: T0 + W - 1 })).toBe(null);
+describe('continuous siege (2026-10-06)', () => {
+  it('the next wave may be called only after the last replay is over (no fixed wait)', () => {
+    expect(siegeCallBlock({ nextAt: T0 + 9000, now: T0 + 8999 })).toBe('SIEGE_TOO_SOON');
+    expect(siegeCallBlock({ nextAt: T0 + 9000, now: T0 + 9000 })).toBe(null);
+    expect(siegeCallBlock({ nextAt: undefined, now: T0 })).toBe(null);
   });
 
-  it('an old save without the last result counts as held', () => {
-    expect(siegeCallBlock({ lastWaveAt: T0, lastWon: undefined, speed: 1, now: T0 + 30_000 })).toBe('SIEGE_TOO_SOON');
+  it('replay length: enter + sped-up fight + end per floor, then the result; long floors play up to 3x faster', () => {
+    const floor = (ms: number) => ({ floor: 0, start: [], events: [{ t: 'end' as const, outcome: 'won' as const, at: ms }] });
+    expect(floorSpeedUp(3000)).toBe(1);
+    expect(floorSpeedUp(14_000)).toBe(2);
+    expect(floorSpeedUp(60_000)).toBe(3);
+    expect(siegeReplayMs([floor(3000)])).toBe(SIEGE_REPLAY.enterMs + 3000 + SIEGE_REPLAY.endMs + SIEGE_REPLAY.resultMs);
+    expect(siegeReplayMs([floor(14_000), floor(0)])).toBe(2 * (SIEGE_REPLAY.enterMs + SIEGE_REPLAY.endMs) + 7000 + SIEGE_REPLAY.resultMs);
   });
 
-  it('after a breached wave: any time once the replay is over (10s at 1×, shorter when sped up)', () => {
-    const base = { lastWaveAt: T0, lastWon: false };
-    expect(siegeCallBlock({ ...base, speed: 1, now: T0 + 9_999 })).toBe('SIEGE_TOO_SOON');
-    expect(siegeCallBlock({ ...base, speed: 1, now: T0 + 10_000 })).toBe(null);
-    expect(siegeCallBlock({ ...base, speed: 2, now: T0 + 5_000 })).toBe(null);
-    expect(siegeCallBlock({ ...base, speed: 3, now: T0 + 3_334 })).toBe(null);
-    expect(siegeCallBlock({ ...base, speed: 3, now: T0 + 3_000 })).toBe('SIEGE_TOO_SOON');
-  });
-
-  it('speed shortens the wave period while playing: 2× = 1 min, 3× = 40 s (call window still the last 20 s)', () => {
-    const base = { lastWaveAt: T0, lastWon: true };
-    expect(siegeCallBlock({ ...base, speed: 2, now: T0 + W / 2 - 20_001 })).toBe('SIEGE_TOO_SOON');
-    expect(siegeCallBlock({ ...base, speed: 2, now: T0 + W / 2 - 20_000 })).toBe(null);
-    expect(siegeCallBlock({ ...base, speed: 3, now: T0 + W / 3 - 20_001 })).toBe('SIEGE_TOO_SOON');
-    expect(siegeCallBlock({ ...base, speed: 3, now: T0 + W / 3 })).toBe(null);
+  it('wave gold follows elapsed time, so gold per hour stays the same however often waves come', () => {
+    expect(calledWaveGold(1200, W, 1)).toBe(1200);
+    expect(calledWaveGold(1200, W / 6, 1)).toBe(200);
+    // 6번 부르면 2분 주기 한 번과 같다
+    expect(6 * calledWaveGold(1200, W / 6, 1)).toBe(calledWaveGold(1200, W, 1));
+    // 배속은 그만큼 더(3×는 예전에도 파도가 3배 잦았다), 2분치를 넘지 않는다
+    expect(calledWaveGold(1200, W / 6, 3)).toBe(600);
+    expect(calledWaveGold(1200, 10 * W, 1)).toBe(1200);
+    expect(calledWaveGold(0, W, 1)).toBe(0);
   });
 });

@@ -181,29 +181,11 @@ export default function CastleScene(props: {
     setSiegeSpd(next);
     try { localStorage.setItem(SIEGE_SPEED_KEY, String(next)); } catch { /* 저장 못 해도 이번 화면에서는 쓴다 */ }
   }, [speed, has3x]);
-  // 다음 공성 파도 시각: 서버 시각을 이 기기 시계로 옮긴다. 배속이면 주기가 짧다(2분 ÷ 배속, 게임을 켜 둔 동안만)
-  const nextWaveAt = useMemo(
-    () => (s.siege?.lastWaveAt ?? home.now) + (home.siegeWaveMs ?? 120_000) / speed + (Date.now() - home.now),
-    [s.siege?.lastWaveAt, home.siegeWaveMs, home.now, speed],
-  );
-  // 바로 부른 파도: getHome은 그 결과를 다시 주지 않으므로 여기서 들고 있다가 재생한다
+  // 부른 파도: getHome은 그 결과를 다시 주지 않으므로 여기서 들고 있다가 재생한다
   const [calledWave, setCalledWave] = useState<SiegeWave | null>(null);
   const [calling, setCalling] = useState(false);
-  const callWave = useCallback(() => {
-    if (calling) return;
-    setCalling(true);
-    api.callSiegeWave(speed)
-      .then((r) => { setCalledWave(r.wave); return onRefresh(); })
-      .catch((e) => onError(errorText(e)))
-      .finally(() => setCalling(false));
-  }, [api, calling, speed, onRefresh, onError]);
-  // 파도 시각이 됐을 때: 1×는 서버 시간표대로 새로 받고, 배속이면 화면이 직접 부른다(실패해도 알림 없이 새로 받기만)
-  const onWaveDue = useCallback(() => {
-    if (speed === 1) { onRefresh().catch(() => undefined); return; }
-    api.callSiegeWave(speed)
-      .then((r) => { setCalledWave(r.wave); return onRefresh(); })
-      .catch(() => onRefresh().catch(() => undefined));
-  }, [api, speed, onRefresh, onError]);
+  // 실패하면 잠깐 쉬었다 다시(연속 실패로 서버를 두드리지 않게)
+  const [retryAt, setRetryAt] = useState(0);
   // 돌아왔을 때 요약 카드: 서버가 10분 넘게 밀린 파도를 처리한 응답에서 한 번만 띄운다
   const [away, setAway] = useState<NonNullable<HomeData['siegeAway']> | null>(null);
   useEffect(() => {
@@ -244,6 +226,30 @@ export default function CastleScene(props: {
   const [replay, setReplay] = useState<ReplayPhase>(NO_PHASE);
   const onPhase = useCallback((p: ReplayPhase) => setReplay(p), []);
   const replaying = replay.floor !== null || replay.result !== null;
+  // 이어지는 공성(2026-10-06 사용자: 기다리는 시간 없이): 재생이 끝나면 잠깐 쉬고 다음 파도를 부른다.
+  // 서버 최소 간격(siegeCallGapMs ÷ 배속)보다 일찍은 부르지 않는다. 출정 중·숨은 탭·튜토리얼 중에는 쉰다
+  // 서버 시각 → 이 기기 시계: 홈을 받은 순간의 차이로 옮긴다
+  const clockOffset = useMemo(() => Date.now() - home.now, [home.now]);
+  const nextAt = (s.siege?.nextAt ?? 0) + clockOffset;
+  const siegeOn = !s.run && (s.onboarding?.at ?? 'done') === 'done';
+  useEffect(() => {
+    if (!siegeOn || replaying || calling) return;
+    const wait = Math.max(
+      BALANCE.siegeRestMs / speed,
+      nextAt - Date.now(),
+      retryAt - Date.now(),
+    );
+    const id = window.setTimeout(() => {
+      if (document.hidden) { setRetryAt(Date.now() + 3000); return; }
+      setCalling(true);
+      api.callSiegeWave(speed)
+        .then((r) => { setCalledWave(r.wave); return onRefresh(); })
+        .catch(() => { setRetryAt(Date.now() + 5000); return onRefresh().catch(() => undefined); })
+        .finally(() => setCalling(false));
+    }, Math.max(0, wait));
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [siegeOn, replaying, calling, speed, s.siege?.nextAt, retryAt]);
   const floorsCount = s.castle.floors.length;
   const throneFight = replay.floor !== null && replay.floor >= floorsCount;
   // 영구 2배(옛 상품) 계정은 광고 2배를 쓰지 않는다
@@ -359,16 +365,12 @@ export default function CastleScene(props: {
         stage={s.siege?.stage ?? 1}
         best={s.siege?.best ?? s.siege?.stage ?? 1}
         onRank={onSiegeRank}
-        nextWaveAt={nextWaveAt}
         lastWave={lastWave}
         replaying={replaying}
         replayResult={replay.result}
         // 튜토리얼 중에는 공성 단계 표시·바로 부르기를 숨긴다(시선이 흩어지지 않게, 2026-10-02)
         compact={panelOpen || (s.onboarding?.at ?? 'done') !== 'done'}
-        onCall={calling ? null : callWave}
-        lastWon={s.siege?.lastWon}
         speed={speed}
-        onWaveDue={onWaveDue}
         onFighting={onDefending}
         onLordHp={onLordHp}
       />

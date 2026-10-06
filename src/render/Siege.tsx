@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import Sprite from './Sprite';
 import { SIEGE, idleSiege, startWave, stepSiege, waveRunning, type SiegeState } from './siegeSim';
 import { formatNum, waveGold } from '../../server/src/growth';
-import { siegeCallBlock, siegePeriod } from '../../server/src/siege';
 import type { Speed } from './speed';
 import { T } from '../strings/ko';
 import type { SiegeWave } from '../services/api';
@@ -10,7 +9,7 @@ import type { SiegeWave } from '../services/api';
 const TICK_MS = 66;
 
 /**
- * 홈 화면 공성: 2분마다 침입 용사 3명이 몰려와 1층 몬스터와 싸운다.
+ * 홈 화면 공성 단계 표시(파도는 쉬지 않고 이어진다, 2026-10-06). 옛 성문 앞 연출은 전투 기록이 없는 파도에만.
  * 승패·단계·골드는 서버가 정하고, 여기서는 서버가 알려 준 마지막 파도 결과를 재생한다.
  */
 export default function Siege(props: {
@@ -20,34 +19,24 @@ export default function Siege(props: {
   stage: number;
   best: number;
   onRank: () => void;
-  /** 다음 파도 시각(이 기기 시계 기준) */
-  nextWaveAt: number;
   /** 서버가 마지막으로 처리한 파도 (at = 서버 시각) */
   lastWave: SiegeWave | null;
   /** 탑 위에서 실제 전투를 재생하는 중(그동안 옛 연출은 쉬고, 단계 표시는 싸우기 전 단계) */
   replaying: boolean;
   replayResult: 'held' | 'breached' | null;
-  /** 다음 파도 시각이 지나면 서버에 결과를 물어본다 */
-  onWaveDue: () => void;
   onFighting: (fighting: boolean) => void;
   /** 마왕 체력(0~1): 탑 꼭대기 마왕 위 막대로 그린다 */
   onLordHp: (ratio: number) => void;
   /** 아래 창이 열려 있으면 단계 표시·부르기 버튼을 숨긴다(1층을 가리지 않게) */
   compact: boolean;
-  /** 바로 부르기(무료 스킵). 요청 중이면 null */
-  onCall: (() => void) | null;
-  /** 서버가 기록한 마지막 파도 결과(뚫렸으면 false → 언제든 부를 수 있다) */
-  lastWon: boolean | undefined;
   /** 재생 배속. 배속 버튼은 화면 위 HUD(골드 오른쪽)에 있다 */
   speed: Speed;
 }) {
-  const { ground, paused, stage, best, onRank, nextWaveAt, lastWave, onWaveDue, onFighting, onLordHp, compact, onCall, lastWon, speed, replaying, replayResult } = props;
+  const { ground, paused, stage, best, onRank, lastWave, onFighting, onLordHp, compact, speed, replaying, replayResult } = props;
   const [s, setS] = useState<SiegeState>(idleSiege);
-  const [now, setNow] = useState(Date.now());
   // 재생 중에는 싸우기 전 단계를 보여 주고, 끝나면 새 단계로 바꾼다
   const [shownStage, setShownStage] = useState(stage);
   const played = useRef(0);
-  const askedAt = useRef(0);
   const fightingRef = useRef(false);
 
   // 서버가 새 파도를 처리했으면 그 결과(막음/뚫림)대로 재생
@@ -70,17 +59,9 @@ export default function Siege(props: {
     const id = window.setInterval(() => {
       if (document.hidden) return;
       setS((prev) => stepSiege(prev, (TICK_MS / 1000) * speed));
-      setNow(Date.now());
     }, TICK_MS);
     return () => window.clearInterval(id);
   }, [paused, speed]);
-
-  // 다음 파도 시각이 지나면 서버에 물어본다. 실패하거나 아직 처리 전이면 15초 뒤 다시(연속 호출 방지)
-  useEffect(() => {
-    if (paused || now < nextWaveAt + 500 || now - askedAt.current < 15_000) return;
-    askedAt.current = now;
-    onWaveDue();
-  }, [paused, now, nextWaveAt, onWaveDue]);
 
   // 1% 단위로만 알려 다시 그리기를 줄인다
   const hpPct = Math.round((s.castleHp / SIEGE.castleMax) * 100);
@@ -98,8 +79,6 @@ export default function Siege(props: {
   const breached = (s.held === false && s.castleHp === 0) || replayResult === 'breached';
   // 쓰러진 침입자 1명당 골드(파도 골드 ÷ 3) — 서버 waveGold와 같은 식
   const perKill = formatNum(Math.round(waveGold(shownStage) / 3));
-  // 서버와 같은 규칙: 다음 파도 20초 전부터, 직전 파도가 뚫렸으면 연출이 끝난 뒤 언제든
-  const canCall = !!onCall && !running && siegeCallBlock({ lastWaveAt: nextWaveAt - siegePeriod(speed), lastWon, speed, now }) === null;
   return (
     <div className="siege" style={{ bottom: ground, '--spd': speed } as CSSProperties} aria-hidden>
       {s.invaders.map((v) => (
@@ -121,12 +100,9 @@ export default function Siege(props: {
         <>
           <div className="siege-stage">
             <button className="pill" onClick={onRank}>
-              {breached ? T.siege.breached : running ? T.siege.stage(shownStage) : T.siege.next(shownStage, Math.max(0, nextWaveAt - now))}
+              {breached ? T.siege.breached : T.siege.stage(shownStage)}
               {!breached && <small> · {T.siege.best(Math.max(best, shownStage))}</small>}
             </button>
-            {!running && (
-              <button className="btn small gold" disabled={!canCall} onClick={() => onCall?.()}>{T.siege.call}</button>
-            )}
           </div>
         </>
       )}

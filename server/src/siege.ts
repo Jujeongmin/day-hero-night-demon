@@ -88,18 +88,36 @@ export function siegeSpeed(requested: unknown, has3x: boolean): SiegeSpeed | nul
   return n === 2 ? 2 : 1;
 }
 
+/** 홈 화면 공성 재생 박자(1× ms). 화면(siegeReplay)과 서버(다음 파도를 부를 수 있는 시각)가 같은 값을 쓴다 */
+export const SIEGE_REPLAY = { enterMs: 700, endMs: 420, resultMs: 1500, floorTargetMs: 7000, maxSpeedUp: 3 };
+
+/** 층 하나 전투를 재생할 때 빠르게 감는 배수: FLOOR_TARGET_MS보다 길면 최대 3배 */
+export function floorSpeedUp(battleMs: number): number {
+  return Math.min(SIEGE_REPLAY.maxSpeedUp, Math.max(1, battleMs / SIEGE_REPLAY.floorTargetMs));
+}
+
+/** 파도 하나의 재생 길이(1× ms): 층마다 들어서기 + 빠르게 감은 전투 + 끝, 마지막에 결과 */
+export function siegeReplayMs(log: FloorLog[]): number {
+  let ms = SIEGE_REPLAY.resultMs;
+  for (const f of log) {
+    const dur = f.events[f.events.length - 1]?.at ?? 0;
+    ms += SIEGE_REPLAY.enterMs + dur / floorSpeedUp(dur) + SIEGE_REPLAY.endMs;
+  }
+  return Math.round(ms);
+}
+
 /**
- * 바로 부르기를 막는 이유(되면 null).
- * - 직전 파도 연출이 끝나야 한다: 1× 10초, 배속이면 그만큼 짧다
- * - 직전 파도를 막았으면 다음 파도까지 20초 이하 남았을 때만. 뚫렸으면 언제든
- * - 게임을 켜 둔 동안 배속이면 파도 주기가 짧아진다(2분 ÷ 배속: 2× 1분, 3× 40초). 화면이 그 시각에 부른다.
- *   자리를 비운 동안은 부르는 쪽이 없으니 runSiege의 2분 주기 그대로다 (2026-09-30 사용자 결정: 접속 중에만)
+ * 다음 파도를 부를 수 없는 이유(되면 null). 이어지는 공성(2026-10-06): 게임을 켜 둔 동안 화면이 재생을 끝내면 부른다.
+ * 직전 파도의 재생이 끝나는 시각(nextAt, 서버가 전투 기록으로 계산) 전에는 막는다 — 재생을 건너뛰고 연달아 불러 단계를 올리는 조작 방지.
+ * 정상 플레이는 재생이 끝난 뒤 부르므로 기다리지 않는다. 자리를 비운 동안은 runSiege의 2분 주기 그대로
  */
-export function siegeCallBlock(p: { lastWaveAt: number; lastWon: boolean | undefined; speed: SiegeSpeed; now: number }): 'SIEGE_TOO_SOON' | null {
-  const since = p.now - p.lastWaveAt;
-  if (since < BALANCE.siegeCallGapMs / p.speed) return 'SIEGE_TOO_SOON';
-  if (p.lastWon !== false && siegePeriod(p.speed) - since > BALANCE.siegeCallWindowMs) return 'SIEGE_TOO_SOON';
-  return null;
+export function siegeCallBlock(p: { nextAt: number | undefined; now: number }): 'SIEGE_TOO_SOON' | null {
+  return p.now < (p.nextAt ?? 0) ? 'SIEGE_TOO_SOON' : null;
+}
+
+/** 이어지는 공성의 파도 골드: 지난 파도부터 흐른 시간만큼(최대 2분치). 막지 못하면 0 */
+export function calledWaveGold(waveGoldFull: number, since: number, speed: SiegeSpeed): number {
+  return Math.floor(waveGoldFull * Math.min(1, Math.max(0, since) * speed / BALANCE.siegeWaveMs));
 }
 
 /** 파도 하나: at 시각의 시드로 싸워 막았는지와 다음 단계·골드를 낸다. record면 실제 전투 기록(log)도 준다 */

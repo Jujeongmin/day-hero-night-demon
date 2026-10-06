@@ -357,12 +357,13 @@ describe('season pass track', () => {
 });
 
 describe('siege', () => {
-  test('calling a wave right after the last one is refused', async (server) => {
+  test('continuous siege: a wave can be called, but the next one only after its replay is over', async (server) => {
     server.connect({ account: 't50-siege' });
     const home = await server.getHome();
     expect(home.state.siege.stage).toBe(1);
+    const first = await server.callSiegeWave();
+    expect(first.siege.nextAt).toBeGreaterThan(first.wave.at);
     expect(await fails(server.callSiegeWave())).toBe(true);
-    expect((await server.getHome()).state.siege.stage).toBe(1);
   });
 
   test('siege ranking starts at stage 1 and home shows a power number', async (server) => {
