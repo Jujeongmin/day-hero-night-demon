@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../server/src/catalog';
-import { planSummon, planWearGear, pullsToLegend, pullsToPity, summonPoolsFor, type SummonPools } from '../server/src/summon';
+import { planSummon, planWearGear, pullsToLegend, pullsToPity, type SummonPools } from '../server/src/summon';
 import { rngNext } from '../server/src/rng';
 
 const POOLS: SummonPools = { gear: ['slime:crown', 'slime:armor', 'imp:horns'], legend: ['summon1'] };
@@ -166,26 +166,18 @@ describe('legend pity: a legend within 100 (2026-10-06)', () => {
   });
 });
 
-describe('season legend (2026-10-06)', () => {
-  it('a legend is the season look about half the time, and never once the season has none', () => {
+describe('two standing legends (2026-10-06)', () => {
+  it('a legend is either legend look about half the time', () => {
     const rand = seeded(99);
-    const pools = { ...POOLS, season: 'hydra' };
-    let season = 0;
-    let legends = 0;
-    for (let k = 0; k < 4000; k++) {
+    const pools = { ...POOLS, legend: BALANCE.summon.legendLooks };
+    let hydra = 0;
+    const n = 4000;
+    for (let k = 0; k < n; k++) {
       const s = { ...fresh, summon: { pulls: 0, sinceHigh: 0, sinceLegend: 99 } };
-      const r = planSummon(s, 'one', rand, pools).results[0];
-      legends++;
-      if (r.item === 'hydra') season++;
+      if (planSummon(s, 'one', rand, pools).results[0].item === 'hydra') hydra++;
     }
-    expect(season / legends).toBeCloseTo(BALANCE.summon.seasonLegendShare, 1);
-    const s = { ...fresh, summon: { pulls: 0, sinceHigh: 0, sinceLegend: 99 } };
-    expect(planSummon(s, 'one', always(0.001), POOLS).results[0].item).toBe('summon1');
-  });
-
-  it('season 1 has the hydra; a season with no art has only the standing legends', () => {
-    expect(summonPoolsFor('s1').season).toBe('hydra');
-    expect(summonPoolsFor('s99').season).toBeUndefined();
+    expect(BALANCE.summon.legendLooks).toEqual(['summon1', 'hydra']);
+    expect(hydra / n).toBeCloseTo(0.5, 1);
   });
 });
 

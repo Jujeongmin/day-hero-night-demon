@@ -390,11 +390,10 @@ export const zhHant: Strings = {
     wearWhere: '獲得的外觀在強化畫面的怪物欄穿上',
     ratesTitle: '召喚機率',
     grades: { common: '普通', rare: '稀有', epic: '英雄', legend: '傳說' },
-    rewardOf: { common: '魂石 10', rare: '魂石 30', epic: '12種怪物裝備外觀之一', legend: '召喚限定魔王外觀' },
+    rewardOf: { common: '魂石 10', rare: '魂石 30', epic: '12種怪物裝備外觀之一', legend: '2種召喚限定魔王外觀之一' },
     tenNote: '10+1次必得一個英雄以上。',
     pityNote: (n: number) => `連續沒有英雄以上時，第${n}次召喚必得英雄以上；抽到後重新計算。`,
     legendPityNote: (n: number) => `連續沒有傳說時，第${n}次召喚必得傳說；抽到後重新計算。`,
-    seasonNote: (name: string, pct: number) => `本賽季限定：抽到傳說時有${pct}%機率是「${name}」。賽季結束後不再出現。`,
     dupNote: (epic: number, legend: number) => `抽到已有的外觀會換成魂石(英雄${epic}、傳說${F(legend)})。`,
     gear: {
       'slime:crown': '史萊姆王', 'slime:helm': '騎士史萊姆', 'skeleton:royal': '骷髏王', 'skeleton:dread': '恐懼之鎧',

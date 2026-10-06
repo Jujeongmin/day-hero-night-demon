@@ -31,8 +31,8 @@ const HERO_ORDER: ProductId[] = ['starter_pack', 'season_pass', 'soul_relic'];
 function SpendRow(props: { api: Api; home: HomeData; onRefresh: () => Promise<void>; onToast: (m: string) => void }) {
   const [busy, setBusy] = useState(false);
   const sp = spendOf(props.home.state, seasonIdAt(Date.now()));
-  const ready = planSpendClaim(sp).claimed > sp.claimed;
-  const next = nextSpendTier(sp);
+  const ready = planSpendClaim(sp, props.home.state.skins).claimed > sp.claimed;
+  const next = nextSpendTier(sp, props.home.state.skins);
   async function claim() {
     if (busy) return;
     setBusy(true);

@@ -390,11 +390,10 @@ export const ja: Strings = {
     wearWhere: '手に入れた外見は強化画面のモンスター欄で装着',
     ratesTitle: '召喚確率',
     grades: { common: 'ノーマル', rare: 'レア', epic: 'エピック', legend: '伝説' },
-    rewardOf: { common: '魂石 10', rare: '魂石 30', epic: 'モンスター装備外見12種のうち1つ', legend: '召喚限定の魔王外見' },
+    rewardOf: { common: '魂石 10', rare: '魂石 30', epic: 'モンスター装備外見12種のうち1つ', legend: '召喚限定の魔王外見2種のうち1つ' },
     tenNote: '10+1回はエピック以上が1つ確定。',
     pityNote: (n: number) => `エピック以上なしで${n}回目の召喚はエピック以上が確定。出たら数え直し。`,
     legendPityNote: (n: number) => `レジェンドなしで${n}回目の召喚はレジェンドが確定。出たら数え直し。`,
-    seasonNote: (name: string, pct: number) => `今シーズン限定: レジェンドが出ると${pct}%の確率で「${name}」。シーズンが終わると出なくなる。`,
     dupNote: (epic: number, legend: number) => `持っている外見が出たら魂石に変わる(エピック${epic}、伝説${F(legend)})。`,
     gear: {
       'slime:crown': 'スライム王', 'slime:helm': '騎士スライム', 'skeleton:royal': '骸骨王', 'skeleton:dread': '恐怖の鎧',

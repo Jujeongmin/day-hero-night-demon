@@ -13,14 +13,14 @@ import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun 
 import { planAdReward } from './ads';
 import type { FloorLog } from './battle';
 import { spendFor, vipOf, vipPerks } from './vip';
-import { chooseLordSkin, ownedLooks, planPassClaim } from './pass';
+import { championLookFor, chooseLordSkin, ownedLooks, planPassClaim } from './pass';
 import { bumpQuests, planClaimDaily, planClaimGuide } from './quests';
 import { grantFor } from './purchases';
 import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from './siege';
 import { noteWall, WALL_BREACHES } from './offer';
 import { rngNext, seedFrom } from './rng';
 import { addSpend, planSpendClaim, spendOf } from './spend';
-import { planSummon, planWearGear, pullsToLegend, pullsToPity, summonOf, summonPoolsFor } from './summon';
+import { planSummon, planWearGear, pullsToLegend, pullsToPity, summonOf } from './summon';
 import {
   canAdvance, dayKey, defaultState, heroGrowth, isNew, isStage, migrateGrowth, resetState, resolveFloors, withDefaults,
   type CastleSnapshot, type OnboardingState, type RaidLogEntry, type Run, type Target, type UserState,
@@ -285,7 +285,7 @@ async function settleDefender(me: string, s: UserState, run: Run, won: boolean, 
 async function settleSpend(account: string, s: UserState, now: number): Promise<UserState> {
   const current = seasonIdAt(now);
   if (!s.spend || s.spend.season === current) return s;
-  const plan = planSpendClaim(s.spend);
+  const plan = planSpendClaim(s.spend, s.skins);
   if (plan.soul) await $asset.mint('soul', plan.soul, account);
   const patch: Partial<UserState> = { spend: { season: current, vx: 0, claimed: 0 }, ...(plan.look ? { skins: [...new Set([...s.skins, plan.look])] } : {}) };
   await save(account, patch);
@@ -316,7 +316,7 @@ async function rollSeason(account: string, s: UserState, now: number): Promise<U
     await recordHall(s.season.id, top, now);
     const kind = titleForGlobalRank(top.findIndex((r: any) => r.account === account) + 1);
     if (kind) {
-      const skin = kind === 'champion' ? BALANCE.seasonChampionSkins[s.season.id] : undefined;
+      const skin = kind === 'champion' ? championLookFor(s.skins) : undefined;
       const patch: Partial<UserState> = { title: { kind, season: s.season.id }, ...(skin ? { skins: [...new Set([...s.skins, skin])] } : {}) };
       await save(account, patch);
       s = { ...s, ...patch };
@@ -598,7 +598,7 @@ export class Server {
       const now = Date.now();
       const s = await settleSpend(me, await loadState(me, now), now);
       const sp = spendOf(s, seasonIdAt(now));
-      const plan = planSpendClaim(sp);
+      const plan = planSpendClaim(sp, s.skins);
       if (plan.claimed === sp.claimed) return { soul: 0, look: null };
       if (plan.soul) await $asset.mint('soul', plan.soul);
       const patch: Partial<UserState> = { spend: { ...sp, claimed: plan.claimed }, ...(plan.look ? { skins: [...new Set([...s.skins, plan.look])] } : {}) };
@@ -880,7 +880,7 @@ export class Server {
       const now = Date.now();
       const s = await loadState(me, now);
       const before = summonOf(s).pulls;
-      const plan = planSummon(s, kind, Math.random, summonPoolsFor(seasonIdAt(now)));
+      const plan = planSummon(s, kind, Math.random);
       if (!(await $asset.has('soul', plan.cost))) throw new Error('NO_SOUL');
       await $asset.burn('soul', plan.cost);
       if (plan.soul) await $asset.mint('soul', plan.soul);

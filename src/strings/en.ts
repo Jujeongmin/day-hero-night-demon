@@ -390,11 +390,10 @@ export const en: Strings = {
     wearWhere: 'Wear your looks from each monster in the Upgrade window',
     ratesTitle: 'Summon rates',
     grades: { common: 'Common', rare: 'Rare', epic: 'Epic', legend: 'Legendary' },
-    rewardOf: { common: '10 soulstones', rare: '30 soulstones', epic: 'One of 12 monster gear looks', legend: 'Summon-only Demon Lord look' },
+    rewardOf: { common: '10 soulstones', rare: '30 soulstones', epic: 'One of 12 monster gear looks', legend: 'One of 2 summon-only Demon Lord looks' },
     tenNote: '10+1 guarantees at least one Epic or better.',
     pityNote: (n: number) => `Your ${n}th summon without an Epic or better is guaranteed Epic or better. The count restarts whenever one drops.`,
     legendPityNote: (n: number) => `Your ${n}th summon without a Legend is guaranteed Legend. The count restarts whenever one drops.`,
-    seasonNote: (name: string, pct: number) => `This season only: a Legend has a ${pct}% chance to be "${name}". It stops dropping when the season ends.`,
     dupNote: (epic: number, legend: number) => `A look you already own turns into soulstones (Epic ${epic}, Legendary ${F(legend)}).`,
     gear: {
       'slime:crown': 'Slime King', 'slime:helm': 'Knight Slime', 'skeleton:royal': 'Skeleton King', 'skeleton:dread': 'Dread Armor',

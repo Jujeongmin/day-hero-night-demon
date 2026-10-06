@@ -241,10 +241,14 @@ export const BALANCE = {
   firstBuyMult: 2,
   /** 공성 시즌 순위(리그와 같은 2주) 1·2·3위 영혼석 (2026-10-06 사용자, "고액 결제 늘리기" 5번). 홈 표시는 하지 않는다 */
   siegeSeasonSoul: [500, 300, 150],
-  /** 시즌 누적 결제 보상(2026-10-06 사용자, "고액 결제 늘리기" 6번): 시즌 동안 쓴 VX가 넘으면 영혼석, 마지막 단계는 그 시즌 한정 외형 */
+  /**
+   * 시즌 누적 결제 보상(2026-10-06 사용자, "고액 결제 늘리기" 6번): 시즌 동안 쓴 VX가 넘으면 영혼석(시즌마다 다시).
+   * 마지막 단계는 수정관 크라켄(look)을 계정당 한 번, 이미 가졌으면 그 대신 영혼석 lookDupSoul (2026-10-06 사용자: 시즌마다 그림을 새로 넣지 않는 상시 구조)
+   */
   spendEvent: {
     tiers: [{ vx: 1000, soul: 100 }, { vx: 5000, soul: 600 }, { vx: 15000, soul: 2000 }, { vx: 30000, soul: 4000 }],
-    looks: { s1: 'spend1' } as Record<string, string>,
+    look: 'spend1',
+    lookDupSoul: 2000,
   },
   /** 영혼석 묶음(반복 구매, 2026-10-01 승인). 100 VX당 30·36·40·45·50. VIP 묶음 보너스가 붙는다. vx는 표시·검증용 */
   soulPacks: {
@@ -277,13 +281,8 @@ export const BALANCE = {
       'slime:crown', 'slime:helm', 'skeleton:royal', 'skeleton:dread', 'imp:king', 'imp:warlock',
       'necro:lich', 'necro:bone', 'spider:iron', 'spider:crown', 'dragon:knight', 'dragon:royal',
     ] as string[],
-    legendLooks: ['summon1'] as string[],
-    /**
-     * 시즌 한정 전설(2026-10-06 사용자, "고액 결제 늘리기" 4번): 그 시즌에 전설이 나오면 seasonLegendShare 확률로 시즌 외형.
-     * 시즌이 끝나면 더 안 나온다(가진 사람은 영구 소장). 그림이 없는 시즌은 legendLooks만
-     */
-    seasonLegends: { s1: 'hydra' } as Record<string, string>,
-    seasonLegendShare: 0.5,
+    /** 전설 마왕 외형(같은 확률로 하나). 2026-10-06 사용자: 시즌 한정 대신 상시 — 타락 대악마·세 머리 히드라 */
+    legendLooks: ['summon1', 'hydra'] as string[],
   },
   /**
    * 의뢰(2026-10-02 사용자 승인). 일일 의뢰: 한국 시간 0시에 새로, 하나에 영혼석 soulEach, 모두 하면 soulAll 더(하루 40).
@@ -316,10 +315,10 @@ export const BALANCE = {
   /** 전체 순위 칭호: 1위 champion(+ 그 시즌 한정 마왕 외형·명예의 전당), 2~3위 top3(+ 명예의 전당), 4~10위 top10. 다음 시즌 동안 이름 옆에 보인다 */
   globalRankTitles: { top3: 3, top10: 10 },
   /**
-   * 시즌별 전체 1위 한정 마왕 외형(2026-10-02 승인: 시즌 1 뼈 용 리치 왕 → 2 외눈 심연 군주 → 3 심연 황제). 없는 시즌은 외형 없이 칭호만.
-   * 그림·움직임이 준비되면 여기에 시즌 id를 더한다
+   * 전체 1위 한정 마왕 외형(2026-10-02 승인 뼈 용 리치 왕·외눈 심연 군주·심연 황제). 2026-10-06 사용자: 시즌마다 그림을 넣지 않는 상시 구조 —
+   * 1위가 시즌을 넘길 때 이 순서로 아직 없는 것 하나, 다 가졌으면 칭호만
    */
-  seasonChampionSkins: { s1: 'lich', s2: 'abyss', s3: 'emperor' } as Record<string, string>,
+  championLooks: ['lich', 'abyss', 'emperor'] as string[],
   /** 누적 VX 계산용 상품 가격. 결제 웹훅에 가격이 없어서 서버가 들고 있다 — 대시보드 가격을 바꾸면 여기도 같이 바꾼다 */
   productVx: {
     starter_pack: 100, season_pass: 400, speed_x3: 300, premium: 500,

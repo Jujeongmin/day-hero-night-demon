@@ -37,6 +37,11 @@ export function passSoulBonusPct(): number {
 /** 영구 소장 외형(패스 10단계 흑룡·소환 전설·시즌 1위)은 skins에, VIP 외형은 등급으로 열린다 */
 const KEPT_LOOKS = ['dragon', 'summon1', 'hydra', 'spend1', 'lich', 'abyss', 'emperor'] as const;
 
+/** 시즌 전체 1위가 받을 외형: championLooks 순서로 아직 없는 첫 번째, 다 가졌으면 없음(칭호만) */
+export function championLookFor(skins: readonly string[]): string | undefined {
+  return BALANCE.championLooks.find((l) => !skins.includes(l));
+}
+
 /** 가진 마왕 외형 목록(보유 효과·외형 고르기). 해골 군주는 2026-10-02에 없앴다 */
 export function ownedLooks(skins: string[], vip = 0): LordSkin[] {
   const out: LordSkin[] = KEPT_LOOKS.filter((k) => skins.includes(k));

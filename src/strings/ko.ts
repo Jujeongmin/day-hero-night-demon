@@ -401,11 +401,10 @@ export const ko = {
     wearWhere: '얻은 외형은 강화 창의 몬스터 줄에서 입힌다',
     ratesTitle: '소환 확률',
     grades: { common: '일반', rare: '희귀', epic: '영웅', legend: '전설' },
-    rewardOf: { common: '영혼석 10', rare: '영혼석 30', epic: '몬스터 장비 외형 12종 중 하나', legend: '소환 한정 마왕 외형' },
+    rewardOf: { common: '영혼석 10', rare: '영혼석 30', epic: '몬스터 장비 외형 12종 중 하나', legend: '소환 한정 마왕 외형 2종 중 하나' },
     tenNote: '10+1회는 영웅 이상 하나가 확정이다.',
     pityNote: (n: number) => `영웅 이상 없이 ${n}번째 소환은 영웅 이상이 확정이고, 영웅·전설이 나오면 다시 센다.`,
     legendPityNote: (n: number) => `전설 없이 ${n}번째 소환은 전설이 확정이고, 전설이 나오면 다시 센다.`,
-    seasonNote: (name: string, pct: number) => `이번 시즌 한정: 전설이 나오면 ${pct}% 확률로 「${name}」. 시즌이 끝나면 더 나오지 않는다.`,
     dupNote: (epic: number, legend: number) => `이미 가진 외형이 나오면 영혼석으로 바꿔 준다(영웅 ${epic}, 전설 ${F(legend)}).`,
     gear: {
       'slime:crown': '슬라임 왕', 'slime:helm': '기사 슬라임', 'skeleton:royal': '해골 왕', 'skeleton:dread': '공포의 갑옷',
