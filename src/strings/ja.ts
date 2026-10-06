@@ -201,6 +201,8 @@ export const ja: Strings = {
     lordLook: '魔王の外見',
     lookOwned: (n: number, pct: number) => `外見 ${n}個所持 · 魔王能力 +${pct}%（着なくても適用）`,
     looks: { base: '基本', dragon: '黒竜', lava: '溶岩の魔王', demon: '紫翼の悪魔', summon1: '堕ちた大悪魔', hydra: '三つ首ヒュドラ', spend1: '水晶冠のクラーケン', lich: '骨竜リッチ王', abyss: '単眼の深淵君主', emperor: '深淵の皇帝' } as Record<string, string>,
+    wornFx: '着用効果',
+    lookFx: { dragon: '暗黒波動が2ターンごと', lava: '受けたダメージの30%を反射', demon: '与ダメージの20%を吸収', summon1: '最も弱い敵に2倍攻撃', hydra: '通常攻撃が3体同時', spend1: '全階のモンスター+10%', lich: '一度だけHP50%で復活', abyss: '暗黒波動で1ターン気絶', emperor: '暗黒波動のダメージ2倍' } as Record<string, string>,
   },
   pass: {
     rank: '順位',

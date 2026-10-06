@@ -49,6 +49,12 @@ export function ownedLooks(skins: string[], vip = 0): LordSkin[] {
   return out;
 }
 
+/** 마왕 외형 보유 효과를 10% 단위로: 일반 외형 1, 전설·결제·1위 외형 2.5 (lordMult가 ×0.1로 쓴다) */
+export function lookUnits(skins: string[], vip = 0): number {
+  const S = BALANCE.summon;
+  return ownedLooks(skins, vip).reduce((a, l) => a + (S.highLooks.includes(l) ? S.lookOwnBonusHigh / S.lookOwnBonus : 1), 0);
+}
+
 /** 다른 플레이어에게 보일 마왕 외형. 고른 외형을 가졌을 때만, 아니면 기본(undefined). */
 export function chooseLordSkin(chosen: 'base' | LordSkin | null, skins: string[], vip = 0): LordSkin | undefined {
   if (!chosen || chosen === 'base') return undefined;

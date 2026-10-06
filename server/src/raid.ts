@@ -1,4 +1,4 @@
-import { BALANCE, HERO_ORDER, type HeroId, type Tactic } from './catalog';
+import { BALANCE, castleAuraMult, HERO_ORDER, type HeroId, type Tactic } from './catalog';
 import { createFloorBattle, playRound, restedHeroesHp, type BattleEvent, type EnemySpec } from './battle';
 import { snapshotLooks } from './economy';
 import { lordLevel, lordMult, monsterMult } from './growth';
@@ -15,11 +15,11 @@ export function floorEnemies(s: CastleSnapshot, floor: number): EnemySpec[] {
   if (floor > throneIndex(s)) return [];
   if (floor === throneIndex(s)) {
     if (s.throneEmpty && !s.shadow) return [];
-    return [{ id: 'lord', level: s.lordLevel ?? lordLevel(s.castleLevel), mult: (s.mult ?? 1) * (s.throneEmpty ? 0.5 : 1) * lordMult(s.lordStars, snapshotLooks(s)), ...(s.lordStars ? { stars: s.lordStars } : {}) }];
+    return [{ id: 'lord', level: s.lordLevel ?? lordLevel(s.castleLevel), mult: (s.mult ?? 1) * (s.throneEmpty ? 0.5 : 1) * lordMult(s.lordStars, snapshotLooks(s)), ...(s.lordStars ? { stars: s.lordStars } : {}), ...(s.lordSkin ? { look: s.lordSkin } : {}) }];
   }
   // 각성 별은 능력치 배수로 곱한다
   return s.floors[floor].monsters.map((m) => {
-    const k = (s.mult ?? 1) * monsterMult(m.stars, m.gear);
+    const k = (s.mult ?? 1) * monsterMult(m.stars, m.gear) * castleAuraMult(s.lordSkin);
     return { id: m.id, level: m.level, ...(k !== 1 ? { mult: k } : {}), ...(m.gear ? { gear: m.gear } : {}), ...(m.stars ? { stars: m.stars } : {}) };
   });
 }

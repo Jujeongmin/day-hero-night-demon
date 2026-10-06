@@ -56,6 +56,31 @@ export const MONSTERS: Record<MonsterId, MonsterDef> = {
 /** 새 몬스터 기술 수치: 가시 바위 되돌림, 흡혈 회복, 처형 배수 */
 export const SKILL_NUMBERS = { thornsReflect: 0.3, lifesteal: 0.3, executeMult: 1.5, frenzyHit: 0.6, gazeMult: 0.5 } as const;
 
+/**
+ * 마왕 외형 고유 효과: 입은 외형 하나만 켜진다(2026-10-06 사용자 승인 표).
+ * 흑룡 암흑 파동 2턴마다 · 용암 맞으면 30% 되돌림 · 보라 악마 흡혈 20% · 타락 대악마 일반 공격이 체력 가장 낮은 적에게 2배 ·
+ * 히드라 일반 공격 3명 동시 70% · 크라켄 모든 층 몬스터 +10% · 리치 왕 한 번 체력 50%로 부활 · 심연 군주 파동에 1턴 기절 · 심연 황제 파동 2배
+ */
+export const LOOK_EFFECTS: Record<string, {
+  waveCooldown?: number; thorns?: number; lifesteal?: number; executeMult?: number;
+  cleave?: number; cleaveMult?: number; castleAura?: number; revive?: number; waveStun?: boolean; waveMult?: number;
+}> = {
+  dragon: { waveCooldown: 2 },
+  lava: { thorns: 0.3 },
+  demon: { lifesteal: 0.2 },
+  summon1: { executeMult: 2 },
+  hydra: { cleave: 3, cleaveMult: 0.7 },
+  spend1: { castleAura: 0.1 },
+  lich: { revive: 0.5 },
+  abyss: { waveStun: true },
+  emperor: { waveMult: 2 },
+};
+
+/** 입은 외형의 성 전체 몬스터 배수(크라켄) */
+export function castleAuraMult(look: string | undefined): number {
+  return 1 + (look ? LOOK_EFFECTS[look]?.castleAura ?? 0 : 0);
+}
+
 export const HEROES: Record<HeroId, HeroDef> = {
   knight: { id: 'knight', name: '기사',   stats: { hp: 150, atk: 14, def: 10, spd: 3 }, skill: 'taunt',       cooldown: 3, row: 'front' },
   archer: { id: 'archer', name: '궁수',   stats: { hp: 90,  atk: 20, def: 4,  spd: 5 }, skill: 'double_shot', cooldown: 2, row: 'back' },
@@ -272,8 +297,13 @@ export const BALANCE = {
     commonSoul: 10, rareSoul: 30, epicDupSoul: 30, legendDupSoul: 300,
     /** 장비 외형을 입은 몬스터·외형을 입은 마왕(기본 아닌 모든 마왕 외형) 능력치 배수 (2026-10-02 사용자) */
     gearStatMult: 1.1,
-    /** 마왕 외형 보유 효과: 가진 외형 하나마다 마왕 능력치 +10%(입지 않아도, 2026-10-02 사용자) */
+    /**
+     * 마왕 외형 보유 효과(입지 않아도, 2026-10-02 사용자): 하나마다 마왕 능력치 +lookOwnBonus.
+     * 2026-10-06 사용자: 전설·결제·1위 외형(highLooks)은 하나마다 +lookOwnBonusHigh
+     */
     lookOwnBonus: 0.1,
+    lookOwnBonusHigh: 0.25,
+    highLooks: ['summon1', 'hydra', 'spend1', 'lich', 'abyss', 'emperor'] as string[],
     pity: 10,
     /** 전설 천장(2026-10-06 사용자, "고액 결제 늘리기" 4번): 전설 없이 legendPity번째 소환은 전설, 전설이 나오면 다시 0부터 */
     legendPity: 100,

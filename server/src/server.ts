@@ -13,7 +13,7 @@ import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun 
 import { planAdReward } from './ads';
 import type { FloorLog } from './battle';
 import { spendFor, vipOf, vipPerks } from './vip';
-import { championLookFor, chooseLordSkin, ownedLooks, planPassClaim } from './pass';
+import { championLookFor, chooseLordSkin, lookUnits, ownedLooks, planPassClaim } from './pass';
 import { bumpQuests, planClaimDaily, planClaimGuide } from './quests';
 import { grantFor } from './purchases';
 import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from './siege';
@@ -68,9 +68,14 @@ function lordStarsOf(s: UserState): number {
   return s.stars?.lord ?? 0;
 }
 
-/** 가진 마왕 외형 수(하나마다 마왕 능력치 +10%, 입지 않아도, 2026-10-02 사용자) */
+/** 가진 마왕 외형 보유 효과(10% 단위: 일반 1, 전설·결제·1위 2.5, 입지 않아도) */
 function lordLooksOf(s: UserState): number {
-  return ownedLooks(s.skins ?? [], vipOf(s)).length;
+  return lookUnits(s.skins ?? [], vipOf(s));
+}
+
+/** 지금 입은 마왕 외형(가진 것만, 고유 효과용) */
+function wornLookOf(s: UserState): string | undefined {
+  return chooseLordSkin(s.lordSkin ?? null, s.skins ?? [], vipOf(s));
 }
 
 /** 매칭용 공개 정보. 표시·매칭에만 쓰고 재화 판단에는 쓰지 않는다. */
@@ -80,7 +85,7 @@ async function syncCastle(account: string, s: UserState): Promise<void> {
     account,
     nickname: s.profile.nickname,
     castleLevel: s.castle.level,
-    power: castlePower(s.castle.level, floors, lordStarsOf(s), lordLooksOf(s)),
+    power: castlePower(s.castle.level, floors, lordStarsOf(s), lordLooksOf(s), wornLookOf(s)),
     floors,
     shieldUntil: s.shieldUntil,
     vip: vipOf(s),
@@ -220,7 +225,7 @@ async function finishRun(me: string, s: UserState, run: Run, won: boolean, loot:
 }
 
 async function realTargets(me: string, s: UserState, now: number): Promise<Target[]> {
-  const power = castlePower(s.castle.level, resolveFloors(s), lordStarsOf(s), lordLooksOf(s));
+  const power = castlePower(s.castle.level, resolveFloors(s), lordStarsOf(s), lordLooksOf(s), wornLookOf(s));
   const rows = await $global.getCollectionItems('castles', {
     filters: [
       { field: 'power', operator: '>=', value: Math.floor(power * 0.8) },
@@ -440,7 +445,7 @@ async function siegeSeasonTop(seasonId: string, limit: number): Promise<any[]> {
 async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[]; soul: number; lastLog?: FloorLog[] }> {
   const r = runSiege({
     account: me, stage: s.siege.stage, lastWaveAt: s.siege.lastWaveAt, now,
-    castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLooks: lordLooksOf(s), vip: vipOf(s),
+    castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLooks: lordLooksOf(s), lordSkin: wornLookOf(s), vip: vipOf(s),
   });
   if (r.lastWaveAt === s.siege.lastWaveAt) return { s, waves: [], soul: 0 };
   const last = r.waves[r.waves.length - 1];
@@ -552,7 +557,7 @@ export class Server {
       const block = siegeCallBlock({ lastWaveAt: s.siege.lastWaveAt, lastWon: s.siege.lastWon, speed: sp, now });
       if (block) throw new Error(block);
       const r = fightWave({
-        account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLooks: lordLooksOf(s), record: true,
+        account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLooks: lordLooksOf(s), lordSkin: wornLookOf(s), record: true,
       });
       const wall = noteWall(s.siege.wall, [{ stage: s.siege.stage, won: r.won }]);
       const { wall: _old, ...keep } = s.siege;
@@ -738,7 +743,7 @@ export class Server {
           : null,
         // 자리를 비운 동안 처음 넘은 10단계 보상(영혼석). 화면에 한 번 알린다
         siegeSoul,
-        power: displayPower(s.castle.level, resolveFloors(s), heroGrowth(s), lordStarsOf(s), lordLooksOf(s)),
+        power: displayPower(s.castle.level, resolveFloors(s), heroGrowth(s), lordStarsOf(s), lordLooksOf(s), wornLookOf(s)),
         seasonEndsAt: seasonEndsAt(now),
         // 전체 알림: 최근 하루 것 최대 5개. 이미 본 것은 화면이 거른다
         news: withNews === false ? [] : await recentNews(now),

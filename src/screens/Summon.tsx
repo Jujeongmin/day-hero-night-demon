@@ -181,6 +181,7 @@ export default function Summon(props: {
                       {r.item && !r.dup && <span className="tag">{T.summon.fresh}</span>}
                       {item ? <Portrait id={item} label={name ?? ''} inner={40} /> : <img src="icons/soul.png" alt="" draggable={false} />}
                       <b>{r.soul > 0 ? `+${formatNum(r.soul)}` : name}</b>
+                      {r.grade === 'legend' && !r.dup && r.item && <small className="card-fx">{T.settings.lookFx[r.item]}</small>}
                     </>
                   )}
                 </div>

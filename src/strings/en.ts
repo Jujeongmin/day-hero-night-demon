@@ -201,6 +201,8 @@ export const en: Strings = {
     lordLook: 'Demon Lord look',
     lookOwned: (n: number, pct: number) => `${n} looks owned · Demon Lord stats +${pct}% (applies without wearing)`,
     looks: { base: 'Default', dragon: 'Black Dragon', lava: 'Lava Lord', demon: 'Violet-Winged Fiend', summon1: 'Fallen Archfiend', hydra: 'Three-Headed Hydra', spend1: 'Crystal-Crowned Kraken', lich: 'Bone Dragon Lich King', abyss: 'One-Eyed Abyss Lord', emperor: 'Abyssal Emperor' } as Record<string, string>,
+    wornFx: 'Worn effect',
+    lookFx: { dragon: 'Dark Wave every 2 turns', lava: 'Reflects 30% of damage taken', demon: 'Heals 20% of damage dealt', summon1: 'Hits the weakest foe for 2×', hydra: 'Attacks bite 3 foes at once', spend1: 'All floor monsters +10%', lich: 'Revives once at 50% HP', abyss: 'Dark Wave stuns for 1 turn', emperor: 'Dark Wave deals 2× damage' } as Record<string, string>,
   },
   pass: {
     rank: 'Ranking',

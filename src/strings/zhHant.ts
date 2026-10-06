@@ -201,6 +201,8 @@ export const zhHant: Strings = {
     lordLook: '魔王外觀',
     lookOwned: (n: number, pct: number) => `擁有外觀 ${n} 個 · 魔王屬性 +${pct}%（無需穿戴）`,
     looks: { base: '基本', dragon: '黑龍', lava: '熔岩魔王', demon: '紫翼惡魔', summon1: '墮落大惡魔', hydra: '三首海德拉', spend1: '晶冠海妖', lich: '骨龍巫妖王', abyss: '獨眼深淵君主', emperor: '深淵皇帝' } as Record<string, string>,
+    wornFx: '穿戴效果',
+    lookFx: { dragon: '暗黑波動每2回合', lava: '反彈受到傷害的30%', demon: '吸取造成傷害的20%', summon1: '對最弱敵人造成2倍傷害', hydra: '普通攻擊同時咬3人', spend1: '所有樓層怪物+10%', lich: '一次以50%生命復活', abyss: '暗黑波動使敵人暈眩1回合', emperor: '暗黑波動傷害2倍' } as Record<string, string>,
   },
   pass: {
     rank: '排名',

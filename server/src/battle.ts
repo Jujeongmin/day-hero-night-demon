@@ -1,5 +1,5 @@
 import {
-  BALANCE, HEROES, INVADERS, LORD, MONSTERS, SKILL_NUMBERS, scaleStats,
+  BALANCE, HEROES, INVADERS, LOOK_EFFECTS, LORD, MONSTERS, SKILL_NUMBERS, scaleStats,
   type HeroId, type InvaderId, type MonsterId, type SkillId, type Stats, type Tactic,
 } from './catalog';
 import { rngNext } from './rng';
@@ -29,6 +29,10 @@ export interface Fighter {
   gear?: string;
   /** 각성 별(머리 위 표시용, 능력치는 mult에 이미 들어 있다) */
   stars?: number;
+  /** 마왕이 입은 외형(고유 효과 LOOK_EFFECTS) */
+  look?: string;
+  /** 리치 왕 부활을 이미 썼다 */
+  revived?: boolean;
 }
 
 export interface FloorBattle {
@@ -61,7 +65,12 @@ export interface FloorLog {
 
 /** key: 같은 종류가 여럿일 때(공성 침입자) 한 명씩 구분하는 이름. 없으면 종류 이름 */
 export interface HeroSpec { id: HeroId | InvaderId; level: number; hp?: number; mult?: number; key?: string }
-export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number; gear?: string; stars?: number }
+export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number; gear?: string; stars?: number; look?: string }
+
+/** 마왕 외형 효과(없으면 빈 객체) */
+function lookOf(f: Fighter) {
+  return (f.look && LOOK_EFFECTS[f.look]) || {};
+}
 
 function makeFighter(
   key: string, side: Side, kind: UnitKind, level: number, row: 'front' | 'back',
@@ -88,8 +97,9 @@ export function createFloorBattle(input: {
   input.enemies.forEach((e, i) => {
     if (e.id === 'lord') {
       const s = scaleStats(LORD.stats, e.level, e.mult ?? 1);
-      const f = makeFighter(`e${i}:lord`, 'enemy', 'lord', e.level, 'front', s, s.hp, LORD.skill, LORD.cooldown);
-      fighters.push(e.stars ? { ...f, stars: e.stars } : f);
+      const cooldown = (e.look && LOOK_EFFECTS[e.look]?.waveCooldown) || LORD.cooldown;
+      const f = makeFighter(`e${i}:lord`, 'enemy', 'lord', e.level, 'front', s, s.hp, LORD.skill, cooldown);
+      fighters.push({ ...f, ...(e.stars ? { stars: e.stars } : {}), ...(e.look ? { look: e.look } : {}) });
     } else {
       const def = MONSTERS[e.id];
       const s = scaleStats(def.stats, e.level, e.mult ?? 1);
@@ -227,6 +237,14 @@ function applyDamage(b: FloorBattle, t: Fighter, dmg: number, events: BattleEven
   t.hp = Math.max(0, t.hp - dmg);
   if (t.hp > 0) return;
   events.push({ t: 'down', key: t.key });
+  // 리치 왕: 마왕이 한 번 쓰러지면 체력 일부로 되살아난다
+  const revive = lookOf(t).revive;
+  if (revive && !t.revived) {
+    t.revived = true;
+    t.hp = Math.max(1, Math.round(t.maxHp * revive));
+    events.push({ t: 'raise', key: t.key, hp: t.hp });
+    return;
+  }
   if (t.side === 'enemy' && !b.raiseUsed && !t.ghost) {
     const necro = b.fighters.find((x) => x.side === 'enemy' && x.skill === 'raise' && x.hp > 0);
     if (necro) {
@@ -270,13 +288,15 @@ function strike(b: FloorBattle, f: Fighter, t: Fighter, mult: number, def: numbe
   events.push(skill ? { t: 'attack', from: f.key, to: t.key, dmg, skill } : { t: 'attack', from: f.key, to: t.key, dmg });
   applyDamage(b, t, dmg, events);
   // 흡혈(상시): 준 피해의 일부를 회복
-  if (f.skill === 'lifesteal' && f.hp > 0) {
-    const amount = heal(f, Math.max(1, Math.round(dmg * SKILL_NUMBERS.lifesteal)));
+  const steal = f.skill === 'lifesteal' ? SKILL_NUMBERS.lifesteal : lookOf(f).lifesteal;
+  if (steal && f.hp > 0) {
+    const amount = heal(f, Math.max(1, Math.round(dmg * steal)));
     if (amount > 0) events.push({ t: 'heal', from: f.key, to: f.key, amount });
   }
-  // 가시 바위(상시): 맞은 쪽이 받은 피해의 일부를 때린 쪽에 돌려준다(되돌림은 다시 되돌리지 않는다)
-  if (t.skill === 'thorns' && f.hp > 0 && f.side !== t.side) {
-    const back = Math.max(1, Math.round(dmg * SKILL_NUMBERS.thornsReflect));
+  // 가시 바위(상시)·용암 마왕: 맞은 쪽이 받은 피해의 일부를 때린 쪽에 돌려준다(되돌림은 다시 되돌리지 않는다)
+  const thorns = t.skill === 'thorns' ? SKILL_NUMBERS.thornsReflect : lookOf(t).thorns;
+  if (thorns && skill !== 'thorns' && f.hp > 0 && f.side !== t.side) {
+    const back = Math.max(1, Math.round(dmg * thorns));
     events.push({ t: 'attack', from: t.key, to: f.key, dmg: back, skill: 'thorns' });
     applyDamage(b, f, back, events);
   }
@@ -325,8 +345,16 @@ function castSkill(b: FloorBattle, f: Fighter, events: BattleEvent[]): boolean {
     case 'breath':
     case 'dark_wave': {
       const foes = alive(b, other(f.side));
-      const mult = f.skill === 'breath' ? 0.6 : 0.8;
-      for (const t of foes) strike(b, f, t, mult, t.def, events, f.skill);
+      const fx = lookOf(f);
+      const mult = f.skill === 'breath' ? 0.6 : 0.8 * (fx.waveMult ?? 1);
+      for (const t of foes) {
+        strike(b, f, t, mult, t.def, events, f.skill);
+        // 심연 군주: 파동에 맞고 버틴 적은 1턴 기절
+        if (fx.waveStun && t.hp > 0) {
+          t.stun = movesBefore(t, f) ? 2 : 1;
+          events.push({ t: 'status', to: t.key, status: 'stun', rounds: 1 });
+        }
+      }
       return foes.length > 0;
     }
     case 'double_shot':
@@ -367,8 +395,25 @@ function act(b: FloorBattle, f: Fighter, events: BattleEvent[]): void {
       f.cd -= 1;
     }
   }
+  const fx = lookOf(f);
+  // 타락 대악마: 일반 공격이 체력 가장 낮은 적에게 배수로
+  if (fx.executeMult) {
+    const foes = alive(b, other(f.side));
+    if (foes.length) {
+      const t = foes.reduce((m, x) => (x.hp < m.hp ? x : m));
+      strike(b, f, t, fx.executeMult, t.def, events);
+    }
+    return;
+  }
   const t = chooseTarget(b, f);
-  if (t) strike(b, f, t, 1, t.def, events);
+  if (!t) return;
+  // 세 머리 히드라: 고른 적과 그 옆 적까지 cleave명을 동시에(한 명당 cleaveMult)
+  if (fx.cleave) {
+    const rest = alive(b, other(f.side)).filter((x) => x !== t).sort((a, c) => (a.row === c.row ? a.key.localeCompare(c.key) : a.row === 'front' ? -1 : 1));
+    for (const x of [t, ...rest.slice(0, fx.cleave - 1)]) strike(b, f, x, fx.cleaveMult ?? 1, x.def, events);
+    return;
+  }
+  strike(b, f, t, 1, t.def, events);
 }
 
 function useUlt(b: FloorBattle, hero: HeroId, events: BattleEvent[]): void {

@@ -75,7 +75,9 @@ export default function Settings(props: {
   const owned = ownedLooks(st.skins ?? [], vipLv);
   const looks: ('base' | (typeof owned)[number])[] = ['base', ...owned];
   const current = chooseLordSkin(st.lordSkin ?? null, st.skins ?? [], vipLv) ?? 'base';
-  const lookPct = Math.round(BALANCE.summon.lookOwnBonus * 100);
+  // 보유 효과: 일반 외형 +10%, 전설·결제·1위 외형 +25% (2026-10-06)
+  const lookPct = (l: string) => Math.round((BALANCE.summon.highLooks.includes(l) ? BALANCE.summon.lookOwnBonusHigh : BALANCE.summon.lookOwnBonus) * 100);
+  const totalPct = owned.reduce((a, l) => a + lookPct(l), 0);
 
   const change = (patch: Partial<AudioPrefs>) => {
     setAudioPrefs(patch);
@@ -132,8 +134,8 @@ export default function Settings(props: {
       {looks.length > 1 && (
         <>
           <h4>{T.settings.lordLook}</h4>
-          {/* 보유 효과: 가진 외형 하나마다 마왕 +10%, 입지 않아도(2026-10-02 사용자) */}
-          <small className="muted">{T.settings.lookOwned(owned.length, owned.length * lookPct)}</small>
+          {/* 보유 효과: 가진 외형마다 마왕 능력치, 입지 않아도(2026-10-02 사용자) */}
+          <small className="muted">{T.settings.lookOwned(owned.length, totalPct)}</small>
           <div className="looks">
             {looks.map((l) => (
               <button
@@ -144,10 +146,12 @@ export default function Settings(props: {
               >
                 <Portrait id={lordSpriteId(l === 'base' ? undefined : l)} label={T.settings.looks[l]} />
                 <small>{T.settings.looks[l]}</small>
-                {l !== 'base' && <em className="look-bonus">+{lookPct}%</em>}
+                {l !== 'base' && <em className="look-bonus">+{lookPct(l)}%</em>}
               </button>
             ))}
           </div>
+          {/* 입은 외형의 고유 효과(2026-10-06) */}
+          {current !== 'base' && T.settings.lookFx[current] && <small className="look-fx">{T.settings.wornFx}: {T.settings.lookFx[current]}</small>}
         </>
       )}
 

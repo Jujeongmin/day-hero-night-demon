@@ -61,7 +61,7 @@ function SpendRow(props: { api: Api; home: HomeData; onRefresh: () => Promise<vo
       {next && (
         <span className="shop-spend-reward">
           {next.look
-            ? <><Sprite id={lordSpriteId(next.look as LordSkin)} scale={0.5} label={T.settings.looks[next.look] ?? next.look} /><small>{T.spend.look}</small></>
+            ? <><Sprite id={lordSpriteId(next.look as LordSkin)} scale={0.5} label={T.settings.looks[next.look] ?? next.look} /><small>{T.settings.lookFx[next.look] ?? T.spend.look}</small></>
             : <><img src="icons/soul.png" alt="" draggable={false} />{formatNum(next.soul)}</>}
         </span>
       )}

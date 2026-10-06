@@ -1,4 +1,4 @@
-import { BALANCE, LORD, MONSTERS, scaleStats } from './catalog';
+import { BALANCE, castleAuraMult, LORD, MONSTERS, scaleStats } from './catalog';
 import { idlePerHour, lordLevel, lordMult, monsterMult, npcLoot, unitPower } from './growth';
 import type { CastleSnapshot, ResolvedFloor } from './state';
 import { vipPerks } from './vip';
@@ -47,13 +47,14 @@ export function siegeDefenseMult(heroes: Record<string, { level: number }>): num
 }
 
 /** 성 전투력 = 층 몬스터 + 마왕의 (체력 + 공격×5 + 방어×5) ÷ 10 합. 시작 편성이 100. 매칭에도 쓴다 */
-export function castlePower(castleLevel: number, floors: ResolvedFloor[], lordStars = 0, lordLooks = 0): number {
+export function castlePower(castleLevel: number, floors: ResolvedFloor[], lordStars = 0, lordLooks = 0, lordSkin?: string): number {
   let p = unitPower(scaleStats(LORD.stats, lordLevel(castleLevel), lordMult(lordStars, lordLooks)));
-  for (const f of floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, monsterMult(m.stars, m.gear)));
+  const aura = castleAuraMult(lordSkin);
+  for (const f of floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, monsterMult(m.stars, m.gear) * aura));
   return Math.round(p);
 }
 
-/** 스냅숏의 마왕 외형 보유 수(옛 스냅숏은 입은 외형이 있으면 1) */
+/** 스냅숏의 마왕 외형 보유 효과(10% 단위, 옛 스냅숏은 입은 외형이 있으면 1) */
 export function snapshotLooks(c: Pick<CastleSnapshot, 'lordLooks' | 'lordSkin'>): number {
   return c.lordLooks ?? (c.lordSkin ? 1 : 0);
 }
@@ -62,13 +63,13 @@ export function snapshotLooks(c: Pick<CastleSnapshot, 'lordLooks' | 'lordSkin'>)
 export function snapshotPower(c: CastleSnapshot): number {
   const mult = c.mult ?? 1;
   let p = c.throneEmpty && !c.shadow ? 0 : unitPower(scaleStats(LORD.stats, c.lordLevel ?? lordLevel(c.castleLevel), mult * (c.throneEmpty ? 0.5 : 1) * lordMult(c.lordStars, snapshotLooks(c))));
-  for (const f of c.floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, mult * monsterMult(m.stars, m.gear)));
+  for (const f of c.floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, mult * monsterMult(m.stars, m.gear) * castleAuraMult(c.lordSkin)));
   return Math.round(p);
 }
 
 /** 화면에 보이는 전투력 = 성 전투력 × 공성 방어 배수 */
-export function displayPower(castleLevel: number, floors: ResolvedFloor[], heroes: Record<string, { level: number }>, lordStars = 0, lordLooks = 0): number {
-  return Math.round(castlePower(castleLevel, floors, lordStars, lordLooks) * siegeDefenseMult(heroes));
+export function displayPower(castleLevel: number, floors: ResolvedFloor[], heroes: Record<string, { level: number }>, lordStars = 0, lordLooks = 0, lordSkin?: string): number {
+  return Math.round(castlePower(castleLevel, floors, lordStars, lordLooks, lordSkin) * siegeDefenseMult(heroes));
 }
 
 export function floorsUnlocked(castleLevel: number): number {

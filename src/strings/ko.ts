@@ -204,6 +204,8 @@ export const ko = {
     lordLook: '마왕 외형',
     lookOwned: (n: number, pct: number) => `외형 ${n}개 보유 · 마왕 능력치 +${pct}% (입지 않아도 적용)`,
     looks: { base: '기본', dragon: '흑룡', lava: '용암 마왕', demon: '보라 날개 악마', summon1: '타락 대악마', hydra: '세 머리 히드라', spend1: '수정관 크라켄', lich: '뼈 용 리치 왕', abyss: '외눈 심연 군주', emperor: '심연 황제' } as Record<string, string>,
+    wornFx: '입은 효과',
+    lookFx: { dragon: '암흑 파동 2턴마다', lava: '맞으면 피해 30% 되돌림', demon: '준 피해 20% 흡혈', summon1: '가장 약한 적에게 2배 공격', hydra: '일반 공격 3명 동시', spend1: '모든 층 몬스터 +10%', lich: '한 번 체력 50%로 부활', abyss: '암흑 파동에 1턴 기절', emperor: '암흑 파동 피해 2배' } as Record<string, string>,
   },
   pass: {
     rank: '순위',
