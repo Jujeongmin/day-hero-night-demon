@@ -250,6 +250,8 @@ export const ko = {
     best: (n: number) => `최고 ${n}`,
     myBest: (n: number) => `내 최고 ${n}단계`,
     milestoneHint: '최고 단계를 새로 넘을 때마다 영혼석 10, 10단계마다 더',
+    seasonBest: (n: number) => `이번 시즌 ${n}단계`,
+    seasonReward: (a: number, b: number, c: number) => `시즌 끝 영혼석 1위 ${a} · 2위 ${b} · 3위 ${c}`,
     noRank: '아직 기록이 없다',
     rankFailed: '순위를 불러오지 못했다',
     milestone: (soul: number) => `공성 단계 첫 돌파! 영혼석 +${soul}`,

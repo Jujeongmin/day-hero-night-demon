@@ -141,7 +141,7 @@ export interface UserState {
   lordSkin: 'base' | LordSkin | null;
   /** 스테이지형 공성: 지금 단계, 마지막으로 처리한 파도 시각, 받지 않은 공성 골드. lastWon = 마지막 파도를 막았는가(없으면 막은 것으로 본다) */
   /** rewardedBest = 공성 기록 영혼석을 이미 받은 단계(초기화 뒤 다시 받지 못하게, 보이지 않음) */
-  siege: { stage: number; lastWaveAt: number; pendingGold: number; best: number; lastWon?: boolean; rewardedBest?: number; wall?: { stage: number; breaches: number } };
+  siege: { stage: number; lastWaveAt: number; pendingGold: number; best: number; lastWon?: boolean; rewardedBest?: number; wall?: { stage: number; breaches: number }; season?: { id: string; best: number; at: number } };
   /** 맞춤 제안을 마지막으로 보여 준 날(dayKey) */
   offers?: { siegeDay?: string };
   /** VIP: 누적 결제 VX(결제 웹훅이 서버 가격표로 더한다). 등급은 vip.ts vipLevel */

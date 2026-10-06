@@ -121,6 +121,8 @@ const NICKNAMES = 'nicknames';
 const AD_CLAIMS = 'ad_claims';
 /** 공성 최고 단계 순위(계정당 1행, id = 계정). 원본은 사용자 상태 siege.best */
 const SIEGE_BEST = 'siege_best';
+/** 공성 시즌 순위(시즌마다 따로, 계정당 1행): 그 시즌에 도달한 최고 단계 */
+const siegeSeasonCollection = (seasonId: string) => `siege_season_${seasonId}`;
 /** 소환 결과 기록(확률형 아이템 결과 보관). id = 계정:그때까지 뽑은 수 */
 const SUMMON_LOG = 'summon_log';
 /** 3 = 레벨 50 + 각성 순환, 4 = 마왕 외형 보유 효과(2026-10-02). 매칭 전투력을 다시 쓴다 */
@@ -305,6 +307,12 @@ async function rollSeason(account: string, s: UserState, now: number): Promise<U
       s = { ...s, ...patch };
     }
   }
+  // 공성 시즌 순위 1~3위 영혼석. 시즌 id가 바뀔 때 한 번만 이 줄에 온다(새 시즌 공성 기록이 먼저 저장돼도 지난 시즌 순위표로 본다)
+  {
+    const top = await siegeSeasonTop(s.season.id, BALANCE.siegeSeasonSoul.length);
+    const i = top.findIndex((r: any) => r.account === account);
+    if (i >= 0) soul += BALANCE.siegeSeasonSoul[i];
+  }
   if (soul) await $asset.mint('soul', soul, account);
   // 안 받은 패스 보상은 시즌과 함께 사라진다(트랙 화면에 안내)
   const season = { id: current, bracketId: null, honor: 0, pass: false, rewardedFor: s.season.id, claimed: { free: 0, pass: 0 } };
@@ -396,6 +404,23 @@ async function recordSiegeBest(me: string, s: UserState, oldBest: number): Promi
   return soul;
 }
 
+/** 이번 시즌에 도달한 최고 공성 단계를 올리고 시즌 순위표를 고친다. siege 저장 뒤 락 안에서 부른다 */
+async function recordSiegeSeason(me: string, s: UserState, reached: number, now: number): Promise<UserState> {
+  const id = seasonIdAt(now);
+  const cur = s.siege.season?.id === id ? s.siege.season.best : 0;
+  if (reached <= cur) return s;
+  const siege = { ...s.siege, season: { id, best: reached, at: now } };
+  await save(me, { siege });
+  await $global.addCollectionItem(siegeSeasonCollection(id), { account: me, nickname: s.profile.nickname, best: reached, at: now, vip: vipOf(s) }, { id: me });
+  return { ...s, siege };
+}
+
+/** 시즌 순위 정렬: 단계 높은 순, 같으면 먼저 도달한 순 */
+async function siegeSeasonTop(seasonId: string, limit: number): Promise<any[]> {
+  const rows = await $global.getCollectionItems(siegeSeasonCollection(seasonId), { orderBy: [{ field: 'best', direction: 'desc' }], limit: limit * 2 });
+  return [...rows].sort((a: any, b: any) => b.best - a.best || a.at - b.at).slice(0, limit);
+}
+
 /** 지난 공성 파도를 처리해 단계와 받지 않은 골드를 갱신한다. 방치 수입 버튼으로 함께 받는다. */
 async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[]; soul: number; lastLog?: FloorLog[] }> {
   const r = runSiege({
@@ -405,11 +430,13 @@ async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s:
   if (r.lastWaveAt === s.siege.lastWaveAt) return { s, waves: [], soul: 0 };
   const last = r.waves[r.waves.length - 1];
   const wall = noteWall(s.siege.wall, r.fresh);
-  const siege = { stage: r.stage, lastWaveAt: r.lastWaveAt, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.peak), lastWon: last ? last.won : s.siege.lastWon, ...(wall ? { wall } : {}) };
+  const { wall: _old, ...keep } = s.siege;
+  const siege = { ...keep, stage: r.stage, lastWaveAt: r.lastWaveAt, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.peak), lastWon: last ? last.won : s.siege.lastWon, ...(wall ? { wall } : {}) };
   await save(me, { siege });
   const next = { ...s, siege };
   const soul = await recordSiegeBest(me, next, s.siege.best);
-  return { s: next, waves: r.waves, soul, lastLog: r.lastLog };
+  const withSeason = await recordSiegeSeason(me, next, r.peak, now);
+  return { s: withSeason, waves: r.waves, soul, lastLog: r.lastLog };
 }
 
 /**
@@ -513,9 +540,11 @@ export class Server {
         account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLooks: lordLooksOf(s), record: true,
       });
       const wall = noteWall(s.siege.wall, [{ stage: s.siege.stage, won: r.won }]);
-      const siege = { stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.stage), lastWon: r.won, ...(wall ? { wall } : {}) };
+      const { wall: _old, ...keep } = s.siege;
+      const siege = { ...keep, stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.stage), lastWon: r.won, ...(wall ? { wall } : {}) };
       await save(me, { siege });
       const soul = await recordSiegeBest(me, { ...s, siege }, s.siege.best);
+      await recordSiegeSeason(me, { ...s, siege }, r.stage, now);
       return { wave: { at: now, won: r.won, log: r.log }, siege, gold: r.gold, soul };
     });
   }
@@ -1018,10 +1047,14 @@ export class Server {
   async getSiegeRanking() {
     const me = $sender.account;
     const s = await loadState(me, Date.now());
-    const top = await $global.getCollectionItems(SIEGE_BEST, { orderBy: [{ field: 'best', direction: 'desc' }], limit: 20 });
+    const now = Date.now();
+    const id = seasonIdAt(now);
+    const season = await siegeSeasonTop(id, 10);
     return {
       myBest: s.siege.best,
-      top: top.map((r: any) => ({ nickname: r.nickname, best: r.best, me: r.account === me, vip: r.vip ?? 0 })),
+      mySeasonBest: s.siege.season?.id === id ? s.siege.season.best : 0,
+      seasonEndsAt: seasonEndsAt(now),
+      season: season.map((r: any) => ({ nickname: r.nickname, best: r.best, me: r.account === me, vip: r.vip ?? 0 })),
     };
   }
 

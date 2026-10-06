@@ -4,6 +4,7 @@ import { T } from '../strings/ko';
 import { VipBadge } from '../render/Vip';
 import { displayName } from '../strings/i18n';
 import { seasonRewardSoul } from '../../server/src/league';
+import { BALANCE } from '../../server/src/catalog';
 
 export type LeagueTab = 'rank' | 'siege';
 
@@ -36,9 +37,17 @@ function SiegeRanking(props: { api: Api; onError: (m: string) => void }) {
   if (!data) return <p className="muted">{failed ? T.siege.rankFailed : T.loading}</p>;
   return (
     <>
-      <div className="line"><span>{T.siege.myBest(data.myBest)}</span><small>{T.siege.milestoneHint}</small></div>
-      {data.top.length === 0 && <span className="muted">{T.siege.noRank}</span>}
-      {data.top.map((r, i) => (
+      <div className="line">
+        <span>{T.siege.seasonBest(data.mySeasonBest)}</span>
+        <span>{T.endsIn(data.seasonEndsAt - Date.now())}</span>
+      </div>
+      <small className="muted league-info">
+        {T.siege.seasonReward(BALANCE.siegeSeasonSoul[0], BALANCE.siegeSeasonSoul[1], BALANCE.siegeSeasonSoul[2])}
+        <br />
+        {T.siege.milestoneHint}
+      </small>
+      {data.season.length === 0 && <span className="muted">{T.siege.noRank}</span>}
+      {data.season.map((r, i) => (
         <div className="line" key={i} style={r.me ? { fontWeight: 700, color: 'var(--gold)' } : undefined}>
           <span>{i + 1}. {displayName(r.nickname)} <VipBadge level={r.vip} /></span>
           <span>{T.siege.stage(r.best)}</span>

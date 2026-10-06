@@ -247,6 +247,8 @@ export const ja: Strings = {
     best: (n: number) => `最高 ${n}`,
     myBest: (n: number) => `自分の最高 ${n}段階`,
     milestoneHint: '最高段階を更新するたびに魂石10、10段階ごとにさらに',
+    seasonBest: (n: number) => `今シーズン ${n}段階`,
+    seasonReward: (a: number, b: number, c: number) => `シーズン終了時 魂石 1位 ${a} · 2位 ${b} · 3位 ${c}`,
     noRank: 'まだ記録がない',
     rankFailed: '順位を読み込めなかった',
     milestone: (soul: number) => `攻城段階を初突破！魂石 +${soul}`,

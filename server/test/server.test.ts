@@ -361,7 +361,9 @@ describe('siege', () => {
     expect(home.state.siege.best).toBe(1);
     const r = await server.getSiegeRanking();
     expect(r.myBest).toBe(1);
-    expect(Array.isArray(r.top)).toBe(true);
+    expect(r.mySeasonBest).toBe(0); // 이번 시즌 파도를 아직 안 치렀다
+    expect(r.seasonEndsAt > Date.now()).toBe(true);
+    expect(Array.isArray(r.season)).toBe(true);
   });
 });
 

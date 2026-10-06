@@ -247,6 +247,8 @@ export const zhHans: Strings = {
     best: (n: number) => `最高 ${n}`,
     myBest: (n: number) => `我的最高 第${n}阶`,
     milestoneHint: '每刷新一次最高阶段得魂石10，每10阶段再加',
+    seasonBest: (n: number) => `本赛季 第${n}阶`,
+    seasonReward: (a: number, b: number, c: number) => `赛季结束魂石 第1名 ${a} · 第2名 ${b} · 第3名 ${c}`,
     noRank: '还没有记录',
     rankFailed: '无法加载排名',
     milestone: (soul: number) => `攻城阶段首次突破！魂石 +${soul}`,

@@ -247,6 +247,8 @@ export const en: Strings = {
     best: (n: number) => `Best ${n}`,
     myBest: (n: number) => `My best: stage ${n}`,
     milestoneHint: '10 soulstones for every new best stage, more every 10 stages',
+    seasonBest: (n: number) => `This season: stage ${n}`,
+    seasonReward: (a: number, b: number, c: number) => `Season end soulstones: 1st ${a} · 2nd ${b} · 3rd ${c}`,
     noRank: 'No records yet',
     rankFailed: "Couldn't load the ranking",
     milestone: (soul: number) => `New siege milestone! +${soul} soulstones`,

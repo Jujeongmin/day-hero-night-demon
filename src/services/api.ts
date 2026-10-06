@@ -53,7 +53,9 @@ export interface EndResult {
 
 export interface LeagueRow { rank: number; nickname: string; honor: number; ghost: boolean; me: boolean; vip?: number; title?: TitleKind | null }
 
-export interface SiegeRankData { myBest: number; top: { nickname: string; best: number; me: boolean; vip?: number }[] }
+type SiegeRow = { nickname: string; best: number; me: boolean; vip?: number };
+/** 공성 순위: 이번 시즌(리그와 같은 2주, 끝나면 1~3위 영혼석). 역대 최고는 내 것만 */
+export interface SiegeRankData { myBest: number; mySeasonBest: number; seasonEndsAt: number; season: SiegeRow[] }
 
 export interface LeagueData {
   seasonId: string;

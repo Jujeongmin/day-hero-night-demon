@@ -239,6 +239,8 @@ export const BALANCE = {
   awaken: { maxStars: 125, statPerStar: 1.1, costLow: 30, costHigh: 100, highFrom: 11 },
   /** 영혼석 묶음마다 처음 한 번은 영혼석 2배(2026-10-06 "고액 결제 늘리기" 2번) */
   firstBuyMult: 2,
+  /** 공성 시즌 순위(리그와 같은 2주) 1·2·3위 영혼석 (2026-10-06 사용자, "고액 결제 늘리기" 5번). 홈 표시는 하지 않는다 */
+  siegeSeasonSoul: [500, 300, 150],
   /** 영혼석 묶음(반복 구매, 2026-10-01 승인). 100 VX당 30·36·40·45·50. VIP 묶음 보너스가 붙는다. vx는 표시·검증용 */
   soulPacks: {
     soul_pouch: { vx: 100, soul: 30 },
