@@ -219,6 +219,18 @@ export const en: Strings = {
     got: (gold: number, soul: number, skin: boolean) =>
       `Claimed! ${[gold ? `${F(gold)} gold` : '', soul ? `${soul} soulstones` : '', skin ? 'Black Dragon look' : ''].filter(Boolean).join(' · ')}`,
   },
+  stuck: {
+    title: (n: number) => `Stuck at siege stage ${n}`,
+    sub: 'Ways to get stronger',
+    fill: (name: string) => `Put ${name} in an empty slot`,
+    monster: (name: string) => `Upgrade ${name}`,
+    castle: 'Upgrade the castle — big jump in Demon Lord level',
+    lord: 'Awaken the Demon Lord — stronger right away with soulstones',
+    hero: (name: string) => `Upgrade ${name} — siege defense +1%`,
+    summon: 'Summon — gear looks give +10% stats',
+    shop: 'Get soulstones — for awakening and summons',
+    go: 'Go',
+  },
   away: {
     title: 'While you were away',
     waves: (n: number, held: number) => `${n} attacks · ${held} held`,

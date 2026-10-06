@@ -219,6 +219,18 @@ export const ja: Strings = {
     got: (gold: number, soul: number, skin: boolean) =>
       `受け取った！ ${[gold ? `ゴールド ${F(gold)}` : '', soul ? `魂石 ${soul}` : '', skin ? '黒竜の外見' : ''].filter(Boolean).join(' · ')}`,
   },
+  stuck: {
+    title: (n: number) => `攻城 ${n}段階で止まっている`,
+    sub: 'こうすれば強くなれる',
+    fill: (name: string) => `${name}を空きマスに置く`,
+    monster: (name: string) => `${name}を強化`,
+    castle: '城を強化 — 魔王のレベルが大きく上がる',
+    lord: '魔王を覚醒 — 魂石ですぐ強くなる',
+    hero: (name: string) => `${name}を強化 — 攻城防御 +1%`,
+    summon: '召喚 — 装備の見た目で能力 +10%',
+    shop: '魂石を手に入れる — 覚醒・召喚に使う',
+    go: '行く',
+  },
   away: {
     title: '留守の間に',
     waves: (n: number, held: number) => `侵入 ${n}回 · 防衛 ${held}回`,

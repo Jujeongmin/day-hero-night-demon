@@ -119,7 +119,7 @@ export function runSiege(p: {
   lordLooks?: number;
   /** VIP 등급: 자리 비운 공성 골드 배수와 최대 시간 */
   vip?: number;
-}): { stage: number; peak: number; lastWaveAt: number; gold: number; waves: { at: number; won: boolean }[]; lastLog?: FloorLog[] } {
+}): { stage: number; peak: number; lastWaveAt: number; gold: number; waves: { at: number; won: boolean }[]; fresh: { stage: number; won: boolean }[]; lastLog?: FloorLog[] } {
   const W = BALANCE.siegeWaveMs;
   const total = Math.max(0, Math.floor((p.now - p.lastWaveAt) / W));
   const perks = vipPerks(p.vip ?? 0);
@@ -129,6 +129,8 @@ export function runSiege(p: {
   let peak = stage;
   let gold = 0;
   const waves: { at: number; won: boolean }[] = [];
+  /** 게임을 켜 둔 동안 치른 파도(싸운 단계·결과): 막힘 제안 계산용 */
+  const fresh: { stage: number; won: boolean }[] = [];
   let lastLog: FloorLog[] | undefined;
   for (let i = skip + 1; i <= total; i++) {
     const at = p.lastWaveAt + i * W;
@@ -139,10 +141,13 @@ export function runSiege(p: {
     // 단계는 게임을 켜 둔 동안 온 파도로만 오르내린다
     const away = p.now - at > BALANCE.awayGraceMs;
     gold += away ? Math.floor(r.gold * perks.awayMult) : r.gold;
-    if (!away) stage = r.stage;
+    if (!away) {
+      fresh.push({ stage, won: r.won });
+      stage = r.stage;
+    }
     peak = Math.max(peak, stage);
     if (r.log) lastLog = r.log;
   }
-  const out = { stage, peak, lastWaveAt: p.lastWaveAt + total * W, gold, waves };
+  const out = { stage, peak, lastWaveAt: p.lastWaveAt + total * W, gold, waves, fresh };
   return lastLog ? { ...out, lastLog } : out;
 }

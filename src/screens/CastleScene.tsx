@@ -19,6 +19,8 @@ import { vipOf } from '../../server/src/vip';
 import { sortiesLeft, sortieTicketCost } from '../../server/src/sortie';
 import { claimableQuests } from '../../server/src/quests';
 import { QuestCard, type QuestGo } from './Quests';
+import { Portrait } from '../render/Sprite';
+import { powerTips, type Tip } from '../render/powerTips';
 
 /** tower.png(224×400) 안에서 몬스터가 딛는 선(%). 누르는 영역은 그 선 위 몬스터 키만큼. */
 const THRONE = { stand: 10.5 };
@@ -141,6 +143,30 @@ export default function CastleScene(props: {
   useEffect(() => {
     if (home.siegeAway && (home.state.onboarding?.at ?? 'done') === 'done') setAway(home.siegeAway);
   }, [home]);
+  // 막혔을 때 강화 추천(서버가 하루 한 번 알려 준다). 요약 카드가 떠 있으면 그다음에
+  const [stuck, setStuck] = useState<number | null>(null);
+  useEffect(() => {
+    if (home.siegeOffer) setStuck(home.siegeOffer.stage);
+  }, [home]);
+  const tipGo = (t: Tip) => {
+    setStuck(null);
+    if (t.kind === 'fill') onQuestGo('floor');
+    else if (t.kind === 'summon') onSummon();
+    else if (t.kind === 'shop') onShop('soul');
+    else onQuestGo('upgrade');
+  };
+  const tipLine = (t: Tip): { icon: string; text: string } => {
+    const name = t.unit ? (T.units[t.unit] ?? t.unit) : '';
+    switch (t.kind) {
+      case 'fill': return { icon: t.unit!, text: T.stuck.fill(name) };
+      case 'monster': return { icon: t.unit!, text: T.stuck.monster(name) };
+      case 'castle': return { icon: 'castle', text: T.stuck.castle };
+      case 'lord': return { icon: 'lord', text: T.stuck.lord };
+      case 'hero': return { icon: t.unit!, text: T.stuck.hero(name) };
+      case 'summon': return { icon: 'summon', text: T.stuck.summon };
+      default: return { icon: 'prod_soul_pouch', text: T.stuck.shop };
+    }
+  };
   const served = home.siegeLastWave ?? null;
   const lastWave = calledWave && (!served || calledWave.at > served.at) ? calledWave : served;
   // 공성 실제 전투 재생(탑 위). 막은 파도면 쓰러진 침입자마다 골드(파도 골드 ÷ 3). 파도 전 단계 = 막았으면 지금 −1, 뚫렸으면 +1
@@ -376,6 +402,24 @@ export default function CastleScene(props: {
           </button>
         )}
       </div>
+
+      {stuck !== null && !away && !s.run && !panelOpen && (
+        <div className="away-card stuck-card">
+          <b>{T.stuck.title(stuck)}</b>
+          <small className="muted">{T.stuck.sub}</small>
+          {powerTips(s, home.gold, home.soul).map((t) => {
+            const l = tipLine(t);
+            return (
+              <div className="stuck-tip" key={t.kind}>
+                {l.icon === 'summon' ? <span className="portrait"><img src="ui/summon.png" alt="" draggable={false} /></span> : <Portrait id={l.icon} label="" />}
+                <span>{l.text}</span>
+                <button className={`btn small ${t.kind === 'shop' ? 'gold' : ''}`} onClick={() => tipGo(t)}>{T.stuck.go}</button>
+              </div>
+            );
+          })}
+          <button className="link" onClick={() => setStuck(null)}>{T.close}</button>
+        </div>
+      )}
 
       {away && !s.run && !panelOpen && (
         <div className="away-card">

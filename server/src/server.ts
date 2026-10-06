@@ -17,6 +17,7 @@ import { chooseLordSkin, ownedLooks, planPassClaim } from './pass';
 import { bumpQuests, planClaimDaily, planClaimGuide } from './quests';
 import { grantFor } from './purchases';
 import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from './siege';
+import { noteWall, WALL_BREACHES } from './offer';
 import { rngNext, seedFrom } from './rng';
 import { planSummon, planWearGear, pullsToPity, summonOf } from './summon';
 import {
@@ -403,11 +404,25 @@ async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s:
   });
   if (r.lastWaveAt === s.siege.lastWaveAt) return { s, waves: [], soul: 0 };
   const last = r.waves[r.waves.length - 1];
-  const siege = { stage: r.stage, lastWaveAt: r.lastWaveAt, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.peak), lastWon: last ? last.won : s.siege.lastWon };
+  const wall = noteWall(s.siege.wall, r.fresh);
+  const siege = { stage: r.stage, lastWaveAt: r.lastWaveAt, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.peak), lastWon: last ? last.won : s.siege.lastWon, ...(wall ? { wall } : {}) };
   await save(me, { siege });
   const next = { ...s, siege };
   const soul = await recordSiegeBest(me, next, s.siege.best);
   return { s: next, waves: r.waves, soul, lastLog: r.lastLog };
+}
+
+/**
+ * 막혔을 때 강화 추천: 게임을 켜 둔 동안 같은 단계에서 3번 뚫렸으면 하루 한 번 그 단계를 알린다(무엇을 추천할지는 화면이 고른다).
+ * 보여 준 날을 기록한다(같은 날 다시 안 뜬다). 튜토리얼 중에는 안 띄운다.
+ */
+async function siegeOfferFor(me: string, s: UserState, now: number): Promise<{ stage: number } | null> {
+  const wall = s.siege.wall;
+  const today = dayKey(now);
+  if (!wall || wall.breaches < WALL_BREACHES || s.offers?.siegeDay === today) return null;
+  if ((s.onboarding?.at ?? 'done') !== 'done') return null;
+  await save(me, { offers: { ...(s.offers ?? {}), siegeDay: today } });
+  return { stage: wall.stage };
 }
 
 async function applyNpcRaids(me: string, s: UserState, now: number): Promise<UserState> {
@@ -497,7 +512,8 @@ export class Server {
       const r = fightWave({
         account: me, stage: s.siege.stage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLooks: lordLooksOf(s), record: true,
       });
-      const siege = { stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.stage), lastWon: r.won };
+      const wall = noteWall(s.siege.wall, [{ stage: s.siege.stage, won: r.won }]);
+      const siege = { stage: r.stage, lastWaveAt: now, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, r.stage), lastWon: r.won, ...(wall ? { wall } : {}) };
       await save(me, { siege });
       const soul = await recordSiegeBest(me, { ...s, siege }, s.siege.best);
       return { wave: { at: now, won: r.won, log: r.log }, siege, gold: r.gold, soul };
@@ -644,8 +660,10 @@ export class Server {
         await syncCastle(me, s);
         await save(me, { castleSyncV: CASTLE_SYNC_V });
       }
+      const siegeOffer = await siegeOfferFor(me, s, now);
       return {
         state: s,
+        siegeOffer,
         ...(await balances(me)),
         now,
         idlePreview: idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult, vipOf(s)) + s.siege.pendingGold,

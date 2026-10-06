@@ -219,6 +219,18 @@ export const zhHans: Strings = {
     got: (gold: number, soul: number, skin: boolean) =>
       `已领取！ ${[gold ? `金币 ${F(gold)}` : '', soul ? `魂石 ${soul}` : '', skin ? '黑龙外观' : ''].filter(Boolean).join(' · ')}`,
   },
+  stuck: {
+    title: (n: number) => `卡在攻城第${n}阶`,
+    sub: '这样可以变强',
+    fill: (name: string) => `把${name}放到空格`,
+    monster: (name: string) => `强化${name}`,
+    castle: '强化城堡 — 魔王等级大幅提升',
+    lord: '觉醒魔王 — 用魂石立刻变强',
+    hero: (name: string) => `强化${name} — 攻城防御 +1%`,
+    summon: '召唤 — 装备外观能力 +10%',
+    shop: '获取魂石 — 用于觉醒和召唤',
+    go: '前往',
+  },
   away: {
     title: '离开的这段时间',
     waves: (n: number, held: number) => `入侵 ${n}次 · 挡住 ${held}次`,

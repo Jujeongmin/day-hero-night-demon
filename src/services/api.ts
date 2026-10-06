@@ -25,6 +25,8 @@ export interface HomeData {
   siegeWaveMs: number;
   /** 자리를 비운 동안 공성 요약(10분 넘게 비웠을 때) */
   siegeAway?: { waves: number; held: number; from: number; to: number } | null;
+  /** 같은 공성 단계에서 3번 뚫렸을 때 하루 한 번: 강화 추천 패널을 띄운다 */
+  siegeOffer?: { stage: number } | null;
   /** 이번 조회에서 처음 넘은 10단계 보상(영혼석) */
   siegeSoul?: number;
   /** 전투력 = 성 전투력 × 용사 공성 방어 배수 */

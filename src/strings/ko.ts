@@ -222,6 +222,18 @@ export const ko = {
     got: (gold: number, soul: number, skin: boolean) =>
       `받았다! ${[gold ? `골드 ${F(gold)}` : '', soul ? `영혼석 ${soul}` : '', skin ? '흑룡 외형' : ''].filter(Boolean).join(' · ')}`,
   },
+  stuck: {
+    title: (n: number) => `공성 ${n}단계에서 막혔다`,
+    sub: '이렇게 세질 수 있다',
+    fill: (name: string) => `빈 칸에 ${name} 세우기`,
+    monster: (name: string) => `${name} 강화`,
+    castle: '성 강화 — 마왕 레벨이 크게 오른다',
+    lord: '마왕 각성 — 영혼석으로 바로 세진다',
+    hero: (name: string) => `${name} 강화 — 공성 방어 +1%`,
+    summon: '소환 — 장비 외형을 입히면 능력치 +10%',
+    shop: '영혼석 구하기 — 각성·소환에 쓴다',
+    go: '가기',
+  },
   away: {
     title: '자리를 비운 동안',
     waves: (n: number, held: number) => `침입 ${n}번 · 막음 ${held}번`,
