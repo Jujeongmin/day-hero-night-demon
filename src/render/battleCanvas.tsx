@@ -195,6 +195,9 @@ export default function BattleCanvas(props: {
   const ref = useRef<HTMLCanvasElement>(null);
   const done = useRef(props.onDone);
   done.current = props.onDone;
+  // 배속은 재생 중에 바뀌어도 처음부터 다시 틀지 않고 지금 위치에서 빠르기만 바꾼다
+  const speedRef = useRef(props.speed);
+  speedRef.current = props.speed;
 
   useEffect(() => {
     const ctx = ref.current?.getContext('2d');
@@ -212,7 +215,7 @@ export default function BattleCanvas(props: {
     const hp0 = preHp(b, props.events);
     // 이미 쓰러져 있던 캐릭터는 쓰러진 마지막 프레임으로 둔다
     const downAt: Record<string, number> = Object.fromEntries(b.fighters.map((f) => [f.key, start - 10_000]));
-    const step = STEP_MS / props.speed;
+    const step = STEP_MS / speedRef.current;
     const view: View = { hp: hp0, fx: null, fxAt: start, downAt, step, lordSkin: props.lordSkin, bg: props.bg };
 
     // 공격 속도 전투(2026-10-06): 일어난 일을 전투 시각(at)에 맞춰 보여 준다. 배속이면 시계가 그만큼 빨리 간다
@@ -221,9 +224,15 @@ export default function BattleCanvas(props: {
     if (frames.length === 0) done.current();
     const first = frames.length ? frames[0].at : 0;
     const LEAD_MS = 250;
+    // 전투 시계: 지난 프레임부터 흐른 시간 × 지금 배속만큼 간다
+    let clock = first - LEAD_MS;
+    let last = start;
     let raf = 0;
     const loop = (now: number) => {
-      const clock = first - LEAD_MS + (now - start) * props.speed;
+      const spd = speedRef.current;
+      clock += (now - last) * spd;
+      last = now;
+      view.step = STEP_MS / spd;
       let sounded = false;
       while (i < frames.length && frames[i].at <= clock) {
         const f = frames[i];
@@ -235,7 +244,7 @@ export default function BattleCanvas(props: {
         const sound = sfxForFx(f.fx);
         if (sound && !sounded) { sfx(sound); sounded = true; }
         i += 1;
-        if (i >= frames.length) timer = window.setTimeout(() => done.current(), 700 / props.speed);
+        if (i >= frames.length) timer = window.setTimeout(() => done.current(), 700 / spd);
       }
       draw(ctx, b, view, now);
       raf = requestAnimationFrame(loop);
@@ -245,7 +254,7 @@ export default function BattleCanvas(props: {
       window.clearTimeout(timer);
       cancelAnimationFrame(raf);
     };
-  }, [props.battle, props.events, props.speed, props.lordSkin, props.bg]);
+  }, [props.battle, props.events, props.lordSkin, props.bg]);
 
   return <canvas ref={ref} className="battle" data-tut="raid-field" width={W} height={H} />;
 }
