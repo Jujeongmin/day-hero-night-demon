@@ -19,6 +19,7 @@ import { grantFor } from './purchases';
 import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from './siege';
 import { noteWall, WALL_BREACHES } from './offer';
 import { rngNext, seedFrom } from './rng';
+import { addSpend, planSpendClaim, spendOf } from './spend';
 import { planSummon, planWearGear, pullsToLegend, pullsToPity, summonOf, summonPoolsFor } from './summon';
 import {
   canAdvance, dayKey, defaultState, heroGrowth, isNew, isStage, migrateGrowth, resetState, resolveFloors, withDefaults,
@@ -280,9 +281,23 @@ async function settleDefender(me: string, s: UserState, run: Run, won: boolean, 
 }
 
 /** 시즌이 바뀌었으면 지난 시즌 순위 보상(영혼석)을 한 번 주고 명예를 0으로. 그 계정 락 안에서만 부른다. */
+/** 지난 시즌 누적 결제에서 안 받은 단계를 대신 지급하고 이번 시즌 기록으로 바꾼다. 락 안에서만 부른다 */
+async function settleSpend(account: string, s: UserState, now: number): Promise<UserState> {
+  const current = seasonIdAt(now);
+  if (!s.spend || s.spend.season === current) return s;
+  const plan = planSpendClaim(s.spend);
+  if (plan.soul) await $asset.mint('soul', plan.soul, account);
+  const patch: Partial<UserState> = { spend: { season: current, vx: 0, claimed: 0 }, ...(plan.look ? { skins: [...new Set([...s.skins, plan.look])] } : {}) };
+  await save(account, patch);
+  const next = { ...s, ...patch };
+  if (plan.look && !s.skins.includes(plan.look)) await syncCastle(account, next);
+  return next;
+}
+
 async function rollSeason(account: string, s: UserState, now: number): Promise<UserState> {
   const current = seasonIdAt(now);
   if (s.season.id === current) return s;
+  s = await settleSpend(account, s, now);
   let soul = 0;
   if (s.season.bracketId && s.season.rewardedFor !== s.season.id) {
     const rows = await $global.getCollectionItems(leagueCollection(s.season.id), {
@@ -573,6 +588,23 @@ export class Server {
       await $asset.mint('soul', plan.soul);
       await save(me, { quests: plan.quests });
       return { soul: plan.soul };
+    });
+  }
+
+  /** 시즌 누적 결제 보상 받기: 넘은 단계를 서버가 다시 세어 영혼석·외형을 준다 */
+  async claimSpendRewards() {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await settleSpend(me, await loadState(me, now), now);
+      const sp = spendOf(s, seasonIdAt(now));
+      const plan = planSpendClaim(sp);
+      if (plan.claimed === sp.claimed) return { soul: 0, look: null };
+      if (plan.soul) await $asset.mint('soul', plan.soul);
+      const patch: Partial<UserState> = { spend: { ...sp, claimed: plan.claimed }, ...(plan.look ? { skins: [...new Set([...s.skins, plan.look])] } : {}) };
+      await save(me, patch);
+      if (plan.look && !s.skins.includes(plan.look)) await syncCastle(me, { ...s, ...patch });
+      return { soul: plan.soul, look: plan.look ?? null };
     });
   }
 
@@ -1012,8 +1044,9 @@ export class Server {
   async $onItemPurchased(p: { account: string; purchaseId: string; productId: string; quantity: number; metadata?: unknown }) {
     return withLocks([p.account], async () => {
       const now = Date.now();
-      const s = await loadState(p.account, now);
-      if (s.processedPurchases.includes(p.purchaseId)) return { success: true };
+      const loaded = await loadState(p.account, now);
+      if (loaded.processedPurchases.includes(p.purchaseId)) return { success: true };
+      const s = await settleSpend(p.account, loaded, now);
       let g;
       try {
         g = grantFor(p.productId, p.quantity, s);
@@ -1023,10 +1056,12 @@ export class Server {
       if (g.gold) await $asset.mint('gold', g.gold, p.account);
       if (g.soul) await $asset.mint('soul', g.soul, p.account);
       // VIP 누적: 웹훅에 가격이 없어 서버 가격표(BALANCE.productVx)로 더한다
-      const vip = { spent: (s.vip?.spent ?? 0) + spendFor(p.productId, p.quantity) };
-      await save(p.account, { ...g.patch, vip, processedPurchases: [...s.processedPurchases, p.purchaseId].slice(-200) });
+      const paid = spendFor(p.productId, p.quantity);
+      const vip = { spent: (s.vip?.spent ?? 0) + paid };
+      const spend = addSpend(s, seasonIdAt(now), paid);
+      await save(p.account, { ...g.patch, vip, spend, processedPurchases: [...s.processedPurchases, p.purchaseId].slice(-200) });
       // 등급이 오르면 다른 플레이어에게 보이는 곳(매칭 성·리그·공성 순위)의 배지를 바로 고친다
-      const next = { ...s, ...g.patch, vip };
+      const next = { ...s, ...g.patch, vip, spend };
       if (vipOf(next) >= BALANCE.vip.thresholds.length && vipOf(s) < BALANCE.vip.thresholds.length) {
         await announce('vip10', s.profile.nickname, vipOf(next), now, p.account);
       }

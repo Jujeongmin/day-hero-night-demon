@@ -241,6 +241,11 @@ export const BALANCE = {
   firstBuyMult: 2,
   /** 공성 시즌 순위(리그와 같은 2주) 1·2·3위 영혼석 (2026-10-06 사용자, "고액 결제 늘리기" 5번). 홈 표시는 하지 않는다 */
   siegeSeasonSoul: [500, 300, 150],
+  /** 시즌 누적 결제 보상(2026-10-06 사용자, "고액 결제 늘리기" 6번): 시즌 동안 쓴 VX가 넘으면 영혼석, 마지막 단계는 그 시즌 한정 외형 */
+  spendEvent: {
+    tiers: [{ vx: 1000, soul: 100 }, { vx: 5000, soul: 600 }, { vx: 15000, soul: 2000 }, { vx: 30000, soul: 4000 }],
+    looks: { s1: 'spend1' } as Record<string, string>,
+  },
   /** 영혼석 묶음(반복 구매, 2026-10-01 승인). 100 VX당 30·36·40·45·50. VIP 묶음 보너스가 붙는다. vx는 표시·검증용 */
   soulPacks: {
     soul_pouch: { vx: 100, soul: 30 },

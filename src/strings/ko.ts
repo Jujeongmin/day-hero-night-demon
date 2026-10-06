@@ -45,6 +45,7 @@ export const ko = {
   castleHint: '몬스터 칸·층이 늘고 마왕이 강해진다',
   diff: { easy: '쉬움', normal: '보통', hard: '어려움' } as Record<'easy' | 'normal' | 'hard', string>,
   again: '다시 출정',
+  spend: { title: '시즌 누적 결제', claim: '받기', done: '모든 단계 달성', look: '한정 외형', got: (name: string) => `새 외형 「${name}」을 얻었다!` },
   shop: { firstX2: '첫 구매 2배', title: '마왕의 보물고', once: '한 번만', season: '이번 시즌', best: 'BEST', tabs: { soul: '영혼석', gold: '골드', special: '특별' } as Record<'soul' | 'gold' | 'special', string> },
   idleBtn: '방치 보상',
   claimIdle: (g: number) => `방치 수입 받기 (+${F(g)})`,
@@ -202,7 +203,7 @@ export const ko = {
     resetDone: '초기화했다',
     lordLook: '마왕 외형',
     lookOwned: (n: number, pct: number) => `외형 ${n}개 보유 · 마왕 능력치 +${pct}% (입지 않아도 적용)`,
-    looks: { base: '기본', dragon: '흑룡', lava: '용암 마왕', demon: '보라 날개 악마', summon1: '타락 대악마', hydra: '세 머리 히드라', lich: '뼈 용 리치 왕', abyss: '외눈 심연 군주', emperor: '심연 황제' } as Record<string, string>,
+    looks: { base: '기본', dragon: '흑룡', lava: '용암 마왕', demon: '보라 날개 악마', summon1: '타락 대악마', hydra: '세 머리 히드라', spend1: '수정관 크라켄', lich: '뼈 용 리치 왕', abyss: '외눈 심연 군주', emperor: '심연 황제' } as Record<string, string>,
   },
   pass: {
     rank: '순위',

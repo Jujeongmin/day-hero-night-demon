@@ -45,6 +45,7 @@ export const en: Strings = {
   castleHint: 'More slots and floors, stronger lord',
   diff: { easy: 'Easy', normal: 'Normal', hard: 'Hard' } as Record<'easy' | 'normal' | 'hard', string>,
   again: 'Raid again',
+  spend: { title: 'Season spending', claim: 'Claim', done: 'All tiers reached', look: 'Limited look', got: (name: string) => `New look: ${name}!` },
   shop: { firstX2: 'First buy ×2', title: "Demon Lord's Vault", once: 'One time', season: 'This season', best: 'BEST', tabs: { soul: 'Soulstones', gold: 'Gold', special: 'Special' } as Record<'soul' | 'gold' | 'special', string> },
   idleBtn: 'Idle loot',
   claimIdle: (g: number) => `Collect idle income (+${F(g)})`,
@@ -199,7 +200,7 @@ export const en: Strings = {
     resetDone: 'Data reset',
     lordLook: 'Demon Lord look',
     lookOwned: (n: number, pct: number) => `${n} looks owned · Demon Lord stats +${pct}% (applies without wearing)`,
-    looks: { base: 'Default', dragon: 'Black Dragon', lava: 'Lava Lord', demon: 'Violet-Winged Fiend', summon1: 'Fallen Archfiend', hydra: 'Three-Headed Hydra', lich: 'Bone Dragon Lich King', abyss: 'One-Eyed Abyss Lord', emperor: 'Abyssal Emperor' } as Record<string, string>,
+    looks: { base: 'Default', dragon: 'Black Dragon', lava: 'Lava Lord', demon: 'Violet-Winged Fiend', summon1: 'Fallen Archfiend', hydra: 'Three-Headed Hydra', spend1: 'Crystal-Crowned Kraken', lich: 'Bone Dragon Lich King', abyss: 'One-Eyed Abyss Lord', emperor: 'Abyssal Emperor' } as Record<string, string>,
   },
   pass: {
     rank: 'Ranking',

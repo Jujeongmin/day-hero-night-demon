@@ -367,6 +367,27 @@ describe('siege', () => {
   });
 });
 
+describe('season spending (2026-10-06)', () => {
+  test('purchases add up and passed tiers pay once, the last with the season look', async (server) => {
+    const acct = `t70-spend-${Date.now()}`;
+    server.connect({ account: acct });
+    await server.getHome();
+    expect((await server.claimSpendRewards()).soul).toBe(0);
+    await server.$onItemPurchased({ account: acct, purchaseId: `p-sp1-${acct}`, productId: 'soul_altar', quantity: 1 });
+    let home = await server.getHome();
+    expect(home.state.spend.vx).toBe(5000);
+    const soul0 = home.soul;
+    expect(await server.claimSpendRewards()).toEqual({ soul: 700, look: null });
+    expect((await server.claimSpendRewards()).soul).toBe(0);
+    await server.$onItemPurchased({ account: acct, purchaseId: `p-sp2-${acct}`, productId: 'soul_relic', quantity: 1 });
+    expect(await server.claimSpendRewards()).toEqual({ soul: 6000, look: 'spend1' });
+    home = await server.getHome();
+    expect(home.soul - soul0).toBeGreaterThanOrEqual(6700);
+    expect(home.state.skins).toContain('spend1');
+    expect(home.state.spend.claimed).toBe(4);
+  });
+});
+
 describe('awakening & soul packs (2026-10-01)', () => {
   test('a soul pack pays soul; awakening spends it, raises power, and survives a reset', async (server) => {
     const acct = 't60-awaken';

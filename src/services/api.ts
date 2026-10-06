@@ -3,7 +3,7 @@ import type { FloorLog } from '../../server/src/battle';
 import type { Placement } from '../../server/src/ads';
 import type { RunStatus } from '../../server/src/raid';
 import type { SummonResult } from '../../server/src/summon';
-import type { OnboardingStage, OnboardingState, Run, Target, UserState } from '../../server/src/state';
+import type { OnboardingStage, OnboardingState, Run, Target, UserState, LordSkin } from '../../server/src/state';
 import { T } from '../strings/ko';
 import { currentLang } from '../strings/i18n';
 
@@ -102,11 +102,12 @@ export function createApi(server: RemoteServer) {
     getLeague: () => call<LeagueData>('getLeague'),
     callSiegeWave: (speed: number) => call<{ wave: SiegeWave; gold: number; soul: number }>('callSiegeWave', [speed]),
     getSiegeRanking: () => call<SiegeRankData>('getSiegeRanking'),
+    claimSpendRewards: () => call<{ soul: number; look: string | null }>('claimSpendRewards'),
     claimPassRewards: () => call<{ gold: number; soul: number; skins: string[] }>('claimPassRewards'),
     advanceOnboarding: (to: OnboardingStage) => call<{ onboarding: OnboardingState }>('advanceOnboarding', [to]),
     setNickname: (name: string) => call<{ nickname: string; onboarding: OnboardingState; nicknameChanges: number }>('setNickname', [name]),
     resetProgress: (text: string) => call<{ ok: true }>('resetProgress', [text]),
-    setLordSkin: (skin: 'base' | 'dragon' | 'lava' | 'demon' | 'summon1' | 'hydra' | 'lich' | 'abyss' | 'emperor') => call<{ lordSkin: string }>('setLordSkin', [skin]),
+    setLordSkin: (skin: 'base' | LordSkin) => call<{ lordSkin: string }>('setLordSkin', [skin]),
     claimAdReward: (placement: Placement, requestId: string | null) => call<{ gold: number; soul: number }>('claimAdReward', [placement, requestId]),
   };
 }

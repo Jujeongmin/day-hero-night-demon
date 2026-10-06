@@ -11,6 +11,11 @@ import { sfx } from '../services/audio';
 import { buy, findItem, type ShopItem } from '../services/shop';
 import { T } from '../strings/ko';
 import { vipOf } from '../../server/src/vip';
+import { seasonIdAt } from '../../server/src/league';
+import { nextSpendTier, planSpendClaim, spendOf } from '../../server/src/spend';
+import Sprite from '../render/Sprite';
+import { lordSpriteId } from '../render/skins';
+import type { LordSkin } from '../../server/src/state';
 
 type ProductId = (typeof SHOP_PRODUCTS)[number];
 type ShopTab = 'soul' | 'gold' | 'special';
@@ -18,6 +23,52 @@ type ShopTab = 'soul' | 'gold' | 'special';
 const SOUL_IDS = Object.keys(BALANCE.soulPacks) as SoulPackId[];
 /** 맨 위 추천 상품: 살 수 있는 첫 번째(스타터팩 → 시즌 패스 → 성유물) */
 const HERO_ORDER: ProductId[] = ['starter_pack', 'season_pass', 'soul_relic'];
+
+/**
+ * 시즌 누적 결제(2026-10-06 사용자 승인): 영혼석 탭 맨 위 한 줄. 다음 단계까지 막대, 그 단계 보상, 받을 게 있으면 받기.
+ * 단계·보상 계산은 서버와 같은 순수 함수(server/src/spend.ts), 지급은 서버가 한다.
+ */
+function SpendRow(props: { api: Api; home: HomeData; onRefresh: () => Promise<void>; onToast: (m: string) => void }) {
+  const [busy, setBusy] = useState(false);
+  const sp = spendOf(props.home.state, seasonIdAt(Date.now()));
+  const ready = planSpendClaim(sp).claimed > sp.claimed;
+  const next = nextSpendTier(sp);
+  async function claim() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const r = await props.api.claimSpendRewards();
+      sfx('sfx_purchase');
+      await props.onRefresh();
+      if (r.look) props.onToast(T.spend.got(T.settings.looks[r.look] ?? r.look));
+    } catch (e) {
+      props.onToast(errorText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="shop-spend">
+      <div className="shop-spend-main">
+        <b>{T.spend.title}</b>
+        {next ? (
+          <>
+            <span className="pass-bar"><i style={{ width: `${Math.min(100, (sp.vx / next.vx) * 100)}%` }} /></span>
+            <small>{formatNum(sp.vx)} / {formatNum(next.vx)} VX</small>
+          </>
+        ) : <small>{T.spend.done}</small>}
+      </div>
+      {next && (
+        <span className="shop-spend-reward">
+          {next.look
+            ? <><Sprite id={lordSpriteId(next.look as LordSkin)} scale={0.5} label={T.settings.looks[next.look] ?? next.look} /><small>{T.spend.look}</small></>
+            : <><img src="icons/soul.png" alt="" draggable={false} />{formatNum(next.soul)}</>}
+        </span>
+      )}
+      {ready && <button className="btn small gold glow" disabled={busy} onClick={() => void claim()}>{T.spend.claim}</button>}
+    </div>
+  );
+}
 
 /**
  * 마왕의 보물고(2026-10-02 승인 A): 전체 화면 상점. 위 재화·VIP 막대, 맨 위 추천 상품 하나,
@@ -124,6 +175,7 @@ export default function Shop(props: {
           ))}
         </nav>
 
+        {tab === 'soul' && <SpendRow api={api} home={home} onRefresh={onRefresh} onToast={onToast} />}
         {tab === 'soul' && (
           <div className="shop-grid">
             {SOUL_IDS.filter((id) => vx(id)).map((id) => {

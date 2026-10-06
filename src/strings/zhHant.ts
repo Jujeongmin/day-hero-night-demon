@@ -45,6 +45,7 @@ export const zhHant: Strings = {
   castleHint: '增加欄位與樓層，魔王變強',
   diff: { easy: '簡單', normal: '普通', hard: '困難' } as Record<'easy' | 'normal' | 'hard', string>,
   again: '再次出征',
+  spend: { title: '賽季累計消費', claim: '領取', done: '全部達成', look: '限定外觀', got: (name: string) => `獲得新外觀「${name}」！` },
   shop: { firstX2: '首購雙倍', title: '魔王寶庫', once: '限購一次', season: '本賽季', best: 'BEST', tabs: { soul: '魂石', gold: '金幣', special: '特別' } as Record<'soul' | 'gold' | 'special', string> },
   idleBtn: '掛機獎勵',
   claimIdle: (g: number) => `領取放置收益 (+${F(g)})`,
@@ -199,7 +200,7 @@ export const zhHant: Strings = {
     resetDone: '已重置',
     lordLook: '魔王外觀',
     lookOwned: (n: number, pct: number) => `擁有外觀 ${n} 個 · 魔王屬性 +${pct}%（無需穿戴）`,
-    looks: { base: '基本', dragon: '黑龍', lava: '熔岩魔王', demon: '紫翼惡魔', summon1: '墮落大惡魔', hydra: '三首海德拉', lich: '骨龍巫妖王', abyss: '獨眼深淵君主', emperor: '深淵皇帝' } as Record<string, string>,
+    looks: { base: '基本', dragon: '黑龍', lava: '熔岩魔王', demon: '紫翼惡魔', summon1: '墮落大惡魔', hydra: '三首海德拉', spend1: '晶冠海妖', lich: '骨龍巫妖王', abyss: '獨眼深淵君主', emperor: '深淵皇帝' } as Record<string, string>,
   },
   pass: {
     rank: '排名',

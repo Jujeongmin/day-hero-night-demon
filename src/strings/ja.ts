@@ -45,6 +45,7 @@ export const ja: Strings = {
   castleHint: '枠と階が増え、魔王が強くなる',
   diff: { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' } as Record<'easy' | 'normal' | 'hard', string>,
   again: 'もう一度出撃',
+  spend: { title: 'シーズン累計購入', claim: '受け取る', done: '全段階達成', look: '限定外見', got: (name: string) => `新しい外見「${name}」を手に入れた！` },
   shop: { firstX2: '初回2倍', title: '魔王の宝物庫', once: '1回限り', season: '今シーズン', best: 'BEST', tabs: { soul: '魂石', gold: 'ゴールド', special: '特別' } as Record<'soul' | 'gold' | 'special', string> },
   idleBtn: '放置報酬',
   claimIdle: (g: number) => `放置収入を受け取る (+${F(g)})`,
@@ -199,7 +200,7 @@ export const ja: Strings = {
     resetDone: '初期化した',
     lordLook: '魔王の外見',
     lookOwned: (n: number, pct: number) => `外見 ${n}個所持 · 魔王能力 +${pct}%（着なくても適用）`,
-    looks: { base: '基本', dragon: '黒竜', lava: '溶岩の魔王', demon: '紫翼の悪魔', summon1: '堕ちた大悪魔', hydra: '三つ首ヒュドラ', lich: '骨竜リッチ王', abyss: '単眼の深淵君主', emperor: '深淵の皇帝' } as Record<string, string>,
+    looks: { base: '基本', dragon: '黒竜', lava: '溶岩の魔王', demon: '紫翼の悪魔', summon1: '堕ちた大悪魔', hydra: '三つ首ヒュドラ', spend1: '水晶冠のクラーケン', lich: '骨竜リッチ王', abyss: '単眼の深淵君主', emperor: '深淵の皇帝' } as Record<string, string>,
   },
   pass: {
     rank: '順位',

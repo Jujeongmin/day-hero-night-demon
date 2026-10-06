@@ -14,8 +14,8 @@ export interface ResolvedFloor {
 export type StarUnit = MonsterId | HeroId | 'lord';
 
 /** 시즌 패스 보유자의 한정 마왕 외형. 표시용이며 전투 수치에는 영향이 없다. */
-/** dragon = 패스 10단계 영구, lava·demon = VIP 5·8 전용 (2026-09-30), summon1 = 소환 전설, lich·abyss·emperor = 시즌 1~3 전체 1위 (2026-10-02), hydra = 시즌 1 소환 한정 전설 (2026-10-06) */
-export type LordSkin = 'dragon' | 'lava' | 'demon' | 'summon1' | 'lich' | 'abyss' | 'emperor' | 'hydra';
+/** dragon = 패스 10단계 영구, lava·demon = VIP 5·8 전용 (2026-09-30), summon1 = 소환 전설, lich·abyss·emperor = 시즌 1~3 전체 1위 (2026-10-02), hydra = 시즌 1 소환 한정 전설, spend1 = 시즌 1 누적 결제 마지막 단계 (2026-10-06) */
+export type LordSkin = 'dragon' | 'lava' | 'demon' | 'summon1' | 'lich' | 'abyss' | 'emperor' | 'hydra' | 'spend1';
 
 export interface CastleSnapshot {
   owner: string;
@@ -146,6 +146,8 @@ export interface UserState {
   offers?: { siegeDay?: string };
   /** VIP: 누적 결제 VX(결제 웹훅이 서버 가격표로 더한다). 등급은 vip.ts vipLevel */
   vip: { spent: number };
+  /** 시즌 누적 결제(server/src/spend.ts) */
+  spend?: { season: string; vx: number; claimed: number };
   /** 각성 별(몬스터·마왕). 영혼석으로 산다. 초기화해도 남는다 */
   stars: Partial<Record<StarUnit, number>>;
   /** 지난 시즌 전체 순위 칭호(1~10위). 받은 다음 시즌 동안만 보인다(league.ts activeTitle) */
