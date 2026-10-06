@@ -1,7 +1,7 @@
 import type { BattleEvent } from '../../server/src/battle';
 import type { FloorLog } from '../../server/src/battle';
 import type { Placement } from '../../server/src/ads';
-import type { RunStatus } from '../../server/src/raid';
+import type { RunStatus, RunStep } from '../../server/src/raid';
 import type { SummonResult } from '../../server/src/summon';
 import type { OnboardingStage, OnboardingState, Run, Target, UserState, LordSkin } from '../../server/src/state';
 import { T } from '../strings/ko';
@@ -40,7 +40,7 @@ export interface NewsItem { id: string; kind: string; nickname: string; vip: num
 
 export type TitleKind = 'champion' | 'top3' | 'top10';
 
-export interface RunResult { run: Run; status: RunStatus; events?: BattleEvent[] }
+export interface RunResult { run: Run; status: RunStatus; events?: BattleEvent[]; steps?: RunStep[] }
 
 export interface EndResult {
   won: boolean;
@@ -97,6 +97,7 @@ export function createApi(server: RemoteServer) {
     revenge: (logId: string) => call<RunResult>('revenge', [logId]),
     setTactic: (tactic: string) => call<RunResult>('setTactic', [tactic]),
     playRound: (ult: string | null) => call<RunResult>('playRound', [ult]),
+    autoPlay: () => call<RunResult>('autoPlay'),
     revive: () => call<RunResult>('revive'),
     endRaid: (abandon: boolean) => call<EndResult>('endRaid', [abandon]),
     getLeague: () => call<LeagueData>('getLeague'),

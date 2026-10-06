@@ -54,6 +54,17 @@ async function playOut(server: any, first: any) {
 }
 
 describe('raid vs npc', () => {
+  test('autoPlay plays the whole raid in one call and saves the end state', async (server) => {
+    server.connect({ account: 't8-auto' });
+    await server.getHome();
+    await server.startIntroRaid();
+    const res = await server.autoPlay();
+    expect(res.status).toBe('victory');
+    expect(res.steps.length).toBeGreaterThan(1);
+    expect((await server.autoPlay()).steps).toEqual([]);
+    expect((await server.endRaid(false)).won).toBe(true);
+  });
+
   test('intro raid always wins and marks intro done', async (server) => {
     server.connect({ account: 't8-intro' });
     await server.getHome();

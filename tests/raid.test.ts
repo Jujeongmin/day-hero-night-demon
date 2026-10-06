@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { HeroId } from '../server/src/catalog';
 import {
-  advanceRound, autoTactic, beginFloor, floorEnemies, lordDefeated, reviveRun, runStatus, startRun,
+  advanceRound, autoRun, autoTactic, beginFloor, floorEnemies, lordDefeated, reviveRun, runStatus, startRun,
 } from '../server/src/raid';
 import type { CastleSnapshot, Run } from '../server/src/state';
 import { BALANCE } from '../server/src/catalog';
@@ -84,5 +84,46 @@ describe('raid', () => {
     const fighting = beginFloor(run, 'guard', heroes(1)).run;
     expect(runStatus(fighting)).toBe('fighting');
     expect(() => beginFloor(fighting, 'guard', heroes(1))).toThrow();
+  });
+});
+
+describe('autoRun: the whole raid in one call (2026-10-06)', () => {
+  const twoFloors = () => startRun({ account: 'a', snapshot: snap({ castleLevel: 3, floors: [{ monsters: [{ id: 'slime', level: 2 }, { id: 'imp', level: 2 }] }, { monsters: [{ id: 'skeleton', level: 2 }] }] }), isRevenge: false, revengeLogId: null, now: 0 });
+
+  it('plays to victory or wipe, with a step for each floor start and each round', () => {
+    const r = autoRun(twoFloors(), heroes(10));
+    expect(['victory', 'wiped']).toContain(runStatus(r.run));
+    expect(r.steps.length).toBeGreaterThan(3);
+    // 층 번호는 줄지 않고, 마지막 걸음의 전투가 끝나 있다
+    for (let i = 1; i < r.steps.length; i++) expect(r.steps[i].floor).toBeGreaterThanOrEqual(r.steps[i - 1].floor);
+    expect(r.steps[r.steps.length - 1].battle.outcome).not.toBe('ongoing');
+  });
+
+  it('matches stepping round by round with the same auto rules', () => {
+    const a = autoRun(twoFloors(), heroes(10)).run;
+    let r = twoFloors();
+    for (let g = 0; g < 400; g++) {
+      const st = runStatus(r);
+      if (st === 'choose_tactic') r = beginFloor(r, autoTactic(r), heroes(10)).run;
+      else if (st === 'fighting') {
+        const b = r.battle!;
+        const ult = b.ultCharge >= 100 && !b.ultUsed ? (b.fighters.find((f) => f.side === 'hero' && f.hp > 0)?.kind as HeroId) ?? null : null;
+        r = advanceRound(r, ult).run;
+      } else break;
+    }
+    expect(a).toEqual(r);
+  });
+
+  it('a finished raid has nothing left to play', () => {
+    const done = autoRun(twoFloors(), heroes(10)).run;
+    expect(autoRun(done, heroes(10)).steps).toEqual([]);
+  });
+
+  it('a weak party wipes; after a revive it plays on to the end again', () => {
+    const r = autoRun(twoFloors(), heroes(1));
+    expect(runStatus(r.run)).toBe('wiped');
+    const again = autoRun(reviveRun(r.run), heroes(1));
+    expect(again.steps.length).toBeGreaterThan(0);
+    expect(['victory', 'wiped']).toContain(runStatus(again.run));
   });
 });

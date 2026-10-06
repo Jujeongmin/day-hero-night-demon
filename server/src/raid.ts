@@ -1,5 +1,5 @@
 import { BALANCE, castleAuraMult, HERO_ORDER, type HeroId, type Tactic } from './catalog';
-import { createFloorBattle, playRound, restedHeroesHp, type BattleEvent, type EnemySpec } from './battle';
+import { createFloorBattle, firstAliveHero, playRound, restedHeroesHp, ultReady, type BattleEvent, type EnemySpec, type FloorBattle } from './battle';
 import { snapshotLooks } from './economy';
 import { lordLevel, lordMult, monsterMult } from './growth';
 import { seedFrom } from './rng';
@@ -60,12 +60,14 @@ export function runStatus(run: Run): RunStatus {
   return 'fighting';
 }
 
-function settle(run: Run, events: BattleEvent[]): { run: Run; events: BattleEvent[] } {
-  if (run.battle?.outcome !== 'won') return { run, events };
+function settle(run: Run, events: BattleEvent[]): { run: Run; events: BattleEvent[]; battle: FloorBattle } {
+  const battle = run.battle!;
+  if (battle.outcome !== 'won') return { run, events, battle };
   return {
+    battle,
     run: {
       ...run,
-      heroesHp: restedHeroesHp(run.battle),
+      heroesHp: restedHeroesHp(battle),
       battle: null,
       tactic: null,
       floor: nextFloorWithEnemies(run.snapshot, run.floor + 1),
@@ -74,7 +76,7 @@ function settle(run: Run, events: BattleEvent[]): { run: Run; events: BattleEven
   };
 }
 
-export function beginFloor(run: Run, tactic: Tactic, heroes: Record<HeroId, { level: number; mult?: number }>): { run: Run; events: BattleEvent[] } {
+export function beginFloor(run: Run, tactic: Tactic, heroes: Record<HeroId, { level: number; mult?: number }>): { run: Run; events: BattleEvent[]; battle: FloorBattle } {
   if (runStatus(run) !== 'choose_tactic') throw new Error('지금은 전술을 고를 수 없다');
   const party = HERO_ORDER
     .filter((id) => (run.heroesHp[id] ?? 1) > 0)
@@ -89,7 +91,7 @@ export function beginFloor(run: Run, tactic: Tactic, heroes: Record<HeroId, { le
   return settle({ ...run, tactic, battle }, events);
 }
 
-export function advanceRound(run: Run, ult: HeroId | null): { run: Run; events: BattleEvent[] } {
+export function advanceRound(run: Run, ult: HeroId | null): { run: Run; events: BattleEvent[]; battle: FloorBattle } {
   if (runStatus(run) !== 'fighting') throw new Error('진행 중인 전투가 없다');
   const { battle, events } = playRound(run.battle!, ult);
   return settle({ ...run, battle }, events);
@@ -103,6 +105,34 @@ export function reviveRun(run: Run): Run {
     if (f.side === 'hero') hp[f.kind as HeroId] = Math.round(f.maxHp * 0.5);
   }
   return { ...run, reviveUsed: true, battle: null, tactic: null, heroesHp: hp };
+}
+
+/** 한 번에 계산한 공략의 한 걸음(층 시작 또는 한 라운드): 그 뒤의 전투 상태와 일어난 일. 화면이 순서대로 재생한다 */
+export interface RunStep { floor: number; battle: FloorBattle; events: BattleEvent[] }
+
+/**
+ * 공략을 끝까지(승리 또는 전멸) 한 번에 계산한다(2026-10-06: 라운드마다 서버를 부르던 렉 제거).
+ * 전술·궁극기는 화면이 하던 자동 규칙 그대로(autoTactic, 기가 차면 살아 있는 첫 용사).
+ */
+export function autoRun(run: Run, heroes: Record<HeroId, { level: number; mult?: number }>): { run: Run; steps: RunStep[] } {
+  const steps: RunStep[] = [];
+  let r = run;
+  // 층 4개 × 최대 라운드 + 층 시작: 넉넉한 상한
+  for (let guard = 0; guard < 400; guard++) {
+    const status = runStatus(r);
+    const floor = r.floor;
+    if (status === 'choose_tactic') {
+      const x = beginFloor(r, autoTactic(r), heroes);
+      steps.push({ floor, battle: x.battle, events: x.events });
+      r = x.run;
+    } else if (status === 'fighting') {
+      const b = r.battle!;
+      const x = advanceRound(r, ultReady(b) ? firstAliveHero(b) : null);
+      steps.push({ floor, battle: x.battle, events: x.events });
+      r = x.run;
+    } else break;
+  }
+  return { run: r, steps };
 }
 
 export function lordDefeated(run: Run): boolean {

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { firstAliveHero, ultReady, type BattleEvent } from '../../server/src/battle';
-import { autoTactic, runStatus, type RunStatus } from '../../server/src/raid';
+import { runStatus, type RunStatus, type RunStep } from '../../server/src/raid';
 import type { Run } from '../../server/src/state';
 import AdButton from '../render/AdButton';
+import type { BattleEvent } from '../../server/src/battle';
 import BattleCanvas from '../render/battleCanvas';
 import { floorBgId } from '../render/skins';
 import { nextSpeed, type Speed } from '../render/speed';
@@ -13,6 +13,8 @@ import { emitTut } from '../tutorial/bus';
 import { T } from '../strings/ko';
 import { displayName } from '../strings/i18n';
 
+const NO_EVENTS: BattleEvent[] = [];
+
 export default function Raid(props: {
   api: Api;
   home: HomeData;
@@ -21,15 +23,16 @@ export default function Raid(props: {
   onError: (m: string) => void;
 }) {
   const { api, home, onEnd, onRefresh, onError } = props;
+  // run·status는 서버가 끝까지 계산한 최종 상태. 화면은 steps를 한 걸음씩 재생한다(2026-10-06: 라운드마다 서버를 부르던 렉 제거)
   const [run, setRun] = useState<Run | null>(home.state.run);
   const [status, setStatus] = useState<RunStatus | null>(home.state.run ? runStatus(home.state.run) : null);
-  const [events, setEvents] = useState<BattleEvent[]>([]);
-  const [playing, setPlaying] = useState(false);
+  const [steps, setSteps] = useState<RunStep[]>([]);
+  const [at, setAt] = useState(0);
   const [speed, setSpeed] = useState<Speed>(1);
   const has3x = home.state.perks?.speed3 === true;
-  // 서버 응답마다 1씩 올린다. 이벤트가 없는 라운드가 와도 다음 라운드 호출이 멈추지 않게 한다.
-  const [tick, setTick] = useState(0);
   const busy = useRef(false);
+  const playing = at < steps.length;
+  const step = playing ? steps[at] : null;
 
   useEffect(() => {
     if (run) return;
@@ -48,9 +51,8 @@ export default function Raid(props: {
       const r = await fn();
       setRun(r.run);
       setStatus(r.status);
-      setEvents(r.events ?? []);
-      setPlaying((r.events ?? []).length > 0);
-      setTick((t) => t + 1);
+      setSteps(r.steps ?? []);
+      setAt(0);
     } catch (e) {
       onError(errorText(e));
     } finally {
@@ -77,23 +79,18 @@ export default function Raid(props: {
     return () => playBgm('bgm_home');
   }, []);
   useEffect(() => {
-    if (!run || status !== 'fighting' || roared.current) return;
-    if (run.floor === run.snapshot.floors.length) {
+    if (!run || !step || roared.current) return;
+    if (step.floor === run.snapshot.floors.length) {
       roared.current = true;
       sfx('sfx_lord');
     }
-  }, [run, status]);
+  }, [run, step]);
 
   useEffect(() => {
     if (playing) return;
-    if (status === 'choose_tactic' && run) {
-      // 전술은 자동: 플레이어가 고를 것을 줄인다
-      void call(() => api.setTactic(autoTactic(run)));
-    } else if (status === 'fighting') {
-      // 궁극기는 자동: 기가 차면 살아 있는 첫 용사가 쓴다(밸런스 측정 simulateAuto와 같은 규칙)
-      const b0 = run?.battle;
-      const ult = b0 && ultReady(b0) ? firstAliveHero(b0) : null;
-      void call(() => api.playRound(ult));
+    if (status === 'choose_tactic' || status === 'fighting') {
+      // 전술·궁극기는 자동: 서버가 한 번에 끝까지 계산한다
+      void call(() => api.autoPlay());
     } else if (status === 'victory') {
       emitTut('battle_over');
       void finish(false);
@@ -101,11 +98,12 @@ export default function Raid(props: {
       emitTut('battle_over');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, playing, tick]);
+  }, [status, playing]);
 
   if (!run || !status) return <div className="scene center">{T.loading}</div>;
 
-  const b = run.battle;
+  const b = step ? step.battle : run.battle;
+  const floorNow = step ? step.floor : run.floor;
   const stages = [...run.snapshot.floors.map((_, i) => T.floor(i + 1)), T.throne];
   const revives = home.state.credits.revive;
 
@@ -123,11 +121,11 @@ export default function Raid(props: {
         </span>
       </header>
 
-      <BattleCanvas battle={b} events={events} speed={speed} lordSkin={run.snapshot.lordSkin} bg={floorBgId(run.floor, run.snapshot.floors.length)} onDone={() => setPlaying(false)} />
+      <BattleCanvas battle={b} events={step ? step.events : NO_EVENTS} speed={speed} lordSkin={run.snapshot.lordSkin} bg={floorBgId(floorNow, run.snapshot.floors.length)} onDone={() => setAt((i) => i + 1)} />
 
       <div className="scene-foot progress">
         {stages.map((label, i) => (
-          <span key={i} className={i < run.floor ? 'done' : i === run.floor ? 'now' : ''}>{label}</span>
+          <span key={i} className={i < floorNow ? 'done' : i === floorNow ? 'now' : ''}>{label}</span>
         ))}
       </div>
     </div>

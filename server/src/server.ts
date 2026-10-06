@@ -9,7 +9,7 @@ import {
 import { checkNickname, nicknameKey } from './nickname';
 
 import { npcCastle, npcRaids, npcTiersFor, TUTORIAL_TARGET, tutorialCastle } from './npc';
-import { advanceRound, beginFloor, lordDefeated, reviveRun, runStatus, startRun } from './raid';
+import { advanceRound, autoRun, beginFloor, lordDefeated, reviveRun, runStatus, startRun } from './raid';
 import { planAdReward } from './ads';
 import type { FloorLog } from './battle';
 import { spendFor, vipOf, vipPerks } from './vip';
@@ -963,6 +963,22 @@ export class Server {
     });
   }
 
+  /**
+   * 공략을 지금 상태에서 끝까지 한 번에 계산해 저장하고, 화면이 재생할 걸음 목록을 돌려준다(2026-10-06 렉 제거).
+   * 이미 끝난 공략이면 걸음 없이 그대로. setTactic·playRound는 옛 화면용으로 남긴다
+   */
+  async autoPlay() {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      if (!s.run) throw new Error('공략 중이 아니다');
+      const r = autoRun(s.run, heroGrowth(s));
+      if (r.steps.length) await save(me, { run: r.run });
+      return { run: r.run, status: runStatus(r.run), steps: r.steps };
+    });
+  }
+
   async playRound(ult: string | null) {
     const me = $sender.account;
     return withLocks([me], async () => {
@@ -983,9 +999,10 @@ export class Server {
       const s = await loadState(me, now);
       if (!s.run) throw new Error('공략 중이 아니다');
       if (s.credits.revive < 1) throw new Error('NO_REVIVE_CREDIT');
-      const run = reviveRun(s.run);
-      await save(me, { run, credits: { ...s.credits, revive: s.credits.revive - 1 } });
-      return { run, status: runStatus(run) };
+      // 되살린 뒤 끝까지 이어서 계산한다(화면은 걸음을 재생)
+      const r = autoRun(reviveRun(s.run), heroGrowth(s));
+      await save(me, { run: r.run, credits: { ...s.credits, revive: s.credits.revive - 1 } });
+      return { run: r.run, status: runStatus(r.run), steps: r.steps };
     });
   }
 
