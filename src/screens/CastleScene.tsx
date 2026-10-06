@@ -228,7 +228,7 @@ export default function CastleScene(props: {
           <span className="hud-row">
             <CurrencyPill icon="icons/gold.png" label={T.gold} value={home.gold} onPlus={tutorialOff ? () => onShop('gold') : undefined} plusLabel={T.icons.shop} />
             <button className="pill speed" onClick={cycleSpeed}>{T.speed(speed)}</button>
-            {!has3x && <button className="pill speed locked" onClick={() => buy('speed_x3')} aria-label={T.products.speed_x3[0]}>{T.speed(3)}</button>}
+            {!has3x && <button className="pill speed locked" onClick={() => buy('premium')} aria-label={T.products.premium[0]}>{T.speed(3)}</button>}
           </span>
           {home.power !== undefined && (
             <CurrencyPill icon="icons/stat_atk.png" label={T.siege.power} value={home.power} tone="power" />

@@ -11,16 +11,16 @@ describe('purchases', () => {
     expect(PRODUCTS).not.toContain('recruit_dragon');
   });
 
-  it('speed_x3 and premium are permanent perks', () => {
+  it('speed_x3 (no longer sold) and premium are permanent perks; premium includes 3x speed', () => {
     expect(grantFor('speed_x3', 1, fresh()).patch.perks).toEqual({ speed3: true, premium: false });
-    expect(grantFor('premium', 1, fresh()).patch.perks).toEqual({ speed3: false, premium: true });
+    expect(grantFor('premium', 1, fresh()).patch.perks).toEqual({ speed3: true, premium: true });
   });
 
   it('the shop lists only the products still on sale', () => {
     expect(SHOP_PRODUCTS).toEqual([
       'starter_pack',
       'soul_pouch', 'soul_sack', 'soul_chest', 'soul_altar', 'soul_relic',
-      'season_pass', 'speed_x3', 'premium',
+      'season_pass', 'premium',
     ]);
   });
 
@@ -53,5 +53,24 @@ describe('first purchase of each soulstone pack is doubled once (2026-10-06)', (
     expect(grantFor('soul_pouch', 1, after).soul).toBe(per);
     expect(grantFor('soul_pouch', 3, s).soul).toBe(per * 4); // 3개 중 첫 하나만 2배
     expect(grantFor('soul_relic', 1, after).soul).toBe(soulPackAmount('soul_relic', 0) * 2);
+  });
+});
+
+describe('premium pass bundle (2026-10-06)', () => {
+  it('gives no-ads, 3x speed and soulstones, shown as 200% value', async () => {
+    const { BALANCE } = await import('../server/src/catalog');
+    const { grantFor, premiumValuePct, SHOP_PRODUCTS } = await import('../server/src/purchases');
+    const { defaultState } = await import('../server/src/state');
+    const g = grantFor('premium', 1, defaultState('p', 0, 's1'));
+    expect(g.patch.perks).toMatchObject({ premium: true, speed3: true });
+    expect(g.soul).toBe(BALANCE.premiumSoul);
+    expect(BALANCE.productVx.premium).toBe(1000);
+    expect(premiumValuePct()).toBe(200);
+    expect(SHOP_PRODUCTS).not.toContain('speed_x3');
+    for (const lang of ['ko', 'en', 'ja', 'zhHans', 'zhHant']) {
+      const mod = await import(`../src/strings/${lang}.ts`);
+      const t = Object.values(mod).find((v: any) => v?.products?.premium) as any;
+      expect(t.products.premium[1]).toContain(String(BALANCE.premiumSoul));
+    }
   });
 });

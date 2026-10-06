@@ -13,8 +13,16 @@ export const PRODUCTS = [
 export const SHOP_PRODUCTS = [
   'starter_pack',
   'soul_pouch', 'soul_sack', 'soul_chest', 'soul_altar', 'soul_relic',
-  'season_pass', 'speed_x3', 'premium',
+  'season_pass', 'premium',
 ] as const;
+
+/** 프리미엄 패스 "효율 N%": 따로 사면 드는 VX(3배속 + 광고 없이 받기 + 영혼석을 주머니로) ÷ 가격 */
+export function premiumValuePct(): number {
+  const B = BALANCE;
+  const pouch = B.soulPacks.soul_pouch;
+  const worth = B.premiumParts.speed + B.premiumParts.noAds + B.premiumSoul * (pouch.vx / pouch.soul);
+  return Math.round((worth / B.productVx.premium) * 100);
+}
 
 
 /** 영혼석 묶음(반복 구매, 2026-10-01) */
@@ -38,7 +46,8 @@ export function grantFor(productId: string, quantity: number, s: UserState): Gra
     case 'speed_x3':
       return { patch: { perks: { ...s.perks, speed3: true } }, gold: 0, soul: 0 };
     case 'premium':
-      return { patch: { perks: { ...s.perks, premium: true } }, gold: 0, soul: 0 };
+      // 2026-10-06: 광고 없이 보상 + 3배속 + 영혼석 (3배속 단품을 먼저 산 계정도 영혼석은 받는다)
+      return { patch: { perks: { ...s.perks, premium: true, speed3: true } }, gold: 0, soul: BALANCE.premiumSoul };
     case 'season_pass':
       return { patch: { season: { ...s.season, pass: true } }, gold: 0, soul: 0 };
     case 'soul_pouch':

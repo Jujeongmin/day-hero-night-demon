@@ -351,12 +351,18 @@ export const BALANCE = {
   championLooks: ['lich', 'abyss', 'emperor'] as string[],
   /** 누적 VX 계산용 상품 가격. 결제 웹훅에 가격이 없어서 서버가 들고 있다 — 대시보드 가격을 바꾸면 여기도 같이 바꾼다 */
   productVx: {
-    starter_pack: 100, season_pass: 400, speed_x3: 300, premium: 500,
+    starter_pack: 100, season_pass: 400, speed_x3: 300, premium: 1000,
     soul_pouch: 100, soul_sack: 500, soul_chest: 1500, soul_altar: 5000, soul_relic: 30000,
   } as Record<string, number>,
   /** 골드 묶음의 "켜 둔 공성 1시간" = 파도 골드 × 15 (1×로 평형 단계에서 30번 중 약 15번 막음) */
   goldPackHourWaves: 15,
   starterSoul: 30,
+  /**
+   * 프리미엄 패스(2026-10-06 사용자): 광고 없이 보상 + 3배속 + 영혼석 premiumSoul, 1,000 VX. 3배속 단품은 팔지 않는다.
+   * 상점의 "효율 N%" = (3배속 단품값 + 광고 없이 받기 옛 값 + 영혼석을 주머니로 산 값) ÷ 가격 → 360개면 200%
+   */
+  premiumSoul: 360,
+  premiumParts: { speed: 300, noAds: 500 },
   /** 광고 보상 (2026-09-30 사용자 승인 "강하게"): 일일 보급 골드 1k(공성 단계에 따라 커짐)·영혼석 3, 방치 수입 광고 받기 1.5배 */
   adSupplyGold: 1000,
   adSupplySoul: 3,

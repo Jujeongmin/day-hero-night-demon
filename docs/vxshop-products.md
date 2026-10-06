@@ -116,3 +116,28 @@
 
 - 영혼석 묶음 5종마다 처음 한 번은 영혼석 2배(`BALANCE.firstBuyMult`, 서버 `grantFor`가 `firstBuys`에 기록). 한 번에 여러 개를 사도 첫 하나만 2배. 데이터 초기화해도 기록은 남는다(다시 2배 안 됨).
 - 게임 상점은 아직 안 산 묶음에 "첫 구매 2배" 띠와 2배 양을 보여 준다. 대시보드 설명은 그대로 둬도 된다(실제 지급량은 게임 상점이 정확히 보여 준다).
+
+## 프리미엄 패스 묶음 (2026-10-06 사용자 결정) — 대시보드 할 일
+
+광고 요소가 적어 광고 없이 받기만으로는 약해서 3배속과 합쳤다. **3배속 단품은 더 팔지 않는다.**
+
+1. **`premium` 고치기** (Product ID 그대로)
+
+| 칸 | 넣을 값 |
+| --- | --- |
+| Product Name | Premium Pass |
+| Price (VX) | **1000** (500 → 1000) |
+| Stock Quantity | 999999 |
+| Lifetime Limit | 1 |
+| Period Limit / Time-Limited Sale | 없음 |
+| Image | `art/products/premium.png` (512×512, 새 그림: 왕관 모래시계 + 영혼석) |
+| Description (영어) | No ads: claim ad rewards instantly (same daily limits) + 3x speed for raids and sieges (siege waves every 40 seconds while the game is open) + 360 soulstones. Forever. One per account. Counts toward VIP. |
+
+한국어 참고: 광고 없이 바로 보상(하루 한도는 같다) + 공략·공성 3배속(켜 둔 동안 공성 파도 40초마다) + 영혼석 360. 영구, 계정당 1번.
+
+2. **`speed_x3` 삭제** — 대시보드에서 지운다. 게임 상점과 3× 버튼은 이제 프리미엄 패스로 연결된다. 서버는 혹시 오는 옛 결제 웹훅도 그대로 3배속을 준다.
+
+- 상점의 "효율 200%" = (3배속 300 + 광고 없이 받기 500 + 영혼석 360을 주머니로 산 값 1,200) ÷ 1,000. 숫자는 `BALANCE.premiumSoul`·`premiumParts`, 가격은 `BALANCE.productVx.premium`(대시보드 가격과 같이 바꾼다).
+- 3배속 단품을 이미 산 계정이 프리미엄을 사도 영혼석 360과 광고 없이 받기를 받는다.
+- 그림: pixflux 256 `highly detailed` seed 1801 → 게임 `public/products/premium.png`(256), 대시보드 `art/products/premium.png`(NEAREST 2배 512). 원본 `art/products/hq/premium_256.png`, 옛 그림 `art/products/v1/premium_noads_512.png`.
+- 대시보드 반영: (날짜)

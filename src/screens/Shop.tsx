@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { BALANCE } from '../../server/src/catalog';
 import { avgMonsterLevel, formatNum, GOLD_PACK_IDS, goldPackAmount, scaledGold, type GoldPackId } from '../../server/src/growth';
-import { SHOP_PRODUCTS, soulPackAmount, type SoulPackId } from '../../server/src/purchases';
+import { premiumValuePct, SHOP_PRODUCTS, soulPackAmount, type SoulPackId } from '../../server/src/purchases';
 import AdButton from '../render/AdButton';
 import CurrencyPill from '../render/CurrencyPill';
 import { VipPanel } from '../render/Vip';
@@ -209,8 +209,8 @@ export default function Shop(props: {
               supplyLeft > 0
                 ? <AdButton api={api} placement="daily_supply" label={T.ads.receive} premium={!!home.state.perks?.premium} className="shop-price" onDone={onRefresh} onToast={onToast} />
                 : <button className="shop-price" disabled>{T.ads.tomorrow}</button>)}
-            {(['season_pass', 'speed_x3', 'premium', 'starter_pack'] as ProductId[]).filter((id) => vx(id) && id !== hero).map((id) =>
-              card(id, id, T.products[id][0], <span className="shop-amt small">{descOf(id)}</span>, priceButton(id)))}
+            {(['season_pass', 'premium', 'starter_pack'] as ProductId[]).filter((id) => vx(id) && id !== hero).map((id) =>
+              card(id, id, T.products[id][0], <span className="shop-amt small">{descOf(id)}</span>, priceButton(id), id === 'premium' ? T.shop.valuePct(premiumValuePct()) : undefined, id === 'premium'))}
           </div>
         )}
       </div>

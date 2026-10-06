@@ -118,7 +118,7 @@ export default function Raid(props: {
         <span className="pill">{displayName(run.snapshot.nickname)}</span>
         <span className="hud-row">
           <button className="pill" onClick={() => setSpeed(nextSpeed(speed, has3x))}>{T.speed(speed)}</button>
-          {!has3x && <button className="pill locked" onClick={() => buy('speed_x3')} aria-label={T.products.speed_x3[0]}>{T.speed(3)}</button>}
+          {!has3x && <button className="pill locked" onClick={() => buy('premium')} aria-label={T.products.premium[0]}>{T.speed(3)}</button>}
           <button className="pill" onClick={() => { if (window.confirm(T.confirmGiveUp)) void finish(true); }}>{T.giveUp}</button>
         </span>
       </header>
