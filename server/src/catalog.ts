@@ -28,6 +28,10 @@ export interface HeroDef {
   row: 'front' | 'back';
 }
 
+/** 공성에만 오는 침입자(플레이어 용사가 아니다). 2026-10-06 사용자 승인: 새 종류 4 + 보스 */
+export type InvaderId = 'thief' | 'lancer' | 'mage' | 'paladin' | 'captain';
+export interface InvaderDef extends Omit<HeroDef, 'id'> { id: InvaderId }
+
 /** 2026-09-29: 함정 폐기에 맞춰 기본 몬스터 4종 공격력 ×1.1 (A안) */
 /** 2026-10-01 사용자 결정: 몬스터는 영혼석으로만 산다(새끼 용 VX 상품 삭제, 영혼석 400 → 150). 스타터팩의 네크로맨서만 예외 */
 export const MONSTERS: Record<MonsterId, MonsterDef> = {
@@ -65,6 +69,15 @@ export const LORD = {
   cooldown: 3,
 };
 
+export const INVADERS: Record<InvaderId, InvaderDef> = {
+  thief:   { id: 'thief',   name: '도적',     stats: { hp: 80,  atk: 18, def: 3,  spd: 7 }, skill: 'backline', cooldown: 0, row: 'front' },
+  lancer:  { id: 'lancer',  name: '창병',     stats: { hp: 120, atk: 16, def: 7,  spd: 4 }, skill: 'pierce',   cooldown: 2, row: 'front' },
+  mage:    { id: 'mage',    name: '마법사',   stats: { hp: 70,  atk: 22, def: 3,  spd: 4 }, skill: 'breath',   cooldown: 3, row: 'back' },
+  paladin: { id: 'paladin', name: '성기사',   stats: { hp: 200, atk: 12, def: 14, spd: 2 }, skill: 'taunt',    cooldown: 3, row: 'front' },
+  // 10단계마다 오는 보스
+  captain: { id: 'captain', name: '용사단장', stats: { hp: 420, atk: 30, def: 14, spd: 4 }, skill: 'frenzy',   cooldown: 3, row: 'front' },
+};
+
 export const HERO_ORDER: HeroId[] = ['knight', 'archer', 'priest'];
 export const TACTICS: Tactic[] = ['charge', 'guard', 'focus'];
 
@@ -98,6 +111,17 @@ export const BALANCE = {
     rewardScaleFromStage: 10,
     /** 공성 침입자 능력치 배수(모두 같은 단계면 "내 몬스터 레벨 + 4단계"까지 막는다) */
     invaderMult: 0.5,
+    /** 공성 침입자 수: 1단계 10명, 10단계마다 +1명, 최대 30명 (2026-10-06 사용자 결정) */
+    siegeBaseCount: 10,
+    siegeCountEvery: 10,
+    siegeMaxCount: 30,
+    /** 새 침입자가 나오기 시작하는 단계(기사·궁수·성직자는 처음부터). 10단계마다 보스(용사단장) */
+    siegeUnlocks: { thief: 5, lancer: 15, mage: 25, paladin: 40 },
+    siegeBossEvery: 10,
+    /** 인원이 늘어도 파도 총 세기는 그대로(사용자 결정): 한 명 능력치 = invaderMult × 3 ÷ 인원^0.8.
+     *  2026-10-06 시뮬레이션: 몬스터 Lv1·5·10·20·40·70에서 예전 3명 파도와 막는 단계가 같다(6·10·15·25·46·76) */
+    siegeCrowdK: 3,
+    siegeCrowdP: 0.8,
     /** NPC 등급 성: 층 수(1·2·3)별 몬스터·마왕 능력치 배수. 같은 레벨 용사 승률 약 60~65% (2026-09-29 측정) */
     npcMultByFloors: [1, 0.95, 0.92],
     /** 층 수가 늘어나는 NPC 등급 */

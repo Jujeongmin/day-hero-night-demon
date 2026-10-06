@@ -161,3 +161,9 @@
 ## 새 무료 몬스터 3종 (2026-10-02 승인)
 - 시안 `art/monsters/concept2/`(pixflux 64px: 늑대인간 double_b seed 3212, 역병 버섯 heal_a 3201, 심연의 눈 aoe_b 3222). 캐릭터를 새로 뽑지 않고 시안 그림을 `animate_image`로 바로 움직였다(움직임 하나 1회). 늑대인간 공격은 앞 여백을 둔 96×64로 다시 만들고, 하얗게 나온 손은 분홍 털색으로 칠함. 버섯 쓰러짐은 한 번 다시 만듦.
 - 낱장 → 스트립: `scripts/frames-to-strip.py`(전투는 가로 가운데·발 84% 기준이라 72×72에 여백, 늑대인간 공격 128×72, 눈은 아래 6px 내림). 원본 프레임 `art/monsters/new3/`, 미리보기 https://claude.ai/artifact/XvKghFGLJ9D1rXy4hr4nbe
+
+## 공성 침입자 (2026-10-06 승인)
+
+- 도적·창병·마법사·성기사(48px), 용사단장 보스(64px). 기사와 같은 `create_character` 규격, 동쪽 1방향 대기·공격·쓰러짐.
+- 원본 오른쪽 모습 `art/invaders/*_east.png`, 프레임 `art/frames/<종류>_<동작>/`, 스트립 `public/sprites/<종류>_<동작>.png`.
+- PixelLab character: thief `6f1e025b-daa5-407b-bf23-d5496a82594d`, lancer `2618091b-aa44-419b-86a1-dbc2eb9d3966`, mage `61dccfda-f3e6-4e52-a3fc-a7007cd05f2b`, paladin `02f9096f-b995-47fc-b1a0-a4bc3561b17d`, captain `03989674-dd44-428b-8961-2293a61df276`.

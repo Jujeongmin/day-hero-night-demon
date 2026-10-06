@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../server/src/catalog';
 import { waveGold } from '../server/src/growth';
-import { runSiege, siegeWave } from '../server/src/siege';
+import { runSiege, siegePool, siegeWave } from '../server/src/siege';
 import type { ResolvedFloor } from '../server/src/state';
 
 const W = BALANCE.siegeWaveMs;
@@ -9,10 +9,31 @@ const strong: ResolvedFloor[] = [1, 2, 3].map(() => ({ monsters: [{ id: 'slime',
 const weak: ResolvedFloor[] = [{ monsters: [] }];
 
 describe('siege waves', () => {
-  it('a wave is three heroes at the stage level, stronger past level 20', () => {
-    expect(siegeWave(5).map((h) => [h.id, h.level, h.mult])).toEqual([['knight', 5, 0.5], ['archer', 5, 0.5], ['priest', 5, 0.5]]);
+  it('a wave: 10 invaders at stage 1, one more every 10 stages, each with its own key, level = stage', () => {
+    expect(siegeWave(1)).toHaveLength(10);
+    expect(siegeWave(9)).toHaveLength(10);
+    expect(siegeWave(10)).toHaveLength(11);
+    expect(siegeWave(55)).toHaveLength(15);
+    expect(siegeWave(999)).toHaveLength(30);
+    const w = siegeWave(7);
+    expect(new Set(w.map((h) => h.key)).size).toBe(w.length);
+    expect(w.every((h) => h.level === 7)).toBe(true);
+    expect(siegeWave(7)).toEqual(w); // 모두에게 같은 파도
+  });
+
+  it('new kinds unlock with the stage and a boss leads every 10th stage', () => {
+    expect(siegePool(1)).toEqual(['knight', 'archer', 'priest']);
+    expect(siegePool(5)).toContain('thief');
+    expect(siegePool(14)).not.toContain('lancer');
+    expect(siegePool(40)).toEqual(['knight', 'archer', 'priest', 'thief', 'lancer', 'mage', 'paladin']);
+    expect(siegeWave(20)[0].id).toBe('captain');
+    expect(siegeWave(21).some((h) => h.id === 'captain')).toBe(false);
+  });
+
+  it('a bigger crowd splits the strength: each invader is weaker, past level 100 it grows ×1.15 a stage', () => {
+    expect(siegeWave(1)[0].mult).toBeCloseTo(0.5 * 3 / Math.pow(10, 0.8), 3);
     expect(siegeWave(102)[0].level).toBe(100);
-    expect(siegeWave(102)[0].mult).toBeCloseTo(0.5 * 1.15 * 1.15);
+    expect(siegeWave(102)[0].mult).toBeCloseTo(0.5 * 1.15 * 1.15 * 3 / Math.pow(20, 0.8), 3);
   });
 
   it('holding climbs one stage per wave and pays the wave gold of each stage', () => {

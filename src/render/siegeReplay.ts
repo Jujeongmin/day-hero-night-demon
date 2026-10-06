@@ -121,9 +121,11 @@ export function buildBeats(log: FloorLog[], held: boolean, perKill: number): Bea
         units: Object.fromEntries(f.start.map((u) => [u.key, { key: u.key, kind: u.kind, ...(u.gear ? { gear: u.gear } : {}), side: u.side, hp: u.hp, maxHp: u.maxHp, dead: u.hp <= 0, attacking: false, hits: 0 }])),
       }),
     });
+    // 사람이 많은 층(침입자 10명+)은 치고받는 박자를 줄여 파도 하나가 너무 길어지지 않게 한다(최소 0.35배)
+    const quick = Math.min(1, Math.max(0.35, 8 / f.start.length));
     for (const e of f.events) {
       const b = eventBeat(e, coinText);
-      if (b) beats.push(b);
+      if (b) beats.push(e.t === 'ult' || e.t === 'end' ? b : { ...b, ms: Math.round(b.ms * quick) });
     }
   }
   beats.push({ ms: BEAT_MS.result, apply: (s) => ({ ...calm(s), result: held ? 'held' : 'breached' }) });

@@ -1,11 +1,11 @@
 import {
-  BALANCE, HEROES, LORD, MONSTERS, SKILL_NUMBERS, scaleStats,
-  type HeroId, type MonsterId, type SkillId, type Stats, type Tactic,
+  BALANCE, HEROES, INVADERS, LORD, MONSTERS, SKILL_NUMBERS, scaleStats,
+  type HeroId, type InvaderId, type MonsterId, type SkillId, type Stats, type Tactic,
 } from './catalog';
 import { rngNext } from './rng';
 
 export type Side = 'hero' | 'enemy';
-export type UnitKind = HeroId | MonsterId | 'lord';
+export type UnitKind = HeroId | InvaderId | MonsterId | 'lord';
 
 export interface Fighter {
   key: string;
@@ -59,7 +59,8 @@ export interface FloorLog {
   events: BattleEvent[];
 }
 
-export interface HeroSpec { id: HeroId; level: number; hp?: number; mult?: number }
+/** key: 같은 종류가 여럿일 때(공성 침입자) 한 명씩 구분하는 이름. 없으면 종류 이름 */
+export interface HeroSpec { id: HeroId | InvaderId; level: number; hp?: number; mult?: number; key?: string }
 export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number; gear?: string; stars?: number }
 
 function makeFighter(
@@ -78,11 +79,11 @@ export function createFloorBattle(input: {
 }): { battle: FloorBattle; events: BattleEvent[] } {
   const fighters: Fighter[] = [];
   for (const h of input.heroes) {
-    const def = HEROES[h.id];
+    const def = h.id in HEROES ? HEROES[h.id as HeroId] : INVADERS[h.id as InvaderId];
     let s = scaleStats(def.stats, h.level, h.mult ?? 1);
     if (input.tactic === 'charge') s = { ...s, atk: Math.round(s.atk * 1.2), def: Math.round(s.def * 0.8) };
     if (input.tactic === 'guard') s = { ...s, def: Math.round(s.def * 1.3), spd: s.spd - 1 };
-    fighters.push(makeFighter(`h:${h.id}`, 'hero', h.id, h.level, def.row, s, h.hp ?? s.hp, def.skill, def.cooldown));
+    fighters.push(makeFighter(`h:${h.key ?? h.id}`, 'hero', h.id, h.level, def.row, s, h.hp ?? s.hp, def.skill, def.cooldown));
   }
   input.enemies.forEach((e, i) => {
     if (e.id === 'lord') {
@@ -144,11 +145,12 @@ export function heroesHp(b: FloorBattle): Partial<Record<HeroId, number>> {
 }
 
 /** 층을 깬 뒤 다음 층으로 가져갈 용사 체력: 살아 있으면 최대 체력의 floorRestHeal만큼 회복 */
-export function restedHeroesHp(b: FloorBattle): Partial<Record<HeroId, number>> {
-  const out: Partial<Record<HeroId, number>> = {};
+/** 다음 층으로 넘길 용사 체력. 이름은 fighter key에서 'h:'를 뗀 것(용사는 종류 이름, 공성 침입자는 한 명씩 다른 이름) */
+export function restedHeroesHp(b: FloorBattle): Partial<Record<string, number>> {
+  const out: Partial<Record<string, number>> = {};
   for (const f of b.fighters) {
     if (f.side !== 'hero') continue;
-    out[f.kind as HeroId] = f.hp > 0 ? Math.min(f.maxHp, f.hp + Math.round(f.maxHp * BALANCE.floorRestHeal)) : 0;
+    out[f.key.slice(2)] = f.hp > 0 ? Math.min(f.maxHp, f.hp + Math.round(f.maxHp * BALANCE.floorRestHeal)) : 0;
   }
   return out;
 }
@@ -162,7 +164,7 @@ export function firstAliveHero(b: FloorBattle): HeroId | null {
 export function simulateAuto(input: {
   heroes: HeroSpec[]; floors: { enemies: EnemySpec[] }[]; seed: number; record?: boolean;
 }): { won: boolean; floorsCleared: number; log?: FloorLog[] } {
-  let hp: Partial<Record<HeroId, number>> = {};
+  let hp: Partial<Record<string, number>> = {};
   let seed = input.seed;
   const log: FloorLog[] | undefined = input.record ? [] : undefined;
   const done = (r: { won: boolean; floorsCleared: number }) => (log ? { ...r, log } : r);
@@ -170,8 +172,8 @@ export function simulateAuto(input: {
     const floor = input.floors[i];
     if (floor.enemies.length === 0) continue;
     const party = input.heroes
-      .filter((h) => (hp[h.id] ?? 1) > 0)
-      .map((h) => ({ ...h, hp: hp[h.id] }));
+      .filter((h) => (hp[h.key ?? h.id] ?? 1) > 0)
+      .map((h) => ({ ...h, hp: hp[h.key ?? h.id] }));
     const created = createFloorBattle({ heroes: party, enemies: floor.enemies, tactic: 'charge', seed });
     let battle = created.battle;
     const entry: FloorLog | undefined = log

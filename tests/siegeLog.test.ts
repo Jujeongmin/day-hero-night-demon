@@ -58,9 +58,10 @@ describe('siege battle log (real fight replayed on the home screen)', () => {
     const r = runSiege({ account: 'b', stage: 2, lastWaveAt: 0, now: 3 * W + 5, castleLevel: 2, floors });
     expect(r.waves).toHaveLength(3);
     expect(r.lastLog!.length).toBeGreaterThan(0);
-    const last = fightWave({ account: 'b', stage: 2, at: 3 * W, castleLevel: 2, floors, record: true });
-    // 마지막 파도 전 단계에서 다시 싸우면 같은 로그가 나와야 하지만 단계가 파도마다 바뀌므로, 적어도 첫 층 참가자가 같다
-    expect(r.lastLog![0].start.map((u) => u.key)).toEqual(last.log![0].start.map((u) => u.key));
+    // 마지막(세 번째) 파도는 두 파도를 치른 뒤의 단계에서 싸운다. 같은 단계·시각으로 다시 싸우면 같은 로그다
+    const before = runSiege({ account: 'b', stage: 2, lastWaveAt: 0, now: 2 * W + 5, castleLevel: 2, floors });
+    const last = fightWave({ account: 'b', stage: before.stage, at: 3 * W, castleLevel: 2, floors, record: true });
+    expect(r.lastLog).toEqual(last.log);
     const none = runSiege({ account: 'b', stage: 2, lastWaveAt: 0, now: W - 1, castleLevel: 2, floors });
     expect(none.lastLog).toBeUndefined();
   });

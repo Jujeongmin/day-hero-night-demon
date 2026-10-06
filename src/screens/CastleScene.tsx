@@ -33,9 +33,10 @@ function fightX(inset: number, idx: number): number {
   const r = 100 - inset - 4;
   return l + ((r - l) * idx) / 5;
 }
-/** 침입자 자리: 기사가 가장 앞(몬스터 쪽) */
-function heroIdx(kind: string): number {
-  return 2 - Math.max(0, HERO_ORDER.indexOf(kind as HeroId));
+/** 침입자 자리: 층 왼쪽 절반(fightX 0~2칸)에 i번째를 고르게 펼친다. 두 줄로 엇갈려 세워 무리처럼 보이게(2026-10-06 인원 10명+) */
+function heroSpot(i: number, n: number): { idx: number; row: number } {
+  if (n <= 3) return { idx: 2 - i, row: 0 };
+  return { idx: 2.3 - (2.3 * i) / Math.max(1, n - 1), row: i % 2 };
 }
 const TOWER_H = 400;
 const SIEGE_SPEED_KEY = 'siegeSpeed';
@@ -256,15 +257,21 @@ export default function CastleScene(props: {
         {replay.floor !== null && (() => {
           const tier = throneFight ? THRONE_TIER : TIERS[replay.floor] ?? TIERS[0];
           // 옥좌: 마왕은 덩치가 커서 오른쪽 끝에 세운다(침입자와 겹치지 않게)
-          const pos = (u: RUnit) => fightX(tier.inset, u.side === 'hero' ? heroIdx(u.kind) : throneFight ? 5 : 3 + replay.enemies.indexOf(u.key));
+          const nHero = replay.heroes.length;
+          const spot = (u: RUnit) => heroSpot(replay.heroes.indexOf(u.key), nHero);
+          const pos = (u: RUnit) => fightX(tier.inset, u.side === 'hero' ? spot(u).idx : throneFight ? 5 : 3 + replay.enemies.indexOf(u.key));
+          // 뒷줄 침입자는 조금 위에 서서 겹쳐 보이게, 인원이 많으면 작게, 보스는 크게
+          const standY = (u: RUnit) => tier.stand - (u.side === 'hero' && spot(u).row === 1 ? 2.2 : 0);
+          const scaleOf = (u: RUnit) => (u.side !== 'hero' ? unitScale : unitScale * (u.kind === 'captain' ? 1.15 : nHero > 6 ? 0.72 : 1));
           const units = [...replay.heroes, ...replay.enemies].map((k) => replay.units[k]).filter(Boolean);
           return (
             <div className="rp-layer" style={{ '--spd': speed } as CSSProperties}>
               {units.map((u) => (
                 // 침입자는 층을 옮겨도 같은 칸(위층으로 올라가는 모습), 몬스터는 층마다 새로 선다
-                <div key={u.side === 'hero' ? u.key : `${replay.floor}:${u.key}`} className={`unit-at rp-unit ${u.side} ${u.dead ? 'dead' : ''}`} style={at(pos(u), tier.stand)}>
+                <div key={u.side === 'hero' ? u.key : `${replay.floor}:${u.key}`} className={`unit-at rp-unit ${u.side} ${u.dead ? 'dead' : ''} ${u.side === 'hero' && spot(u).row === 1 ? 'back-row' : ''}`} style={at(pos(u), standY(u))}>
                   {!u.dead && u.side === 'enemy' && <StarRow n={s.stars?.[u.kind as keyof typeof s.stars]} className="unit-stars" />}
-                  {!u.dead && <span className="rp-hp"><span style={{ width: `${(u.hp / u.maxHp) * 100}%` }} /></span>}
+                  {/* 침입자가 많으면(7명+) 체력바가 겹쳐 지저분하니 보스만 */}
+                  {!u.dead && (u.side !== 'hero' || nHero <= 6 || u.kind === 'captain') && <span className="rp-hp"><span style={{ width: `${(u.hp / u.maxHp) * 100}%` }} /></span>}
                   <span key={`${u.key}:${u.hits}`} className={`rp-body ${u.hits > 0 ? 'rp-hit' : ''} ${u.attacking ? 'rp-lunge' : ''}`}>
                     <Sprite
                       id={u.kind === 'lord' ? lordSpriteId(lordSkin) : monsterSpriteId(u.kind, u.gear)}
@@ -272,7 +279,7 @@ export default function CastleScene(props: {
                       className={u.dead ? 'once' : ''}
                       label={T.units[u.kind] ?? ''}
                       flip={u.side === 'enemy'}
-                      scale={unitScale}
+                      scale={scaleOf(u)}
                     />
                   </span>
                 </div>
@@ -281,7 +288,7 @@ export default function CastleScene(props: {
                 const u = replay.units[f.key];
                 if (!u) return null;
                 return (
-                  <span key={f.id} className={`rp-float ${f.kind}`} style={at(pos(u), tier.stand)}>
+                  <span key={f.id} className={`rp-float ${f.kind}`} style={at(pos(u), standY(u))}>
                     {f.kind === 'coin' && <img src="icons/gold.png" alt="" draggable={false} />}
                     {f.text}
                   </span>

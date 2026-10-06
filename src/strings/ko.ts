@@ -308,6 +308,7 @@ export const ko = {
   units: {
     slime: '슬라임', skeleton: '해골병', imp: '임프', spider: '거미', necro: '네크로맨서', dragon: '새끼 용', golem: '돌 골렘', banshee: '밴시', vampire: '흡혈귀', deathknight: '데스 나이트', werewolf: '늑대인간', mushroom: '역병 버섯', eye: '심연의 눈',
     knight: '기사', archer: '궁수', priest: '성직자', lord: '마왕',
+    thief: '도적', lancer: '창병', mage: '마법사', paladin: '성기사', captain: '용사단장',
   } as Record<string, string>,
   /** 전투 화면에 뜨는 글자 */
   fx: { taunt: '도발', web: '거미줄', stun: '기절', down: '쓰러짐', raise: '망령으로 부활', cleared: '층 돌파' } as Record<string, string>,

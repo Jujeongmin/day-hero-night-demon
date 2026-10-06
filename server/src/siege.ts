@@ -1,16 +1,43 @@
 import { simulateAuto, type FloorLog, type HeroSpec } from './battle';
-import { BALANCE, HERO_ORDER } from './catalog';
+import { BALANCE, HERO_ORDER, type HeroId, type InvaderId } from './catalog';
 import { lordLevel, lordMult, monsterMult, waveGold } from './growth';
-import { seedFrom } from './rng';
+import { rngNext, seedFrom } from './rng';
 import type { ResolvedFloor } from './state';
 import { vipPerks } from './vip';
 
-/** 공성 단계의 침입 파도: 기사·궁수·성직자, 레벨 = 단계, 능력치 ×0.5. 최대 레벨을 넘으면 단계마다 ×1.15 더 */
+/** 파도 인원: 1단계 10명, 10단계마다 +1명, 최대 30명 */
+export function siegeCount(stage: number): number {
+  const G = BALANCE.growth;
+  return Math.min(G.siegeMaxCount, G.siegeBaseCount + Math.floor(Math.max(1, stage) / G.siegeCountEvery));
+}
+
+/** 그 단계에 나올 수 있는 침입자 종류(보스 제외). 기사·궁수·성직자는 처음부터, 나머지는 단계가 되면 */
+export function siegePool(stage: number): (HeroId | InvaderId)[] {
+  const unlocks = BALANCE.growth.siegeUnlocks as Record<string, number>;
+  return [...HERO_ORDER, ...(Object.keys(unlocks) as InvaderId[]).filter((id) => stage >= unlocks[id])];
+}
+
+/**
+ * 공성 단계의 침입 파도(모두에게 같다): 인원·종류는 단계로 정해지고, 10단계마다 맨 앞에 용사단장(보스).
+ * 레벨 = 단계(최대 레벨을 넘으면 단계마다 ×1.15 더). 인원이 늘어도 파도 총 세기는 그대로가 되게 한 명 능력치를 나눈다.
+ */
 export function siegeWave(stage: number): HeroSpec[] {
-  const level = Math.min(BALANCE.growth.legacyCap, stage);
-  const over = Math.max(0, stage - BALANCE.growth.legacyCap);
-  const mult = BALANCE.growth.invaderMult * Math.pow(BALANCE.growth.statGrowth, over);
-  return HERO_ORDER.map((id) => ({ id, level, mult }));
+  const G = BALANCE.growth;
+  const st = Math.max(1, stage);
+  const level = Math.min(G.legacyCap, st);
+  const over = Math.max(0, st - G.legacyCap);
+  const count = siegeCount(st);
+  const mult = Math.round(G.invaderMult * Math.pow(G.statGrowth, over) * (G.siegeCrowdK / Math.pow(count, G.siegeCrowdP)) * 10_000) / 10_000;
+  const pool = siegePool(st);
+  let rng = seedFrom('siege-wave', st);
+  const kinds: (HeroId | InvaderId)[] = [];
+  if (st % G.siegeBossEvery === 0) kinds.push('captain');
+  while (kinds.length < count) {
+    const r = rngNext(rng);
+    rng = r.state;
+    kinds.push(pool[Math.floor(r.value * pool.length)]);
+  }
+  return kinds.map((id, i) => ({ id, level, mult, key: `${id}${i}` }));
 }
 
 /** 막는 쪽: 내 층 몬스터 → 옥좌의 마왕. mult = 용사 레벨에서 오는 공성 방어 배수, 각성 별은 유닛마다 더 곱한다 */
