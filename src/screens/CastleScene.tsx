@@ -268,10 +268,10 @@ export default function CastleScene(props: {
             <div className="rp-layer" style={{ '--spd': speed } as CSSProperties}>
               {units.map((u) => (
                 // 침입자는 층을 옮겨도 같은 칸(위층으로 올라가는 모습), 몬스터는 층마다 새로 선다
-                <div key={u.side === 'hero' ? u.key : `${replay.floor}:${u.key}`} className={`unit-at rp-unit ${u.side} ${u.dead ? 'dead' : ''} ${u.side === 'hero' && spot(u).row === 1 ? 'back-row' : ''}`} style={at(pos(u), standY(u))}>
+                <div key={u.side === 'hero' ? u.key : `${replay.floor}:${u.key}`} className={`unit-at rp-unit ${u.side} ${u.dead ? 'dead' : ''} ${u.side === 'hero' && spot(u).row === 1 ? 'back-row' : ''} ${u.side === 'hero' && nHero > 6 && u.kind !== 'captain' ? 'crowd' : ''}`} style={at(pos(u), standY(u))}>
                   {!u.dead && u.side === 'enemy' && <StarRow n={s.stars?.[u.kind as keyof typeof s.stars]} className="unit-stars" />}
-                  {/* 침입자가 많으면(7명+) 체력바가 겹쳐 지저분하니 보스만 */}
-                  {!u.dead && (u.side !== 'hero' || nHero <= 6 || u.kind === 'captain') && <span className="rp-hp"><span style={{ width: `${(u.hp / u.maxHp) * 100}%` }} /></span>}
+                  {/* 침입자도 모두 체력바(2026-10-06 사용자). 무리(7명+)는 작게 */}
+                  {!u.dead && <span className="rp-hp"><span style={{ width: `${(u.hp / u.maxHp) * 100}%` }} /></span>}
                   <span key={`${u.key}:${u.hits}`} className={`rp-body ${u.hits > 0 ? 'rp-hit' : ''} ${u.attacking ? 'rp-lunge' : ''}`}>
                     <Sprite
                       id={u.kind === 'lord' ? lordSpriteId(lordSkin) : monsterSpriteId(u.kind, u.gear)}

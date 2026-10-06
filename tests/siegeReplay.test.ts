@@ -63,3 +63,33 @@ describe('home siege replay of the real fight', () => {
     throw new Error('no wave reached the throne');
   });
 });
+
+describe('area attacks in the replay (2026-10-06)', () => {
+  it('one breath hits every invader in the same beat and the ones it kills fall together', () => {
+    const start = [
+      { key: 'h:knight0', side: 'hero' as const, kind: 'knight', maxHp: 100, hp: 100 },
+      { key: 'h:archer1', side: 'hero' as const, kind: 'archer', maxHp: 100, hp: 30 },
+      { key: 'h:priest2', side: 'hero' as const, kind: 'priest', maxHp: 100, hp: 30 },
+      { key: 'e0:dragon', side: 'enemy' as const, kind: 'dragon', maxHp: 200, hp: 200 },
+    ];
+    const events = [
+      { t: 'attack' as const, from: 'e0:dragon', to: 'h:knight0', dmg: 40, skill: 'breath' as const },
+      { t: 'attack' as const, from: 'e0:dragon', to: 'h:archer1', dmg: 40, skill: 'breath' as const },
+      { t: 'down' as const, key: 'h:archer1' },
+      { t: 'attack' as const, from: 'e0:dragon', to: 'h:priest2', dmg: 40, skill: 'breath' as const },
+      { t: 'down' as const, key: 'h:priest2' },
+      { t: 'attack' as const, from: 'h:knight0', to: 'e0:dragon', dmg: 10 },
+    ];
+    const beats = buildBeats([{ floor: 0, start, events }], true, 5);
+    // 입장 → 화염 한 박자 → 기사 공격 → 결과 → 끝
+    let s: ReplayState = IDLE_REPLAY;
+    s = beats[0].apply(s);
+    s = beats[1].apply(s);
+    expect(s.units['h:knight0'].hp).toBe(60);
+    expect(s.units['h:archer1'].dead).toBe(true);
+    expect(s.units['h:priest2'].dead).toBe(true);
+    expect(s.units['e0:dragon'].attacking).toBe(true);
+    s = beats[2].apply(s);
+    expect(s.units['e0:dragon'].hp).toBe(190);
+  });
+});
