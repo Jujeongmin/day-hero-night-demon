@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { seasonIdAt } from '../../server/src/league';
 import { BALANCE } from '../../server/src/catalog';
 import { formatNum } from '../../server/src/growth';
 import type { SummonResult } from '../../server/src/summon';
@@ -58,6 +59,7 @@ export default function Summon(props: {
   const [toPity, setToPity] = useState<{ high: number; legend: number } | null>(null);
 
   const left = toPity?.high ?? B.pity - (s.summon?.sinceHigh ?? 0);
+  const seasonLook = B.seasonLegends[seasonIdAt(Date.now())];
   const leftLegend = toPity?.legend ?? B.legendPity - (s.summon?.sinceLegend ?? 0);
 
   // 카드를 한 장씩 뒤집는다. 영웅·전설 카드에서 소리
@@ -161,6 +163,7 @@ export default function Summon(props: {
             <small>{T.summon.tenNote}</small>
             <small>{T.summon.pityNote(B.pity)}</small>
             <small>{T.summon.legendPityNote(B.legendPity)}</small>
+            {seasonLook && <small className="grade-legend">{T.summon.seasonNote(T.settings.looks[seasonLook], Math.round(B.seasonLegendShare * 100))}</small>}
             <small>{T.summon.dupNote(B.epicDupSoul, B.legendDupSoul)}</small>
           </div>
         </div>

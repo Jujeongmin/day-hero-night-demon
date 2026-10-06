@@ -273,6 +273,12 @@ export const BALANCE = {
       'necro:lich', 'necro:bone', 'spider:iron', 'spider:crown', 'dragon:knight', 'dragon:royal',
     ] as string[],
     legendLooks: ['summon1'] as string[],
+    /**
+     * 시즌 한정 전설(2026-10-06 사용자, "고액 결제 늘리기" 4번): 그 시즌에 전설이 나오면 seasonLegendShare 확률로 시즌 외형.
+     * 시즌이 끝나면 더 안 나온다(가진 사람은 영구 소장). 그림이 없는 시즌은 legendLooks만
+     */
+    seasonLegends: { s1: 'hydra' } as Record<string, string>,
+    seasonLegendShare: 0.5,
   },
   /**
    * 의뢰(2026-10-02 사용자 승인). 일일 의뢰: 한국 시간 0시에 새로, 하나에 영혼석 soulEach, 모두 하면 soulAll 더(하루 40).

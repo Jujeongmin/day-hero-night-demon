@@ -167,3 +167,8 @@
 - 도적·창병·마법사·성기사(48px), 용사단장 보스(64px). 기사와 같은 `create_character` 규격, 동쪽 1방향 대기·공격·쓰러짐.
 - 원본 오른쪽 모습 `art/invaders/*_east.png`, 프레임 `art/frames/<종류>_<동작>/`, 스트립 `public/sprites/<종류>_<동작>.png`.
 - PixelLab character: thief `6f1e025b-daa5-407b-bf23-d5496a82594d`, lancer `2618091b-aa44-419b-86a1-dbc2eb9d3966`, mage `61dccfda-f3e6-4e52-a3fc-a7007cd05f2b`, paladin `02f9096f-b995-47fc-b1a0-a4bc3561b17d`, captain `03989674-dd44-428b-8961-2293a61df276`.
+
+## 시즌 한정 소환 전설 (2026-10-06 승인)
+- 시즌 1 「세 머리 히드라」 `lord_hydra_*`: `create_1_direction_object` sidescroller 96px, 히드라 4장(`art/lord/season/hydra_*.png`) 중 D(3번, 검은 비늘·금관 셋), object `701941fb-c604-478f-a585-5bd7184eb030`. 탈락 후보 서리 거룡 `frost_*`, 비교 `art/lord/season/candidates.png`.
+- v3 idle 4(keep_first_frame false) · attack 7 · death 7. 공격·쓰러짐은 두 번째 판(attack2 불길 물기, death2 내려앉음), 첫 판 `art/frames/lord_hydra_{attack,death}_v1`(꼬리만 흔들림·거의 안 쓰러짐).
+- 시즌마다 새 외형을 그려 `BALANCE.summon.seasonLegends`에 시즌 id로 넣는다. 없으면 상시 전설만 나온다.

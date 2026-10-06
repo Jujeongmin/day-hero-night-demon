@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../server/src/catalog';
-import { planSummon, planWearGear, pullsToLegend, pullsToPity, type SummonPools } from '../server/src/summon';
+import { planSummon, planWearGear, pullsToLegend, pullsToPity, summonPoolsFor, type SummonPools } from '../server/src/summon';
 import { rngNext } from '../server/src/rng';
 
 const POOLS: SummonPools = { gear: ['slime:crown', 'slime:armor', 'imp:horns'], legend: ['summon1'] };
@@ -162,6 +162,40 @@ describe('legend pity: a legend within 100 (2026-10-06)', () => {
         if (x.grade === 'legend') run = 0; else run++;
         expect(run).toBeLessThan(100);
       }
+    }
+  });
+});
+
+describe('season legend (2026-10-06)', () => {
+  it('a legend is the season look about half the time, and never once the season has none', () => {
+    const rand = seeded(99);
+    const pools = { ...POOLS, season: 'hydra' };
+    let season = 0;
+    let legends = 0;
+    for (let k = 0; k < 4000; k++) {
+      const s = { ...fresh, summon: { pulls: 0, sinceHigh: 0, sinceLegend: 99 } };
+      const r = planSummon(s, 'one', rand, pools).results[0];
+      legends++;
+      if (r.item === 'hydra') season++;
+    }
+    expect(season / legends).toBeCloseTo(BALANCE.summon.seasonLegendShare, 1);
+    const s = { ...fresh, summon: { pulls: 0, sinceHigh: 0, sinceLegend: 99 } };
+    expect(planSummon(s, 'one', always(0.001), POOLS).results[0].item).toBe('summon1');
+  });
+
+  it('season 1 has the hydra; a season with no art has only the standing legends', () => {
+    expect(summonPoolsFor('s1').season).toBe('hydra');
+    expect(summonPoolsFor('s99').season).toBeUndefined();
+  });
+});
+
+describe('rates sheet text (2026-10-06)', () => {
+  it('common and rare rewards in every language match BALANCE', async () => {
+    for (const lang of ['ko', 'en', 'ja', 'zhHans', 'zhHant']) {
+      const mod = await import(`../src/strings/${lang}.ts`);
+      const r = (Object.values(mod).find((v: any) => v?.summon?.rewardOf) as any).summon.rewardOf;
+      expect(r.common).toContain(String(BALANCE.summon.commonSoul));
+      expect(r.rare).toContain(String(BALANCE.summon.rareSoul));
     }
   });
 });

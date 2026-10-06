@@ -14,8 +14,8 @@ export interface ResolvedFloor {
 export type StarUnit = MonsterId | HeroId | 'lord';
 
 /** 시즌 패스 보유자의 한정 마왕 외형. 표시용이며 전투 수치에는 영향이 없다. */
-/** dragon = 패스 10단계 영구, lava·demon = VIP 5·8 전용 (2026-09-30), summon1 = 소환 전설, lich·abyss·emperor = 시즌 1~3 전체 1위 (2026-10-02) */
-export type LordSkin = 'dragon' | 'lava' | 'demon' | 'summon1' | 'lich' | 'abyss' | 'emperor';
+/** dragon = 패스 10단계 영구, lava·demon = VIP 5·8 전용 (2026-09-30), summon1 = 소환 전설, lich·abyss·emperor = 시즌 1~3 전체 1위 (2026-10-02), hydra = 시즌 1 소환 한정 전설 (2026-10-06) */
+export type LordSkin = 'dragon' | 'lava' | 'demon' | 'summon1' | 'lich' | 'abyss' | 'emperor' | 'hydra';
 
 export interface CastleSnapshot {
   owner: string;

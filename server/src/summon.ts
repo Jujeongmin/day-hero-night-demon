@@ -6,9 +6,16 @@ export type SummonGrade = 'common' | 'rare' | 'epic' | 'legend';
 /** 한 번 뽑은 결과. item = 장비 외형("몬스터:장비") 또는 전설 마왕 외형, dup이면 그 대신 soul을 받았다 */
 export interface SummonResult { grade: SummonGrade; soul: number; item?: string; dup?: boolean }
 
-export interface SummonPools { gear: readonly string[]; legend: readonly string[] }
+/** season = 이번 시즌 한정 전설 외형(없으면 상시 전설만) */
+export interface SummonPools { gear: readonly string[]; legend: readonly string[]; season?: string }
 
 const POOLS: SummonPools = { gear: BALANCE.summon.gear, legend: BALANCE.summon.legendLooks };
+
+/** 그 시즌의 소환 목록(시즌 한정 전설 포함) */
+export function summonPoolsFor(seasonId: string): SummonPools {
+  const season = BALANCE.summon.seasonLegends[seasonId];
+  return season ? { ...POOLS, season } : POOLS;
+}
 
 /** 소환 기록: 지금까지 뽑은 수, 마지막 영웅 이상 뒤로 뽑은 수(천장), 마지막 전설 뒤로 뽑은 수(전설 천장) */
 export function summonOf(s: Pick<UserState, 'summon'>): Required<NonNullable<UserState['summon']>> {
@@ -78,7 +85,8 @@ export function planSummon(
         results.push({ grade, soul: dupSoul, dup: true });
         continue;
       }
-      const item = pick(pool, rand());
+      // 전설: 시즌 한정 외형이 있으면 seasonLegendShare 확률로 그것
+      const item = grade === 'legend' && pools.season && rand() < B.seasonLegendShare ? pools.season : pick(pool, rand());
       if (owned.has(item)) results.push({ grade, soul: dupSoul, item, dup: true });
       else {
         owned.add(item);

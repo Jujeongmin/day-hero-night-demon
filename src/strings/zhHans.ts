@@ -199,7 +199,7 @@ export const zhHans: Strings = {
     resetDone: '已重置',
     lordLook: '魔王外观',
     lookOwned: (n: number, pct: number) => `拥有外观 ${n} 个 · 魔王属性 +${pct}%（无需穿戴）`,
-    looks: { base: '基本', dragon: '黑龙', lava: '熔岩魔王', demon: '紫翼恶魔', summon1: '堕落大恶魔', lich: '骨龙巫妖王', abyss: '独眼深渊君主', emperor: '深渊皇帝' } as Record<string, string>,
+    looks: { base: '基本', dragon: '黑龙', lava: '熔岩魔王', demon: '紫翼恶魔', summon1: '堕落大恶魔', hydra: '三首海德拉', lich: '骨龙巫妖王', abyss: '独眼深渊君主', emperor: '深渊皇帝' } as Record<string, string>,
   },
   pass: {
     rank: '排名',
@@ -389,10 +389,11 @@ export const zhHans: Strings = {
     wearWhere: '获得的外观在强化画面的怪物栏穿上',
     ratesTitle: '召唤概率',
     grades: { common: '普通', rare: '稀有', epic: '英雄', legend: '传说' },
-    rewardOf: { common: '魂石 15', rare: '魂石 50', epic: '12种怪物装备外观之一', legend: '召唤限定魔王外观' },
+    rewardOf: { common: '魂石 10', rare: '魂石 30', epic: '12种怪物装备外观之一', legend: '召唤限定魔王外观' },
     tenNote: '10+1次必得一个英雄以上。',
     pityNote: (n: number) => `连续没有英雄以上时，第${n}次召唤必得英雄以上；抽到后重新计算。`,
     legendPityNote: (n: number) => `连续没有传说时，第${n}次召唤必得传说；抽到后重新计算。`,
+    seasonNote: (name: string, pct: number) => `本赛季限定：抽到传说时有${pct}%概率是「${name}」。赛季结束后不再出现。`,
     dupNote: (epic: number, legend: number) => `抽到已有的外观会换成魂石(英雄${epic}、传说${F(legend)})。`,
     gear: {
       'slime:crown': '史莱姆王', 'slime:helm': '骑士史莱姆', 'skeleton:royal': '骷髅王', 'skeleton:dread': '恐惧之铠',

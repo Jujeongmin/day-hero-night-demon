@@ -19,7 +19,7 @@ import { grantFor } from './purchases';
 import { fightWave, milestoneSoul, runSiege, siegeCallBlock, siegeSpeed } from './siege';
 import { noteWall, WALL_BREACHES } from './offer';
 import { rngNext, seedFrom } from './rng';
-import { planSummon, planWearGear, pullsToLegend, pullsToPity, summonOf } from './summon';
+import { planSummon, planWearGear, pullsToLegend, pullsToPity, summonOf, summonPoolsFor } from './summon';
 import {
   canAdvance, dayKey, defaultState, heroGrowth, isNew, isStage, migrateGrowth, resetState, resolveFloors, withDefaults,
   type CastleSnapshot, type OnboardingState, type RaidLogEntry, type Run, type Target, type UserState,
@@ -848,7 +848,7 @@ export class Server {
       const now = Date.now();
       const s = await loadState(me, now);
       const before = summonOf(s).pulls;
-      const plan = planSummon(s, kind, Math.random);
+      const plan = planSummon(s, kind, Math.random, summonPoolsFor(seasonIdAt(now)));
       if (!(await $asset.has('soul', plan.cost))) throw new Error('NO_SOUL');
       await $asset.burn('soul', plan.cost);
       if (plan.soul) await $asset.mint('soul', plan.soul);
