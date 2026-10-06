@@ -428,6 +428,13 @@ export default function CastleScene(props: {
         </div>
       )}
 
+      {/* 아래 창이 열려 있어도 다음 할 일 카드는 보인다(2026-10-06 사용자 요청) */}
+      {panelOpen && showQuest && (
+        <div className="quest-float">
+          <QuestCard api={api} home={home} onGo={onQuestGo} onRefresh={onRefresh} onError={onError} />
+        </div>
+      )}
+
       {!panelOpen && <div className={`scene-foot ${showQuest ? 'with-quest' : ''}`}>
         {/* 다음 할 일 카드(2026-10-02 승인 A, 사용자: 출정을 줄이고 카드를 넓게). 튜토리얼이 끝난 뒤에만 */}
         {showQuest && <QuestCard api={api} home={home} onGo={onQuestGo} onRefresh={onRefresh} onError={onError} />}
