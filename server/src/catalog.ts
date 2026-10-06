@@ -118,6 +118,8 @@ export const BALANCE = {
     /** 새 침입자가 나오기 시작하는 단계(기사·궁수·성직자는 처음부터). 10단계마다 보스(용사단장) */
     siegeUnlocks: { thief: 5, lancer: 15, mage: 25, paladin: 40 },
     siegeBossEvery: 10,
+    /** 새 종류가 해금된 단계부터 이 단계 수 동안은 그 종류가 인원의 1/3 */
+    siegeSpotlightStages: 5,
     /** 인원이 늘어도 파도 총 세기는 그대로(사용자 결정): 한 명 능력치 = invaderMult × 3 ÷ 인원^0.8.
      *  2026-10-06 시뮬레이션: 몬스터 Lv1·5·10·20·40·70에서 예전 3명 파도와 막는 단계가 같다(6·10·15·25·46·76) */
     siegeCrowdK: 3,

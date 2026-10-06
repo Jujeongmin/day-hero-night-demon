@@ -1,7 +1,7 @@
 import { simulateAuto, type FloorLog, type HeroSpec } from './battle';
 import { BALANCE, HERO_ORDER, type HeroId, type InvaderId } from './catalog';
 import { lordLevel, lordMult, monsterMult, waveGold } from './growth';
-import { rngNext, seedFrom } from './rng';
+import { seedFrom } from './rng';
 import type { ResolvedFloor } from './state';
 import { vipPerks } from './vip';
 
@@ -17,26 +17,41 @@ export function siegePool(stage: number): (HeroId | InvaderId)[] {
   return [...HERO_ORDER, ...(Object.keys(unlocks) as InvaderId[]).filter((id) => stage >= unlocks[id])];
 }
 
+/** 화면·전투에서 앞에 서는 순서: 보스 → 근접 → 원거리 */
+const WAVE_ORDER: (HeroId | InvaderId)[] = ['captain', 'knight', 'paladin', 'lancer', 'thief', 'archer', 'mage', 'priest'];
+
 /**
- * 공성 단계의 침입 파도(모두에게 같다): 인원·종류는 단계로 정해지고, 10단계마다 맨 앞에 용사단장(보스).
- * 레벨 = 단계(최대 레벨을 넘으면 단계마다 ×1.15 더). 인원이 늘어도 파도 총 세기는 그대로가 되게 한 명 능력치를 나눈다.
+ * 단계별 침입자 종류와 수(무작위 없음, 2026-10-06 사용자 결정 "종류를 정해").
+ * - 해금된 종류를 차례로 돌아가며 채워 종류마다 수가 거의 같다.
+ * - 새 종류가 해금된 단계부터 5단계 동안은 그 종류가 인원의 1/3을 차지한다(새 적 등장).
+ * - 10단계마다 보스(용사단장) 1명이 인원에 포함된다.
+ */
+export function siegeKinds(stage: number): (HeroId | InvaderId)[] {
+  const G = BALANCE.growth;
+  const st = Math.max(1, stage);
+  const count = siegeCount(st);
+  const pool = siegePool(st);
+  const out: (HeroId | InvaderId)[] = [];
+  if (st % G.siegeBossEvery === 0) out.push('captain');
+  const unlocks = G.siegeUnlocks as Record<string, number>;
+  const fresh = (Object.keys(unlocks) as InvaderId[]).find((id) => st >= unlocks[id] && st < unlocks[id] + G.siegeSpotlightStages);
+  if (fresh) for (let i = Math.ceil((count - out.length) / 3); i > 0; i--) out.push(fresh);
+  const rest = fresh ? pool.filter((id) => id !== fresh) : pool;
+  for (let i = 0; out.length < count; i++) out.push(rest[i % rest.length]);
+  return out.sort((a, b) => WAVE_ORDER.indexOf(a) - WAVE_ORDER.indexOf(b));
+}
+
+/**
+ * 공성 단계의 침입 파도(모두에게 같다): 종류·수는 siegeKinds, 레벨 = 단계(최대 레벨을 넘으면 단계마다 ×1.15 더).
+ * 인원이 늘어도 파도 총 세기는 그대로가 되게 한 명 능력치를 나눈다.
  */
 export function siegeWave(stage: number): HeroSpec[] {
   const G = BALANCE.growth;
   const st = Math.max(1, stage);
   const level = Math.min(G.legacyCap, st);
   const over = Math.max(0, st - G.legacyCap);
-  const count = siegeCount(st);
-  const mult = Math.round(G.invaderMult * Math.pow(G.statGrowth, over) * (G.siegeCrowdK / Math.pow(count, G.siegeCrowdP)) * 10_000) / 10_000;
-  const pool = siegePool(st);
-  let rng = seedFrom('siege-wave', st);
-  const kinds: (HeroId | InvaderId)[] = [];
-  if (st % G.siegeBossEvery === 0) kinds.push('captain');
-  while (kinds.length < count) {
-    const r = rngNext(rng);
-    rng = r.state;
-    kinds.push(pool[Math.floor(r.value * pool.length)]);
-  }
+  const kinds = siegeKinds(st);
+  const mult = Math.round(G.invaderMult * Math.pow(G.statGrowth, over) * (G.siegeCrowdK / Math.pow(kinds.length, G.siegeCrowdP)) * 10_000) / 10_000;
   return kinds.map((id, i) => ({ id, level, mult, key: `${id}${i}` }));
 }
 

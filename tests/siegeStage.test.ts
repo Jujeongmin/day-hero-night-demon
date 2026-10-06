@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../server/src/catalog';
 import { waveGold } from '../server/src/growth';
-import { runSiege, siegePool, siegeWave } from '../server/src/siege';
+import { runSiege, siegeKinds, siegePool, siegeWave } from '../server/src/siege';
 import type { ResolvedFloor } from '../server/src/state';
 
 const W = BALANCE.siegeWaveMs;
@@ -28,6 +28,17 @@ describe('siege waves', () => {
     expect(siegePool(40)).toEqual(['knight', 'archer', 'priest', 'thief', 'lancer', 'mage', 'paladin']);
     expect(siegeWave(20)[0].id).toBe('captain');
     expect(siegeWave(21).some((h) => h.id === 'captain')).toBe(false);
+  });
+
+  it('kinds are fixed, not random: even round-robin, a new kind takes a third for 5 stages, boss in front', () => {
+    const count = (st: number) => siegeKinds(st).reduce<Record<string, number>>((c, k) => ({ ...c, [k]: (c[k] ?? 0) + 1 }), {});
+    expect(count(1)).toEqual({ knight: 4, archer: 3, priest: 3 });
+    expect(count(5).thief).toBe(4);          // 도적 등장: 10명의 1/3(올림)
+    expect(count(14).thief).toBe(2);         // 등장 구간이 끝나면 고르게
+    expect(count(40).paladin).toBe(5);       // 성기사 등장(보스 빼고 13명의 1/3)
+    expect(siegeKinds(40)[0]).toBe('captain');
+    const c200 = count(200);
+    expect(Math.max(...Object.values(c200).filter((n) => n > 1)) - Math.min(...Object.values(c200).filter((n) => n > 1))).toBeLessThanOrEqual(1);
   });
 
   it('a bigger crowd splits the strength: each invader is weaker, past level 100 it grows ×1.15 a stage', () => {
