@@ -13,7 +13,8 @@ export interface RemoteServer {
 
 /** 공성 파도 하나. log = 서버가 실제로 싸운 기록(홈 화면이 재생). 옛 서버 응답에는 없다 */
 /** stage = 싸운 단계(반복·도전, 2026-10-06). 옛 응답은 없다 */
-export interface SiegeWave { at: number; won: boolean; log?: FloorLog[]; stage?: number }
+/** gold = 이 파도로 실제 들어온 골드(켜 둔 동안 부른 파도만). 재생 동전 숫자를 맞춘다 */
+export interface SiegeWave { at: number; won: boolean; log?: FloorLog[]; stage?: number; gold?: number }
 
 export interface HomeData {
   state: UserState;

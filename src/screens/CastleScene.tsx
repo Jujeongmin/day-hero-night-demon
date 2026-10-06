@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProper
 import CurrencyPill from '../render/CurrencyPill';
 import { BALANCE, HERO_ORDER, LORD, MONSTERS, type HeroId } from '../../server/src/catalog';
 import { floorsUnlocked } from '../../server/src/economy';
+import { siegeCount } from '../../server/src/siege';
 import { formatNum, waveGold } from '../../server/src/growth';
 import AdButton from '../render/AdButton';
 import Siege from '../render/Siege';
@@ -187,6 +188,8 @@ export default function CastleScene(props: {
   const [calling, setCalling] = useState(false);
   // 실패하면 잠깐 쉬었다 다시(연속 실패로 서버를 두드리지 않게)
   const [retryAt, setRetryAt] = useState(0);
+  // 파도 결과를 받은 뒤 재생에서 결과가 뜰 때 홈을 새로 받는다(그때 골드가 오른다)
+  const refreshAtResult = useRef(false);
   // 도전(2026-10-06): 막혀서 반복 중일 때 누르면 다음 파도가 한 단계 위
   const [challenge, setChallenge] = useState(false);
   const farming = s.siege?.farming === true;
@@ -226,10 +229,17 @@ export default function CastleScene(props: {
   const waveStage = lastWave?.stage ?? (lastWave ? Math.max(1, lastWave.won ? nowStage - 1 : nowStage + 1) : nowStage);
   // 오래 비웠다 돌아와 요약 카드가 뜨는 조회의 파도는 재생하지 않는다(카드와 겹치지 않게)
   const replayWave = lastWave === served && home.siegeAway ? null : lastWave;
+  // 쓰러진 침입자마다 튀는 동전 = 실제로 들어온 골드 ÷ 침입자 수(2026-10-06: 보상이 화면과 맞게). 모르면(옛 응답) 예전 식
+  const perKill = lastWave?.gold !== undefined ? Math.floor(lastWave.gold / siegeCount(waveStage)) : Math.round(waveGold(waveStage) / 3);
   // 재생 진행 중 큰 단계(싸우는 층·뚫린 층·결과)만 받는다. 한 번 칠 때마다의 그림은 ReplayLayer 안에서만 다시 그린다
   const [replay, setReplay] = useState<ReplayPhase>(NO_PHASE);
   const onPhase = useCallback((p: ReplayPhase) => setReplay(p), []);
   const replaying = replay.floor !== null || replay.result !== null;
+  useEffect(() => {
+    if (replay.result === null || !refreshAtResult.current) return;
+    refreshAtResult.current = false;
+    void onRefresh().catch(() => undefined);
+  }, [replay.result, onRefresh]);
   // 이어지는 공성(2026-10-06 사용자: 기다리는 시간 없이): 재생이 끝나면 잠깐 쉬고 다음 파도를 부른다.
   // 서버 최소 간격(siegeCallGapMs ÷ 배속)보다 일찍은 부르지 않는다. 출정 중·숨은 탭·튜토리얼 중에는 쉰다
   // 서버 시각 → 이 기기 시계: 홈을 받은 순간의 차이로 옮긴다
@@ -248,7 +258,15 @@ export default function CastleScene(props: {
       setCalling(true);
       const ch = challenge && farming;
       api.callSiegeWave(speed, ch)
-        .then((r) => { setCalledWave(r.wave); if (ch) setChallenge(false); return onRefresh(); })
+        .then((r) => {
+          setCalledWave({ ...r.wave, gold: r.gold });
+          if (ch) setChallenge(false);
+          // 골드·단계는 재생에서 결과(막아냄/함락)가 뜰 때 새로 받는다(2026-10-06 사용자: 보상이 들어오는 때가 화면과 맞게).
+          // 재생할 기록이 없으면 바로, 재생이 안 시작되면(숨은 탭 등) 늦어도 30초 뒤
+          if (!r.wave.log?.length) return onRefresh();
+          refreshAtResult.current = true;
+          window.setTimeout(() => { if (refreshAtResult.current) { refreshAtResult.current = false; void onRefresh().catch(() => undefined); } }, 30_000);
+        })
         .catch(() => { setRetryAt(Date.now() + 5000); return onRefresh().catch(() => undefined); })
         .finally(() => setCalling(false));
     }, Math.max(0, wait));
@@ -359,7 +377,7 @@ export default function CastleScene(props: {
 
         {/* 공성 실제 전투 재생: 따로 떼어 둔 층(ReplayLayer)이 그린다. 치고받을 때마다 이 화면 전체를 다시 그리지 않게(2026-10-06 렉) */}
         <ReplayLayer
-          wave={replayWave} speed={speed} perKill={Math.round(waveGold(waveStage) / 3)} paused={!!s.run}
+          wave={replayWave} speed={speed} perKill={perKill} paused={!!s.run}
           floorsCount={floorsCount} unitScale={unitScale} lordSkin={lordSkin} stars={s.stars} onPhase={onPhase}
         />
       </div>

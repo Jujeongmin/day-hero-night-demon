@@ -364,6 +364,10 @@ describe('siege', () => {
     const first = await server.callSiegeWave();
     expect(first.siege.nextAt).toBeGreaterThan(first.wave.at);
     expect(await fails(server.callSiegeWave())).toBe(true);
+    // 켜 둔 동안 번 골드는 방치 보상에 쌓이지 않고 바로 보유 골드로(2026-10-06)
+    const after = await server.getHome();
+    expect(after.state.siege.pendingGold).toBe(home.state.siege.pendingGold);
+    if (first.wave.won) expect(after.gold).toBe(home.gold + first.gold);
   });
 
   test('siege ranking starts at stage 1 and home shows a power number', async (server) => {

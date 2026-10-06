@@ -569,13 +569,18 @@ export class Server {
       const next = siegeAfter({ stage: s.siege.stage, farming: s.siege.farming, challenge: ch, won: r.won });
       const wall = noteWall(s.siege.wall, [{ stage: fightStage, won: r.won }]);
       const { wall: _old, ...keep } = s.siege;
+      // 켜 둔 동안 번 골드는 바로 보유 골드로: 이 파도 골드 + (자리 비운 몫이 없으면) 그사이 방치 수입
+      const onlineIdle = now - s.idle.lastClaimAt <= BALANCE.onlineIdleMs ? idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult, vipOf(s)) : 0;
+      const direct = r.gold + onlineIdle;
+      if (direct > 0) await $asset.mint('gold', direct);
+      if (onlineIdle > 0) await save(me, { idle: { ...s.idle, lastClaimAt: now } });
       // 이 파도의 재생이 끝나기 전에는 다음 파도를 부를 수 없다(배속이면 그만큼 일찍, 화면 시계 차이로 10% 여유)
       const nextAt = now + Math.round((siegeReplayMs(r.log ?? []) / sp) * 0.9);
-      const siege = { ...keep, stage: next.stage, farming: next.farming, lastWaveAt: now, nextAt, pendingGold: s.siege.pendingGold + r.gold, best: Math.max(s.siege.best, next.stage), lastWon: r.won, ...(wall ? { wall } : {}) };
+      const siege = { ...keep, stage: next.stage, farming: next.farming, lastWaveAt: now, nextAt, pendingGold: s.siege.pendingGold, best: Math.max(s.siege.best, next.stage), lastWon: r.won, ...(wall ? { wall } : {}) };
       await save(me, { siege });
       const soul = await recordSiegeBest(me, { ...s, siege }, s.siege.best);
       await recordSiegeSeason(me, { ...s, siege }, next.stage, now);
-      return { wave: { at: now, won: r.won, log: r.log, stage: fightStage }, siege, gold: r.gold, soul };
+      return { wave: { at: now, won: r.won, log: r.log, stage: fightStage }, siege, gold: direct, soul };
     });
   }
 
