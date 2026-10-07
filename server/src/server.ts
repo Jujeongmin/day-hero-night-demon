@@ -11,7 +11,7 @@ import { checkNickname, nicknameKey } from './nickname';
 import { npcCastle, npcRaids, npcTiersFor, TUTORIAL_TARGET, tutorialCastle } from './npc';
 import { advanceRound, autoRun, beginFloor, lordDefeated, reviveRun, runStatus, startRun } from './raid';
 import { planAdReward } from './ads';
-import type { FloorLog } from './battle';
+import type { SiegeLog } from './siegeBattle';
 import { spendFor, vipOf, vipPerks } from './vip';
 import { championLookFor, chooseLordSkin, lookUnits, ownedLooks, planPassClaim } from './pass';
 import { bumpQuests, planClaimDaily, planClaimGuide } from './quests';
@@ -442,7 +442,7 @@ async function siegeSeasonTop(seasonId: string, limit: number): Promise<any[]> {
 }
 
 /** 지난 공성 파도를 처리해 단계와 받지 않은 골드를 갱신한다. 방치 수입 버튼으로 함께 받는다. */
-async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[]; soul: number; lastLog?: FloorLog[] }> {
+async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[]; soul: number; lastLog?: SiegeLog }> {
   const r = runSiege({
     account: me, stage: s.siege.stage, lastWaveAt: s.siege.lastWaveAt, now,
     castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLooks: lordLooksOf(s), lordSkin: wornLookOf(s), vip: vipOf(s), farming: s.siege.farming,
@@ -575,7 +575,7 @@ export class Server {
       if (direct > 0) await $asset.mint('gold', direct);
       if (onlineIdle > 0) await save(me, { idle: { ...s.idle, lastClaimAt: now } });
       // 이 파도의 재생이 끝나기 전에는 다음 파도를 부를 수 없다(배속이면 그만큼 일찍, 화면 시계 차이로 10% 여유)
-      const nextAt = now + Math.round((siegeReplayMs(r.log ?? []) / sp) * 0.9);
+      const nextAt = now + Math.round((siegeReplayMs(r.log) / sp) * 0.9);
       const siege = { ...keep, stage: next.stage, farming: next.farming, lastWaveAt: now, nextAt, pendingGold: s.siege.pendingGold, best: Math.max(s.siege.best, next.stage), lastWon: r.won, ...(wall ? { wall } : {}) };
       await save(me, { siege });
       const soul = await recordSiegeBest(me, { ...s, siege }, s.siege.best);

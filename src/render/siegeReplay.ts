@@ -1,19 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
-import type { BattleEvent, FloorLog } from '../../server/src/battle';
+import type { SiegeEvent, SiegeLog } from '../../server/src/siegeBattle';
 import { formatNum } from '../../server/src/growth';
-import { floorSpeedUp, SIEGE_REPLAY } from '../../server/src/siege';
+import { SIEGE_REPLAY, waveSpeedUp } from '../../server/src/siege';
 import { sfx, type Sfx } from '../services/audio';
 import { T } from '../strings/ko';
 
 /**
- * 홈 화면 공성 = 서버가 실제로 싸운 기록(FloorLog)을 그대로 재생한다 (2026-09-30 사용자 결정: 연출 말고 실제 로직).
- * 침입자가 1층부터 층마다 그 층 몬스터와 싸우고, 살아남으면 위층·옥좌로 올라간다.
+ * 홈 화면 공성 = 서버가 실제로 싸운 기록(SiegeLog)을 그대로 재생한다 (2026-09-30 사용자 결정: 연출 말고 실제 로직).
+ * 침입자가 모든 층에 나뉘어 동시에 싸우고(2026-10-06), 층을 뚫으면 위층·옥좌로 올라간다.
  * buildBeats는 순수 함수(테스트용), useSiegeReplay가 배속에 맞춰 박자를 넘긴다.
  */
 
 export interface RUnit {
+  /** 재생 안 이름: 침입자는 key 그대로(층을 옮겨도 같다), 몬스터·마왕은 "층:key" */
+  id: string;
   key: string;
   kind: string;
+  /** 지금 서 있는 층(simulateSiege floors 번호, 마지막이 옥좌) */
+  floor: number;
   /** 입힌 장비 외형(내 몬스터) */
   gear?: string;
   side: 'hero' | 'enemy';
@@ -28,46 +32,41 @@ export interface RUnit {
   hits: number;
 }
 
-export interface RFloat { id: number; key: string; text: string; kind: 'dmg' | 'heal' | 'fx' | 'ult' | 'coin' }
+export interface RFloat { id: number; unit: string; text: string; kind: 'dmg' | 'heal' | 'fx' | 'ult' | 'coin' }
 
 export interface ReplayState {
-  /** 싸우는 층: simulateAuto floors 번호(마지막이 옥좌). null = 재생 안 함 */
-  floor: number | null;
+  /** 재생 중(모든 층이 동시에 싸운다, 2026-10-06) */
+  active: boolean;
   units: Record<string, RUnit>;
-  heroes: string[];
-  enemies: string[];
   floats: RFloat[];
   result: 'held' | 'breached' | null;
-  /** 침입자가 이미 뚫고 지나간 층(그 층 몬스터는 파도가 끝날 때까지 쓰러진 채로 둔다) */
-  cleared: number[];
   /** 지금 박자의 재생 시각(1× 기준 ms) */
   t?: number;
 }
 
 export interface Beat { ms: number; sfx?: Sfx; apply: (s: ReplayState) => ReplayState }
 
-export const IDLE_REPLAY: ReplayState = { floor: null, units: {}, heroes: [], enemies: [], floats: [], result: null, cleared: [] };
+export const IDLE_REPLAY: ReplayState = { active: false, units: {}, floats: [], result: null };
 
-/** 박자 길이(1× 기준, ms) */
-/** lord: 마왕이 공격을 시작하는 박자 — 공격 그림 7장(약 1초)이 끝까지 보이게 (2026-10-06 사용자 지적: 너무 빨라 안 보인다) */
-/** 범위 공격: 맞은 적 모두가 한 박자에 같이 맞고 같이 쓰러진다 */
-const AOE_SKILLS = new Set<string>(['breath', 'dark_wave']);
-
-export const BEAT_MS = { enter: SIEGE_REPLAY.enterMs, attack: 300, aoe: 600, lord: 1000, heal: 260, status: 160, down: 220, raise: 300, ult: 480, end: SIEGE_REPLAY.endMs, result: SIEGE_REPLAY.resultMs };
+/** 박자 길이(1× 기준, ms): 들어서기·결과. 싸우는 동안은 실제 전투 시각(at)을 따른다 */
+export const BEAT_MS = { enter: SIEGE_REPLAY.enterMs, end: 420, result: SIEGE_REPLAY.resultMs };
 
 let floatSeq = 0;
-function float(s: ReplayState, key: string, text: string, kind: RFloat['kind']): ReplayState {
-  return { ...s, floats: [...s.floats, { id: ++floatSeq, key, text, kind }] };
+function float(s: ReplayState, unitId: string, text: string, kind: RFloat['kind']): ReplayState {
+  return { ...s, floats: [...s.floats, { id: ++floatSeq, unit: unitId, text, kind }] };
 }
 
-function unit(s: ReplayState, key: string, patch: (u: RUnit) => Partial<RUnit>): ReplayState {
-  const u = s.units[key];
+function unit(s: ReplayState, id: string, patch: (u: RUnit) => Partial<RUnit>): ReplayState {
+  const u = s.units[id];
   if (!u) return s;
-  return { ...s, units: { ...s.units, [key]: { ...u, ...patch(u) } } };
+  return { ...s, units: { ...s.units, [id]: { ...u, ...patch(u) } } };
 }
+
+/** 사건의 key → 재생 이름: 침입자(h:)는 그대로, 몬스터·마왕은 그 층 이름 */
+export const unitId = (floor: number, key: string) => (key.startsWith('h:') ? key : `${floor}:${key}`);
 
 /**
- * 공격 모습 유지 시간(1× ms). 박자는 짧아도(침입자 많을 때 0.2초 미만) 공격 그림 7장이 거의 다 보이게
+ * 공격 모습 유지 시간(1× ms). 박자는 짧아도 공격 그림 7장이 거의 다 보이게
  * 공격한 유닛은 이만큼 공격 모습을 유지한다 (2026-10-06 사용자 지적: 뒤쪽 몬스터가 공격을 안 하는 것처럼 보인다)
  */
 export const ATTACK_HOLD_MS = 900;
@@ -80,96 +79,63 @@ function calm(s: ReplayState): ReplayState {
 }
 
 /** 공격 모습으로(이미 공격 중이면 시간만 늘린다) */
-const strike = (s: ReplayState) => (): Partial<RUnit> => ({ attacking: true, attackUntil: (s.t ?? 0) + ATTACK_HOLD_MS });
+const strike = (t: number) => (): Partial<RUnit> => ({ attacking: true, attackUntil: t + ATTACK_HOLD_MS });
 
-function eventBeat(e: BattleEvent, coinText: string | null): Beat | null {
+/** 사건 하나를 상태에 적용한다(층이 붙은 공성 사건) */
+function applyEvent(s: ReplayState, e: SiegeEvent, coinText: string | null): ReplayState {
+  const id = (key: string) => unitId(e.floor, key);
+  const t = s.t ?? 0;
   switch (e.t) {
     case 'attack':
-      return {
-        ms: BEAT_MS.attack, sfx: 'sfx_attack',
-        apply: (s) => float(
-          unit(unit(calm(s), e.from, strike(s)), e.to, (u) => ({ hp: Math.max(0, u.hp - e.dmg), hits: u.hits + 1 })),
-          e.to, `−${formatNum(e.dmg)}`, 'dmg',
-        ),
-      };
+      return float(unit(unit(s, id(e.from), strike(t)), id(e.to), (u) => ({ hp: Math.max(0, u.hp - e.dmg), hits: u.hits + 1 })), id(e.to), `−${formatNum(e.dmg)}`, 'dmg');
     case 'heal':
-      return {
-        ms: BEAT_MS.heal,
-        apply: (s) => float(unit(unit(calm(s), e.from, strike(s)), e.to, (u) => ({ hp: Math.min(u.maxHp, u.hp + e.amount) })), e.to, `+${formatNum(e.amount)}`, 'heal'),
-      };
+      return float(unit(unit(s, id(e.from), strike(t)), id(e.to), (u) => ({ hp: Math.min(u.maxHp, u.hp + e.amount) })), id(e.to), `+${formatNum(e.amount)}`, 'heal');
     case 'status':
-      return { ms: BEAT_MS.status, apply: (s) => float(calm(s), e.to, T.fx[e.status], 'fx') };
-    case 'down':
-      return {
-        ms: BEAT_MS.down,
-        apply: (s) => {
-          let n = unit(calm(s), e.key, () => ({ dead: true, hp: 0 }));
-          // 막아 낸 파도에서 침입자가 쓰러지면 골드가 튄다
-          if (coinText && n.units[e.key]?.side === 'hero') n = float(n, e.key, coinText, 'coin');
-          return n;
-        },
-      };
+      return float(s, id(e.to), T.fx[e.status], 'fx');
+    case 'down': {
+      const n = unit(s, id(e.key), () => ({ dead: true, hp: 0 }));
+      // 막아 낸 파도에서 침입자가 쓰러지면 골드가 튄다
+      return coinText && n.units[id(e.key)]?.side === 'hero' ? float(n, id(e.key), coinText, 'coin') : n;
+    }
     case 'raise':
-      return { ms: BEAT_MS.raise, apply: (s) => float(unit(calm(s), e.key, () => ({ dead: false, hp: e.hp })), e.key, T.fx.raise, 'fx') };
-    case 'ult':
-      return { ms: BEAT_MS.ult, sfx: 'sfx_ult', apply: (s) => float(unit(calm(s), `h:${e.hero}`, strike(s)), `h:${e.hero}`, T.ult[e.hero], 'ult') };
-    case 'end':
-      return { ms: BEAT_MS.end, apply: calm };
+      return float(unit(s, id(e.key), () => ({ dead: false, hp: e.hp })), id(e.key), T.fx.raise, 'fx');
+    case 'join':
+      // 아래층을 뚫고 올라온 침입자: 이 층으로 옮겨 선다
+      return unit(s, e.key, () => ({ floor: e.floor, hp: e.hp, maxHp: e.maxHp, attacking: false }));
     default:
-      return null;
+      return s;
   }
 }
 
 /**
- * 로그 → 박자 목록. held = 이 파도를 막았는가(서버 결과). perKill = 막았을 때 침입자 한 명이 떨구는 골드.
- * 마지막 박자는 결과(막음/함락)를 잠깐 보여 준 뒤 재생을 끝낸다.
+ * 공성 기록 → 박자 목록. 처음에 모든 층의 유닛을 세우고(들어서기), 같은 시각의 사건을 한 박자로 묶어 실제 전투 시각대로 넘긴다.
+ * 전투가 waveTargetMs보다 길면 최대 3배 빠르게(서버 siegeReplayMs와 같은 식). 마지막에 결과(막음/함락)를 잠깐 보인다.
+ * held = 이 파도를 막았는가(서버 결과). perKill = 막았을 때 침입자 한 명이 떨구는 골드
  */
-export function buildBeats(log: FloorLog[], held: boolean, perKill: number): Beat[] {
+export function buildBeats(log: SiegeLog, held: boolean, perKill: number): Beat[] {
   const coinText = held && perKill > 0 ? `+${formatNum(perKill)}` : null;
   const beats: Beat[] = [];
-  for (const f of log) {
-    beats.push({
-      ms: BEAT_MS.enter,
-      apply: (s) => ({
-        ...s,
-        // 다음 층으로 올라왔으면 방금 싸운 층은 뚫린 것이다
-        cleared: s.floor !== null && s.floor !== f.floor && !s.cleared.includes(s.floor) ? [...s.cleared, s.floor] : s.cleared,
-        floor: f.floor,
-        heroes: f.start.filter((u) => u.side === 'hero').map((u) => u.key),
-        enemies: f.start.filter((u) => u.side === 'enemy').map((u) => u.key),
-        units: Object.fromEntries(f.start.map((u) => [u.key, { key: u.key, kind: u.kind, ...(u.gear ? { gear: u.gear } : {}), side: u.side, hp: u.hp, maxHp: u.maxHp, dead: u.hp <= 0, attacking: false, hits: 0 }])),
-      }),
-    });
-    // 공격 속도 전투(2026-10-06): 박자 = 다음 일까지의 실제 전투 시간(at). 시각이 없는 옛 기록만 종류별 박자
-    const evs = f.events;
-    // 약한 침입자가 많은 낮은 단계는 한 층이 20초 넘게 걸린다: 층 전투가 FLOOR_TARGET_MS보다 길면 최대 3배까지 빠르게(이어지는 공성이 늘어지지 않게)
-    const k = floorSpeedUp(evs[evs.length - 1]?.at ?? 0);
-    const gap = (i: number, j: number, fallback: number) => {
-      const a = evs[i].at;
-      const n = evs[j]?.at;
-      return a !== undefined && n !== undefined ? Math.round(Math.max(0, n - a) / k) : fallback;
-    };
-    for (let i = 0; i < evs.length; i++) {
-      const e = evs[i];
-      // 범위 공격(화염·암흑 파동 등): 한 번에 맞은 적 모두의 피해와 쓰러짐을 한 박자에 같이 보인다(2026-10-06 사용자: 범위 공격이면 같이 죽게)
-      if (e.t === 'attack' && e.skill && AOE_SKILLS.has(e.skill)) {
-        const group: BattleEvent[] = [e];
-        let j = i + 1;
-        for (; j < evs.length; j++) {
-          const n = evs[j];
-          if (n.t === 'attack' && n.from === e.from && n.skill === e.skill) group.push(n);
-          else if (n.t === 'down') group.push(n);
-          else break;
-        }
-        i = j - 1;
-        const parts = group.map((g) => eventBeat(g, coinText)).filter((b): b is Beat => !!b);
-        beats.push({ ms: gap(i - group.length + 1, j, BEAT_MS.aoe), sfx: 'sfx_attack', apply: (s) => parts.reduce((acc, p) => p.apply(acc), s) });
-        continue;
-      }
-      const b = eventBeat(e, coinText);
-      if (!b) continue;
-      beats.push(e.t === 'end' ? b : { ...b, ms: gap(i, i + 1, b.ms) });
+  const units: Record<string, RUnit> = {};
+  for (const f of log.floors) {
+    for (const u of f.start) {
+      const id = unitId(f.floor, u.key);
+      units[id] = { id, key: u.key, kind: u.kind, floor: f.floor, ...(u.gear ? { gear: u.gear } : {}), side: u.side, hp: u.hp, maxHp: u.maxHp, dead: u.hp <= 0, attacking: false, hits: 0 };
     }
+  }
+  beats.push({ ms: BEAT_MS.enter, apply: (s) => ({ ...s, active: true, result: null, units }) });
+  const evs = log.events;
+  const k = waveSpeedUp(evs[evs.length - 1]?.at ?? 0);
+  for (let i = 0; i < evs.length;) {
+    let j = i;
+    while (j < evs.length && evs[j].at === evs[i].at) j++;
+    const group = evs.slice(i, j);
+    const ms = Math.round(((evs[j]?.at ?? evs[i].at + BEAT_MS.end) - evs[i].at) / k);
+    beats.push({
+      ms,
+      sfx: group.some((e) => e.t === 'attack') ? 'sfx_attack' : undefined,
+      apply: (s) => group.reduce((acc, e) => applyEvent(acc, e, coinText), calm(s)),
+    });
+    i = j;
   }
   beats.push({ ms: BEAT_MS.result, apply: (s) => ({ ...calm({ ...s, t: Number.MAX_SAFE_INTEGER }), result: held ? 'held' : 'breached' }) });
   beats.push({ ms: 0, apply: () => IDLE_REPLAY });
@@ -189,7 +155,7 @@ const FLOAT_LIFE_MS = 1100;
  * 새 파도(at이 바뀜)가 로그와 함께 오면 처음부터 재생한다. speed는 재생 중에 바뀌어도 다음 박자부터 따른다.
  * 효과음이 너무 촘촘하면(3×) 90ms 안에 겹친 것은 건너뛴다.
  */
-export function useSiegeReplay(wave: { at: number; won: boolean; log?: FloorLog[] } | null, speed: number, perKill: number, paused: boolean): ReplayState {
+export function useSiegeReplay(wave: { at: number; won: boolean; log?: SiegeLog } | null, speed: number, perKill: number, paused: boolean): ReplayState {
   const [state, setState] = useState<ReplayState>(IDLE_REPLAY);
   const played = useRef(0);
   const speedRef = useRef(speed);
@@ -199,7 +165,8 @@ export function useSiegeReplay(wave: { at: number; won: boolean; log?: FloorLog[
   // 홈을 새로 받을 때마다 파도 객체는 새로 만들어지므로, 재생은 파도 시각(at)이 바뀔 때만 다시 시작한다
   const waveRef = useRef(wave);
   waveRef.current = wave;
-  const at = wave?.log && wave.log.length > 0 ? wave.at : 0;
+  // 옛 형식(층별 배열) 기록은 재생하지 않는다
+  const at = wave?.log && !Array.isArray(wave.log) && wave.log.events.length > 0 ? wave.at : 0;
 
   // 재생 타이머는 새 파도가 올 때나 멈출 때만 끊는다. 홈을 다시 받아 파도 값이 비어도(다음 조회엔 안 실림) 재생은 계속된다
   const timer = useRef(0);

@@ -47,7 +47,7 @@ export default function Siege(props: {
     if (!lastWave || lastWave.at <= played.current) return;
     played.current = lastWave.at;
     // 실제 전투 기록이 있으면 탑 위에서 재생한다(CastleScene). 없을 때(옛 서버)만 성문 앞 연출
-    if (lastWave.log && lastWave.log.length > 0) return;
+    if (lastWave.log && lastWave.log.events?.length > 0) return;
     setS((prev) => startWave(prev, lastWave.won));
   }, [lastWave]);
 

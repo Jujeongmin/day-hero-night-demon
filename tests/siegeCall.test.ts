@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../server/src/catalog';
-import { calledWaveGold, floorSpeedUp, SIEGE_REPLAY, siegeAfter, siegeCallBlock, siegeFightStage, siegeReplayMs, siegeSpeed } from '../server/src/siege';
+import { calledWaveGold, SIEGE_REPLAY, waveSpeedUp, siegeAfter, siegeCallBlock, siegeFightStage, siegeReplayMs, siegeSpeed } from '../server/src/siege';
 
 const W = BALANCE.siegeWaveMs;
 const T0 = Date.UTC(2026, 9, 1, 3);
@@ -23,13 +23,14 @@ describe('continuous siege (2026-10-06)', () => {
     expect(siegeCallBlock({ nextAt: undefined, now: T0 })).toBe(null);
   });
 
-  it('replay length: enter + sped-up fight + end per floor, then the result; long floors play up to 3x faster', () => {
-    const floor = (ms: number) => ({ floor: 0, start: [], events: [{ t: 'end' as const, outcome: 'won' as const, at: ms }] });
-    expect(floorSpeedUp(3000)).toBe(1);
-    expect(floorSpeedUp(14_000)).toBe(2);
-    expect(floorSpeedUp(60_000)).toBe(3);
-    expect(siegeReplayMs([floor(3000)])).toBe(SIEGE_REPLAY.enterMs + 3000 + SIEGE_REPLAY.endMs + SIEGE_REPLAY.resultMs);
-    expect(siegeReplayMs([floor(14_000), floor(0)])).toBe(2 * (SIEGE_REPLAY.enterMs + SIEGE_REPLAY.endMs) + 7000 + SIEGE_REPLAY.resultMs);
+  it('replay length: enter + sped-up fight (all floors at once) + result; long waves play up to 3x faster', () => {
+    const log = (ms: number) => ({ floors: [], events: [{ t: 'end' as const, outcome: 'won' as const, floor: 0, at: ms }] });
+    expect(waveSpeedUp(3000)).toBe(1);
+    expect(waveSpeedUp(20_000)).toBe(2);
+    expect(waveSpeedUp(90_000)).toBe(3);
+    expect(siegeReplayMs(log(3000))).toBe(SIEGE_REPLAY.enterMs + 3000 + SIEGE_REPLAY.resultMs);
+    expect(siegeReplayMs(log(20_000))).toBe(SIEGE_REPLAY.enterMs + 10_000 + SIEGE_REPLAY.resultMs);
+    expect(siegeReplayMs(undefined)).toBe(SIEGE_REPLAY.enterMs + SIEGE_REPLAY.resultMs);
   });
 
   it('wave gold follows elapsed time, so gold per hour stays the same however often waves come', () => {

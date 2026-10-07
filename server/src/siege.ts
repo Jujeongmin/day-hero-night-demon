@@ -1,4 +1,5 @@
-import { simulateAuto, type FloorLog, type HeroSpec } from './battle';
+import type { HeroSpec } from './battle';
+import { simulateSiege, type SiegeLog } from './siegeBattle';
 import { BALANCE, castleAuraMult, HERO_ORDER, type HeroId, type InvaderId } from './catalog';
 import { lordLevel, lordMult, monsterMult, waveGold } from './growth';
 import { seedFrom } from './rng';
@@ -89,21 +90,17 @@ export function siegeSpeed(requested: unknown, has3x: boolean): SiegeSpeed | nul
 }
 
 /** 홈 화면 공성 재생 박자(1× ms). 화면(siegeReplay)과 서버(다음 파도를 부를 수 있는 시각)가 같은 값을 쓴다 */
-export const SIEGE_REPLAY = { enterMs: 700, endMs: 420, resultMs: 1500, floorTargetMs: 7000, maxSpeedUp: 3 };
+export const SIEGE_REPLAY = { enterMs: 700, resultMs: 1500, waveTargetMs: 10_000, maxSpeedUp: 3 };
 
-/** 층 하나 전투를 재생할 때 빠르게 감는 배수: FLOOR_TARGET_MS보다 길면 최대 3배 */
-export function floorSpeedUp(battleMs: number): number {
-  return Math.min(SIEGE_REPLAY.maxSpeedUp, Math.max(1, battleMs / SIEGE_REPLAY.floorTargetMs));
+/** 파도 전투를 재생할 때 빠르게 감는 배수: waveTargetMs보다 길면 최대 3배 */
+export function waveSpeedUp(battleMs: number): number {
+  return Math.min(SIEGE_REPLAY.maxSpeedUp, Math.max(1, battleMs / SIEGE_REPLAY.waveTargetMs));
 }
 
-/** 파도 하나의 재생 길이(1× ms): 층마다 들어서기 + 빠르게 감은 전투 + 끝, 마지막에 결과 */
-export function siegeReplayMs(log: FloorLog[]): number {
-  let ms = SIEGE_REPLAY.resultMs;
-  for (const f of log) {
-    const dur = f.events[f.events.length - 1]?.at ?? 0;
-    ms += SIEGE_REPLAY.enterMs + dur / floorSpeedUp(dur) + SIEGE_REPLAY.endMs;
-  }
-  return Math.round(ms);
+/** 파도 하나의 재생 길이(1× ms): 들어서기 + 빠르게 감은 전투(모든 층이 동시에) + 결과 */
+export function siegeReplayMs(log: SiegeLog | undefined): number {
+  const dur = log?.events[log.events.length - 1]?.at ?? 0;
+  return Math.round(SIEGE_REPLAY.enterMs + dur / waveSpeedUp(dur) + SIEGE_REPLAY.resultMs);
 }
 
 /**
@@ -139,9 +136,9 @@ export function siegeAfter(p: { stage: number; farming?: boolean; challenge?: bo
 }
 
 /** 파도 하나: at 시각의 시드로 싸워 막았는지와 다음 단계·골드를 낸다. record면 실제 전투 기록(log)도 준다 */
-export function fightWave(p: { account: string; stage: number; at: number; castleLevel: number; floors: ResolvedFloor[]; mult?: number; lordStars?: number; lordLooks?: number; lordSkin?: string; record?: boolean }): { won: boolean; stage: number; gold: number; log?: FloorLog[] } {
+export function fightWave(p: { account: string; stage: number; at: number; castleLevel: number; floors: ResolvedFloor[]; mult?: number; lordStars?: number; lordLooks?: number; lordSkin?: string; record?: boolean }): { won: boolean; stage: number; gold: number; log?: SiegeLog } {
   const stage = Math.max(1, p.stage);
-  const raid = simulateAuto({ heroes: siegeWave(stage), floors: defenseOf(p.castleLevel, p.floors, p.mult ?? 1, p.lordStars ?? 0, p.lordLooks, p.lordSkin), seed: seedFrom(p.account, 'siege', p.at), record: p.record });
+  const raid = simulateSiege({ heroes: siegeWave(stage), floors: defenseOf(p.castleLevel, p.floors, p.mult ?? 1, p.lordStars ?? 0, p.lordLooks, p.lordSkin), seed: seedFrom(p.account, 'siege', p.at), record: p.record });
   const won = !raid.won;
   const r = won
     ? { won, stage: stage + 1, gold: waveGold(stage) }
@@ -160,7 +157,7 @@ export function runSiege(p: {
   vip?: number;
   /** 막혀서 반복 중인가 */
   farming?: boolean;
-}): { stage: number; farming: boolean; peak: number; lastWaveAt: number; gold: number; waves: { at: number; won: boolean; stage: number }[]; fresh: { stage: number; won: boolean }[]; lastLog?: FloorLog[] } {
+}): { stage: number; farming: boolean; peak: number; lastWaveAt: number; gold: number; waves: { at: number; won: boolean; stage: number }[]; fresh: { stage: number; won: boolean }[]; lastLog?: SiegeLog } {
   const W = BALANCE.siegeWaveMs;
   const total = Math.max(0, Math.floor((p.now - p.lastWaveAt) / W));
   const perks = vipPerks(p.vip ?? 0);
@@ -173,7 +170,7 @@ export function runSiege(p: {
   const waves: { at: number; won: boolean; stage: number }[] = [];
   /** 게임을 켜 둔 동안 치른 파도(싸운 단계·결과): 막힘 제안 계산용 */
   const fresh: { stage: number; won: boolean }[] = [];
-  let lastLog: FloorLog[] | undefined;
+  let lastLog: SiegeLog | undefined;
   for (let i = skip + 1; i <= total; i++) {
     const at = p.lastWaveAt + i * W;
     // 마지막 파도만 전투 기록을 남긴다(홈 화면이 재생한다)

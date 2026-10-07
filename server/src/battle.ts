@@ -59,7 +59,9 @@ export type BattleEvent = ({
   | { t: 'down'; key: string }
   | { t: 'raise'; key: string; hp: number }
   | { t: 'ult'; hero: HeroId }
-  | { t: 'end'; outcome: 'won' | 'lost' }) & { at?: number };
+  | { t: 'end'; outcome: 'won' | 'lost' }
+  /** 공성: 아래층을 뚫은 침입자가 이 층 싸움에 합류(from = 떠난 층) */
+  | { t: 'join'; key: string; kind: string; hp: number; maxHp: number; from: number }) & { at?: number };
 
 /** 공성 한 층의 전투 기록: 시작 상태와 그 뒤 일어난 일 순서. 홈 화면이 그대로 재생한다 */
 export interface FloorLog {
@@ -71,7 +73,8 @@ export interface FloorLog {
 
 /** key: 같은 종류가 여럿일 때(공성 침입자) 한 명씩 구분하는 이름. 없으면 종류 이름 */
 export interface HeroSpec { id: HeroId | InvaderId; level: number; hp?: number; mult?: number; key?: string }
-export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number; gear?: string; stars?: number; look?: string }
+/** hp: 이어 싸우는 몬스터의 남은 체력(공성에서 층에 다시 침입자가 올라올 때). 없으면 가득 */
+export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number; gear?: string; stars?: number; look?: string; hp?: number }
 
 /** 마왕 외형 효과(없으면 빈 객체) */
 function lookOf(f: Fighter) {
@@ -110,12 +113,12 @@ export function createFloorBattle(input: {
     if (e.id === 'lord') {
       const s = scaleStats(LORD.stats, e.level, e.mult ?? 1);
       const cooldown = (e.look && LOOK_EFFECTS[e.look]?.waveCooldown) || LORD.cooldown;
-      const f = makeFighter(`e${i}:lord`, 'enemy', 'lord', e.level, 'front', s, s.hp, LORD.skill, cooldown);
+      const f = makeFighter(`e${i}:lord`, 'enemy', 'lord', e.level, 'front', s, e.hp ?? s.hp, LORD.skill, cooldown);
       fighters.push({ ...f, ...(e.stars ? { stars: e.stars } : {}), ...(e.look ? { look: e.look } : {}) });
     } else {
       const def = MONSTERS[e.id];
       const s = scaleStats(def.stats, e.level, e.mult ?? 1);
-      const f = makeFighter(`e${i}:${e.id}`, 'enemy', e.id, e.level, i === 0 ? 'front' : 'back', s, s.hp, def.skill, def.cooldown);
+      const f = makeFighter(`e${i}:${e.id}`, 'enemy', e.id, e.level, i === 0 ? 'front' : 'back', s, e.hp ?? s.hp, def.skill, def.cooldown);
       fighters.push({ ...f, ...(e.gear ? { gear: e.gear } : {}), ...(e.stars ? { stars: e.stars } : {}) });
     }
   });
@@ -142,7 +145,7 @@ export function playRound(input: FloorBattle, ult: HeroId | null): { battle: Flo
 }
 
 /** playRound와 같지만 복사 없이 b를 바꾼다(한 판 전체를 계산할 때 행동마다 복사하면 느리다) */
-function stepInPlace(b: FloorBattle, ult: HeroId | null, out: BattleEvent[]): void {
+export function stepInPlace(b: FloorBattle, ult: HeroId | null, out: BattleEvent[]): void {
   if (b.outcome !== 'ongoing') return;
   const events: BattleEvent[] = [];
   const f = b.fighters

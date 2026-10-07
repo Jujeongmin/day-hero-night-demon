@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../server/src/catalog';
-import { fightWave } from '../server/src/siege';
-import { buildBeats, IDLE_REPLAY, type ReplayState } from '../src/render/siegeReplay';
+import { fightWave, siegeReplayMs } from '../server/src/siege';
+import { BEAT_MS, buildBeats, IDLE_REPLAY, type ReplayState } from '../src/render/siegeReplay';
 
 const W = BALANCE.siegeWaveMs;
 const floors = [
@@ -20,20 +20,21 @@ function play(beats: ReturnType<typeof buildBeats>): ReplayState[] {
   return out;
 }
 
-describe('home siege replay of the real fight', () => {
+describe('home siege replay of the real fight (every floor at once, 2026-10-06)', () => {
   it('held and breached waves replay to the server result and end idle', () => {
     let sawHeld = false;
     let sawBreach = false;
-    for (let stage = 1; stage <= 30 && !(sawHeld && sawBreach); stage++) {
+    for (let stage = 1; stage <= 40 && !(sawHeld && sawBreach); stage++) {
       const w = fightWave({ account: 'r', stage, at: stage * W, castleLevel: 3, floors, record: true });
       const states = play(buildBeats(w.log!, w.won, 30));
       const beforeResult = states[states.length - 2];
       expect(beforeResult.result).toBe(w.won ? 'held' : 'breached');
-      const lastFloor = states[states.length - 3];
-      const loser = w.won ? 'hero' : 'enemy';
-      for (const u of Object.values(lastFloor.units).filter((x) => x.side === loser)) expect(u.dead || u.hp === 0).toBe(true);
-      // 막았으면 쓰러진 침입자 수만큼 골드가 튄다, 뚫렸으면 없다
-      const coins = states.flatMap((s) => s.floats).filter((f, i, all) => f.kind === 'coin' && all.findIndex((g) => g.id === f.id) === i);
+      const end = Object.values(states[states.length - 3].units);
+      // 막았으면 침입자가 모두 쓰러졌고, 뚫렸으면 마왕이 쓰러졌다
+      if (w.won) for (const u of end.filter((x) => x.side === 'hero')) expect(u.dead).toBe(true);
+      else expect(end.find((u) => u.kind === 'lord')!.dead).toBe(true);
+      // 막았으면 쓰러진 침입자마다 골드가 튄다, 뚫렸으면 없다
+      const coins = states.flatMap((st) => st.floats).filter((f, k, all) => f.kind === 'coin' && all.findIndex((g) => g.id === f.id) === k);
       if (w.won) expect(coins.length).toBeGreaterThanOrEqual(3);
       else expect(coins).toHaveLength(0);
       expect(states[states.length - 1]).toEqual(IDLE_REPLAY);
@@ -42,54 +43,25 @@ describe('home siege replay of the real fight', () => {
     expect(sawHeld && sawBreach).toBe(true);
   });
 
-  it('floors are played bottom to top, the throne last', () => {
-    const w = fightWave({ account: 'r', stage: 40, at: W, castleLevel: 3, floors, record: true });
-    const seen = play(buildBeats(w.log!, w.won, 0)).map((s) => s.floor).filter((f, i, a) => f !== null && a[i - 1] !== f);
-    expect(seen).toEqual(w.log!.map((f) => f.floor));
-    expect([...seen].sort()).toEqual(seen);
-  });
-
-  it('floors the invaders got past stay fallen until the wave ends', () => {
-    // 몬스터가 약해 침입자가 1·2층을 넘어 옥좌까지 가는 파도를 찾는다
-    for (let stage = 20; stage <= 60; stage++) {
-      const w = fightWave({ account: 'c', stage, at: stage * W, castleLevel: 3, floors, record: true });
-      if (w.log!.length < 3) continue;
+  it('every floor is on screen from the start; invaders who break a floor move up to the next', () => {
+    let moved = false;
+    for (let stage = 10; stage <= 40 && !moved; stage++) {
+      const w = fightWave({ account: 'm', stage, at: stage * W, castleLevel: 3, floors, record: true });
       const states = play(buildBeats(w.log!, w.won, 0));
-      const atThrone = states.find((s) => s.floor === w.log!.at(-1)!.floor)!;
-      expect(atThrone.cleared).toEqual(w.log!.slice(0, -1).map((f) => f.floor));
-      expect(states.at(-1)!.cleared).toEqual([]);
-      return;
+      const first = Object.values(states[0].units);
+      expect(new Set(first.map((u) => u.floor))).toEqual(new Set([0, 1, 2]));
+      const join = w.log!.events.find((e) => e.t === 'join');
+      if (!join || join.t !== 'join') continue;
+      const after = states.find((st) => st.units[join.key]?.floor === join.floor);
+      expect(after).toBeDefined();
+      moved = true;
     }
-    throw new Error('no wave reached the throne');
+    expect(moved).toBe(true);
   });
-});
 
-describe('area attacks in the replay (2026-10-06)', () => {
-  it('one breath hits every invader in the same beat and the ones it kills fall together', () => {
-    const start = [
-      { key: 'h:knight0', side: 'hero' as const, kind: 'knight', maxHp: 100, hp: 100 },
-      { key: 'h:archer1', side: 'hero' as const, kind: 'archer', maxHp: 100, hp: 30 },
-      { key: 'h:priest2', side: 'hero' as const, kind: 'priest', maxHp: 100, hp: 30 },
-      { key: 'e0:dragon', side: 'enemy' as const, kind: 'dragon', maxHp: 200, hp: 200 },
-    ];
-    const events = [
-      { t: 'attack' as const, from: 'e0:dragon', to: 'h:knight0', dmg: 40, skill: 'breath' as const },
-      { t: 'attack' as const, from: 'e0:dragon', to: 'h:archer1', dmg: 40, skill: 'breath' as const },
-      { t: 'down' as const, key: 'h:archer1' },
-      { t: 'attack' as const, from: 'e0:dragon', to: 'h:priest2', dmg: 40, skill: 'breath' as const },
-      { t: 'down' as const, key: 'h:priest2' },
-      { t: 'attack' as const, from: 'h:knight0', to: 'e0:dragon', dmg: 10 },
-    ];
-    const beats = buildBeats([{ floor: 0, start, events }], true, 5);
-    // 입장 → 화염 한 박자 → 기사 공격 → 결과 → 끝
-    let s: ReplayState = IDLE_REPLAY;
-    s = beats[0].apply(s);
-    s = beats[1].apply(s);
-    expect(s.units['h:knight0'].hp).toBe(60);
-    expect(s.units['h:archer1'].dead).toBe(true);
-    expect(s.units['h:priest2'].dead).toBe(true);
-    expect(s.units['e0:dragon'].attacking).toBe(true);
-    s = beats[2].apply(s);
-    expect(s.units['e0:dragon'].hp).toBe(190);
+  it('long fights replay up to 3x faster: beats add up to the server replay length', () => {
+    const w = fightWave({ account: 't', stage: 20, at: 20 * W, castleLevel: 3, floors, record: true });
+    const total = buildBeats(w.log!, w.won, 0).reduce((a, b) => a + b.ms, 0);
+    expect(Math.abs(total - siegeReplayMs(w.log))).toBeLessThan(BEAT_MS.end + 50);
   });
 });
