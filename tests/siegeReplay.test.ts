@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../server/src/catalog';
 import { fightWave, siegeReplayMs } from '../server/src/siege';
-import { BEAT_MS, buildBeats, IDLE_REPLAY, type ReplayState } from '../src/render/siegeReplay';
+import { BEAT_MS, buildBeats, IDLE_REPLAY, unitId, type ReplayState } from '../src/render/siegeReplay';
 
 const W = BALANCE.siegeWaveMs;
 const floors = [
@@ -63,5 +63,21 @@ describe('home siege replay of the real fight (every floor at once, 2026-10-06)'
     const w = fightWave({ account: 't', stage: 20, at: 20 * W, castleLevel: 3, floors, record: true });
     const total = buildBeats(w.log!, w.won, 0).reduce((a, b) => a + b.ms, 0);
     expect(Math.abs(total - siegeReplayMs(w.log))).toBeLessThan(BEAT_MS.end + 50);
+  });
+});
+
+describe('swing before the hit (2026-10-07: the attack motion should land the blow)', () => {
+  it('an attacker starts swinging before the damage shows on its target', () => {
+    const w = fightWave({ account: 's', stage: 5, at: 5 * W, castleLevel: 3, floors, record: true });
+    const hit = w.log!.events.find((e) => e.t === 'attack' && e.skill !== 'thorns');
+    if (!hit || hit.t !== 'attack') throw new Error('no attack');
+    const from = unitId(hit.floor, hit.from);
+    const to = unitId(hit.floor, hit.to);
+    const states = play(buildBeats(w.log!, w.won, 0));
+    const swingIdx = states.findIndex((st) => (st.units[from]?.swings ?? 0) > 0);
+    const hitIdx = states.findIndex((st) => (st.units[to]?.hits ?? 0) > 0);
+    expect(swingIdx).toBeGreaterThan(0);
+    expect(swingIdx).toBeLessThan(hitIdx);
+    expect(states[swingIdx].units[to].hp).toBe(states[1].units[to].hp);
   });
 });

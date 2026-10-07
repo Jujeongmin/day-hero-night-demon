@@ -105,7 +105,9 @@ const ReplayLayer = memo(function ReplayLayer(props: {
             {!u.dead && u.side === 'enemy' && <StarRow n={props.stars?.[u.kind as keyof NonNullable<UserState['stars']>]} className="unit-stars" />}
             {/* 침입자도 모두 체력바(2026-10-06 사용자). 무리(7명+)는 작게 */}
             {!u.dead && <span className="rp-hp"><span style={{ width: `${(u.hp / u.maxHp) * 100}%` }} /></span>}
-            <span key={`${u.id}:${u.hits}`} className={`rp-body ${u.hits > 0 ? 'rp-hit' : ''} ${u.attacking ? 'rp-lunge' : ''}`}>
+            {/* 휘두를 때마다 새로 그려 공격 동작을 처음부터, 맞을 때는 다시 그리지 않고 번쩍임만 번갈아(휘두르던 동작이 끊기지 않게) */}
+            <span className={`rp-flash ${u.hits > 0 ? `rp-hit${u.hits % 2}` : ''}`}>
+            <span key={`${u.id}:${u.swings}`} className={`rp-body ${u.attacking ? 'rp-lunge' : ''}`}>
               <Sprite
                 id={u.kind === 'lord' ? lordSpriteId(lordSkin) : monsterSpriteId(u.kind, u.gear)}
                 anim={u.dead ? 'death' : u.attacking ? 'attack' : 'idle'}
@@ -114,6 +116,7 @@ const ReplayLayer = memo(function ReplayLayer(props: {
                 flip={u.side === 'enemy'}
                 scale={scaleOf(u, p.crowd)}
               />
+            </span>
             </span>
           </div>
         );

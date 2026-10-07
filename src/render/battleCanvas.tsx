@@ -12,6 +12,7 @@ const starImages: Record<StarTier, HTMLImageElement> = (() => {
 })();
 import SPRITES from './sprites.json';
 import { buildFrames, preHp, type Fx } from './timeline';
+import { IMPACT_LEAD_MS } from './siegeReplay';
 
 /** 캔버스 글씨도 화면 글꼴(언어별 CSS --font)을 따른다. 언어가 바뀔 때만 다시 읽는다 */
 let fontCache: { lang: string; font: string } | null = null;
@@ -26,6 +27,8 @@ const H = 200;
 const UNIT_SCALE = 0.8;
 const IDLE_MS = 140;
 const STEP_MS = 350;
+/** 공격 동작 한 번 길이(1× ms). 유닛마다 이만큼 공격 그림을 끝까지 보인다 */
+const SWING_MS = 600;
 
 type Strip = { frames: number; w: number; h: number; box?: number[] };
 const strips = SPRITES as Record<string, Strip>;
@@ -120,7 +123,8 @@ function hpBarY(sprite: string, footY: number): number {
   return Math.round(footY - s.h * UNIT_SCALE * 0.84 + s.box[1] * UNIT_SCALE - 8);
 }
 
-interface View { hp: Record<string, number>; fx: Fx | null; fxAt: number; downAt: Record<string, number>; step: number; lordSkin?: LordSkin; bg: string }
+/** swingAt: 유닛마다 공격 동작을 시작한 화면 시각(유닛마다 따로 끝까지 보인다, 2026-10-07) */
+interface View { hp: Record<string, number>; fx: Fx | null; fxAt: number; downAt: Record<string, number>; swingAt: Record<string, number>; step: number; speed: number; lordSkin?: LordSkin; bg: string }
 
 function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: number) {
   ctx.clearRect(0, 0, W, H);
@@ -147,9 +151,10 @@ function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: numbe
       anim = 'death';
       const since = now - (v.downAt[f.key] ?? 0);
       frame = Math.floor(since / 50);
-    } else if (v.fx?.from === f.key) {
+    } else if (v.swingAt[f.key] !== undefined && now - v.swingAt[f.key] < SWING_MS / v.speed) {
       anim = 'attack';
-      frame = Math.floor((now - v.fxAt) / (v.step / 7));
+      const n = strips[`${spriteOf(f, v.lordSkin)}_attack`]?.frames ?? 7;
+      frame = Math.min(n - 1, Math.floor((now - v.swingAt[f.key]) / (SWING_MS / v.speed / n)));
     }
     const sprite = spriteOf(f, v.lordSkin);
     const s = strips[`${sprite}_${anim}`];
@@ -216,13 +221,18 @@ export default function BattleCanvas(props: {
     // 이미 쓰러져 있던 캐릭터는 쓰러진 마지막 프레임으로 둔다
     const downAt: Record<string, number> = Object.fromEntries(b.fighters.map((f) => [f.key, start - 10_000]));
     const step = STEP_MS / speedRef.current;
-    const view: View = { hp: hp0, fx: null, fxAt: start, downAt, step, lordSkin: props.lordSkin, bg: props.bg };
+    const view: View = { hp: hp0, fx: null, fxAt: start, downAt, swingAt: {}, step, speed: speedRef.current, lordSkin: props.lordSkin, bg: props.bg };
 
     // 공격 속도 전투(2026-10-06): 일어난 일을 전투 시각(at)에 맞춰 보여 준다. 배속이면 시계가 그만큼 빨리 간다
     let i = 0;
     let timer = 0;
     if (frames.length === 0) done.current();
-    const first = frames.length ? frames[0].at : 0;
+    // 공격·회복은 맞는 순간보다 IMPACT_LEAD_MS 먼저 휘두르기 시작(피해 숫자가 동작이 닿을 때 뜨게)
+    const swings = frames
+      .filter((f) => (f.fx.kind === 'hit' || f.fx.kind === 'heal') && f.fx.from)
+      .map((f) => ({ at: f.at - IMPACT_LEAD_MS, key: f.fx.from! }));
+    let si = 0;
+    const first = Math.min(frames.length ? frames[0].at : 0, swings.length ? swings[0].at : Infinity);
     const LEAD_MS = 250;
     // 전투 시계: 지난 프레임부터 흐른 시간 × 지금 배속만큼 간다
     let clock = first - LEAD_MS;
@@ -233,6 +243,8 @@ export default function BattleCanvas(props: {
       clock += (now - last) * spd;
       last = now;
       view.step = STEP_MS / spd;
+      view.speed = spd;
+      while (si < swings.length && swings[si].at <= clock) { view.swingAt[swings[si].key] = now; si += 1; }
       let sounded = false;
       while (i < frames.length && frames[i].at <= clock) {
         const f = frames[i];

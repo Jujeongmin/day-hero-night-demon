@@ -30,6 +30,8 @@ export interface RUnit {
   attackUntil?: number;
   /** 맞은 횟수(바뀔 때마다 번쩍임을 다시 튼다) */
   hits: number;
+  /** 휘두른 횟수(바뀔 때마다 공격 동작을 처음부터 다시 튼다) */
+  swings: number;
 }
 
 export interface RFloat { id: number; unit: string; text: string; kind: 'dmg' | 'heal' | 'fx' | 'ult' | 'coin' }
@@ -78,8 +80,14 @@ function calm(s: ReplayState): ReplayState {
   return { ...s, units: Object.fromEntries(Object.entries(s.units).map(([k, u]) => [k, u.attacking && (u.attackUntil ?? 0) <= t ? { ...u, attacking: false } : u])) };
 }
 
-/** 공격 모습으로(이미 공격 중이면 시간만 늘린다) */
-const strike = (t: number) => (): Partial<RUnit> => ({ attacking: true, attackUntil: t + ATTACK_HOLD_MS });
+/**
+ * 공격 동작은 실제 타격(피해가 뜨는 때)보다 이만큼 먼저 시작한다(전투 시각 ms). 휘두른 칼이 닿을 때 숫자가 뜨게
+ * (2026-10-07 사용자: 공격 모션에 공격이 안 나가는 것 같다)
+ */
+export const IMPACT_LEAD_MS = 350;
+
+/** 휘두르기 시작: 공격 동작을 처음부터 다시 틀고 잠시 유지한다 */
+const swing = (t: number) => (u: RUnit): Partial<RUnit> => ({ attacking: true, attackUntil: t + ATTACK_HOLD_MS, swings: u.swings + 1 });
 
 /** 사건 하나를 상태에 적용한다(층이 붙은 공성 사건) */
 function applyEvent(s: ReplayState, e: SiegeEvent, coinText: string | null): ReplayState {
@@ -87,9 +95,10 @@ function applyEvent(s: ReplayState, e: SiegeEvent, coinText: string | null): Rep
   const t = s.t ?? 0;
   switch (e.t) {
     case 'attack':
-      return float(unit(unit(s, id(e.from), strike(t)), id(e.to), (u) => ({ hp: Math.max(0, u.hp - e.dmg), hits: u.hits + 1 })), id(e.to), `−${formatNum(e.dmg)}`, 'dmg');
+      // 휘두르기는 IMPACT_LEAD_MS 전에 따로 시작했다. 여기서는 맞는 순간
+      return float(unit(s, id(e.to), (u) => ({ hp: Math.max(0, u.hp - e.dmg), hits: u.hits + 1 })), id(e.to), `−${formatNum(e.dmg)}`, 'dmg');
     case 'heal':
-      return float(unit(unit(s, id(e.from), strike(t)), id(e.to), (u) => ({ hp: Math.min(u.maxHp, u.hp + e.amount) })), id(e.to), `+${formatNum(e.amount)}`, 'heal');
+      return float(unit(s, id(e.to), (u) => ({ hp: Math.min(u.maxHp, u.hp + e.amount) })), id(e.to), `+${formatNum(e.amount)}`, 'heal');
     case 'status':
       return float(s, id(e.to), T.fx[e.status], 'fx');
     case 'down': {
@@ -119,21 +128,34 @@ export function buildBeats(log: SiegeLog, held: boolean, perKill: number): Beat[
   for (const f of log.floors) {
     for (const u of f.start) {
       const id = unitId(f.floor, u.key);
-      units[id] = { id, key: u.key, kind: u.kind, floor: f.floor, ...(u.gear ? { gear: u.gear } : {}), side: u.side, hp: u.hp, maxHp: u.maxHp, dead: u.hp <= 0, attacking: false, hits: 0 };
+      units[id] = { id, key: u.key, kind: u.kind, floor: f.floor, ...(u.gear ? { gear: u.gear } : {}), side: u.side, hp: u.hp, maxHp: u.maxHp, dead: u.hp <= 0, attacking: false, hits: 0, swings: 0 };
     }
   }
   beats.push({ ms: BEAT_MS.enter, apply: (s) => ({ ...s, active: true, result: null, units }) });
   const evs = log.events;
   const k = waveSpeedUp(evs[evs.length - 1]?.at ?? 0);
-  for (let i = 0; i < evs.length;) {
+  // 공격·회복은 휘두르기(IMPACT_LEAD_MS 전)와 맞는 순간 둘로 나눈다. 범위 공격처럼 한 번에 여럿을 쳐도 휘두르기는 한 번
+  type Act = { at: number; swingId?: string; e?: SiegeEvent };
+  const acts: Act[] = [];
+  const swung = new Set<string>();
+  for (const e of evs) {
+    if ((e.t === 'attack' && e.skill !== 'thorns') || e.t === 'heal') {
+      const sid = unitId(e.floor, e.from);
+      const key = `${sid}@${e.at}`;
+      if (!swung.has(key)) { swung.add(key); acts.push({ at: Math.max(0, e.at - IMPACT_LEAD_MS), swingId: sid }); }
+    }
+    acts.push({ at: e.at, e });
+  }
+  acts.sort((a, b) => a.at - b.at);
+  for (let i = 0; i < acts.length;) {
     let j = i;
-    while (j < evs.length && evs[j].at === evs[i].at) j++;
-    const group = evs.slice(i, j);
-    const ms = Math.round(((evs[j]?.at ?? evs[i].at + BEAT_MS.end) - evs[i].at) / k);
+    while (j < acts.length && acts[j].at === acts[i].at) j++;
+    const group = acts.slice(i, j);
+    const ms = Math.round(((acts[j]?.at ?? acts[i].at + BEAT_MS.end) - acts[i].at) / k);
     beats.push({
       ms,
-      sfx: group.some((e) => e.t === 'attack') ? 'sfx_attack' : undefined,
-      apply: (s) => group.reduce((acc, e) => applyEvent(acc, e, coinText), calm(s)),
+      sfx: group.some((a) => a.e?.t === 'attack') ? 'sfx_attack' : undefined,
+      apply: (s) => group.reduce((acc, a) => (a.swingId ? unit(acc, a.swingId, swing(acc.t ?? 0)) : applyEvent(acc, a.e!, coinText)), calm(s)),
     });
     i = j;
   }

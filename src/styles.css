@@ -396,8 +396,12 @@ button[lang='zh-Hans'] { font-family: 'Noto Sans SC', sans-serif; }
 .rp-unit.hero .rp-hp span { background: var(--ruby); }
 .rp-body { display: block; }
 /* 맞음: 하얗게 번쩍 + 흔들림 */
-.rp-hit { animation: rpHit calc(.26s / var(--spd, 1)) steps(4); }
+.rp-flash { display: block; }
+/* 맞을 때 번쩍임: 두 이름을 번갈아 써서 다시 그리지 않고도 처음부터 다시 튼다(휘두르던 동작이 끊기지 않게, 2026-10-07) */
+.rp-hit0 { animation: rpHit calc(.26s / var(--spd, 1)) steps(4); }
+.rp-hit1 { animation: rpHit2 calc(.26s / var(--spd, 1)) steps(4); }
 @keyframes rpHit { 0% { filter: brightness(3) saturate(0); translate: -3px 0; } 33% { translate: 3px 0; } 66% { filter: brightness(1.6) sepia(1) hue-rotate(-40deg) saturate(4); translate: -2px 0; } 100% { filter: none; translate: 0 0; } }
+@keyframes rpHit2 { 0% { filter: brightness(3) saturate(0); translate: -3px 0; } 33% { translate: 3px 0; } 66% { filter: brightness(1.6) sepia(1) hue-rotate(-40deg) saturate(4); translate: -2px 0; } 100% { filter: none; translate: 0 0; } }
 /* 공격: 상대 쪽으로 한 번 파고든다 */
 .rp-unit.hero .rp-lunge { animation: rpLungeR calc(.3s / var(--spd, 1)) ease-out; }
 .rp-unit.enemy .rp-lunge { animation: rpLungeL calc(.3s / var(--spd, 1)) ease-out; }
