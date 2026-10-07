@@ -211,6 +211,7 @@ export const zhHans: Strings = {
   pass: {
     rank: '排名',
     track: '通行证',
+    howTier: (n: number) => `每${n}荣誉升1阶`,
     tier: (n: number) => `第${n}阶`,
     done: '完成',
     prev: '上一页',

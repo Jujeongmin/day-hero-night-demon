@@ -52,7 +52,8 @@ function Reward(props: { r: PassReward; best: number; state: 'got' | 'ready' | '
   const icon = r.skin ? 'icons/skin_dragon.png' : r.gold ? 'icons/gold.png' : 'icons/soul.png';
   // 골드는 공성 최고 단계에 맞춰 커진다(서버 planPassClaim과 같은 식)
   const amount = r.skin ? `${T.pass.dragon}+${r.soul ?? 0}` : r.gold ? formatNum(scaledGold(r.gold, best)) : formatNum(r.soul ?? 0);
-  const cls = { got: 'got', ready: 'glow', later: '', locked: 'dim' }[state];
+  // 받을 수 있는 칸만 빛나고, 아직 도달 못 한 칸은 어둡게(2026-10-07 사용자: 못 받는 것도 불이 들어와 있다)
+  const cls = { got: 'got', ready: 'glow', later: 'later', locked: 'dim' }[state];
   return (
     <button className={`pass-cell ${cls} ${r.skin ? 'skin' : ''}`} disabled={state !== 'locked'} onClick={onLocked}>
       <img src={icon} alt="" draggable={false} />
@@ -106,6 +107,8 @@ export default function Pass(props: { api: Api; home: HomeData; item?: ShopItem;
           {T.pass.claimAll}
         </button>
       </div>
+      {/* 단계를 올리는 방법(2026-10-07 사용자: 뭘 해야 오르는지 모르겠다) */}
+      <small className="pass-how">{T.pass.howTier(BALANCE.passTierHonor)} · {T.honorHow.replace(/^[^:：]*[:：]\s*/, '')}</small>
       <div className="pass-track">
         <button className="btn small pass-arrow" disabled={page === 0} onClick={() => setPage(page - 1)} aria-label={T.pass.prev}>◀</button>
         <div className="pass-cards">

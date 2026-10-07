@@ -211,6 +211,7 @@ export const en: Strings = {
   pass: {
     rank: 'Ranking',
     track: 'Pass',
+    howTier: (n: number) => `Every ${n} honor = 1 tier`,
     tier: (n: number) => `Tier ${n}`,
     done: 'Done',
     prev: 'Previous tiers',

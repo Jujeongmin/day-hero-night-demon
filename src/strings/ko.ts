@@ -214,6 +214,7 @@ export const ko = {
   pass: {
     rank: '순위',
     track: '패스',
+    howTier: (n: number) => `명예 ${n}마다 1단계 올라요`,
     tier: (n: number) => `${n}단계`,
     done: '완료',
     prev: '이전 단계',

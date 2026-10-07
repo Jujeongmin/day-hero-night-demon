@@ -494,10 +494,12 @@ export default function CastleScene(props: {
 
       <div className="float-right">
         {(s.onboarding?.at ?? 'done') === 'done' && (
-          <button className={`pill pass-btn ${passReady ? 'ready' : ''}`} onClick={onPass} aria-label={T.products.season_pass[0]}>
+          // 시즌 패스: 다른 아이콘처럼 크게, 이름을 적어(2026-10-07 사용자). 위에 지금 단계, 받을 보상이 있으면 빨간 배지
+          <button className={`side-icon pass-entry ${passReady ? 'ready' : ''}`} onClick={onPass} aria-label={T.products.season_pass[0]}>
             <img src="icons/prod_season_pass.png" alt="" draggable={false} />
-            <b>{passTier(s.season.honor)}/{BALANCE.passTiers.length}</b>
-            {passReady && <i className="dot">{passCount > 0 ? passCount : '!'}</i>}
+            {passReady && <i className="badge">{passCount > 0 ? passCount : '!'}</i>}
+            <span>{T.products.season_pass[0]}</span>
+            <b className="pass-tier">{passTier(s.season.honor)}/{BALANCE.passTiers.length}</b>
           </button>
         )}
         {/* 방치 보상: 패스 아래 보물상자 버튼(2026-10-02 승인 A). 받을 것이 없으면 흐리게 */}

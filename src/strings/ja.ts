@@ -211,6 +211,7 @@ export const ja: Strings = {
   pass: {
     rank: '順位',
     track: 'パス',
+    howTier: (n: number) => `名誉${n}ごとに1段階アップ`,
     tier: (n: number) => `${n}段階`,
     done: '完了',
     prev: '前の段階',
