@@ -1035,7 +1035,8 @@ export class Server {
       if (run.target !== target) throw new Error('다시 시도해줘');
       const status = runStatus(run);
       if (abandon !== true && status !== 'victory' && status !== 'wiped') throw new Error('공략이 끝나지 않았다');
-      const won = status === 'victory';
+      // 포기는 항상 진 것(2026-10-07): 출정은 시작할 때 끝까지 계산해 두므로 이기는 판의 재생 중에 포기해도 승리로 치면 화면과 어긋난다
+      const won = abandon !== true && status === 'victory';
       let loot = 0;
       if (run.target.startsWith('npc:')) {
         // NPC 전리품은 그 성의 등급(목록의 예상 약탈과 같은 값). 전에는 층 수(castleLevel)로 계산해서 1~10단이 늘 같았다(2026-10-02 수정)

@@ -254,6 +254,8 @@ export default function CastleScene(props: {
   // 도전(2026-10-06): 막혀서 반복 중일 때 누르면 다음 파도가 한 단계 위
   const [challenge, setChallenge] = useState(false);
   const farming = s.siege?.farming === true;
+  // 반복이 풀리면 눌러 둔 도전도 지운다(다음에 다시 막혔을 때 누르지 않았는데 도전이 나가지 않게)
+  useEffect(() => { if (!farming) setChallenge(false); }, [farming]);
   // 돌아왔을 때 요약 카드: 서버가 10분 넘게 밀린 파도를 처리한 응답에서 한 번만 띄운다
   const [away, setAway] = useState<NonNullable<HomeData['siegeAway']> | null>(null);
   useEffect(() => {

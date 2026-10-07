@@ -97,6 +97,16 @@ describe('raid vs npc', () => {
     await server.endRaid(true);
   });
 
+  test('abandoning is always a loss, even when the precomputed raid was a win (2026-10-07)', async (server) => {
+    server.connect({ account: 't8-abandon' });
+    await server.getHome();
+    await server.startIntroRaid();
+    expect((await server.autoPlay()).status).toBe('victory');
+    const end = await server.endRaid(true);
+    expect(end.won).toBe(false);
+    expect(end.loot).toBe(0);
+  });
+
   test('revive without a credit fails with NO_REVIVE_CREDIT', async (server) => {
     server.connect({ account: 't8-revive' });
     await server.getHome();
