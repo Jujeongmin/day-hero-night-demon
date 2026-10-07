@@ -44,10 +44,8 @@ export function rankBracket(
   entries: { id: string; nickname: string; honor: number; vip?: number; title?: TitleKind | null }[],
   bracketId: string, seasonStart: number, at: number,
 ): Ranked[] {
+  // 2026-10-07 사용자: 순위는 실제 유저만(빈자리를 그림자 마왕으로 채우지 않는다). 보상 순위도 실제 유저끼리
   const rows = entries.map((e) => ({ ...e, ghost: false }));
-  for (let i = 0; rows.length < BALANCE.bracketSize; i++) {
-    rows.push({ id: `ghost-${i}`, nickname: `그림자 마왕 ${i + 1}`, honor: ghostHonor(bracketId, i, seasonStart, at), ghost: true });
-  }
   rows.sort((a, b) => b.honor - a.honor || a.id.localeCompare(b.id));
   let rank = 0;
   let prev = Number.NaN;

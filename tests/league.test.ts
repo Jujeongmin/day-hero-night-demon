@@ -36,13 +36,13 @@ describe('league', () => {
     expect(ghostHonor('s1-b1', 0, 0, 20 * 3_600_000)).toBeGreaterThan(ghostHonor('s1-b1', 0, 0, 10 * 3_600_000));
   });
 
-  it('brackets are filled to 30 with ghosts, ties share a rank', () => {
+  it('brackets rank real players only (no ghost fillers, 2026-10-07), ties share a rank', () => {
     const rows = rankBracket(
-      [{ id: 'a', nickname: 'A', honor: 50 }, { id: 'b', nickname: 'B', honor: 50 }],
+      [{ id: 'a', nickname: 'A', honor: 50 }, { id: 'b', nickname: 'B', honor: 50 }, { id: 'c', nickname: 'C', honor: 10 }],
       's1-b1', 0, 0,
     );
-    expect(rows).toHaveLength(30);
-    expect(rows.filter((r) => r.ghost)).toHaveLength(28);
+    expect(rows).toHaveLength(3);
+    expect(rows.some((r) => r.ghost)).toBe(false);
     expect(rows[0].rank).toBe(1);
     expect(rows[1].rank).toBe(1);
     expect(rows[2].rank).toBe(3);

@@ -95,9 +95,10 @@ function Ranking(props: { api: Api; onError: (m: string) => void }) {
       )}
       <h4>{T.bracketTitle}</h4>
       {data.bracket.length === 0 && <span>{T.noBracket}</span>}
-      {data.bracket.map((r, i) => (
+      {/* 10등까지만, 내가 그 밖이면 내 줄을 맨 아래에(2026-10-07 사용자) */}
+      {[...data.bracket.slice(0, 10), ...data.bracket.slice(10).filter((r) => r.me)].map((r, i) => (
         <div className="line" key={i} style={r.me ? { fontWeight: 700 } : undefined}>
-          <span>{r.rank}. {displayName(r.nickname)} <VipBadge level={r.vip} /> <Title kind={r.title} /> {r.ghost && <span className="badge">{T.npcTag}</span>}</span>
+          <span>{r.rank}. {displayName(r.nickname)} <VipBadge level={r.vip} /> <Title kind={r.title} /></span>
           <span>{r.honor}</span>
         </div>
       ))}

@@ -238,7 +238,7 @@ describe('league', () => {
     expect(end.honor).toBe(10); // 입문 NPC는 마왕이 없어 기본 10
     const lg = await server.getLeague();
     expect(lg.myHonor).toBe(10);
-    expect(lg.bracket.length).toBe(30);
+    expect(lg.bracket.length).toBeGreaterThanOrEqual(1); // 2026-10-07: 실제 유저만(빈자리 채우지 않음)
     expect(lg.bracket.some((r: any) => r.me)).toBe(true);
   });
 });

@@ -7,11 +7,8 @@ import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
 import { VipBadge } from '../render/Vip';
 import { displayName } from '../strings/i18n';
-import { npcCastle, npcTiersFor } from '../../server/src/npc';
-import { snapshotPower } from '../../server/src/economy';
-import { heroGrowth } from '../../server/src/state';
 
-/** 난이도(2026-10-02): 내 용사 수준의 "보통" NPC 전투력과 비교. 90% 미만 쉬움, 110%까지 보통, 그 위 어려움 */
+/** 난이도: 화면 위 내 전투력과 상대 전투력을 비교(2026-10-07 사용자: 숫자가 낮은데 어려움으로 뜨면 헷갈린다). 90% 미만 쉬움, 110%까지 보통, 그 위 어려움 */
 function difficulty(power: number, normal: number): 'easy' | 'normal' | 'hard' {
   if (power < normal * 0.9) return 'easy';
   if (power <= normal * 1.1) return 'normal';
@@ -26,14 +23,9 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
   const left = sortiesLeft(home.state, now);
   const [targets, setTargets] = useState<Target[] | null>(null);
   const [busy, setBusy] = useState(false);
-  // NPC는 용사 수준에 맞춘 단계(−1/같음/+1)로, 실제 플레이어는 같은 단계 NPC 전투력과 비교해 정한다
-  const normalTier = npcTiersFor(heroGrowth(home.state))[1];
-  const normal = snapshotPower(npcCastle(normalTier, 'difficulty'));
-  const diffOf = (t: Target): 'easy' | 'normal' | 'hard' => {
-    const tier = t.npc ? Number(t.id.split(':')[1]) : NaN;
-    if (Number.isFinite(tier)) return tier < normalTier ? 'easy' : tier > normalTier ? 'hard' : 'normal';
-    return difficulty(t.power, normal);
-  };
+  // NPC·실제 플레이어 모두 화면 위 내 전투력과 같은 잣대로 비교한다(실제 승패는 출정하는 용사가 정한다)
+  const mine = home.power ?? 0;
+  const diffOf = (t: Target): 'easy' | 'normal' | 'hard' => difficulty(t.power, mine);
 
   useEffect(() => {
     api.findTargets().then(setTargets).catch((e) => onError(errorText(e)));

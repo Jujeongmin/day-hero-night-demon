@@ -1155,7 +1155,7 @@ export class Server {
       const bracket = s.season.bracketId
         ? rankBracket(rows.map((r: any) => ({ id: r.account, nickname: r.nickname, honor: r.honor, vip: r.vip ?? 0, title: r.title ?? null })), s.season.bracketId, start, now)
         : [];
-      const top = await $global.getCollectionItems(col, { orderBy: [{ field: 'honor', direction: 'desc' }], limit: 20 });
+      const top = await $global.getCollectionItems(col, { orderBy: [{ field: 'honor', direction: 'desc' }], limit: 10 });
       return {
         seasonId: s.season.id,
         endsAt: seasonEndsAt(now),

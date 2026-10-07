@@ -14,6 +14,7 @@ import { T } from '../strings/ko';
 import { displayName } from '../strings/i18n';
 
 const NO_EVENTS: BattleEvent[] = [];
+const RAID_SPEED_KEY = 'raidSpeed';
 
 export default function Raid(props: {
   api: Api;
@@ -28,8 +29,16 @@ export default function Raid(props: {
   const [status, setStatus] = useState<RunStatus | null>(home.state.run ? runStatus(home.state.run) : null);
   const [steps, setSteps] = useState<RunStep[]>([]);
   const [at, setAt] = useState(0);
-  const [speed, setSpeed] = useState<Speed>(1);
   const has3x = home.state.perks?.speed3 === true;
+  // 배속은 이 기기에 기억해 다음 출정에도 그대로(2026-10-07 사용자). 3×는 상품이 있을 때만
+  const [savedSpeed, setSavedSpeed] = useState<Speed>(() => {
+    try { const v = Number(localStorage.getItem(RAID_SPEED_KEY)); return v === 2 || v === 3 ? v : 1; } catch { return 1; }
+  });
+  const speed: Speed = savedSpeed === 3 && !has3x ? 1 : savedSpeed;
+  const setSpeed = (next: Speed) => {
+    setSavedSpeed(next);
+    try { localStorage.setItem(RAID_SPEED_KEY, String(next)); } catch { /* 저장 못 해도 이번 출정에서는 쓴다 */ }
+  };
   const busy = useRef(false);
   const playing = at < steps.length;
   const step = playing ? steps[at] : null;
