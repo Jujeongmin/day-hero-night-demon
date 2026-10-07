@@ -14,6 +14,15 @@ export function idleIncome(bestStage: number, lastClaimAt: number, now: number, 
   return Math.floor((elapsed / HOUR) * idlePerHour(bestStage) * mult * (1 + perks.idleBonus));
 }
 
+/**
+ * 켜 둔 동안 파도를 부를 때 방치 수입 나누기(2026-10-07 사용자: 켜 둔 동안 방치 보상이 계속 커진다).
+ * 마지막으로 받은 지 onlineIdleMs 안이면 그사이 몫은 바로 보유 골드(direct). 그보다 오래면 자리 비운 몫이므로 방치 상자에 고정(parked)하고
+ * 시계를 지금으로 돌린다. 어느 쪽이든 lastClaimAt = now라 켜 둔 동안 상자는 더 커지지 않는다
+ */
+export function splitOnlineIdle(income: number, lastClaimAt: number, now: number): { direct: number; parked: number } {
+  return now - lastClaimAt <= BALANCE.onlineIdleMs ? { direct: income, parked: 0 } : { direct: 0, parked: income };
+}
+
 /** 실제 플레이어 약탈: 상대 골드의 10%, 상한 cap, 가진 것보다 많이 가져가지 않는다 */
 export function lootAmount(defenderGold: number, cap: number): number {
   const base = Math.min(defenderGold * BALANCE.lootRate, cap);

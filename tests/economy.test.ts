@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { BALANCE } from '../server/src/catalog';
 import {
-  avgMonsterLevel, castlePower, castleUpgradeCost, floorsUnlocked, idleIncome, lootAmount, npcLoot, pvpLootCap, unitUpgradeCost,
+  avgMonsterLevel, castlePower, castleUpgradeCost, floorsUnlocked, idleIncome, lootAmount, npcLoot, pvpLootCap, splitOnlineIdle, unitUpgradeCost,
 } from '../server/src/economy';
 import { formatNum, lordLevel, scaledGold, statMult, waveGold } from '../server/src/growth';
 
@@ -81,5 +82,24 @@ describe('economy', () => {
     expect(castlePower(1, start)).toBe(10_000);
     const lv10 = [{ monsters: [{ id: 'slime' as const, level: 10 }, { id: 'skeleton' as const, level: 10 }] }];
     expect(castlePower(1, lv10)).toBeGreaterThan(20_000);
+  });
+});
+
+describe('idle income while the game is open (2026-10-07: the idle chest kept growing while playing)', () => {
+  const NOW = 1_000_000_000_000;
+  it('claimed recently: the idle share goes straight to gold', () => {
+    expect(splitOnlineIdle(500, NOW - 60_000, NOW)).toEqual({ direct: 500, parked: 0 });
+    expect(splitOnlineIdle(500, NOW - BALANCE.onlineIdleMs, NOW)).toEqual({ direct: 500, parked: 0 });
+  });
+  it('back after a long absence: the away share is parked in the chest, nothing is paid twice', () => {
+    expect(splitOnlineIdle(9000, NOW - 2 * H, NOW)).toEqual({ direct: 0, parked: 9000 });
+  });
+  it('after parking, the next waves only add the few seconds since then', () => {
+    const first = splitOnlineIdle(idleIncome(20, NOW - 2 * H, NOW, 1), NOW - 2 * H, NOW);
+    const later = NOW + 15_000;
+    const next = splitOnlineIdle(idleIncome(20, NOW, later, 1), NOW, later);
+    expect(first.parked).toBe(idleIncome(20, NOW - 2 * H, NOW, 1));
+    expect(next.parked).toBe(0);
+    expect(next.direct).toBe(idleIncome(20, NOW, later, 1));
   });
 });
