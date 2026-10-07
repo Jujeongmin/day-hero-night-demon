@@ -18,6 +18,7 @@ export default function Loading(props: { progress: number; label: string }) {
   const pct = Math.round(Math.max(0, Math.min(1, props.progress)) * 100);
   return (
     <div className="loading">
+      <div className="loading-art" aria-hidden />
       <div className="loading-embers" aria-hidden>
         {EMBERS.map(([x, d, t], i) => <i key={i} style={{ '--x': `${x}%`, '--d': `${d}s`, '--t': `${t}s` } as CSSProperties} />)}
       </div>
