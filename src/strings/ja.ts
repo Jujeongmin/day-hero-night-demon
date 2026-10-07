@@ -406,7 +406,7 @@ export const ja: Strings = {
     pityNote: (n: number) => `エピック以上なしで${n}回目の召喚はエピック以上が確定。出たら数え直し。`,
     legendPityNote: (n: number) => `レジェンドなしで${n}回目の召喚はレジェンドが確定。出たら数え直し。`,
     dupNote: (epic: number, legend: number) => `持っている外見が出たら魂石に変わる(エピック${epic}、伝説${F(legend)})。`,
-    detail: { tap: 'タップで詳しく', gear: (m: string, p: number) => `${m}専用の装備外見 · 着けると能力 +${p}%`, legend: (p: number) => `魔王の外見 · 持っているだけで魔王の能力 +${p}%`, dup: (n: number) => `所持済みのため魂石${n}に変換`, soul: (n: number) => `魂石${n}個を獲得`, wear: '強化画面で着けられる', wearLord: '設定の魔王の外見で着けられる' },
+    detail: { tap: 'タップで詳しく', gear: (m: string, p: number) => `${m}専用の装備外見 · 着けると能力 +${p}%`, legend: (p: number) => `魔王の外見 · 持っているだけで魔王の能力 +${p}%`, dup: (n: number) => `所持済みのため魂石${n}に変換`, soul: (n: number) => `魂石${n}個を獲得`, wear: '強化画面で着けられる', wearLord: '強化画面の魔王の行で着けられる' },
     gear: {
       'slime:crown': 'スライム王', 'slime:helm': '騎士スライム', 'skeleton:royal': '骸骨王', 'skeleton:dread': '恐怖の鎧',
       'imp:king': 'インプ王', 'imp:warlock': '黒魔導インプ', 'necro:lich': 'リッチ王', 'necro:bone': '骨の鎧',

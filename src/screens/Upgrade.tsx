@@ -180,6 +180,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
   const lookList: ('base' | LordSkin)[] = ['base', ...ownedLooks(s.skins ?? [], vipOf(s))];
   const worn = chooseLordSkin(s.lordSkin ?? null, s.skins ?? [], vipOf(s)) ?? 'base';
   const nextLook = lookList[(lookList.indexOf(worn) + 1) % lookList.length];
+  const lookTotalPct = lookList.slice(1).reduce((a, l) => a + Math.round((BALANCE.summon.highLooks.includes(l) ? BALANCE.summon.lookOwnBonusHigh : BALANCE.summon.lookOwnBonus) * 100), 0);
   const soulMonsters = (Object.keys(MONSTERS) as MonsterId[]).filter((id) => 'soul' in MONSTERS[id].unlock && !s.roster[id]);
 
   return (
@@ -208,6 +209,8 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
             </button>
           )}
           {worn !== 'base' && T.settings.lookFx[worn] && <small className="up-role">{T.settings.wornFx}: {T.settings.lookFx[worn]}</small>}
+          {/* 보유 효과 합계(입지 않아도): 일반 외형 +10%, 전설·결제·1위 외형 +25% */}
+          {lookList.length > 1 && <small className="up-role">{T.settings.lookOwned(lookList.length - 1, lookTotalPct)}</small>}
         </span>
         {on.awaken && (
           <button className="btn small up-bt awaken-btn" disabled={busy || lordAwaken === null} onClick={() => (lordAwaken !== null && home.soul < lordAwaken ? needSoul() : act(() => api.awaken('lord')))}>

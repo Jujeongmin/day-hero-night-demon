@@ -406,7 +406,7 @@ export const en: Strings = {
     pityNote: (n: number) => `Your ${n}th summon without an Epic or better is guaranteed Epic or better. The count restarts whenever one drops.`,
     legendPityNote: (n: number) => `Your ${n}th summon without a Legend is guaranteed Legend. The count restarts whenever one drops.`,
     dupNote: (epic: number, legend: number) => `A look you already own turns into soulstones (Epic ${epic}, Legendary ${F(legend)}).`,
-    detail: { tap: 'Tap for details', gear: (m: string, p: number) => `Gear look for the ${m} · +${p}% stats when worn`, legend: (p: number) => `Demon Lord look · +${p}% lord stats just for owning it`, dup: (n: number) => `Already owned, turned into ${n} soulstones`, soul: (n: number) => `Got ${n} soulstones`, wear: 'Wear it from the upgrade panel', wearLord: 'Wear it from Settings › Demon Lord look' },
+    detail: { tap: 'Tap for details', gear: (m: string, p: number) => `Gear look for the ${m} · +${p}% stats when worn`, legend: (p: number) => `Demon Lord look · +${p}% lord stats just for owning it`, dup: (n: number) => `Already owned, turned into ${n} soulstones`, soul: (n: number) => `Got ${n} soulstones`, wear: 'Wear it from the upgrade panel', wearLord: 'Wear it from the Demon Lord row in the upgrade panel' },
     gear: {
       'slime:crown': 'Slime King', 'slime:helm': 'Knight Slime', 'skeleton:royal': 'Skeleton King', 'skeleton:dread': 'Dread Armor',
       'imp:king': 'Imp King', 'imp:warlock': 'Warlock Imp', 'necro:lich': 'Lich King', 'necro:bone': 'Bone Armor',

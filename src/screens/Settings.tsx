@@ -1,11 +1,7 @@
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { errorText, type Api, type HomeData } from '../services/api';
-import { chooseLordSkin, ownedLooks } from '../../server/src/pass';
-import { Portrait } from '../render/Sprite';
-import { lordSpriteId } from '../render/skins';
 import { getAudioPrefs, setAudioPrefs, type AudioPrefs } from '../services/audio';
 import { T } from '../strings/ko';
-import { BALANCE } from '../../server/src/catalog';
 import { VipPanel } from '../render/Vip';
 import { vipOf, vipPerks } from '../../server/src/vip';
 import { chooseLang, currentLang, displayName, LANGS } from '../strings/i18n';
@@ -69,15 +65,6 @@ export default function Settings(props: {
   const [askReset, setAskReset] = useState(false);
   const [busy, setBusy] = useState(false);
   const left = Math.max(0, 1 + vipPerks(vipOf(home.state)).nicknameExtra - (home.state.profile.nicknameChanges ?? 0));
-  // 마왕 외형: 기본 + 가진 외형(패스 10단계 흑룡·VIP·소환 전설·시즌 1위). 기본만 있으면 칸을 숨긴다
-  const st = home.state;
-  const vipLv = vipOf(st);
-  const owned = ownedLooks(st.skins ?? [], vipLv);
-  const looks: ('base' | (typeof owned)[number])[] = ['base', ...owned];
-  const current = chooseLordSkin(st.lordSkin ?? null, st.skins ?? [], vipLv) ?? 'base';
-  // 보유 효과: 일반 외형 +10%, 전설·결제·1위 외형 +25% (2026-10-06)
-  const lookPct = (l: string) => Math.round((BALANCE.summon.highLooks.includes(l) ? BALANCE.summon.lookOwnBonusHigh : BALANCE.summon.lookOwnBonus) * 100);
-  const totalPct = owned.reduce((a, l) => a + lookPct(l), 0);
 
   const change = (patch: Partial<AudioPrefs>) => {
     setAudioPrefs(patch);
@@ -131,29 +118,7 @@ export default function Settings(props: {
         ))}
       </div>
 
-      {looks.length > 1 && (
-        <>
-          <h4>{T.settings.lordLook}</h4>
-          {/* 보유 효과: 가진 외형마다 마왕 능력치, 입지 않아도(2026-10-02 사용자) */}
-          <small className="muted">{T.settings.lookOwned(owned.length, totalPct)}</small>
-          <div className="looks">
-            {looks.map((l) => (
-              <button
-                key={l}
-                className={`look ${current === l ? 'on' : ''}`}
-                disabled={busy || current === l}
-                onClick={() => void act(() => api.setLordSkin(l))}
-              >
-                <Portrait id={lordSpriteId(l === 'base' ? undefined : l)} label={T.settings.looks[l]} />
-                <small>{T.settings.looks[l]}</small>
-                {l !== 'base' && <em className="look-bonus">+{lookPct(l)}%</em>}
-              </button>
-            ))}
-          </div>
-          {/* 입은 외형의 고유 효과(2026-10-06) */}
-          {current !== 'base' && T.settings.lookFx[current] && <small className="look-fx">{T.settings.wornFx}: {T.settings.lookFx[current]}</small>}
-        </>
-      )}
+      {/* 마왕 외형은 강화 창의 마왕 줄에서 바꾼다(2026-10-07 사용자: 설정 칸은 없앰) */}
 
       <VipPanel spent={home.state.vip?.spent ?? 0} compact />
 
