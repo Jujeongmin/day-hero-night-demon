@@ -44,6 +44,8 @@ export interface Run {
   battle: FloorBattle | null;
   heroesHp: Partial<Record<HeroId, number>>;
   reviveUsed: boolean;
+  /** 부활한 층 몬스터의 남은 체력(적 key별). 그 층을 다시 시작할 때 이어서 싸운다(2026-10-07: 부활하면 몬스터 체력이 가득 차던 버그) */
+  enemiesHp?: Record<string, number>;
   isRevenge: boolean;
   revengeLogId: string | null;
   startedAt: number;

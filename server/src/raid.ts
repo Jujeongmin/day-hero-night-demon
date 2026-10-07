@@ -82,13 +82,20 @@ export function beginFloor(run: Run, tactic: Tactic, heroes: Record<HeroId, { le
     .filter((id) => (run.heroesHp[id] ?? 1) > 0)
     .map((id) => ({ id, level: heroes[id].level, hp: run.heroesHp[id], ...(heroes[id].mult && heroes[id].mult !== 1 ? { mult: heroes[id].mult } : {}) }));
   const f = run.floor;
+  // 부활해서 다시 시작하는 층이면 몬스터는 남은 체력으로
+  const left = run.enemiesHp;
+  const enemies = floorEnemies(run.snapshot, f).map((e, i) => {
+    const hp = left?.[`e${i}:${e.id}`];
+    return hp === undefined ? e : { ...e, hp };
+  });
   const { battle, events } = createFloorBattle({
     heroes: party,
-    enemies: floorEnemies(run.snapshot, f),
+    enemies,
     tactic,
     seed: seedFrom(run.seed, f, run.reviveUsed ? 'revived' : 'first'),
   });
-  return settle({ ...run, tactic, battle }, events);
+  const { enemiesHp: _used, ...rest } = run;
+  return settle({ ...rest, tactic, battle }, events);
 }
 
 export function advanceRound(run: Run, ult: HeroId | null): { run: Run; events: BattleEvent[]; battle: FloorBattle } {
@@ -104,7 +111,10 @@ export function reviveRun(run: Run): Run {
   for (const f of run.battle!.fighters) {
     if (f.side === 'hero') hp[f.kind as HeroId] = Math.round(f.maxHp * 0.5);
   }
-  return { ...run, reviveUsed: true, battle: null, tactic: null, heroesHp: hp };
+  // 몬스터는 쓰러뜨린 만큼 그대로: 남은 체력을 기억해 같은 층을 다시 시작할 때 이어서
+  const enemiesHp: Record<string, number> = {};
+  for (const f of run.battle!.fighters) if (f.side === 'enemy') enemiesHp[f.key] = f.hp;
+  return { ...run, reviveUsed: true, battle: null, tactic: null, heroesHp: hp, enemiesHp };
 }
 
 /** 한 번에 계산한 공략의 한 층: 그 층이 끝난 뒤의 전투 상태와 일어난 일(at = 전투 시각 ms). 화면이 시각에 맞춰 재생한다 */

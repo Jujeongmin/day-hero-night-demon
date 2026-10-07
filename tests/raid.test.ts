@@ -129,3 +129,19 @@ describe('autoRun: the whole raid in one call (2026-10-06)', () => {
     expect(['victory', 'wiped']).toContain(runStatus(again.run));
   });
 });
+
+describe('revive keeps the monsters hurt (2026-10-07 bug: they came back at full health)', () => {
+  it('after a revive the same floor restarts with the monsters at the health they had', () => {
+    const run = startRun({ account: 'a', snapshot: snap({ castleLevel: 5, floors: [{ monsters: [{ id: 'slime', level: 12 }, { id: 'skeleton', level: 12 }] }] }), isRevenge: false, revengeLogId: null, now: 0 });
+    const wiped = autoRun(run, heroes(3)).run;
+    expect(runStatus(wiped)).toBe('wiped');
+    const before = Object.fromEntries(wiped.battle!.fighters.filter((f) => f.side === 'enemy').map((f) => [f.key, f.hp]));
+    expect(Object.values(before).some((hp, i) => hp < wiped.battle!.fighters.filter((f) => f.side === 'enemy')[i].maxHp)).toBe(true);
+    const revived = reviveRun(wiped);
+    const again = beginFloor(revived, 'charge', heroes(3));
+    const after = Object.fromEntries(again.battle.fighters.filter((f) => f.side === 'enemy').map((f) => [f.key, f.hp]));
+    expect(after).toEqual(before);
+    // 다음 층으로 넘어가면 기억한 체력은 지운다
+    expect(again.run.enemiesHp).toBeUndefined();
+  });
+});
