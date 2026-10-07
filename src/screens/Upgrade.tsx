@@ -104,8 +104,10 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
     const awaken = cost === null ? awakenCost(stars + 1) : null;
     const manyKind = id in MONSTERS ? 'monster' as const : id in HEROES ? 'hero' as const : null;
     const manyCount = mult === 'ten' ? 10 : BALANCE.maxUnitLevel;
-    // 고른 횟수로 지금 골드에서 몇 번·얼마(서버 planUpgradeMany와 같은 계산)
-    const plan = cost !== null && manyKind && mult !== 'one' ? planUpgradeMany(s, manyKind, id, manyCount, home.gold) : null;
+    // 고른 횟수로 몇 번·얼마(서버 planUpgradeMany와 같은 계산). ×10은 골드가 모자라도 늘 10번(각성 전까지) 비용을 보이고 버튼만 어둡게,
+    // 최대는 지금 골드로 할 수 있는 만큼(2026-10-07 사용자)
+    const plan = cost !== null && manyKind && mult !== 'one' ? planUpgradeMany(s, manyKind, id, manyCount, mult === 'ten' ? Infinity : home.gold) : null;
+    const short = plan !== null && (plan.times === 0 || home.gold < plan.cost);
     const { now, gain } = unitStats(unit.stats, level, stars, id in MONSTERS && worn ? BALANCE.summon.gearStatMult : 1);
     const portrait = id in MONSTERS ? monsterSpriteId(id, worn) : id;
     const open = () => setInfo({
@@ -124,7 +126,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
       );
     } else if (plan && manyKind) {
       button = (
-        <button className="btn small up-bt" data-tut={first ? 'upgrade-first' : undefined} disabled={busy || plan.times === 0} onClick={() => act(() => api.upgradeMany(manyKind, id, manyCount))}>
+        <button className="btn small up-bt" data-tut={first ? 'upgrade-first' : undefined} disabled={busy || short} onClick={() => act(() => api.upgradeMany(manyKind, id, manyCount))}>
           {gold(plan.times === 0 ? cost : plan.cost)}{plan.times > 0 && <em>+{plan.times}</em>}
         </button>
       );
