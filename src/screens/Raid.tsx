@@ -130,9 +130,10 @@ export default function Raid(props: {
       </div>
     </div>
 
-    {/* 싸우는 동안은 아래 창 없이 전투 화면을 크게. 전멸했을 때만 부활 창 */}
+    {/* 싸우는 동안은 아래 창 없이 전투 화면을 크게. 전멸했을 때만 부활 창 — 화면 가운데(2026-10-07 사용자: 아래에 있으면 눈에 안 띈다) */}
     {status === 'wiped' && !playing && (
-    <section className="sheet raid-sheet">
+    <div className="modal-dim">
+    <section className="sheet modal raid-sheet">
       <header className="sheet-head">
         <span>{T.defeat}</span>
       </header>
@@ -169,6 +170,7 @@ export default function Raid(props: {
         </div>
       </div>
     </section>
+    </div>
     )}
     </>
   );
