@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { BattleEvent, Fighter, FloorBattle } from '../../server/src/battle';
+import { attackIntervalMs, type BattleEvent, type Fighter, type FloorBattle } from '../../server/src/battle';
 import type { LordSkin } from '../../server/src/state';
 import { sfx } from '../services/audio';
 import { sfxForFx } from './sfxMap';
@@ -29,6 +29,8 @@ const IDLE_MS = 140;
 const STEP_MS = 350;
 /** 공격 동작 한 번 길이(1× ms). 유닛마다 이만큼 공격 그림을 끝까지 보인다 */
 const SWING_MS = 600;
+/** 공격 동작 길이: 다음 공격 전에 끝나게 공격 간격의 90%를 넘지 않는다(마왕 0.5초마다 → 0.45초, 2026-10-07) */
+const swingMs = (f: Fighter) => Math.min(SWING_MS, attackIntervalMs(f) * 0.9);
 
 type Strip = { frames: number; w: number; h: number; box?: number[] };
 const strips = SPRITES as Record<string, Strip>;
@@ -151,10 +153,10 @@ function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: numbe
       anim = 'death';
       const since = now - (v.downAt[f.key] ?? 0);
       frame = Math.floor(since / 50);
-    } else if (v.swingAt[f.key] !== undefined && now - v.swingAt[f.key] < SWING_MS / v.speed) {
+    } else if (v.swingAt[f.key] !== undefined && now - v.swingAt[f.key] < swingMs(f) / v.speed) {
       anim = 'attack';
       const n = strips[`${spriteOf(f, v.lordSkin)}_attack`]?.frames ?? 7;
-      frame = Math.min(n - 1, Math.floor((now - v.swingAt[f.key]) / (SWING_MS / v.speed / n)));
+      frame = Math.min(n - 1, Math.floor((now - v.swingAt[f.key]) / (swingMs(f) / v.speed / n)));
     }
     const sprite = spriteOf(f, v.lordSkin);
     const s = strips[`${sprite}_${anim}`];

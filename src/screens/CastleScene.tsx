@@ -111,7 +111,7 @@ const ReplayLayer = memo(function ReplayLayer(props: {
               <Sprite
                 id={u.kind === 'lord' ? lordSpriteId(lordSkin) : monsterSpriteId(u.kind, u.gear)}
                 anim={u.dead ? 'death' : u.attacking ? 'attack' : 'idle'}
-                className={u.dead ? 'once' : ''}
+                className={u.dead ? 'once' : u.attacking && u.kind === 'lord' ? 'swing-fast' : ''}
                 label={T.units[u.kind] ?? ''}
                 flip={u.side === 'enemy'}
                 scale={scaleOf(u, p.crowd)}
