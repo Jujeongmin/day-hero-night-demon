@@ -1,3 +1,7 @@
+import { chooseLordSkin, ownedLooks } from '../../server/src/pass';
+import { vipOf } from '../../server/src/vip';
+import type { LordSkin } from '../../server/src/state';
+import { lordSpriteId } from '../render/skins';
 import { featuresOf } from '../../server/src/features';
 import { recommendedUpgrade } from '../render/powerTips';
 import { memo, useState } from 'react';
@@ -172,6 +176,10 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
   const heroPct = pct1(heroBonusLevels(heroGrowth(s)) * BALANCE.heroLootPerLevel * 100);
   const heroPctNext = pct1(heroPct + (BALANCE.growth.cycleLevels / (BALANCE.maxUnitLevel - 1)) * BALANCE.heroLootPerLevel * 100);
   const lordAwaken = awakenCost((s.stars?.lord ?? 0) + 1);
+  // 마왕 외형: 기본 + 가진 외형을 차례로(누를 때마다 다음 것으로)
+  const lookList: ('base' | LordSkin)[] = ['base', ...ownedLooks(s.skins ?? [], vipOf(s))];
+  const worn = chooseLordSkin(s.lordSkin ?? null, s.skins ?? [], vipOf(s)) ?? 'base';
+  const nextLook = lookList[(lookList.indexOf(worn) + 1) % lookList.length];
   const soulMonsters = (Object.keys(MONSTERS) as MonsterId[]).filter((id) => 'soul' in MONSTERS[id].unlock && !s.roster[id]);
 
   return (
@@ -188,16 +196,25 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
           {castleCost === null ? T.maxLevel : gold(castleCost)}
         </button>
       </div>
-      {/* 마왕 각성: 성 레벨에 묶여 있어 언제든(별마다 ×1.1). 각성이 열린 뒤에만(단계적 해금, 2026-10-06) */}
-      {on.awaken && (
-        <div className={`up-row ${rec?.unit === 'lord' ? 'rec' : ''}`}>
-          <span className="up-pt"><Portrait id="lord" label={T.units.lord} /></span>
-          <span className="up-nm"><b>{T.units.lord} <Stars n={s.stars?.lord} />{rec?.unit === 'lord' && <em className="rec-tag">{T.rec}</em>}</b><small>{T.up.lordShort}</small></span>
+      {/* 마왕: 외형 바꾸기는 언제나(2026-10-07 사용자: 설정에만 있어 찾기 어렵다), 각성 버튼은 각성이 열린 뒤에만(단계적 해금) */}
+      <div className={`up-row ${rec?.unit === 'lord' ? 'rec' : ''}`}>
+        <span className="up-pt"><Portrait id={lordSpriteId(worn === 'base' ? undefined : worn)} label={T.units.lord} /></span>
+        <span className="up-nm">
+          <b>{T.units.lord} <Stars n={s.stars?.lord} />{rec?.unit === 'lord' && <em className="rec-tag">{T.rec}</em>}</b>
+          {on.awaken && <small>{T.up.lordShort}</small>}
+          {lookList.length > 1 && (
+            <button className="look-chip" disabled={busy} onClick={() => act(() => api.setLordSkin(nextLook))}>
+              {T.summon.look(T.settings.looks[worn])} ▸
+            </button>
+          )}
+          {worn !== 'base' && T.settings.lookFx[worn] && <small className="up-role">{T.settings.wornFx}: {T.settings.lookFx[worn]}</small>}
+        </span>
+        {on.awaken && (
           <button className="btn small up-bt awaken-btn" disabled={busy || lordAwaken === null} onClick={() => (lordAwaken !== null && home.soul < lordAwaken ? needSoul() : act(() => api.awaken('lord')))}>
             {lordAwaken === null ? T.awaken.max : <>{soul(lordAwaken)} {T.up.awaken}</>}
           </button>
-        </div>
-      )}
+        )}
+      </div>
       <h4>{T.monstersTitle}</h4>
       {(Object.keys(s.roster) as MonsterId[]).map((id, i) => row(id, T.units[id], s.roster[id]!.level, () => api.upgrade('monster', id), i === 0, MONSTERS[id]))}
       {/* 용사: 성 Lv 2에 열린다(단계적 해금). 맨 위 한 줄로 무엇인지, 줄마다 역할 한 줄(2026-10-06 사용자: 용사가 뭔지 모르겠다) */}
