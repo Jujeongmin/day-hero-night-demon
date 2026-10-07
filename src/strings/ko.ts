@@ -417,6 +417,7 @@ export const ko = {
     pityNote: (n: number) => `영웅 이상 없이 ${n}번째 소환은 영웅 이상이 확정이고, 영웅·전설이 나오면 다시 센다.`,
     legendPityNote: (n: number) => `전설 없이 ${n}번째 소환은 전설이 확정이고, 전설이 나오면 다시 센다.`,
     dupNote: (epic: number, legend: number) => `이미 가진 외형이 나오면 영혼석으로 바꿔 준다(영웅 ${epic}, 전설 ${F(legend)}).`,
+    detail: { tap: '눌러서 크게 보기', gear: (m: string, p: number) => `${m} 전용 장비 외형 · 입으면 능력치 +${p}%`, legend: (p: number) => `마왕 외형 · 가지고만 있어도 마왕 능력치 +${p}%`, dup: (n: number) => `이미 가진 외형이라 영혼석 ${n}으로 받았다`, soul: (n: number) => `영혼석 ${n}개를 받았다`, wear: '강화 창에서 입힐 수 있다', wearLord: '설정의 마왕 외형에서 입힐 수 있다' },
     gear: {
       'slime:crown': '슬라임 왕', 'slime:helm': '기사 슬라임', 'skeleton:royal': '해골 왕', 'skeleton:dread': '공포의 갑옷',
       'imp:king': '임프 왕', 'imp:warlock': '흑마법사 임프', 'necro:lich': '리치 왕', 'necro:bone': '뼈 갑옷',

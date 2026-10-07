@@ -406,6 +406,7 @@ export const zhHant: Strings = {
     pityNote: (n: number) => `連續沒有英雄以上時，第${n}次召喚必得英雄以上；抽到後重新計算。`,
     legendPityNote: (n: number) => `連續沒有傳說時，第${n}次召喚必得傳說；抽到後重新計算。`,
     dupNote: (epic: number, legend: number) => `抽到已有的外觀會換成魂石(英雄${epic}、傳說${F(legend)})。`,
+    detail: { tap: '點擊查看詳情', gear: (m: string, p: number) => `${m}專屬裝備外觀 · 穿戴後能力 +${p}%`, legend: (p: number) => `魔王外觀 · 擁有即魔王能力 +${p}%`, dup: (n: number) => `已擁有，轉換為魂石${n}`, soul: (n: number) => `獲得魂石${n}個`, wear: '可在強化介面穿戴', wearLord: '可在設定的魔王外觀中穿戴' },
     gear: {
       'slime:crown': '史萊姆王', 'slime:helm': '騎士史萊姆', 'skeleton:royal': '骷髏王', 'skeleton:dread': '恐懼之鎧',
       'imp:king': '小惡魔王', 'imp:warlock': '黑巫師小惡魔', 'necro:lich': '巫妖王', 'necro:bone': '骨甲',

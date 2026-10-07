@@ -524,6 +524,16 @@ button.pill.ticket.buy:disabled { animation: none; filter: grayscale(0.6) bright
 .summon-coll .cell.legend.wear { filter: drop-shadow(0 0 5px var(--gold)) brightness(1.1); }
 .summon-over { position: absolute; inset: 0; z-index: 2; background: #07030aee; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 12px; }
 .summon-over h3 { margin: 0; font-weight: 400; font-size: 22px; color: var(--bone); }
+.summon-cards .card.tappable { cursor: pointer; }
+.summon-cards .card.tappable:active { translate: 0 1px; }
+.summon-tap { color: var(--muted); font-size: 12px; margin-top: -6px; }
+.summon-over.detail { z-index: 3; background: #07030acc; }
+.summon-detail { width: min(100%, 300px); display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 8px 10px; border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated; font-size: 14px; text-align: center; }
+.summon-detail .sheet-head { width: 100%; }
+.summon-detail-art { min-height: 150px; display: grid; place-items: end center; }
+.summon-detail-art > img { width: 64px; height: 64px; image-rendering: pixelated; }
+.summon-detail.grade-legend .summon-detail-art { filter: drop-shadow(0 0 10px var(--gold)); }
+.summon-detail.grade-epic .summon-detail-art { filter: drop-shadow(0 0 7px #c070ff); }
 .summon-rates { width: min(100%, 340px); display: flex; flex-direction: column; gap: 6px; padding: 6px 8px; border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated; font-size: 14px; }
 .summon-rates b { font-weight: 400; }
 .summon-rates small { color: var(--muted); font-size: 12px; }

@@ -5,7 +5,7 @@ import type { SummonResult } from '../../server/src/summon';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { sfx } from '../services/audio';
 import CurrencyPill from '../render/CurrencyPill';
-import { Portrait } from '../render/Sprite';
+import Sprite, { Portrait } from '../render/Sprite';
 import { T } from '../strings/ko';
 
 const B = BALANCE.summon;
@@ -17,6 +17,36 @@ const gearSprite = (g: string) => g.replace(':', '_');
 const legendSprite = (l: string) => `lord_${l}`;
 
 const pct = (p: number) => `${Math.round(p * 1000) / 10}%`;
+
+/** 결과 카드를 눌렀을 때 크게 보기(2026-10-07 사용자): 움직이는 그림·등급·이름·효과 */
+function ResultDetail(props: { r: SummonResult; onClose: () => void }) {
+  const { r } = props;
+  const isLegend = r.grade === 'legend';
+  const sprite = r.item ? (isLegend ? legendSprite(r.item) : gearSprite(r.item)) : null;
+  const name = r.item ? (isLegend ? T.settings.looks[r.item] : T.summon.gear[r.item]) : T.soul;
+  const ownPct = Math.round((B.highLooks.includes(r.item ?? '') ? B.lookOwnBonusHigh : B.lookOwnBonus) * 100);
+  const gearPct = Math.round((B.gearStatMult - 1) * 100);
+  const monster = r.item && !isLegend ? T.units[r.item.split(':')[0]] : '';
+  return (
+    <div className="summon-over detail" onClick={(e) => { e.stopPropagation(); props.onClose(); }}>
+      <div className={`summon-detail grade-${r.grade}`} onClick={(e) => e.stopPropagation()}>
+        <header className="sheet-head">
+          <span><b className={`grade-${r.grade}`}>{T.summon.grades[r.grade]}</b> {name}</span>
+          <button className="close" onClick={props.onClose} aria-label={T.close}><img src="ui/close_x.png" alt="" draggable={false} /></button>
+        </header>
+        <div className="summon-detail-art">
+          {sprite ? <Sprite id={sprite} anim="idle" scale={isLegend ? 1.6 : 2.2} label={name} flip={!isLegend} /> : <img src="icons/soul.png" alt="" draggable={false} />}
+        </div>
+        {r.item && !isLegend && <span>{T.summon.detail.gear(monster, gearPct)}</span>}
+        {isLegend && r.item && <span>{T.summon.detail.legend(ownPct)}</span>}
+        {isLegend && r.item && T.settings.lookFx[r.item] && <span className="look-fx">{T.settings.wornFx}: {T.settings.lookFx[r.item]}</span>}
+        {r.dup && <small>{T.summon.detail.dup(r.soul)}</small>}
+        {!r.item && <span>{T.summon.detail.soul(r.soul)}</span>}
+        {r.item && !r.dup && <small className="muted">{isLegend ? T.summon.detail.wearLord : T.summon.detail.wear}</small>}
+      </div>
+    </div>
+  );
+}
 
 /** 연출 건너뛰기(2026-10-02 사용자): 이 기기에만 기억한다 */
 const SKIP_KEY = 'summon.skip';
@@ -53,6 +83,8 @@ export default function Summon(props: {
   const [results, setResults] = useState<SummonResult[] | null>(null);
   const [shown, setShown] = useState(0);
   const [rates, setRates] = useState(false);
+  // 결과 카드 크게 보기
+  const [detail, setDetail] = useState<SummonResult | null>(null);
   const [skip, setSkip] = useState(loadSkip);
   // 결과를 받은 뒤 서버 기록 기준 남은 천장(새로고침 전에도 맞게)
   const [toPity, setToPity] = useState<{ high: number; legend: number } | null>(null);
@@ -109,6 +141,7 @@ export default function Summon(props: {
       return;
     }
     setResults(null);
+    setDetail(null);
     await onRefresh();
   };
 
@@ -175,7 +208,12 @@ export default function Summon(props: {
               const item = r.item && (r.grade === 'legend' ? legendSprite(r.item) : gearSprite(r.item));
               const name = r.item && (r.grade === 'legend' ? T.settings.looks[r.item] : T.summon.gear[r.item]);
               return (
-                <div key={i} className={`card ${open ? `open ${r.grade}` : ''}`}>
+                // 다 뒤집힌 뒤에는 카드를 눌러 크게 본다(바깥을 누르면 결과 창이 닫힌다)
+                <div
+                  key={i}
+                  className={`card ${open ? `open ${r.grade}` : ''} ${shown >= results.length ? 'tappable' : ''}`}
+                  onClick={(e) => { if (shown < results.length) return; e.stopPropagation(); setDetail(r); }}
+                >
                   {open && (
                     <>
                       {r.item && !r.dup && <span className="tag">{T.summon.fresh}</span>}
@@ -188,9 +226,11 @@ export default function Summon(props: {
               );
             })}
           </div>
+          {shown >= results.length && <small className="summon-tap">{T.summon.detail.tap}</small>}
           <button className="btn big" onClick={(e) => { e.stopPropagation(); void closeResults(); }}>
             {shown < results.length ? T.summon.skip : T.summon.ok}
           </button>
+          {detail && <ResultDetail r={detail} onClose={() => setDetail(null)} />}
         </div>
       )}
     </div>
