@@ -121,6 +121,8 @@ export const BALANCE = {
     goldGrowth: 1.18,
     /** 2026-10-07 사용자: 골드를 버는 쪽·드는 쪽 모두 100배(숫자가 크게 튀는 맛, 성장 속도는 그대로). 50 → 5000 */
     unitCostBase: 5000,
+    /** 전투력 표시 배수(2026-10-07 사용자, 시작 100 → 10,000) */
+    powerScale: 100,
     /** 성 1레벨 = 마왕 10레벨 */
     lordLevelsPerCastle: 10,
     castleCostFactor: 3,

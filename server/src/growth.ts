@@ -91,9 +91,12 @@ export function scaledGold(base: number, bestStage: number): number {
   return Math.max(base, Math.round(base * Math.pow(G.goldGrowth, bestStage - G.rewardScaleFromStage)));
 }
 
-/** 전투력용 유닛 한 마리 값: (체력 + 공격×5 + 방어×5) ÷ 10. 시작 편성(슬라임·해골병·마왕 Lv1)이 100 */
+/**
+ * 전투력용 유닛 한 마리 값: (체력 + 공격×5 + 방어×5) ÷ 10 × powerScale. 시작 편성(슬라임·해골병·마왕 Lv1)이 10,000.
+ * 2026-10-07 사용자: 오르는 느낌이 약하다 → 표시만 100배(성장 속도·난이도는 그대로)
+ */
 export function unitPower(stats: { hp: number; atk: number; def: number }): number {
-  return (stats.hp + 5 * stats.atk + 5 * stats.def) / 10;
+  return ((stats.hp + 5 * stats.atk + 5 * stats.def) / 10) * G.powerScale;
 }
 
 /** 큰 숫자 표시: 1234 → 1.2k, 3.4m, 1.1b, 2t, 그 위로 aa·ab…zz(1000배마다) */

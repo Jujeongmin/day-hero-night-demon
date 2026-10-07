@@ -131,8 +131,8 @@ const SIEGE_BEST = 'siege_best';
 const siegeSeasonCollection = (seasonId: string) => `siege_season_${seasonId}`;
 /** 소환 결과 기록(확률형 아이템 결과 보관). id = 계정:그때까지 뽑은 수 */
 const SUMMON_LOG = 'summon_log';
-/** 3 = 레벨 50 + 각성 순환, 4 = 마왕 외형 보유 효과(2026-10-02). 매칭 전투력을 다시 쓴다 */
-const CASTLE_SYNC_V = 4;
+/** 3 = 레벨 50 + 각성 순환, 4 = 마왕 외형 보유 효과(2026-10-02), 5 = 전투력 표시 100배(2026-10-07). 매칭 전투력을 다시 쓴다 */
+const CASTLE_SYNC_V = 5;
 
 async function adClaimed(requestId: string): Promise<boolean> {
   try {

@@ -383,7 +383,7 @@ describe('siege', () => {
   test('siege ranking starts at stage 1 and home shows a power number', async (server) => {
     server.connect({ account: 't51-siege' });
     const home = await server.getHome();
-    expect(home.power).toBe(100);
+    expect(home.power).toBe(10000);
     expect(home.state.siege.best).toBe(1);
     const r = await server.getSiegeRanking();
     expect(r.myBest).toBe(1);

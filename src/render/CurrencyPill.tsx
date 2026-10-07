@@ -12,6 +12,8 @@ const POP_MS = 1300;
  */
 export default function CurrencyPill(props: { icon: string; label: string; value: number; tone?: 'gold' | 'soul' | 'power'; onPlus?: () => void; plusLabel?: string }) {
   const { value } = props;
+  // 전투력은 100만 아래까지 쉼표 넣은 정확한 숫자(2026-10-07 사용자: 강화해도 10.0k→10.1k라 오르는 느낌이 약하다)
+  const fmt = (n: number) => (props.tone === 'power' && Math.abs(n) < 1e6 ? Math.round(n).toLocaleString('en-US') : formatNum(n));
   const [shown, setShown] = useState(value);
   const [gain, setGain] = useState(false);
   // 떠오르는 숫자: key가 바뀌면 애니메이션을 처음부터
@@ -55,8 +57,8 @@ export default function CurrencyPill(props: { icon: string; label: string; value
   return (
     <span className={`pill cur ${gain ? 'gain' : ''}`} aria-label={props.label}>
       <img src={props.icon} alt="" draggable={false} />
-      <b>{formatNum(shown)}</b>
-      {pop && <i key={pop.key} className={`gain-pop ${props.tone ?? 'gold'}`} aria-hidden="true">+{formatNum(pop.amount)}</i>}
+      <b>{fmt(shown)}</b>
+      {pop && <i key={pop.key} className={`gain-pop ${props.tone ?? 'gold'}`} aria-hidden="true">+{fmt(pop.amount)}</i>}
       {/* "+"(PixelLab 보라 돌, 2026-10-02 승인 A): 누르면 상점 그 재화 탭으로 */}
       {props.onPlus && <button className="pill-plus" onClick={props.onPlus} aria-label={props.plusLabel}><img src="ui/plus.png" alt="" draggable={false} /></button>}
     </span>

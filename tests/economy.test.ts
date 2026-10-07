@@ -76,10 +76,10 @@ describe('economy', () => {
     expect([1, 2, 3, 4, 10].map(floorsUnlocked)).toEqual([1, 2, 2, 3, 3]);
   });
 
-  it('power: the starting castle (slime, skeleton, lord all lv1) is exactly 100 and grows with levels', () => {
+  it('power: the starting castle (slime, skeleton, lord all lv1) is exactly 10,000 (2026-10-07 power ×100) and grows with levels', () => {
     const start = [{ monsters: [{ id: 'slime' as const, level: 1 }, { id: 'skeleton' as const, level: 1 }] }];
-    expect(castlePower(1, start)).toBe(100);
+    expect(castlePower(1, start)).toBe(10_000);
     const lv10 = [{ monsters: [{ id: 'slime' as const, level: 10 }, { id: 'skeleton' as const, level: 10 }] }];
-    expect(castlePower(1, lv10)).toBeGreaterThan(200);
+    expect(castlePower(1, lv10)).toBeGreaterThan(20_000);
   });
 });
