@@ -1,6 +1,6 @@
 import { featuresOf } from '../../server/src/features';
 import { recommendedUpgrade } from '../render/powerTips';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { BALANCE, HEROES, MONSTERS, type HeroId, type MonsterId, type SkillId, type Stats } from '../../server/src/catalog';
 import { castleUpgradeCost, floorsUnlocked, heroBonusLevels, unitUpgradeCost } from '../../server/src/economy';
 import { awakenCost, formatNum } from '../../server/src/growth';
@@ -22,11 +22,12 @@ export function Stars(props: { n?: number }) {
 }
 
 /** 강화 창(2026-10-02 사용자): 골드로 레벨 50까지, 레벨 50이면 같은 버튼이 각성(영혼석)으로 바뀐다. 마왕 각성은 성 줄 아래 */
-export default function Upgrade(props: {
+/** 창을 닫아도 지우지 않고 숨겨 두므로(2026-10-06 렉), 홈 데이터나 콜백이 바뀔 때만 다시 그린다 */
+export default memo(function Upgrade(props: {
   api: Api; home: HomeData; onRefresh: () => Promise<void>; onError: (m: string) => void; onShop: () => void;
 }) {
   return <UpgradeList {...props} />;
-}
+});
 
 function useAct(onRefresh: () => Promise<void>, onError: (m: string) => void) {
   const [busy, setBusy] = useState(false);

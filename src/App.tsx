@@ -87,6 +87,10 @@ export default function App() {
   const [shopOpen, setShopOpen] = useState(false);
   const [shopTab, setShopTab] = useState<'soul' | 'gold' | 'special'>('soul');
   const openShop = (tab: 'soul' | 'gold' | 'special' = 'soul') => { setPanel(null); setSummonOpen(false); setShopTab(tab); setShopOpen(true); };
+  const openSoulShop = useCallback(() => { setPanel(null); setSummonOpen(false); setShopTab('soul'); setShopOpen(true); }, []);
+  // 강화 창은 한 번 열면 계속 붙여 두고 숨기기만 한다
+  const [upgradeMounted, setUpgradeMounted] = useState(false);
+  useEffect(() => { if (panel?.name === 'upgrade') setUpgradeMounted(true); }, [panel?.name]);
   // 내 브래킷 순위: 홈 아이콘에 숫자로. 홈을 열 때·공략이 끝났을 때·2분마다 가볍게 받아 온다(강화마다 받지 않는다)
   const [rank, setRank] = useState<number | null>(null);
   const rankBusy = useRef(false);
@@ -387,8 +391,7 @@ export default function App() {
         );
         break;
       case 'upgrade':
-        title = T.panels.upgrade;
-        body = <Upgrade api={api} home={home} onRefresh={refresh} onError={onError} onShop={() => openShop('soul')} />;
+        // 강화 창은 아래에서 따로 그린다(닫아도 숨기기만 한다)
         break;
       case 'log':
         title = T.panels.log;
@@ -439,7 +442,18 @@ export default function App() {
         rank={rank}
         onError={onError}
       />
-      {panel && !centered && (
+      {/* 강화 창: 처음 연 뒤로는 닫아도 지우지 않고 숨긴다. 열고 닫을 때마다 줄을 새로 만들지 않게(2026-10-06 사용자: 눌렀다 닫으면 렉) */}
+      {upgradeMounted && (
+        <section className="sheet" style={panel?.name === 'upgrade' ? undefined : { display: 'none' }}>
+          <header className="sheet-head">
+            <span>{T.panels.upgrade}</span>
+            {/* 숨긴 동안에는 튜토리얼 표식을 떼어 다른 창의 닫기 버튼과 겹치지 않게 */}
+            <button className="close" data-tut={panel?.name === 'upgrade' ? 'panel-close' : undefined} onClick={() => setPanel(null)} aria-label={T.close}><img src="ui/close_x.png" alt="" draggable={false} /></button>
+          </header>
+          <div className="sheet-body"><Upgrade api={api} home={home} onRefresh={refresh} onError={onError} onShop={openSoulShop} /></div>
+        </section>
+      )}
+      {panel && !centered && panel.name !== 'upgrade' && (
         <section className="sheet">
           <header className="sheet-head">
             <span>{title}</span>

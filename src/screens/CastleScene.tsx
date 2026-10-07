@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import CurrencyPill from '../render/CurrencyPill';
 import { BALANCE, HERO_ORDER, LORD, MONSTERS, type HeroId } from '../../server/src/catalog';
 import { floorsUnlocked } from '../../server/src/economy';
@@ -52,18 +52,6 @@ function levelFor(index: number): number {
   return BALANCE.maxCastleLevel;
 }
 
-function useHeight(ref: React.RefObject<HTMLElement | null>): number {
-  const [h, setH] = useState(0);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setH(el.clientHeight));
-    ro.observe(el);
-    setH(el.clientHeight);
-    return () => ro.disconnect();
-  }, [ref]);
-  return h;
-}
 
 
 type ReplayPhase = { floor: number | null; cleared: number[]; result: ReplayState['result'] };
@@ -127,6 +115,67 @@ const ReplayLayer = memo(function ReplayLayer(props: {
         );
       })}
     </div>
+  );
+});
+
+/**
+ * 탑(마왕·층 몬스터·층 버튼·공성 재생). 아래 창을 여닫아도 다시 그리지 않게 따로 떼었다(2026-10-06 사용자: 강화 탭을 여닫으면 렉).
+ * 홈 데이터·재생 단계·크기가 바뀔 때만 다시 그린다
+ */
+const TowerView = memo(function TowerView(props: {
+  towerRef: React.RefObject<HTMLDivElement | null>; s: UserState; unitScale: number; open: number; replay: ReplayPhase; throneFight: boolean; rubyAura: boolean;
+  lordSkin: LordSkin | undefined; replaying: boolean; lordHp: number; defending: boolean; selected: number | null; onTier: (i: number, locked: boolean) => void;
+  replayWave: SiegeWave | null; speed: Speed; perKill: number; floorsCount: number; onPhase: (p: ReplayPhase) => void;
+}) {
+  const { towerRef, s, unitScale, open, replay, throneFight, rubyAura, lordSkin, replaying, lordHp, defending, selected, onTier, replayWave, speed, perKill, floorsCount, onPhase } = props;
+  return (
+        <div className="tower" ref={towerRef}>
+          <img src="sprites/tower.png" alt="" draggable={false} />
+
+          {/* 옥좌에서 싸우는 동안은 아래 재생 층이 마왕을 그린다 */}
+          {!throneFight && (
+            <div className={`unit-at lord-at ${rubyAura ? 'aura ruby' : lordSkin ? 'aura' : ''}`} style={at(50, THRONE.stand)}>
+              <StarRow n={s.stars?.lord} className="unit-stars" />
+              {!s.run && <span className="lord-hp"><span style={{ width: `${(replaying ? 1 : lordHp) * 100}%` }} /></span>}
+              {/* 옛 연출(성문 앞 싸움) 동안에는 마왕도 공격 동작 */}
+              <Sprite id={lordSpriteId(lordSkin)} anim={defending && !replaying ? 'attack' : 'idle'} label={T.units.lord} scale={unitScale} />
+            </div>
+          )}
+
+          {TIERS.map((tier, i) => {
+            const floor = s.castle.floors[i];
+            const locked = i >= open || !floor;
+            return (
+              <div key={i}>
+                {/* 싸우는 층은 재생 층이 그린다. 이미 뚫린 층의 몬스터는 파도가 끝날 때까지 쓰러진 채로 */}
+                {!locked && replay.floor !== i && floor.monsters.map((m, j) => m && (
+                  <div className={`unit-at ${replay.cleared.includes(i) ? 'rp-fallen' : ''}`} key={j} style={at(SLOT_X[j], tier.stand)}>
+                    {!replay.cleared.includes(i) && <StarRow n={s.stars?.[m]} className="unit-stars" />}
+                    {replay.cleared.includes(i)
+                      ? <Sprite id={monsterSpriteId(m, s.gear?.worn[m])} anim="death" className="once" label={T.units[m]} flip scale={unitScale} />
+                      : <Sprite id={monsterSpriteId(m, s.gear?.worn[m])} anim={defending && !replaying && i === 0 ? 'attack' : 'idle'} label={T.units[m]} flip scale={unitScale} />}
+                  </div>
+                ))}
+                <button
+                  className={`tier ${locked ? 'locked' : ''} ${selected === i ? 'on' : ''}`}
+                  data-tut={`floor-${i}`}
+                  style={{ top: `${tier.top}%`, height: `${tier.bottom - tier.top}%`, left: `${tier.inset}%`, right: `${tier.inset}%` }}
+                  disabled={!!s.run}
+                  onClick={() => onTier(i, locked)}
+                  aria-label={T.floor(i + 1)}
+                >
+                  {locked && <span className="chip">{T.lockedFloor(levelFor(i))}</span>}
+                </button>
+              </div>
+            );
+          })}
+
+          {/* 공성 실제 전투 재생: 따로 떼어 둔 층(ReplayLayer)이 그린다. 치고받을 때마다 이 화면 전체를 다시 그리지 않게(2026-10-06 렉) */}
+          <ReplayLayer
+            wave={replayWave} speed={speed} perKill={perKill} paused={!!s.run}
+            floorsCount={floorsCount} unitScale={unitScale} lordSkin={lordSkin} stars={s.stars} onPhase={onPhase}
+          />
+        </div>
   );
 });
 
@@ -235,6 +284,10 @@ export default function CastleScene(props: {
   const [replay, setReplay] = useState<ReplayPhase>(NO_PHASE);
   const onPhase = useCallback((p: ReplayPhase) => setReplay(p), []);
   const replaying = replay.floor !== null || replay.result !== null;
+  // 탑 층 누르기: 바뀌지 않는 함수로 넘겨 창을 여닫을 때 탑을 다시 그리지 않게
+  const tierCb = useRef({ onFloor, onLocked });
+  tierCb.current = { onFloor, onLocked };
+  const onTier = useCallback((i: number, locked: boolean) => (locked ? tierCb.current.onLocked() : tierCb.current.onFloor(i)), []);
   useEffect(() => {
     if (replay.result === null || !refreshAtResult.current) return;
     refreshAtResult.current = false;
@@ -278,7 +331,41 @@ export default function CastleScene(props: {
   // 영구 2배(옛 상품) 계정은 광고 2배를 쓰지 않는다
   const doubleLeft = home.state.idle.mult >= 2 ? 0 : adsLeft(home.state, 'idle_double', Date.now());
   const towerRef = useRef<HTMLDivElement>(null);
-  const k = useHeight(towerRef) / TOWER_H;
+  // 탑 크기(2026-10-06 렉): 창이 닫혀 있을 때 크기로 한 번 그려 두고, 창이 열리면 축소 효과(transform)로만 줄인다.
+  // 여닫을 때마다 탑 안 몬스터·층·재생을 새 크기로 다시 그리지 않게. 보이는 크기는 예전과 같다(닫힘: 93% − 138px, 열림: 93% − 60px)
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const panelOpenRef = useRef(panelOpen);
+  panelOpenRef.current = panelOpen;
+  const [towerBox, setTowerBox] = useState({ closedH: 0, openScale: 1 });
+  useEffect(() => {
+    const el = sceneRef.current;
+    if (!el) return;
+    const measure = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      const fit = (pad: number) => Math.max(0, Math.min(0.93 * h - pad, (w * TOWER_H) / 224));
+      setTowerBox((b) => {
+        if (!panelOpenRef.current) return b.closedH === fit(138) ? b : { ...b, closedH: fit(138) };
+        // 창을 연 채로 시작했으면(닫힌 크기를 아직 모름) 열린 크기를 기준으로
+        if (b.closedH === 0) return { closedH: fit(60), openScale: 1 };
+        const sc = Math.min(1, fit(60) / b.closedH);
+        return b.openScale === sc ? b : { ...b, openScale: sc };
+      });
+    };
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    measure();
+    return () => ro.disconnect();
+  }, []);
+  useLayoutEffect(() => {
+    const t = towerRef.current;
+    if (!t || towerBox.closedH === 0) return;
+    t.style.height = `${towerBox.closedH}px`;
+    t.style.bottom = panelOpen ? '12px' : '90px';
+    t.style.transformOrigin = '50% 100%';
+    t.style.transform = `translateX(-50%) scale(${panelOpen ? towerBox.openScale : 1})`;
+  }, [towerBox, panelOpen]);
+  const k = towerBox.closedH / TOWER_H;
   const open = floorsUnlocked(s.castle.level);
   const lordSkin = chooseLordSkin(s.lordSkin ?? null, s.skins ?? [], vipOf(s));
   // VIP 10: 마왕 테두리가 루비색으로 빛난다(외형과 상관없이)
@@ -316,7 +403,7 @@ export default function CastleScene(props: {
   const unitScale = k * 0.7;
 
   return (
-    <div className={`scene ${panelOpen ? 'panel-open' : ''}`}>
+    <div className={`scene ${panelOpen ? 'panel-open' : ''}`} ref={sceneRef}>
       <img className="backdrop" src="sprites/bg_night.png" alt="" draggable={false} />
       <header className="hud">
         <span className="hud-col">
@@ -334,53 +421,11 @@ export default function CastleScene(props: {
         <CurrencyPill icon="icons/soul.png" label={T.soul} value={home.soul} tone="soul" onPlus={tutorialOff ? () => onShop('soul') : undefined} plusLabel={T.icons.shop} />
       </header>
 
-      <div className="tower" ref={towerRef}>
-        <img src="sprites/tower.png" alt="" draggable={false} />
-
-        {/* 옥좌에서 싸우는 동안은 아래 재생 층이 마왕을 그린다 */}
-        {!throneFight && (
-          <div className={`unit-at lord-at ${rubyAura ? 'aura ruby' : lordSkin ? 'aura' : ''}`} style={at(50, THRONE.stand)}>
-            <StarRow n={s.stars?.lord} className="unit-stars" />
-            {!s.run && <span className="lord-hp"><span style={{ width: `${(replaying ? 1 : lordHp) * 100}%` }} /></span>}
-            {/* 옛 연출(성문 앞 싸움) 동안에는 마왕도 공격 동작 */}
-            <Sprite id={lordSpriteId(lordSkin)} anim={defending && !replaying ? 'attack' : 'idle'} label={T.units.lord} scale={unitScale} />
-          </div>
-        )}
-
-        {TIERS.map((tier, i) => {
-          const floor = s.castle.floors[i];
-          const locked = i >= open || !floor;
-          return (
-            <div key={i}>
-              {/* 싸우는 층은 재생 층이 그린다. 이미 뚫린 층의 몬스터는 파도가 끝날 때까지 쓰러진 채로 */}
-              {!locked && replay.floor !== i && floor.monsters.map((m, j) => m && (
-                <div className={`unit-at ${replay.cleared.includes(i) ? 'rp-fallen' : ''}`} key={j} style={at(SLOT_X[j], tier.stand)}>
-                  {!replay.cleared.includes(i) && <StarRow n={s.stars?.[m]} className="unit-stars" />}
-                  {replay.cleared.includes(i)
-                    ? <Sprite id={monsterSpriteId(m, s.gear?.worn[m])} anim="death" className="once" label={T.units[m]} flip scale={unitScale} />
-                    : <Sprite id={monsterSpriteId(m, s.gear?.worn[m])} anim={defending && !replaying && i === 0 ? 'attack' : 'idle'} label={T.units[m]} flip scale={unitScale} />}
-                </div>
-              ))}
-              <button
-                className={`tier ${locked ? 'locked' : ''} ${selected === i ? 'on' : ''}`}
-                data-tut={`floor-${i}`}
-                style={{ top: `${tier.top}%`, height: `${tier.bottom - tier.top}%`, left: `${tier.inset}%`, right: `${tier.inset}%` }}
-                disabled={!!s.run}
-                onClick={() => (locked ? onLocked() : onFloor(i))}
-                aria-label={T.floor(i + 1)}
-              >
-                {locked && <span className="chip">{T.lockedFloor(levelFor(i))}</span>}
-              </button>
-            </div>
-          );
-        })}
-
-        {/* 공성 실제 전투 재생: 따로 떼어 둔 층(ReplayLayer)이 그린다. 치고받을 때마다 이 화면 전체를 다시 그리지 않게(2026-10-06 렉) */}
-        <ReplayLayer
-          wave={replayWave} speed={speed} perKill={perKill} paused={!!s.run}
-          floorsCount={floorsCount} unitScale={unitScale} lordSkin={lordSkin} stars={s.stars} onPhase={onPhase}
-        />
-      </div>
+      <TowerView
+        towerRef={towerRef} s={s} unitScale={unitScale} open={open} replay={replay} throneFight={throneFight} rubyAura={rubyAura}
+        lordSkin={lordSkin} replaying={replaying} lordHp={lordHp} defending={defending} selected={selected} onTier={onTier}
+        replayWave={replayWave} speed={speed} perKill={perKill} floorsCount={floorsCount} onPhase={onPhase}
+      />
 
       <Siege
         ground={panelOpen ? 12 : 90}
