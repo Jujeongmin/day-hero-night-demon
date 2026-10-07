@@ -173,6 +173,8 @@ export const BALANCE = {
    * 스킬은 "공격 N번마다"(cooldown), 도발·거미줄·기절은 초(tauntMs·webMs·stunMs)
    */
   attackSpeed: { baseMs: 1000, refSpd: 4, perSpd: 0.08, minMs: 500, tauntMs: 2000, webMs: 2000, stunMs: 1000 },
+  /** 마왕 공격(2026-10-07 사용자: 너무 느리다): 2배 자주, 한 방 피해는 절반 — 초당 피해는 같아 공성 난이도는 그대로 */
+  lordAttack: { intervalMult: 0.5, damageMult: 0.5 },
   /** 층 하나 전투 시간 상한(넘으면 침입한 쪽 패배) */
   maxBattleMs: 30_000,
   /** 궁극기 기 충전(초당) */

@@ -93,9 +93,10 @@ function makeFighter(
 }
 
 /** 공격 간격(ms): 속도가 빠를수록 짧다(거미줄에 걸리면 속도 −2) */
-export function attackIntervalMs(f: Pick<Fighter, 'spd' | 'web'>, t = 0): number {
+export function attackIntervalMs(f: Pick<Fighter, 'spd' | 'web'> & { kind?: UnitKind }, t = 0): number {
   const A = BALANCE.attackSpeed;
-  return Math.max(A.minMs, Math.round(A.baseMs * (1 + (A.refSpd - effSpd(f, t)) * A.perSpd)));
+  const ms = A.baseMs * (1 + (A.refSpd - effSpd(f, t)) * A.perSpd) * (f.kind === 'lord' ? BALANCE.lordAttack.intervalMult : 1);
+  return Math.max(A.minMs, Math.round(ms));
 }
 
 export function createFloorBattle(input: {
@@ -318,7 +319,9 @@ function chooseTarget(b: FloorBattle, f: Fighter): Fighter | null {
 }
 
 function strike(b: FloorBattle, f: Fighter, t: Fighter, mult: number, def: number, events: BattleEvent[], skill?: SkillId): void {
-  const dmg = calcDamage(f.atk, mult, def);
+  // 마왕은 2배 자주 치는 대신 한 방이 절반(초당 피해는 같다)
+  const raw = calcDamage(f.atk, mult, def);
+  const dmg = f.kind === 'lord' ? Math.max(1, Math.round(raw * BALANCE.lordAttack.damageMult)) : raw;
   events.push(skill ? { t: 'attack', from: f.key, to: t.key, dmg, skill } : { t: 'attack', from: f.key, to: t.key, dmg });
   applyDamage(b, t, dmg, events);
   // 흡혈(상시): 준 피해의 일부를 회복
