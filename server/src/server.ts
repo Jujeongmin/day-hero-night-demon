@@ -22,7 +22,7 @@ import { rngNext, seedFrom } from './rng';
 import { addSpend, planSpendClaim, spendOf } from './spend';
 import { planSummon, planWearGear, pullsToLegend, pullsToPity, summonOf } from './summon';
 import {
-  canAdvance, dayKey, defaultState, heroGrowth, isNew, isStage, migrateGrowth, resetState, resolveFloors, withDefaults,
+  canAdvance, dayKey, defaultState, GOLD_SCALE, heroGrowth, isNew, isStage, migrateGrowth, resetState, resolveFloors, withDefaults,
   type CastleSnapshot, type OnboardingState, type RaidLogEntry, type Run, type Target, type UserState,
 } from './state';
 
@@ -297,6 +297,17 @@ async function settleSpend(account: string, s: UserState, now: number): Promise<
   const next = { ...s, ...patch };
   if (plan.look && !s.skins.includes(plan.look)) await syncCastle(account, next);
   return next;
+}
+
+/** 골드 100배(2026-10-07) 전 계정: 가진 골드와 받지 않은 공성 골드를 한 번 100배로 맞춘다. 락 안에서만 부른다 */
+async function scaleGold(me: string, s: UserState): Promise<UserState> {
+  if ((s.goldScale ?? 1) >= GOLD_SCALE) return s;
+  const k = GOLD_SCALE / (s.goldScale ?? 1);
+  const gold = await $asset.get('gold');
+  if (gold > 0) await $asset.mint('gold', Math.floor(gold * (k - 1)));
+  const siege = { ...s.siege, pendingGold: Math.floor(s.siege.pendingGold * k) };
+  await save(me, { goldScale: GOLD_SCALE, siege });
+  return { ...s, goldScale: GOLD_SCALE, siege };
 }
 
 async function rollSeason(account: string, s: UserState, now: number): Promise<UserState> {
@@ -734,7 +745,7 @@ export class Server {
     const me = $sender.account;
     return withLocks([me], async () => {
       const now = Date.now();
-      const raided = await applyNpcRaids(me, await rollSeason(me, await loadState(me, now), now), now);
+      const raided = await applyNpcRaids(me, await rollSeason(me, await scaleGold(me, await loadState(me, now)), now), now);
       const { s, waves, soul: siegeSoul, lastLog } = await advanceSiege(me, raided, now);
       // 전투력 단위가 바뀐 뒤 처음 접속하면 매칭용 정보를 한 번 새로 쓴다(그 전 값은 옛 단위라 매칭에서 빠진다)
       if ((s.castleSyncV ?? 0) < CASTLE_SYNC_V && !isNew(await $global.getUserState(me))) {

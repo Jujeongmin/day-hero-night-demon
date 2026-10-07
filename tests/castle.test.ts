@@ -23,7 +23,7 @@ describe('castle rules', () => {
   });
 
   it('monster upgrade costs by level and rejects unowned', () => {
-    expect(planUpgrade(fresh(), 'monster', 'slime')).toEqual({ cost: 26, patch: { roster: { slime: { level: 2 }, skeleton: { level: 1 } } } });
+    expect(planUpgrade(fresh(), 'monster', 'slime')).toEqual({ cost: 2551, patch: { roster: { slime: { level: 2 }, skeleton: { level: 1 } } } });
     expect(() => planUpgrade(fresh(), 'monster', 'dragon')).toThrow();
   });
 

@@ -12,7 +12,7 @@ describe('home & economy', () => {
     server.connect({ account: 't5-alice' });
     const home = await server.getHome();
     expect(home.state.castle.level).toBe(1);
-    expect(home.gold).toBe(300);
+    expect(home.gold).toBe(30000);
     expect(home.state.raidLog.length).toBe(3);
   });
 
@@ -24,9 +24,9 @@ describe('home & economy', () => {
   test('upgrade spends gold and raises the level', async (server) => {
     server.connect({ account: 't5-carol' });
     await server.getHome();
-    expect((await server.upgrade('monster', 'slime')).cost).toBe(26);
+    expect((await server.upgrade('monster', 'slime')).cost).toBe(2551);
     const home = await server.getHome();
-    expect(home.gold).toBe(274);
+    expect(home.gold).toBe(30000 - 2551);
     expect(home.state.roster.slime.level).toBe(2);
   });
 
@@ -160,8 +160,8 @@ describe('pvp', () => {
     // 로컬 하네스의 $asset은 계정 인자를 무시하고 현재 접속 계정에만 적용한다.
     // 그래서 방어자 골드 증감은 여기서 검사하지 않고, 배포 서버에서 두 계정으로 확인한다(Task 13).
     if (end.won) {
-      expect(end.loot).toBe(30);
-      expect(home.state.raidLog[0].goldLost).toBe(30);
+      expect(end.loot).toBe(3000);
+      expect(home.state.raidLog[0].goldLost).toBe(3000);
       expect(home.state.shieldUntil > Date.now()).toBe(true);
     } else {
       expect(end.loot).toBe(0);
@@ -314,7 +314,7 @@ describe('reset', () => {
     await server.endRaid(true);
     await server.resetProgress('초기화');
     const home = await server.getHome();
-    expect(home.gold).toBe(300);
+    expect(home.gold).toBe(30000);
     expect(home.soul).toBe(0);
     expect(home.state.roster.slime.level).toBe(1);
     expect(home.state.onboarding.at).toBe('raid_sortie');
@@ -329,7 +329,7 @@ describe('ads', () => {
     await server.getHome();
     expect(await fails(server.claimAdReward('daily_supply', null))).toBe(true);
     expect(await fails(server.claimAdReward('daily_supply', 'short'))).toBe(true);
-    expect((await server.claimAdReward('daily_supply', id)).gold).toBe(1000);
+    expect((await server.claimAdReward('daily_supply', id)).gold).toBe(100000);
     server.connect({ account: 't30-ad2' });
     await server.getHome();
     expect(await fails(server.claimAdReward('daily_supply', id))).toBe(true);
@@ -341,7 +341,7 @@ describe('ads', () => {
     await server.getHome();
     await server.$onItemPurchased({ account: acct, purchaseId: `p-prem-${acct}`, productId: 'premium', quantity: 1 });
     const r = await server.claimAdReward('daily_supply', null);
-    expect(r.gold).toBe(1000);
+    expect(r.gold).toBe(100000);
     expect(await fails(server.claimAdReward('daily_supply', null))).toBe(true);
     expect(await fails(server.claimAdReward('idle_double', null))).toBe(true); // 방금 만든 계정은 받을 방치 수입이 0
     expect(await fails(server.claimAdReward('revive', null))).toBe(true);
@@ -462,7 +462,7 @@ describe('sortie tickets & gold for soulstones (2026-10-01)', () => {
     expect(r.gold).toBeGreaterThan(0);
     const home = await server.getHome();
     expect(home.soul).toBe(30); // 첫 구매 2배(60) − 골드 주머니 30
-    expect(home.gold).toBe(300 + r.gold);
+    expect(home.gold).toBe(30000 + r.gold);
     expect(await fails(server.buyGold('gold_mountain'))).toBe(true);
   });
 
@@ -471,7 +471,7 @@ describe('sortie tickets & gold for soulstones (2026-10-01)', () => {
     await server.getHome();
     const r = await server.buySortie();
     expect(r.daily.bought).toBe(1);
-    expect((await server.getHome()).gold).toBe(300 - r.cost);
+    expect((await server.getHome()).gold).toBe(30000 - r.cost);
   });
 });
 

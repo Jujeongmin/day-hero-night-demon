@@ -119,12 +119,13 @@ export const BALANCE = {
     costGrowth: 1.3,
     /** 골드 보상(공성·방치·전리품·고정 보상): 단계마다 ×1.18 — 비용보다 느리게 늘어 갈수록 천천히 큰다 */
     goldGrowth: 1.18,
-    unitCostBase: 50,
+    /** 2026-10-07 사용자: 골드를 버는 쪽·드는 쪽 모두 100배(숫자가 크게 튀는 맛, 성장 속도는 그대로). 50 → 5000 */
+    unitCostBase: 5000,
     /** 성 1레벨 = 마왕 10레벨 */
     lordLevelsPerCastle: 10,
     castleCostFactor: 3,
     /** 공성 침입자 1명을 막을 때 골드(1단계 기준) */
-    goldPerInvader: 5,
+    goldPerInvader: 500,
     /** 방치 수입(시간당) = 공성 최고 단계 파도 골드 × 2 (2026-09-30 사용자 승인: 5 → 2, 자리 비운 보상이 너무 컸다) */
     idleWavesPerHour: 2,
     /** NPC 공략 전리품 = 파도 5번 값 */
@@ -215,7 +216,7 @@ export const BALANCE = {
   npcRaidMax: 4,
   firstWinSoul: 5,
   lordDefeatSoul: 3,
-  startGold: 300,
+  startGold: 30_000,
   seasonMs: 14 * 86_400_000,
   /** 첫 시즌 시작 = 출시일 2026-10-06 한국 시간 0시(= 10-05 15:00 UTC), 2026-10-02 사용자 결정. 14일 단위 */
   seasonEpoch: Date.UTC(2026, 9, 5, 15),
@@ -223,19 +224,19 @@ export const BALANCE = {
   /** 시즌 패스 트랙: 명예 이만큼마다 1단계 (2026-09-29 승인). 패스 줄 영혼석 합 480 = 같은 VX로 영혼석 주머니를 산 것의 4배(+300%, 2026-10-02 사용자) */
   passTierHonor: 150,
   passTiers: [
-    { free: { gold: 500 }, pass: { gold: 2000 } },
+    { free: { gold: 50000 }, pass: { gold: 200000 } },
     { free: { soul: 5 }, pass: { soul: 48 } },
-    { free: { gold: 1000 }, pass: { gold: 4000 } },
+    { free: { gold: 100000 }, pass: { gold: 400000 } },
     { free: { soul: 5 }, pass: { soul: 72 } },
-    { free: { gold: 1500 }, pass: { gold: 6000 } },
+    { free: { gold: 150000 }, pass: { gold: 600000 } },
     { free: { soul: 10 }, pass: { soul: 96 } },
-    { free: { gold: 2000 }, pass: { gold: 8000 } },
+    { free: { gold: 200000 }, pass: { gold: 800000 } },
     { free: { soul: 10 }, pass: { soul: 120 } },
-    { free: { gold: 3000 }, pass: { gold: 10000 } },
+    { free: { gold: 300000 }, pass: { gold: 1000000 } },
     { free: { soul: 20 }, pass: { soul: 144, skin: 'dragon' } },
   ] as { free: PassReward; pass: PassReward }[],
   /** VX 상품 1개당 지급량 (가격은 대시보드가 정한다) */
-  starterGold: 5000,
+  starterGold: 500_000,
   /**
    * 골드 묶음(반복 구매, 2026-09-30 사용자 승인 D안): 지급 = max(켜 둔 공성 hours시간치, 내 몬스터 평균 레벨 강화 upgrades번치).
    * 초반은 시간치, 후반은 강화 횟수치가 커진다. 영혼석당 양은 주머니 기준 +20%·+33%·+50%.
@@ -342,24 +343,24 @@ export const BALANCE = {
     daily: { sortie: 3, win: 1, upgrade: 10, idle: 1, soulEach: 5, soulAll: 20 },
     guide: [
       // 2026-10-02: 튜토리얼에서 배치를 빼고 첫 의뢰로(1층 3칸)
-      { kind: 'filled', target: 3, soul: 10, gold: 1000 },
-      { kind: 'unit', id: 'slime', target: 5, soul: 10, gold: 1000 },
-      { kind: 'wins', target: 3, soul: 10, gold: 1000 },
+      { kind: 'filled', target: 3, soul: 10, gold: 100000 },
+      { kind: 'unit', id: 'slime', target: 5, soul: 10, gold: 100000 },
+      { kind: 'wins', target: 3, soul: 10, gold: 100000 },
       // 2026-10-06: 소환이 성 Lv 3에 열려서 소환 의뢰 앞의 성 의뢰를 2 → 3
-      { kind: 'castle', target: 3, soul: 10, gold: 1000 },
-      { kind: 'filled', target: 6, soul: 10, gold: 1000 },
-      { kind: 'idle', target: 1, soul: 10, gold: 1000 },
-      { kind: 'summon', target: 1, soul: 20, gold: 3000 },
-      { kind: 'siege', target: 10, soul: 20, gold: 3000 },
-      { kind: 'castle', target: 4, soul: 20, gold: 3000 },
-      { kind: 'filled', target: 9, soul: 20, gold: 3000 },
-      { kind: 'wins', target: 15, soul: 30, gold: 6000 },
-      { kind: 'anyLevel', target: 25, soul: 30, gold: 6000 },
-      { kind: 'siege', target: 30, soul: 30, gold: 6000 },
-      { kind: 'stars', target: 1, soul: 50, gold: 6000 },
+      { kind: 'castle', target: 3, soul: 10, gold: 100000 },
+      { kind: 'filled', target: 6, soul: 10, gold: 100000 },
+      { kind: 'idle', target: 1, soul: 10, gold: 100000 },
+      { kind: 'summon', target: 1, soul: 20, gold: 300000 },
+      { kind: 'siege', target: 10, soul: 20, gold: 300000 },
+      { kind: 'castle', target: 4, soul: 20, gold: 300000 },
+      { kind: 'filled', target: 9, soul: 20, gold: 300000 },
+      { kind: 'wins', target: 15, soul: 30, gold: 600000 },
+      { kind: 'anyLevel', target: 25, soul: 30, gold: 600000 },
+      { kind: 'siege', target: 30, soul: 30, gold: 600000 },
+      { kind: 'stars', target: 1, soul: 50, gold: 600000 },
     ] as { kind: 'unit' | 'wins' | 'castle' | 'filled' | 'idle' | 'summon' | 'siege' | 'anyLevel' | 'stars'; id?: string; target: number; soul: number; gold: number }[],
     /** 목록 뒤: 공성 최고 +10단계 → 공략 +10승 → 몬스터 별 합 +1 을 돌아가며 */
-    cycle: { siegeStep: 10, winsStep: 10, starsStep: 1, soul: 20, gold: 8000 },
+    cycle: { siegeStep: 10, winsStep: 10, starsStep: 1, soul: 20, gold: 800_000 },
   },
   /** 시즌 순위 보상(2026-10-01 승인). 브래킷(30명) 순위별 영혼석 */
   seasonRankSoul: { first: 300, top3: 180, top10: 90, rest: 20 },
@@ -385,7 +386,7 @@ export const BALANCE = {
   premiumSoul: 360,
   premiumParts: { speed: 300, noAds: 500 },
   /** 광고 보상 (2026-09-30 사용자 승인 "강하게"): 일일 보급 골드 1k(공성 단계에 따라 커짐)·영혼석 3, 방치 수입 광고 받기 1.5배 */
-  adSupplyGold: 1000,
+  adSupplyGold: 100_000,
   adSupplySoul: 3,
   adIdleMult: 1.5,
   revivePerBuy: 1,

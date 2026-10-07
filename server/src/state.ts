@@ -133,6 +133,8 @@ export interface UserState {
   processedPurchases: string[];
   /** 처음 한 번 2배를 이미 받은 영혼석 묶음(상품 ID). 초기화해도 남는다 */
   firstBuys?: string[];
+  /** 골드 단위(2026-10-07 버는 쪽·드는 쪽 100배). 없으면 옛 단위 → 다음 접속 때 가진 골드·받지 않은 골드를 한 번 100배로 */
+  goldScale?: number;
   onboarding: OnboardingState;
   /** 광고 보상 오늘 횟수 (한국 시간 날짜) */
   ads: { day: string; counts: Partial<Record<string, number>> };
@@ -218,9 +220,13 @@ export function defaultState(account: string, now: number, seasonId: string): Us
     perks: { speed3: false, premium: false },
     skins: [],
     lordSkin: null,
+    goldScale: GOLD_SCALE,
     siege: { stage: 1, lastWaveAt: now, pendingGold: 0, best: 1 },
   };
 }
+
+/** 지금 골드 단위(BALANCE 골드 값이 100배가 된 뒤) */
+export const GOLD_SCALE = 100;
 
 export function resolveFloors(s: UserState): ResolvedFloor[] {
   return s.castle.floors.map((f) => ({

@@ -11,7 +11,7 @@ const apply = (s: UserState, r: ReturnType<typeof planAdReward>) => (r.ok ? { ..
 describe('planAdReward', () => {
   it('daily supply: gold + soul once a day', () => {
     const r = planAdReward(fresh(), 'daily_supply', NOW);
-    expect(r).toMatchObject({ ok: true, gold: 1000, soul: 3 });
+    expect(r).toMatchObject({ ok: true, gold: 100_000, soul: 3 });
     expect(r).toMatchObject({ gold: BALANCE.adSupplyGold, soul: BALANCE.adSupplySoul });
     const s2 = apply(fresh(), r);
     expect(planAdReward(s2, 'daily_supply', NOW)).toEqual({ ok: false, code: 'AD_LIMIT' });
@@ -34,10 +34,10 @@ describe('planAdReward', () => {
   });
 
   it('idle boost: pays 1.5× the idle income now, three a day, nothing to double → refused', () => {
-    let s = { ...fresh(), idle: { lastClaimAt: NOW - 2 * H, lastRaidAt: NOW, mult: 1 as const }, siege: { stage: 5, lastWaveAt: NOW, pendingGold: 30, best: 1 } };
+    let s = { ...fresh(), idle: { lastClaimAt: NOW - 2 * H, lastRaidAt: NOW, mult: 1 as const }, siege: { stage: 5, lastWaveAt: NOW, pendingGold: 3000, best: 1 } };
     const r = planAdReward(s, 'idle_double', NOW);
-    // 2시간 방치(최고 1단계: 시간당 파도 골드 15 × 2 = 30) 60 + 쌓인 공성 골드 30 의 1.5배
-    expect(r).toMatchObject({ ok: true, gold: 135, soul: 0 });
+    // 2시간 방치(최고 1단계: 시간당 파도 골드 1500 × 2 = 3000) 6000 + 쌓인 공성 골드 3000 의 1.5배 (2026-10-07 골드 100배)
+    expect(r).toMatchObject({ ok: true, gold: 13_500, soul: 0 });
     s = apply(s, r);
     expect(s.idle.lastClaimAt).toBe(NOW);
     expect(s.siege.pendingGold).toBe(0);

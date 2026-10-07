@@ -24,9 +24,9 @@ describe('purchases', () => {
     ]);
   });
 
-  it('starter pack: necromancer + 5000 gold + 30 soul', () => {
+  it('starter pack: necromancer + 500k gold + 30 soul (2026-10-07 gold ×100)', () => {
     const g = grantFor('starter_pack', 1, fresh());
-    expect(g.gold).toBe(5000);
+    expect(g.gold).toBe(500_000);
     expect(g.soul).toBe(30);
     expect(g.patch.roster?.necro).toEqual({ level: 1 });
   });

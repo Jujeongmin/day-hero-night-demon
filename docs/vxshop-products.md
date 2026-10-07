@@ -8,7 +8,7 @@
 
 | Product ID | Product Name | Price (VX) | Stock Quantity | Lifetime Limit | Period Limit | Time-Limited Sale | Image | Description (대시보드에 넣을 글) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `starter_pack` | Starter Pack | 100 | 999999 | 1 | — | — | `art/products/starter_pack.png` | The Necromancer (brings your first fallen monster back once per fight) + gold + 30 soulstones. Gold grows with your best siege stage (5,000 at the start). One per account. Counts toward VIP. |
+| `starter_pack` | Starter Pack | 100 | 999999 | 1 | — | — | `art/products/starter_pack.png` | The Necromancer (brings your first fallen monster back once per fight) + gold + 30 soulstones. Gold grows with your best siege stage (500,000 at the start). One per account. Counts toward VIP. |
 | `recruit_dragon` | Baby Dragon | 300 | 999999 | 1 | — | — | `art/products/recruit_dragon.png` | Recruit the Baby Dragon, who breathes fire on every enemy. One per account. Counts toward VIP. |
 | `season_pass` | Season Pass | 400 | 999999 | — | — | — (아래 참고) | `art/products/season_pass.png` | Unlocks the pass track of this 2-week season: 480 soulstones (4x what the same VX buys as soulstones), extra gold that grows with your siege stage, and the Black Dragon lord look to keep forever at tier 10. Every Demon Lord look you own gives the lord +10% stats, worn or not. Counts toward VIP. |
 | `speed_x3` | 3x Speed | 300 | 999999 | 1 | — | — | `art/products/speed_x3.png` | 3x speed for raids and sieges, forever. While the game is open, siege waves come every 40 seconds instead of every 2 minutes. One per account. Counts toward VIP. |
@@ -45,7 +45,7 @@
 
 | Product ID | 이름 | 가격 | 설명 |
 |---|---|---|---|
-| `starter_pack` | 스타터팩 / Starter Pack | 100 VX | 네크로맨서(전투마다 처음 쓰러진 몬스터를 한 번 되살린다) + 골드 + 영혼석 30. 골드는 공성 최고 단계에 맞춰 커진다(처음 5,000). 계정당 1번. / The Necromancer (brings your first fallen monster back once per fight) + gold + 30 soulstones. Gold grows with your best siege stage (5,000 at the start). One per account. |
+| `starter_pack` | 스타터팩 / Starter Pack | 100 VX | 네크로맨서(전투마다 처음 쓰러진 몬스터를 한 번 되살린다) + 골드 + 영혼석 30. 골드는 공성 최고 단계에 맞춰 커진다(처음 500,000). 계정당 1번. / The Necromancer (brings your first fallen monster back once per fight) + gold + 30 soulstones. Gold grows with your best siege stage (500,000 at the start). One per account. |
 | `season_pass` | 시즌 패스 / Season Pass | 400 VX | 이번 2주 시즌의 패스 줄을 연다: 영혼석 480개(같은 VX로 영혼석을 사는 것의 4배), 공성 단계에 맞춰 커지는 추가 골드, 10단계에서 영구 소장 흑룡 마왕 외형. 가진 마왕 외형마다 입지 않아도 마왕 능력치 +10%. / Unlocks the pass track of this 2-week season: 480 soulstones (4x what the same VX buys as soulstones), extra gold that grows with your siege stage, and the Black Dragon lord look to keep forever at tier 10. Every Demon Lord look you own gives the lord +10% stats, worn or not. |
 | `speed_x3` | 3배속 / 3x Speed | 300 VX | 공략·공성 3배속, 영구. 게임을 켜 둔 동안 공성 파도가 2분 대신 40초마다 온다. 계정당 1번. / 3x speed for raids and sieges, forever. While the game is open, siege waves come every 40 seconds instead of every 2 minutes. One per account. |
 | `premium` | 프리미엄 패스 / Premium Pass | 500 VX | 광고를 보지 않고 광고 보상을 바로 받는다(하루 한도는 같다). 영구. 계정당 1번. / Claim ad rewards instantly without watching ads (same daily limits). Forever. One per account. |
@@ -140,4 +140,9 @@
 - 상점의 "효율 200%" = (3배속 300 + 광고 없이 받기 500 + 영혼석 360을 주머니로 산 값 1,200) ÷ 1,000. 숫자는 `BALANCE.premiumSoul`·`premiumParts`, 가격은 `BALANCE.productVx.premium`(대시보드 가격과 같이 바꾼다).
 - 3배속 단품을 이미 산 계정이 프리미엄을 사도 영혼석 360과 광고 없이 받기를 받는다.
 - 그림: pixflux 256 `highly detailed` seed 1801 → 게임 `public/products/premium.png`(256), 대시보드 `art/products/premium.png`(NEAREST 2배 512). 원본 `art/products/hq/premium_256.png`, 옛 그림 `art/products/v1/premium_noads_512.png`.
+- 대시보드 반영: (날짜)
+
+## 골드 100배 (2026-10-07 사용자 결정) — 대시보드 할 일
+
+게임 골드 숫자를 버는 쪽·드는 쪽 모두 100배로 바꿨다(성장 속도는 같다). **`starter_pack` 설명의 "5,000 at the start"를 "500,000 at the start"로 바꿔 주세요.** 나머지 상품 설명에는 골드 숫자가 없다.
 - 대시보드 반영: (날짜)

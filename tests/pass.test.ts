@@ -33,7 +33,7 @@ describe('pass track', () => {
 
   it('the reward table matches the approved totals', () => {
     const sum = (k: 'free' | 'pass', f: 'gold' | 'soul') => BALANCE.passTiers.reduce((a, t) => a + (t[k][f] ?? 0), 0);
-    expect([sum('free', 'gold'), sum('free', 'soul'), sum('pass', 'gold'), sum('pass', 'soul')]).toEqual([8000, 50, 30000, 480]);
+    expect([sum('free', 'gold'), sum('free', 'soul'), sum('pass', 'gold'), sum('pass', 'soul')]).toEqual([800_000, 50, 3_000_000, 480]);
   });
 
   it('pass souls are 4x what the same VX buys as soul pouches (+300%)', async () => {
