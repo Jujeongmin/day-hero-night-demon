@@ -2,8 +2,8 @@
  * 공성 한 파도: 침입자를 열린 층에 고르게 나눠 모든 층이 동시에 싸운다(2026-10-06 사용자: 1층부터가 아니라 모든 층에, 몬스터도 늘 싸우게).
  * - 침입자 i번째는 몬스터가 있는 층에 번갈아 배정(층마다 섞인 구성).
  * - 모든 층 전투를 하나의 시계로 진행한다: 다음 행동이 가장 이른 층부터.
- * - 층을 뚫은 침입자는 체력을 floorRestHeal만큼 회복하고 위층으로: 몬스터가 살아 있으면 그 싸움에 합류(끝난 층이면 남은 몬스터와 다시),
- *   다 쓰러진 층은 지나쳐 올라가고, 옥좌까지 오면 마왕과 싸운다.
+ * - 층을 뚫은 침입자는 체력을 floorRestHeal만큼 회복하고 몬스터가 살아 있는 가장 가까운 층(같으면 아래층)으로: 싸우는 중이면 합류,
+ *   끝난 층이면 남은 몬스터와 다시. 모든 층의 몬스터가 쓰러진 뒤에야 옥좌로 가 마왕과 싸운다(2026-10-07).
  * - 마왕이 쓰러지면 뚫림, 침입자가 모두 쓰러지거나 시간이 다 되면 막음.
  */
 import { createFloorBattle, stepInPlace, type BattleEvent, type EnemySpec, type Fighter, type FloorBattle, type HeroSpec } from './battle';
@@ -60,35 +60,47 @@ export function simulateSiege(input: {
     log.floors.push({ floor: throne, start: battle.fighters.map(unitOf) });
   }
 
-  // 층을 뚫은 침입자를 위층으로
+  // 이 층에 살아 있는 몬스터가 있는가(싸우는 중이면 그 싸움, 끝났으면 남은 체력)
+  const monstersAlive = (g: number): boolean => {
+    const slot = slots[g];
+    return slot && slot.battle.outcome === 'ongoing'
+      ? slot.battle.fighters.some((x) => x.side === 'enemy' && x.hp > 0)
+      : left[g].length > 0 && left[g].some((e) => (e.hp ?? 1) > 0);
+  };
+
+  /**
+   * 층을 뚫은 침입자가 다음에 갈 층(2026-10-07 사용자: 2층을 뚫어도 1층 몬스터가 살아 있으면 1층부터, 다 정리한 뒤 마왕).
+   * 몬스터가 살아 있는 층 중 가까운 층(같으면 아래층), 없으면 옥좌
+   */
+  const nextFloor = (from: number): number => {
+    const alive = input.floors.map((_, g) => g).filter((g) => g < throne && g !== from && monstersAlive(g));
+    if (alive.length === 0) return throne;
+    return alive.sort((a, b) => Math.abs(a - from) - Math.abs(b - from) || a - b)[0];
+  };
+
+  // 층을 뚫은 침입자를 다음 층으로
   const climb = (from: number, survivors: Fighter[], now: number): void => {
     const rest = BALANCE.floorRestHeal;
     const movers = survivors.map((f) => ({ ...specOf.get(f.key)!, hp: Math.min(f.maxHp, f.hp + Math.round(f.maxHp * rest)) }));
-    for (let g = from + 1; g <= throne; g++) {
-      const slot = slots[g];
-      const monstersAlive = slot && slot.battle.outcome === 'ongoing'
-        ? slot.battle.fighters.some((x) => x.side === 'enemy' && x.hp > 0)
-        : left[g].some((e) => (e.hp ?? 1) > 0) && left[g].length > 0;
-      if (!monstersAlive) continue;
-      if (slot && slot.battle.outcome === 'ongoing') {
-        // 이미 싸우는 층: 그 싸움에 합류(다음 공격은 간격의 절반 뒤)
-        const { battle: tmp } = createFloorBattle({ heroes: movers, enemies: [], tactic: 'charge', seed: 0 });
-        const t = now - slot.t0;
-        for (const f of tmp.fighters) {
-          f.next += t;
-          slot.battle.fighters.push(f);
-        }
-      } else {
-        open(g, movers, now);
+    const g = nextFloor(from);
+    const slot = slots[g];
+    if (slot && slot.battle.outcome === 'ongoing') {
+      // 이미 싸우는 층: 그 싸움에 합류(다음 공격은 간격의 절반 뒤)
+      const { battle: tmp } = createFloorBattle({ heroes: movers, enemies: [], tactic: 'charge', seed: 0 });
+      const t = now - slot.t0;
+      for (const f of tmp.fighters) {
+        f.next += t;
+        slot.battle.fighters.push(f);
       }
-      if (log) {
-        const b = slots[g]!.battle;
-        for (const m of movers) {
-          const f = b.fighters.find((x) => x.key === `h:${m.key ?? m.id}`)!;
-          log.events.push({ t: 'join', key: f.key, kind: f.kind, hp: f.hp, maxHp: f.maxHp, from, floor: g, at: now });
-        }
+    } else {
+      open(g, movers, now);
+    }
+    if (log) {
+      const b = slots[g]!.battle;
+      for (const m of movers) {
+        const f = b.fighters.find((x) => x.key === `h:${m.key ?? m.id}`)!;
+        log.events.push({ t: 'join', key: f.key, kind: f.kind, hp: f.hp, maxHp: f.maxHp, from, floor: g, at: now });
       }
-      return;
     }
   };
 

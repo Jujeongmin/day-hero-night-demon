@@ -68,3 +68,27 @@ describe('away rewards (2026-09-30: siege gold halved while away)', () => {
     expect(late.gold).toBe(Math.floor(freshFull.gold * BALANCE.awaySiegeGoldMult));
   });
 });
+
+describe('invaders clear the floors that still stand before the lord (2026-10-07)', () => {
+  it('a floor broken early sends its invaders down to a floor still holding, and to the throne only when every floor is clear', () => {
+    const r = simulateSiege({
+      heroes: siegeWave(20),
+      floors: [
+        { enemies: [{ id: 'golem' as const, level: 30 }, { id: 'slime' as const, level: 30 }, { id: 'mushroom' as const, level: 30 }] },
+        { enemies: [{ id: 'imp' as const, level: 1 }] },
+        { enemies: [{ id: 'lord' as const, level: 40 }] },
+      ],
+      seed: 77, record: true,
+    });
+    const joins = r.log!.events.filter((e) => e.t === 'join');
+    const first = joins[0];
+    expect(first && first.t === 'join' && first.from).toBe(1);
+    expect(first.floor).toBe(0);
+    // 옥좌로 간 침입자가 있다면, 그때는 1층 몬스터가 이미 모두 쓰러졌다
+    const toThrone = joins.find((e) => e.floor === 2);
+    if (toThrone) {
+      const downs = r.log!.events.filter((e) => e.t === 'down' && e.floor === 0 && e.key.startsWith('e') && e.at <= toThrone.at);
+      expect(downs.length).toBe(3);
+    }
+  });
+});
