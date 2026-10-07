@@ -108,7 +108,7 @@ export default function Pass(props: { api: Api; home: HomeData; item?: ShopItem;
         </button>
       </div>
       {/* 단계를 올리는 방법(2026-10-07 사용자: 뭘 해야 오르는지 모르겠다) */}
-      <small className="pass-how">{T.pass.howTier(BALANCE.passTierHonor)} · {T.honorHow.replace(/^[^:：]*[:：]\s*/, '')}</small>
+      <small className="pass-how">{T.pass.howTier(BALANCE.passTierHonor)}</small>
       <div className="pass-track">
         <button className="btn small pass-arrow" disabled={page === 0} onClick={() => setPage(page - 1)} aria-label={T.pass.prev}>◀</button>
         <div className="pass-cards">
