@@ -98,7 +98,7 @@ export const en: Strings = {
   recruitSoul: (soul: number) => `Recruit (${soul} soulstones)`,
   monstersTitle: 'Monsters',
   heroesTitle: 'Heroes',
-  recruitTitle: 'Recruit',
+  recruitTitle: 'Recruit monsters',
   revengeBtn: 'Revenge',
   raidedLive: (name: string, g: number) => `${name} robbed your castle (−${F(g)})`,
   defendedLive: (name: string) => `Held off ${name}`,

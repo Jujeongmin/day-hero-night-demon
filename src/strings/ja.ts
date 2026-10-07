@@ -98,7 +98,7 @@ export const ja: Strings = {
   recruitSoul: (soul: number) => `仲間にする (魂石 ${soul})`,
   monstersTitle: 'モンスター',
   heroesTitle: '勇者',
-  recruitTitle: '仲間にする',
+  recruitTitle: 'モンスターを仲間にする',
   revengeBtn: '復讐',
   raidedLive: (name: string, g: number) => `${name}に城を襲われた (−${F(g)})`,
   defendedLive: (name: string) => `${name}の侵入を防いだ`,

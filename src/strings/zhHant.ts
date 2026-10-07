@@ -98,7 +98,7 @@ export const zhHant: Strings = {
   recruitSoul: (soul: number) => `招募 (魂石 ${soul})`,
   monstersTitle: '怪物',
   heroesTitle: '勇者',
-  recruitTitle: '招募',
+  recruitTitle: '招募怪物',
   revengeBtn: '復仇',
   raidedLive: (name: string, g: number) => `${name}搶了我的城堡 (−${F(g)})`,
   defendedLive: (name: string) => `擋下了${name}的入侵`,

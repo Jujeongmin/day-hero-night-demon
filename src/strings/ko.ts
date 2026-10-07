@@ -98,7 +98,7 @@ export const ko = {
   recruitSoul: (soul: number) => `영입 (영혼석 ${soul})`,
   monstersTitle: '몬스터',
   heroesTitle: '용사',
-  recruitTitle: '영입',
+  recruitTitle: '몬스터 영입',
   revengeBtn: '복수',
   raidedLive: (name: string, g: number) => `${name}가 내 성을 털었다 (−${F(g)})`,
   defendedLive: (name: string) => `${name}의 침입을 막았다`,
