@@ -81,3 +81,21 @@ describe('swing before the hit (2026-10-07: the attack motion should land the bl
     expect(states[swingIdx].units[to].hp).toBe(states[1].units[to].hp);
   });
 });
+
+describe('floating numbers stay few (2026-10-07: frame drops with dozens of numbers on screen)', () => {
+  it('a unit never carries more than 2 damage/heal/effect numbers at once; gold drops are kept', () => {
+    for (const stage of [5, 20, 35]) {
+      const w = fightWave({ account: 'f', stage, at: stage * W, castleLevel: 3, floors, record: true });
+      const states = play(buildBeats(w.log!, w.won, 30));
+      for (const st of states) {
+        const per = new Map<string, number>();
+        for (const f of st.floats) if (f.kind !== 'coin') per.set(f.unit, (per.get(f.unit) ?? 0) + 1);
+        for (const n of per.values()) expect(n).toBeLessThanOrEqual(2);
+      }
+      // 골드는 쓰러진 침입자마다 그대로
+      const coins = new Set(states.flatMap((st) => st.floats).filter((f) => f.kind === 'coin').map((f) => f.id));
+      const downs = w.log!.events.filter((e) => e.t === 'down' && e.key.startsWith('h:')).length;
+      expect(coins.size).toBe(w.won ? downs : 0);
+    }
+  });
+});

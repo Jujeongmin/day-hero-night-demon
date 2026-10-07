@@ -7,6 +7,7 @@ import { displayName, savedLang } from './strings/i18n';
 import LanguagePick from './screens/LanguagePick';
 import Loading from './screens/Loading';
 import { preloadFirstScreen } from './services/preload';
+import { keepScreenOn } from './services/wakeLock';
 import CastleScene from './screens/CastleScene';
 import CastleEdit from './screens/CastleEdit';
 import Match from './screens/Match';
@@ -125,6 +126,9 @@ export default function App() {
     const id = window.setTimeout(() => setMinShown(true), MIN_LOADING_MS);
     return () => window.clearTimeout(id);
   }, []);
+
+  // 방치형이라 켜 두고 보는 동안 화면이 꺼지지 않게(2026-10-07)
+  useEffect(() => keepScreenOn(), []);
 
   // 첫 입력에서 오디오를 풀고, 버튼을 누를 때마다 탭 소리
   useEffect(() => {

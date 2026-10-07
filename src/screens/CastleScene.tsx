@@ -59,6 +59,36 @@ const NO_PHASE: ReplayPhase = { active: false, result: null };
 const at = (x: number, y: number): CSSProperties => ({ left: `${x}%`, top: `${y}%` });
 
 /**
+ * 공성 재생 유닛 하나. 박자마다 바뀐 유닛만 다시 그린다(2026-10-07 사용자: 공성 시작 때 캐릭터가 많아 프레임이 떨어짐).
+ * 박자는 바뀐 유닛만 새 객체로 만들므로 u가 그대로면 건너뛴다
+ */
+const ReplayUnit = memo(function ReplayUnit(props: {
+  u: RUnit; x: number; y: number; back: boolean; crowd: boolean; scale: number; stars: number | undefined; lordSkin: LordSkin | undefined;
+}) {
+  const { u, back, crowd } = props;
+  return (
+    <div className={`unit-at rp-unit ${u.side} ${u.dead ? 'dead' : ''} ${back ? 'back-row' : ''} ${crowd && u.kind !== 'captain' ? 'crowd' : ''}`} style={at(props.x, props.y)}>
+      {!u.dead && u.side === 'enemy' && <StarRow n={props.stars} className="unit-stars" />}
+      {/* 침입자도 모두 체력바(2026-10-06 사용자). 무리(7명+)는 작게 */}
+      {!u.dead && <span className="rp-hp"><span style={{ transform: `scaleX(${Math.max(0, u.hp / u.maxHp)})` }} /></span>}
+      {/* 휘두를 때마다 새로 그려 공격 동작을 처음부터, 맞을 때는 다시 그리지 않고 번쩍임만 번갈아(휘두르던 동작이 끊기지 않게) */}
+      <span className={`rp-flash ${u.hits > 0 ? `rp-hit${u.hits % 2}` : ''}`}>
+      <span key={`${u.id}:${u.swings}`} className={`rp-body ${u.attacking ? 'rp-lunge' : ''}`}>
+        <Sprite
+          id={u.kind === 'lord' ? lordSpriteId(props.lordSkin) : monsterSpriteId(u.kind, u.gear)}
+          anim={u.dead ? 'death' : u.attacking ? 'attack' : 'idle'}
+          className={u.dead ? 'once' : u.attacking && u.kind === 'lord' ? 'swing-fast' : ''}
+          label={T.units[u.kind] ?? ''}
+          flip={u.side === 'enemy'}
+          scale={props.scale}
+        />
+      </span>
+      </span>
+    </div>
+  );
+});
+
+/**
  * 공성 재생 층(탑 위): 모든 층이 동시에 싸운다(2026-10-06). 층마다 왼쪽에 그 층 침입자, 오른쪽에 그 층 몬스터(옥좌는 마왕).
  * 아래층을 뚫은 침입자는 위층 자리로 옮겨 선다. 재생 상태를 이 안에서만 들고 있어 치고받을 때마다 홈 화면 전체가 다시 그려지지 않는다.
  * 재생 시작·결과가 바뀔 때만 onPhase로 화면에 알린다.
@@ -68,7 +98,7 @@ const ReplayLayer = memo(function ReplayLayer(props: {
   floorsCount: number; unitScale: number; lordSkin: LordSkin | undefined; stars: UserState['stars']; onPhase: (p: ReplayPhase) => void;
 }) {
   const { speed, floorsCount, unitScale, lordSkin, onPhase } = props;
-  const replay = useSiegeReplay(props.wave, speed, props.perKill, props.paused);
+  const replay = useSiegeReplay(props.wave, speed, props.perKill, props.paused, lordSpriteId(lordSkin));
   useEffect(() => {
     onPhase({ active: replay.active, result: replay.result });
   }, [replay.active, replay.result, onPhase]);
@@ -101,24 +131,10 @@ const ReplayLayer = memo(function ReplayLayer(props: {
         const p = place.get(u.id)!;
         return (
           // 침입자는 층을 옮겨도 같은 이름이라 같은 칸이 위층으로 옮겨 간다
-          <div key={u.id} className={`unit-at rp-unit ${u.side} ${u.dead ? 'dead' : ''} ${p.back ? 'back-row' : ''} ${p.crowd && u.kind !== 'captain' ? 'crowd' : ''}`} style={at(p.x, p.y)}>
-            {!u.dead && u.side === 'enemy' && <StarRow n={props.stars?.[u.kind as keyof NonNullable<UserState['stars']>]} className="unit-stars" />}
-            {/* 침입자도 모두 체력바(2026-10-06 사용자). 무리(7명+)는 작게 */}
-            {!u.dead && <span className="rp-hp"><span style={{ width: `${(u.hp / u.maxHp) * 100}%` }} /></span>}
-            {/* 휘두를 때마다 새로 그려 공격 동작을 처음부터, 맞을 때는 다시 그리지 않고 번쩍임만 번갈아(휘두르던 동작이 끊기지 않게) */}
-            <span className={`rp-flash ${u.hits > 0 ? `rp-hit${u.hits % 2}` : ''}`}>
-            <span key={`${u.id}:${u.swings}`} className={`rp-body ${u.attacking ? 'rp-lunge' : ''}`}>
-              <Sprite
-                id={u.kind === 'lord' ? lordSpriteId(lordSkin) : monsterSpriteId(u.kind, u.gear)}
-                anim={u.dead ? 'death' : u.attacking ? 'attack' : 'idle'}
-                className={u.dead ? 'once' : u.attacking && u.kind === 'lord' ? 'swing-fast' : ''}
-                label={T.units[u.kind] ?? ''}
-                flip={u.side === 'enemy'}
-                scale={scaleOf(u, p.crowd)}
-              />
-            </span>
-            </span>
-          </div>
+          <ReplayUnit
+            key={u.id} u={u} x={p.x} y={p.y} back={p.back} crowd={p.crowd} scale={scaleOf(u, p.crowd)}
+            stars={u.side === 'enemy' ? props.stars?.[u.kind as keyof NonNullable<UserState['stars']>] : undefined} lordSkin={lordSkin}
+          />
         );
       })}
       {replay.floats.map((f) => {

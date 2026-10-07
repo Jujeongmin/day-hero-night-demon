@@ -4,6 +4,8 @@ import { formatNum } from '../../server/src/growth';
 import { SIEGE_REPLAY, waveSpeedUp } from '../../server/src/siege';
 import { sfx, type Sfx } from '../services/audio';
 import { T } from '../strings/ko';
+import SPRITES from './sprites.json';
+import { monsterSpriteId } from './skins';
 
 /**
  * 홈 화면 공성 = 서버가 실제로 싸운 기록(SiegeLog)을 그대로 재생한다 (2026-09-30 사용자 결정: 연출 말고 실제 로직).
@@ -54,8 +56,14 @@ export const IDLE_REPLAY: ReplayState = { active: false, units: {}, floats: [], 
 export const BEAT_MS = { enter: SIEGE_REPLAY.enterMs, end: 420, result: SIEGE_REPLAY.resultMs };
 
 let floatSeq = 0;
+/** 한 유닛 위에 동시에 떠 있는 글자 수. 여럿이 한 명을 치면 숫자가 수십 개 쌓여 휴대폰에서 프레임이 떨어졌다(2026-10-07) */
+const FLOATS_PER_UNIT = 2;
+
 function float(s: ReplayState, unitId: string, text: string, kind: RFloat['kind']): ReplayState {
-  return { ...s, floats: [...s.floats, { id: ++floatSeq, unit: unitId, text, kind }] };
+  // 같은 유닛의 오래된 글자부터 뺀다(골드는 보상이라 남긴다)
+  let mine = s.floats.filter((f) => f.unit === unitId && f.kind !== 'coin').length - (FLOATS_PER_UNIT - 1);
+  const kept = mine > 0 ? s.floats.filter((f) => !(f.unit === unitId && f.kind !== 'coin' && mine-- > 0)) : s.floats;
+  return { ...s, floats: [...kept, { id: ++floatSeq, unit: unitId, text, kind }] };
 }
 
 function unit(s: ReplayState, id: string, patch: (u: RUnit) => Partial<RUnit>): ReplayState {
@@ -170,6 +178,31 @@ export function buildBeats(log: SiegeLog, held: boolean, perKill: number): Beat[
   });
 }
 
+/** 그림을 미리 푸는 데 이만큼까지만 기다리고 재생을 시작한다 */
+const PREDECODE_MS = 250;
+const decoded = new Map<string, HTMLImageElement>();
+
+/**
+ * 이 파도에 나오는 그림(대기·공격·쓰러짐)을 재생 전에 미리 풀어 둔다. 첫 장면에서 여러 장을 한꺼번에 풀면 프레임이 떨어진다
+ * (2026-10-07 사용자: 공성 시작 때 프레임 드랍). 한 번 푼 그림은 들고 있어서 다음 파도부터는 바로 시작한다
+ */
+function predecode(log: SiegeLog, lordId: string): Promise<unknown> {
+  const ids = new Set<string>();
+  for (const f of log.floors) for (const u of f.start) ids.add(u.kind === 'lord' ? lordId : monsterSpriteId(u.kind, u.gear));
+  const jobs: Promise<unknown>[] = [];
+  for (const id of ids) {
+    for (const anim of ['idle', 'attack', 'death']) {
+      const name = `${id}_${anim}`;
+      if (!(name in SPRITES) || decoded.has(name)) continue;
+      const img = new Image();
+      img.src = `sprites/${name}.png`;
+      decoded.set(name, img);
+      jobs.push(img.decode().catch(() => undefined));
+    }
+  }
+  return Promise.all(jobs);
+}
+
 /** 떠오르는 글자는 이만큼 뒤에 목록에서 뺀다 */
 const FLOAT_LIFE_MS = 1100;
 
@@ -177,7 +210,7 @@ const FLOAT_LIFE_MS = 1100;
  * 새 파도(at이 바뀜)가 로그와 함께 오면 처음부터 재생한다. speed는 재생 중에 바뀌어도 다음 박자부터 따른다.
  * 효과음이 너무 촘촘하면(3×) 90ms 안에 겹친 것은 건너뛴다.
  */
-export function useSiegeReplay(wave: { at: number; won: boolean; log?: SiegeLog } | null, speed: number, perKill: number, paused: boolean): ReplayState {
+export function useSiegeReplay(wave: { at: number; won: boolean; log?: SiegeLog } | null, speed: number, perKill: number, paused: boolean, lordId: string): ReplayState {
   const [state, setState] = useState<ReplayState>(IDLE_REPLAY);
   const played = useRef(0);
   const speedRef = useRef(speed);
@@ -192,9 +225,14 @@ export function useSiegeReplay(wave: { at: number; won: boolean; log?: SiegeLog 
 
   // 재생 타이머는 새 파도가 올 때나 멈출 때만 끊는다. 홈을 다시 받아 파도 값이 비어도(다음 조회엔 안 실림) 재생은 계속된다
   const timer = useRef(0);
+  // 재생마다 번호: 그림을 푸는 동안 멈추거나 새 파도가 오면 늦게 끝난 풀기가 옛 재생을 시작하지 않게
+  const gen = useRef(0);
+  const lordIdRef = useRef(lordId);
+  lordIdRef.current = lordId;
   const stop = () => {
     window.clearTimeout(timer.current);
     timer.current = 0;
+    gen.current += 1;
   };
   useEffect(() => {
     const w = waveRef.current;
@@ -215,7 +253,16 @@ export function useSiegeReplay(wave: { at: number; won: boolean; log?: SiegeLog 
       }
       if (i < beats.length) timer.current = window.setTimeout(tick, b.ms / speedRef.current);
     };
-    tick();
+    // 그림을 다 풀거나 PREDECODE_MS가 지나면 시작(기다리는 동안도 timer가 차 있어 멈춤·숨김이 그대로 듣는다)
+    const g = gen.current;
+    let started = false;
+    const go = () => {
+      if (started || gen.current !== g) return;
+      started = true;
+      tick();
+    };
+    timer.current = window.setTimeout(go, PREDECODE_MS);
+    void predecode(w.log, lordIdRef.current).then(go);
   }, [at, paused]);
   // 공략에 들어가 멈추면 지운다
   useEffect(() => {
@@ -251,9 +298,10 @@ export function useSiegeReplay(wave: { at: number; won: boolean; log?: SiegeLog 
       setState((s) => {
         for (const f of s.floats) if (!born.current.has(f.id)) born.current.set(f.id, t);
         const keep = s.floats.filter((f) => t - born.current.get(f.id)! < FLOAT_LIFE_MS);
-        if (keep.length === s.floats.length) return s;
-        for (const f of s.floats) if (!keep.includes(f)) born.current.delete(f.id);
-        return { ...s, floats: keep };
+        // 수명이 다했거나 유닛당 개수 제한으로 이미 빠진 글자는 기억에서도 지운다
+        const live = new Set(keep.map((f) => f.id));
+        for (const id of born.current.keys()) if (!live.has(id)) born.current.delete(id);
+        return keep.length === s.floats.length ? s : { ...s, floats: keep };
       });
     }, 250);
     return () => window.clearInterval(id);

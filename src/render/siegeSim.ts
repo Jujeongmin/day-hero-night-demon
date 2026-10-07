@@ -71,6 +71,8 @@ export const waveRunning = (s: SiegeState): boolean => s.invaders.length > 0;
 
 /** dt초 진행. */
 export function stepSiege(s: SiegeState, dt: number): SiegeState {
+  // 아무 일도 없으면 같은 상태를 돌려 화면을 다시 그리지 않는다(실제 전투 재생 중에도 이 틱이 계속 돈다, 2026-10-07 프레임 드랍)
+  if (s.invaders.length === 0 && s.coins.length === 0 && s.held === null && s.castleHp >= SIEGE.castleMax) return s;
   const coins: Coin[] = s.coins.map((c) => ({ ...c, age: c.age + dt })).filter((c) => c.age < SIEGE.coinFor);
   let castleHp = s.castleHp;
   const fighters = s.invaders.filter((v) => v.state === 'fight').length;
