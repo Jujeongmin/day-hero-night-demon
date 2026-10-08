@@ -231,6 +231,7 @@ export const ja: Strings = {
   stuck: {
     title: (n: number) => `ウェーブ${n}で止まっている`,
     sub: 'こうすれば強くなれる',
+    advice: (need: string, mine: string) => `推奨戦闘力 ${need} · 現在 ${mine}`,
     fill: (name: string) => `${name}を空きマスに置く`,
     monster: (name: string) => `${name}を強化`,
     castle: '城を強化 — 魔王のレベルが大きく上がる',
@@ -251,6 +252,7 @@ export const ja: Strings = {
     farm: (n: number) => `ウェーブ${n} 繰り返し中`,
     challenge: (n: number) => `ウェーブ${n}に挑戦`,
     challengeReady: '挑戦中！',
+    advice: (p: string) => `推奨 ${p}`,
     breachedFarm: '突破された！前のウェーブを繰り返す',
     stage: (n: number) => `ウェーブ${n}`,
     next: (n: number, ms: number) => `ウェーブ${n} · ${Math.floor(ms / 60_000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`,

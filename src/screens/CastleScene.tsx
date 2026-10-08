@@ -5,7 +5,7 @@ import { floorsUnlocked } from '../../server/src/economy';
 import { siegeCount } from '../../server/src/siege';
 import { formatNum, waveGold } from '../../server/src/growth';
 import AdButton from '../render/AdButton';
-import Siege from '../render/Siege';
+import Siege, { powerText } from '../render/Siege';
 import { useSiegeReplay, type ReplayState, type RUnit } from '../render/siegeReplay';
 import Sprite from '../render/Sprite';
 import { adsLeft } from '../services/ads';
@@ -473,6 +473,8 @@ export default function CastleScene(props: {
         paused={!!s.run}
         stage={s.siege?.stage ?? 1}
         replayStage={replay.active && lastWave?.stage ? lastWave.stage : undefined}
+        advice={home.waveAdvice?.power}
+        power={home.power}
         best={s.siege?.best ?? s.siege?.stage ?? 1}
         onRank={onSiegeRank}
         lastWave={lastWave}
@@ -552,6 +554,11 @@ export default function CastleScene(props: {
       {stuck !== null && !away && !s.run && !panelOpen && (
         <div className="away-card stuck-card">
           <b>{T.stuck.title(stuck)}</b>
+          {home.waveAdvice?.power != null && (
+            <span className={`siege-advice inline ${home.power >= home.waveAdvice.power ? 'ok' : 'short'}`}>
+              <img src="icons/stat_atk.png" alt="" draggable={false} />{T.stuck.advice(powerText(home.waveAdvice.power), powerText(home.power))}
+            </span>
+          )}
           <small className="muted">{T.stuck.sub}</small>
           {powerTips(s, home.gold, home.soul).map((t) => {
             const l = tipLine(t);

@@ -8,6 +8,9 @@ import type { SiegeWave } from '../services/api';
 
 const TICK_MS = 66;
 
+/** 전투력 숫자: 위 전투력 표시와 같게 100만 아래는 그대로, 넘으면 줄여서 */
+export const powerText = (n: number) => (n < 1e6 ? Math.round(n).toLocaleString('en-US') : formatNum(n));
+
 /**
  * 홈 화면 공성 단계 표시(파도는 쉬지 않고 이어진다, 2026-10-06). 옛 성문 앞 연출은 전투 기록이 없는 파도에만.
  * 승패·단계·골드는 서버가 정하고, 여기서는 서버가 알려 준 마지막 파도 결과를 재생한다.
@@ -34,10 +37,13 @@ export default function Siege(props: {
   onChallenge: (() => void) | null;
   /** 지금 재생 중인 파도가 싸우는 단계(도전이면 한 단계 위). 재생 중에는 이 단계를 보인다(2026-10-08) */
   replayStage?: number;
+  /** 다음에 넘어야 할 웨이브의 권장 전투력과 내 전투력(2026-10-08 A안: 웨이브 표시 아래 늘 한 줄) */
+  advice?: number | null;
+  power: number;
   /** 재생 배속. 배속 버튼은 화면 위 HUD(골드 오른쪽)에 있다 */
   speed: Speed;
 }) {
-  const { ground, paused, stage, replayStage, best, onRank, lastWave, onFighting, onLordHp, compact, speed, replaying, replayResult, farming, onChallenge } = props;
+  const { ground, paused, stage, replayStage, advice, power, best, onRank, lastWave, onFighting, onLordHp, compact, speed, replaying, replayResult, farming, onChallenge } = props;
   const [s, setS] = useState<SiegeState>(idleSiege);
   // 재생 중에는 싸우기 전 단계를 보여 주고, 끝나면 새 단계로 바꾼다
   const [shownStage, setShownStage] = useState(stage);
@@ -114,6 +120,11 @@ export default function Siege(props: {
               </button>
             )}
           </div>
+          {advice != null && (
+            <div className={`pill siege-advice ${power >= advice ? 'ok' : 'short'}`}>
+              <img src="icons/stat_atk.png" alt="" draggable={false} />{T.siege.advice(powerText(advice))}
+            </div>
+          )}
         </>
       )}
       {s.coins.map((c) => {

@@ -777,3 +777,10 @@ span.up-pt { cursor: default; }
 .hint-pulse { animation: hintPulse 1s ease-in-out 3; }
 @keyframes hintPulse { 50% { filter: brightness(1.5) drop-shadow(0 0 8px #ffcf4d); transform: scale(1.06); } }
 .siege-challenge { animation: dotPop 1.4s ease-in-out infinite; }
+/* 웨이브 권장 전투력(2026-10-08 A안): 웨이브 표시 아래 한 줄. 내 전투력보다 높으면 빨강, 넘으면 초록 */
+.siege-advice { position: absolute; left: 50%; bottom: 52px; translate: -50% 0; display: flex; align-items: center; gap: 3px; white-space: nowrap; font-size: 12px; text-shadow: 0 2px 0 #000, 1px 0 0 #000, -1px 0 0 #000; }
+.siege-advice img { width: 14px; height: 14px; image-rendering: pixelated; }
+.siege-advice.short { color: #ff6b6b; }
+.siege-advice.ok { color: #7dff8a; }
+.siege-advice.inline { position: static; translate: none; }
+.pill.siege-advice { font-size: 12px; padding: 0 4px; }

@@ -5,6 +5,7 @@ import { lordLevel, lordMult, monsterMult, waveGold } from './growth';
 import { seedFrom } from './rng';
 import type { ResolvedFloor } from './state';
 import { vipPerks } from './vip';
+import { castlePower } from './economy';
 
 /** 파도 인원: 1단계 10명, 10단계마다 +1명, 최대 30명 */
 export function siegeCount(stage: number): number {
@@ -192,4 +193,46 @@ export function runSiege(p: {
   }
   const out = { stage, farming, peak, lastWaveAt: p.lastWaveAt + total * W, gold, waves, fresh };
   return lastLog ? { ...out, lastLog } : out;
+}
+
+/** 권장 전투력을 정할 때 싸워 보는 횟수(과반을 막으면 막는 것으로 본다) */
+const ADVICE_SEEDS = 3;
+
+/**
+ * 웨이브 권장 전투력(2026-10-08 사용자): 지금 편성 그대로 모든 몬스터 레벨을 똑같이 올리거나 내려 이 웨이브를 실제로 싸워 보고,
+ * 과반을 막아 내는 가장 낮은 지점의 전투력(화면 전투력과 같은 식). 배치·스킬에 따라 달라지므로 "요구"가 아니라 "권장".
+ * 몬스터가 하나도 없거나 아주 높게 올려도 못 막으면 null
+ */
+export function wavePowerAdvice(p: {
+  stage: number; castleLevel: number; floors: ResolvedFloor[]; mult: number; lordStars?: number; lordLooks?: number; lordSkin?: string;
+}): number | null {
+  const levels = p.floors.flatMap((f) => f.monsters.map((m) => m.level));
+  if (levels.length === 0) return null;
+  const shift = (d: number): ResolvedFloor[] => p.floors.map((f) => ({ monsters: f.monsters.map((m) => ({ ...m, level: Math.max(1, m.level + d) })) }));
+  const holds = (d: number): boolean => {
+    let won = 0;
+    for (let i = 0; i < ADVICE_SEEDS; i++) {
+      const r = fightWave({ account: 'advice', stage: p.stage, at: p.stage * 1000 + i, castleLevel: p.castleLevel, floors: shift(d), mult: p.mult, lordStars: p.lordStars, lordLooks: p.lordLooks, lordSkin: p.lordSkin });
+      if (r.won) won++;
+    }
+    return won * 2 > ADVICE_SEEDS;
+  };
+  let lo = 1 - Math.max(...levels);
+  let hi: number;
+  if (holds(lo)) {
+    hi = lo;
+  } else {
+    hi = 8;
+    while (!holds(hi)) {
+      lo = hi;
+      hi *= 2;
+      if (hi > 4096) return null;
+    }
+    // lo는 못 막음, hi는 막음: 가장 낮은 막는 지점
+    while (hi - lo > 1) {
+      const mid = Math.floor((lo + hi) / 2);
+      if (holds(mid)) hi = mid; else lo = mid;
+    }
+  }
+  return Math.round(castlePower(p.castleLevel, shift(hi), p.lordStars ?? 0, p.lordLooks ?? 0, p.lordSkin) * p.mult);
 }

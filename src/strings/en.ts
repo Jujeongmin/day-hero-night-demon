@@ -231,6 +231,7 @@ export const en: Strings = {
   stuck: {
     title: (n: number) => `Stuck at wave ${n}`,
     sub: 'Ways to get stronger',
+    advice: (need: string, mine: string) => `Recommended power ${need} · yours ${mine}`,
     fill: (name: string) => `Put ${name} in an empty slot`,
     monster: (name: string) => `Upgrade ${name}`,
     castle: 'Upgrade the castle — big jump in Demon Lord level',
@@ -251,6 +252,7 @@ export const en: Strings = {
     farm: (n: number) => `Wave ${n} (repeating)`,
     challenge: (n: number) => `Challenge wave ${n}`,
     challengeReady: 'Challenging!',
+    advice: (p: string) => `Recommended ${p}`,
     breachedFarm: 'Breached! Repeating the wave below',
     stage: (n: number) => `Wave ${n}`,
     next: (n: number, ms: number) => `Wave ${n} · ${Math.floor(ms / 60_000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`,

@@ -234,6 +234,7 @@ export const ko = {
   stuck: {
     title: (n: number) => `웨이브 ${n}에서 막혔다`,
     sub: '이렇게 세질 수 있다',
+    advice: (need: string, mine: string) => `권장 전투력 ${need} · 지금 ${mine}`,
     fill: (name: string) => `빈 칸에 ${name} 세우기`,
     monster: (name: string) => `${name} 강화`,
     castle: '성 강화 — 마왕 레벨이 크게 오른다',
@@ -254,6 +255,7 @@ export const ko = {
     farm: (n: number) => `웨이브 ${n} 반복 중`,
     challenge: (n: number) => `웨이브 ${n} 도전`,
     challengeReady: '도전 중!',
+    advice: (p: string) => `권장 ${p}`,
     breachedFarm: '막혔다! 이전 웨이브를 반복한다',
     stage: (n: number) => `웨이브 ${n}`,
     next: (n: number, ms: number) => `웨이브 ${n} · ${Math.floor(ms / 60_000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`,

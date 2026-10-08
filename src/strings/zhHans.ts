@@ -231,6 +231,7 @@ export const zhHans: Strings = {
   stuck: {
     title: (n: number) => `卡在第${n}波`,
     sub: '这样可以变强',
+    advice: (need: string, mine: string) => `推荐战力 ${need} · 当前 ${mine}`,
     fill: (name: string) => `把${name}放到空格`,
     monster: (name: string) => `强化${name}`,
     castle: '强化城堡 — 魔王等级大幅提升',
@@ -251,6 +252,7 @@ export const zhHans: Strings = {
     farm: (n: number) => `第${n}波 重复中`,
     challenge: (n: number) => `挑战第${n}波`,
     challengeReady: '挑战中！',
+    advice: (p: string) => `推荐 ${p}`,
     breachedFarm: '被突破！重复上一波',
     stage: (n: number) => `第${n}波`,
     next: (n: number, ms: number) => `第${n}波 · ${Math.floor(ms / 60_000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`,

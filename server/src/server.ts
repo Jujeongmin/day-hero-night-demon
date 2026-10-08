@@ -16,7 +16,7 @@ import { spendFor, vipOf, vipPerks } from './vip';
 import { championLookFor, chooseLordSkin, lookUnits, ownedLooks, planPassClaim } from './pass';
 import { bumpQuests, planClaimDaily, planClaimGuide } from './quests';
 import { grantFor } from './purchases';
-import { calledWaveGold, fightWave, milestoneSoul, runSiege, siegeAfter, siegeCallBlock, siegeFightStage, siegeReplayMs, siegeSpeed } from './siege';
+import { calledWaveGold, fightWave, wavePowerAdvice, milestoneSoul, runSiege, siegeAfter, siegeCallBlock, siegeFightStage, siegeReplayMs, siegeSpeed } from './siege';
 import { noteWall, WALL_BREACHES } from './offer';
 import { rngNext, seedFrom } from './rng';
 import { addSpend, planSpendClaim, spendOf } from './spend';
@@ -452,6 +452,15 @@ async function siegeSeasonTop(seasonId: string, limit: number): Promise<any[]> {
   return [...rows].sort((a: any, b: any) => b.best - a.best || a.at - b.at).slice(0, limit);
 }
 
+/** 다음에 넘어야 할 웨이브와 그 권장 전투력(모르면 power null) */
+function waveAdviceOf(s: UserState): { stage: number; power: number | null } {
+  const stage = s.siege.stage + (s.siege.farming ? 1 : 0);
+  const power = wavePowerAdvice({
+    stage, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLooks: lordLooksOf(s), lordSkin: wornLookOf(s),
+  });
+  return { stage, power };
+}
+
 /** 지난 공성 파도를 처리해 단계와 받지 않은 골드를 갱신한다. 방치 수입 버튼으로 함께 받는다. */
 async function advanceSiege(me: string, s: UserState, now: number): Promise<{ s: UserState; waves: { at: number; won: boolean }[]; soul: number; lastLog?: SiegeLog }> {
   const r = runSiege({
@@ -772,6 +781,8 @@ export class Server {
         // 자리를 비운 동안 처음 넘은 10단계 보상(영혼석). 화면에 한 번 알린다
         siegeSoul,
         power: displayPower(s.castle.level, resolveFloors(s), heroGrowth(s), lordStarsOf(s), lordLooksOf(s), wornLookOf(s)),
+        // 다음에 넘어야 할 웨이브(반복 중이면 도전할 웨이브)의 권장 전투력(2026-10-08). 지금 편성 기준
+        waveAdvice: waveAdviceOf(s),
         seasonEndsAt: seasonEndsAt(now),
         // 전체 알림: 최근 하루 것 최대 5개. 이미 본 것은 화면이 거른다
         news: withNews === false ? [] : await recentNews(now),
