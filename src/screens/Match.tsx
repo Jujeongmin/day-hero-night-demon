@@ -59,7 +59,7 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
       {intro && <p className="match-intro">{T.matchIntro}</p>}
       {!tutorial && !intro && (
         <div className="line">
-          <small className="muted">{T.sortieInfo(left, BALANCE.sortiesPerDay, lordSoulLeft(home.state, now), BALANCE.lordSoulPerDay)}</small>
+          <small className="muted">{T.sortieInfo(left, BALANCE.sortieMax, lordSoulLeft(home.state, now), BALANCE.lordSoulPerDay)}</small>
         </div>
       )}
       {!targets && <p className="muted">{T.loading}</p>}

@@ -255,10 +255,12 @@ export const BALANCE = {
     gold_vault: { soul: 1500, hours: 150, upgrades: 375 },
   },
   /**
-   * 출정 입장권(2026-10-01 사용자 결정): 하루 무료 sortiesPerDay장(한국 시간 자정에 다시 채워짐, 쌓이지 않음).
-   * 다 쓰면 골드로 한 장씩 산다: 값 = 내 몬스터 평균 레벨의 NPC 공략 전리품 × sortieTicketLootMult. 복수·튜토리얼은 입장권을 쓰지 않는다
+   * 출정 입장권: 최대 sortieMax장, 모자라면 sortieRegenMs마다 한 장씩 찬다(2026-10-08 사용자: 10분에 하나. 전에는 하루 10장, 자정에 다시 채움).
+   * 다 차 있는 동안은 쌓이지 않는다. 다 쓰면 골드로 한 장씩 산다: 값 = 내 몬스터 평균 레벨의 NPC 공략 전리품 × sortieTicketLootMult.
+   * 복수·튜토리얼은 입장권을 쓰지 않는다
    */
-  sortiesPerDay: 10,
+  sortieMax: 10,
+  sortieRegenMs: 10 * 60_000,
   sortieTicketLootMult: 0.5,
   /** 마왕 처치 영혼석(lordDefeatSoul)은 하루 이 횟수까지 (2026-10-01 사용자 결정) */
   lordSoulPerDay: 10,

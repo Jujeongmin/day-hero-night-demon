@@ -211,12 +211,11 @@ const tools = {
     persist();
     location.reload();
   },
-  /** 오늘 쓴 출정 입장권 수 바꾸기(화면 확인용) */
-  sorties(used: number) {
-    const s = store.users[account] as { daily?: { day: string; sorties: number; bought: number; lordSoul: number } } | undefined;
+  /** 출정 입장권을 n장으로(화면 확인용). 다음 한 장은 지금부터 센다 */
+  sorties(n: number) {
+    const s = store.users[account] as { sortie?: { n: number; at: number } } | undefined;
     if (!s) return;
-    const day = new Date(Date.now() + 9 * 3_600_000).toISOString().slice(0, 10);
-    s.daily = { day, sorties: used, bought: 0, lordSoul: s.daily?.day === day ? s.daily.lordSoul : 0 };
+    s.sortie = { n, at: Date.now() };
     persist();
     location.reload();
   },

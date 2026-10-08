@@ -124,7 +124,7 @@ export const ko = {
   /** 골드 묶음 설명: 이 계정이 받을 골드와 100 VX 대비 더 주는 비율 */
   goldPackDesc: (gold: number, bonus: number) => (bonus > 0 ? `골드 ${F(gold)} · ${bonus}% 더` : `골드 ${F(gold)}`),
   soulPackDesc: (soul: number, bonus: number) => (bonus > 0 ? `영혼석 ${F(soul)} · ${bonus}% 더` : `영혼석 ${F(soul)}`),
-  sortieInfo: (left: number, total: number, lord: number, lordCap: number) => `오늘 출정 ${left}/${total} · 마왕 처치 영혼석 ${lord}/${lordCap}`,
+  sortieInfo: (left: number, total: number, lord: number, lordCap: number) => `출정 입장권 ${left}/${total} (10분마다 1장) · 오늘 마왕 처치 영혼석 ${lord}/${lordCap}`,
   buyTicket: (gold: number) => `입장권 사기 (${F(gold)} 골드)`,
   goldForSoul: (soul: number) => `영혼석 ${F(soul)}`,
   gainGold: (n: number) => `골드 +${F(n)}`,
@@ -313,7 +313,7 @@ export const ko = {
     ONBOARDING_ORDER: '다시 시도해줘',
     NO_REVIVE_CREDIT: '부활 아이템이 없다',
     NO_REVENGE_CREDIT: '오늘 무료 복수 3회를 다 썼다. 복수권이 필요하다',
-    NO_SORTIE: '오늘 출정 입장권을 다 썼다. 골드로 더 살 수 있다',
+    NO_SORTIE: '출정 입장권이 없다. 10분마다 1장씩 차고, 골드로 살 수도 있다',
     NO_SOUL: '영혼석이 부족하다',
     MAX_STARS: '이미 최대 각성이다',
     AWAKEN_FIRST: '레벨 50이다. 각성해야 더 오른다',

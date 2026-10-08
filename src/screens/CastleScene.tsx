@@ -19,7 +19,7 @@ import { T } from '../strings/ko';
 import { emitTut } from '../tutorial/bus';
 import { vipOf } from '../../server/src/vip';
 import type { LordSkin, UserState } from '../../server/src/state';
-import { sortiesLeft, sortieTicketCost } from '../../server/src/sortie';
+import { nextSortieAt, sortiesLeft, sortieTicketCost } from '../../server/src/sortie';
 import { claimableQuests } from '../../server/src/quests';
 import { QuestCard, type QuestGo } from './Quests';
 import { Portrait } from '../render/Sprite';
@@ -58,6 +58,19 @@ function levelFor(index: number): number {
 type ReplayPhase = { active: boolean; result: ReplayState['result'] };
 const NO_PHASE: ReplayPhase = { active: false, result: null };
 const at = (x: number, y: number): CSSProperties => ({ left: `${x}%`, top: `${y}%` });
+
+/** 다음 출정 입장권까지 남은 시간(가득 차 있으면 없음). 1초마다 이것만 다시 그린다. 0이 되면 홈을 새로 받지 않아도 같은 식으로 한 장 늘어 보인다 */
+function TicketTimer(props: { at: number | null }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (props.at === null) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [props.at]);
+  if (props.at === null) return null;
+  const ms = Math.max(0, props.at - now);
+  return <small className="ticket-timer">{Math.floor(ms / 60_000)}:{String(Math.floor(ms / 1000) % 60).padStart(2, '0')}</small>;
+}
 
 /**
  * 공성 재생 유닛 하나. 박자마다 바뀐 유닛만 다시 그린다(2026-10-07 사용자: 공성 시작 때 캐릭터가 많아 프레임이 떨어짐).
@@ -692,15 +705,15 @@ export default function CastleScene(props: {
             >
               {T.sortie}
             </button>
-            {ticketsOn && (noTicket ? (
-              <button className="pill ticket buy" disabled={busy || home.gold < ticketCost} onClick={() => act(() => api.buySortie())} aria-label={T.buyTicket(ticketCost)}>
-                <img src="ui/ticket.png" alt="" draggable={false} />0/{BALANCE.sortiesPerDay} <b>+</b> <img className="coin" src="icons/gold.png" alt="" draggable={false} />{formatNum(ticketCost)}
-              </button>
-            ) : (
-              <span className="pill ticket" aria-label={T.sortieInfo(tickets, BALANCE.sortiesPerDay, 0, 0)}>
-                <img src="ui/ticket.png" alt="" draggable={false} />{tickets}/{BALANCE.sortiesPerDay}
+            {/* 입장권: 남은 수·다음 한 장까지 시간, 옆 "+"로 골드 구매(2026-10-08 사용자: 구매 유도). 다 쓰면 "+"가 반짝인다 */}
+            {ticketsOn && (
+              <span className={`pill ticket ${noTicket ? 'empty' : ''}`} aria-label={T.sortieInfo(tickets, BALANCE.sortieMax, 0, 0)}>
+                <img src="ui/ticket.png" alt="" draggable={false} />{tickets}/{BALANCE.sortieMax}<TicketTimer at={nextSortieAt(s, Date.now())} />
+                <button className={`ticket-plus ${noTicket ? 'pulse' : ''}`} disabled={busy || home.gold < ticketCost} onClick={() => act(() => api.buySortie())} aria-label={T.buyTicket(ticketCost)}>
+                  <img src="ui/plus.png" alt="" draggable={false} /><img className="coin" src="icons/gold.png" alt="" draggable={false} />{formatNum(ticketCost)}
+                </button>
               </span>
-            ))}
+            )}
           </span>
         )}
       </div>}

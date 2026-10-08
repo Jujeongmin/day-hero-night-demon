@@ -2,7 +2,7 @@ import { BALANCE, HERO_ORDER, TACTICS, type HeroId, type Tactic } from './catalo
 import { planAwaken, planRecruit, planUpgrade, planUpgradeMany, validateFloor } from './castle';
 import { castlePower, displayPower, heroLootBonus, idleIncome, lootAmount, splitOnlineIdle, npcLoot, pvpLootCap, siegeDefenseMult, snapshotPower } from './economy';
 import { avgMonsterLevel, goldPackAmount, GOLD_PACK_IDS, waveGold, type GoldPackId } from './growth';
-import { dailyOf, lordSoulLeft, sortiesLeft, sortieTicketCost } from './sortie';
+import { addSortie, dailyOf, lordSoulLeft, sortiesLeft, sortieTicketCost, spendSortie } from './sortie';
 import {
   DEFENSE_HONOR, activeTitle, honorForRaid, leagueCollection, rankBracket, seasonEndsAt, seasonIdAt, seasonRewardSoul, seasonStartOf, titleForGlobalRank,
 } from './league';
@@ -769,7 +769,9 @@ export class Server {
         siegeOffer,
         ...(await balances(me)),
         now,
-        idlePreview: idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult, vipOf(s)) + s.siege.pendingGold,
+        // 방치 상자 = 자리 비운 몫만(2026-10-08 사용자: 켜 둔 동안 쌓이면 안 된다). 마지막 웨이브 뒤 onlineIdleMs 안이면
+        // 그사이 방치 수입은 다음 웨이브에서 바로 보유 골드로 들어가므로 상자에 보이지 않는다(splitOnlineIdle)
+        idlePreview: splitOnlineIdle(idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult, vipOf(s)), s.idle.lastClaimAt, now).parked + s.siege.pendingGold,
         // 이번에 처리된 파도 중 마지막 것만 화면에서 재생한다
         // 마지막 파도는 실제 전투 기록(log)과 함께 — 홈 화면이 그대로 재생한다
         siegeLastWave: waves.length > 0 ? { ...waves[waves.length - 1], log: lastLog } : null,
@@ -866,7 +868,7 @@ export class Server {
     });
   }
 
-  /** 출정 입장권 한 장을 골드로 산다(오늘 무료분을 다 쓴 뒤에도 출정할 수 있게) */
+  /** 출정 입장권 한 장을 골드로 산다(다 쓴 뒤 차기를 기다리지 않고 출정할 수 있게) */
   async buySortie() {
     const me = $sender.account;
     return withLocks([me], async () => {
@@ -875,10 +877,9 @@ export class Server {
       const cost = sortieTicketCost(s);
       if (!(await $asset.has('gold', cost))) throw new Error('골드가 부족하다');
       await $asset.burn('gold', cost);
-      const d = dailyOf(s, now);
-      const daily = { ...d, bought: d.bought + 1 };
-      await save(me, { daily });
-      return { cost, daily };
+      const sortie = addSortie(s, now);
+      await save(me, { sortie });
+      return { cost, sortie };
     });
   }
 
@@ -973,8 +974,7 @@ export class Server {
       const tutorial = t.id === TUTORIAL_TARGET;
       if (!tutorial && sortiesLeft(s, now) <= 0) throw new Error('NO_SORTIE');
       const snapshot = await buildSnapshot(t.id, now);
-      const d = dailyOf(s, now);
-      const extra: Partial<UserState> = tutorial ? {} : { daily: { ...d, sorties: d.sorties + 1 }, quests: bumpQuests(s, now, { daily: 'sortie' }) };
+      const extra: Partial<UserState> = tutorial ? {} : { sortie: spendSortie(s, now), quests: bumpQuests(s, now, { daily: 'sortie' }) };
       return beginRun(me, s, snapshot, { isRevenge: false, revengeLogId: null, extra }, now);
     });
   }

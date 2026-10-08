@@ -466,11 +466,11 @@ describe('sortie tickets & gold for soulstones (2026-10-01)', () => {
     expect(await fails(server.buyGold('gold_mountain'))).toBe(true);
   });
 
-  test('a sortie ticket costs gold and counts for today', async (server) => {
+  test('a sortie ticket costs gold and adds one on top', async (server) => {
     server.connect({ account: 't63-ticket' });
     await server.getHome();
     const r = await server.buySortie();
-    expect(r.daily.bought).toBe(1);
+    expect(r.sortie.n).toBe(11);
     expect((await server.getHome()).gold).toBe(30000 - r.cost);
   });
 });

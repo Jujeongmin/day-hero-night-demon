@@ -505,11 +505,13 @@ button[lang='zh-Hans'] { font-family: 'Noto Sans SC', sans-serif; }
 .pill.ticket img { width: 18px; height: 18px; image-rendering: pixelated; }
 .pill.ticket img.coin { width: 14px; height: 14px; }
 .pill.ticket b { color: var(--gold); font-weight: 400; font-size: 15px; }
-button.pill.ticket.buy { cursor: pointer; animation: ticket-buy 1.6s ease-in-out infinite; }
-button.pill.ticket.buy:disabled { animation: none; filter: grayscale(0.6) brightness(0.7); cursor: default; }
+.ticket-plus { display: inline-flex; align-items: center; gap: 2px; margin: -4px -4px -4px 4px; padding: 0; background: none; border: 0; font: inherit; font-size: 12px; color: var(--gold); cursor: pointer; }
+.ticket-plus > img:first-child { width: 20px; height: 20px; }
+.ticket-plus.pulse { animation: ticket-buy 1.6s ease-in-out infinite; }
+.ticket-plus:disabled { animation: none; filter: grayscale(0.6) brightness(0.7); cursor: default; }
 @keyframes ticket-buy { 50% { filter: brightness(1.35); } }
 .scene-foot .btn.big:disabled { filter: grayscale(0.7) brightness(0.6); }
-@media (prefers-reduced-motion: reduce) { button.pill.ticket.buy { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .ticket-plus.pulse { animation: none; } }
 
 /* 소환 의식 (2026-10-02 승인: 탑 왼쪽 제단 아이콘 → 전체 화면 뿔 해골 제단, 결과 카드는 창틀 그림 + 등급 빛) */
 .float-left { position: absolute; left: 6px; top: 96px; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 4px; }
@@ -767,6 +769,7 @@ span.up-pt { cursor: default; }
 .edit-tip.below { translate: -50% 0; }
 .stage-spot, .pick { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .match-intro { margin: 0 0 8px; font-size: 13px; line-height: 1.4; color: var(--bone); }
+.ticket-timer { margin-left: 4px; font-size: .75em; color: var(--muted); }
 .edit-hint { margin: 10px 2px 6px; font-size: 13px; color: var(--muted); }
 .pick { position: relative; }
 .pick.placed { filter: brightness(.8); }
