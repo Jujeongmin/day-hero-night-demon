@@ -34,7 +34,9 @@ export default function Log(props: {
     }
   }
 
-  if (s.raidLog.length === 0) return <p className="muted">{T.logEmpty}</p>;
+  // 다른 유저가 털러 온 기록만(2026-10-08 사용자: NPC 기록은 뜨지 않게)
+  const entries = s.raidLog.filter((e) => !e.npc);
+  if (entries.length === 0) return <p className="muted">{T.logEmpty}</p>;
   const now = Date.now();
   const freeUsed = s.revengeUsed.day === dayKey(now) ? s.revengeUsed.count : 0;
   // 무료 복수를 다 쓰고 복수권도 없으면 광고로 한 번 더
@@ -48,7 +50,7 @@ export default function Log(props: {
           <AdButton api={api} placement="revenge" label={T.ads.revenge} premium={!!s.perks?.premium} disabled={left < 1} onDone={onRefresh} onToast={onError} />
         </div>
       )}
-      {s.raidLog.map((e) => {
+      {entries.map((e) => {
         const canRevenge = !e.npc && e.attackerWon && !e.revenged && Date.now() - e.at < 24 * 3_600_000 && !s.run;
         return (
           <div className="line" key={e.id}>

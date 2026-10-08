@@ -436,7 +436,19 @@ export default function CastleScene(props: {
   // 기록 배지: 지금 복수할 수 있는 침입(실제 플레이어가 이겼고, 24시간 안, 아직 복수 안 함)
   const questBadge = claimableQuests(s, Date.now());
   const showQuest = !s.run && ['done', 'end'].includes(s.onboarding?.at ?? 'done');
-  const revengeable = s.raidLog.filter((e) => !e.npc && e.attackerWon && !e.revenged && Date.now() - e.at < BALANCE.revengeWindowMs).length;
+  // 기록 배지(2026-10-08 사용자): 다른 유저가 새로 약탈해 갔으면 그 수. 기록을 열어 보면 사라진다(본 시각은 이 기기에 기억)
+  const seenKey = `log.seen.${s.profile.createdAt}`;
+  const [logSeen, setLogSeen] = useState(() => {
+    try { return Number(localStorage.getItem(seenKey)) || 0; } catch { return 0; }
+  });
+  const plundered = s.raidLog.filter((e) => !e.npc && e.attackerWon);
+  const newPlunder = plundered.filter((e) => e.at > logSeen).length;
+  const openLog = () => {
+    const latest = Math.max(logSeen, ...plundered.map((e) => e.at));
+    setLogSeen(latest);
+    try { localStorage.setItem(seenKey, String(latest)); } catch { /* 저장 못 해도 이번 화면에서는 사라진다 */ }
+    onLog();
+  };
   // 받을 칸 수(무료 줄 + 패스 줄). 빨간 알림 배지에 숫자로 (2026-10-02 사용자)
   const passCount = (passPlan.claimed.free - s.season.claimed.free) + (passPlan.claimed.pass - s.season.claimed.pass);
 
@@ -540,9 +552,9 @@ export default function CastleScene(props: {
             {rank !== null && <b>{T.icons.rankN(rank)}</b>}
             <span>{T.icons.rank}</span>
           </button>
-          <button className="side-icon log-entry" onClick={onLog} aria-label={T.icons.log}>
+          <button className="side-icon log-entry" onClick={openLog} aria-label={T.icons.log}>
             <img src="ui/log.png" alt="" draggable={false} />
-            {revengeable > 0 && <i className="badge">{revengeable}</i>}
+            {newPlunder > 0 && <i className="badge">{newPlunder}</i>}
             <span>{T.icons.log}</span>
           </button>
           {/* 의뢰(2026-10-02 승인): 일일·성장 의뢰 창. 받을 수 있는 수를 빨간 배지로 */}
