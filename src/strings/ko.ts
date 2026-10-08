@@ -249,8 +249,6 @@ export const ko = {
   },
   away: {
     title: '자리를 비운 동안',
-    waves: (n: number, held: number) => `침입 ${n}번 · 막음 ${held}번`,
-    stage: (from: number, to: number) => (from === to ? `웨이브 ${from} 유지` : `웨이브 ${from} → ${to}`),
     gold: (g: number) => `쌓인 골드 +${F(g)}`,
     later: '나중에',
   },

@@ -246,8 +246,6 @@ export const zhHant: Strings = {
   },
   away: {
     title: '離開的這段時間',
-    waves: (n: number, held: number) => `入侵 ${n}次 · 擋下 ${held}次`,
-    stage: (from: number, to: number) => (from === to ? `第${from}波 不變` : `第${from}波 → 第${to}波`),
     gold: (g: number) => `累積金幣 +${F(g)}`,
     later: '稍後',
   },

@@ -26,7 +26,8 @@ export interface HomeData {
   siegeLastWave: SiegeWave | null;
   siegeWaveMs: number;
   /** 자리를 비운 동안 공성 요약(10분 넘게 비웠을 때) */
-  siegeAway?: { waves: number; held: number; from: number; to: number } | null;
+  /** 10분 넘게 비웠다 돌아옴(돌아왔을 때 카드: 쌓인 골드만, 2026-10-08 사용자: 침입·막음·웨이브 줄은 뺐다) */
+  siegeAway?: { waves: number } | null;
   /** 같은 공성 단계에서 3번 뚫렸을 때 하루 한 번: 강화 추천 패널을 띄운다 */
   siegeOffer?: { stage: number } | null;
   /** 다음에 넘어야 할 웨이브의 권장 전투력(2026-10-08). 옛 서버면 없다 */

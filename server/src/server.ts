@@ -776,7 +776,7 @@ export class Server {
         siegeWaveMs: BALANCE.siegeWaveMs,
         // 자리를 비웠다 돌아왔을 때 요약(파도 5번 이상 = 10분 넘게 비웠을 때만)
         siegeAway: waves.length >= 5
-          ? { waves: waves.length, held: waves.filter((w) => w.won).length, from: raided.siege.stage, to: s.siege.stage }
+          ? { waves: waves.length }
           : null,
         // 자리를 비운 동안 처음 넘은 10단계 보상(영혼석). 화면에 한 번 알린다
         siegeSoul,

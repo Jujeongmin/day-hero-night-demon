@@ -246,8 +246,6 @@ export const ja: Strings = {
   },
   away: {
     title: '留守の間に',
-    waves: (n: number, held: number) => `侵入 ${n}回 · 防衛 ${held}回`,
-    stage: (from: number, to: number) => (from === to ? `ウェーブ${from} そのまま` : `ウェーブ${from} → ${to}`),
     gold: (g: number) => `たまったゴールド +${F(g)}`,
     later: 'あとで',
   },

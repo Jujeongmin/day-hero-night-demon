@@ -612,8 +612,6 @@ export default function CastleScene(props: {
       {away && !s.run && !panelOpen && (
         <div className="away-card">
           <b>{T.away.title}</b>
-          <span>{T.away.waves(away.waves, away.held)}</span>
-          <span>{T.away.stage(away.from, away.to)}</span>
           {home.idlePreview > 0 && <span className="gold-text">{T.away.gold(home.idlePreview)}</span>}
           <div className="row">
             {home.idlePreview > 0 ? (

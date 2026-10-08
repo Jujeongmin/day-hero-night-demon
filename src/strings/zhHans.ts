@@ -246,8 +246,6 @@ export const zhHans: Strings = {
   },
   away: {
     title: '离开的这段时间',
-    waves: (n: number, held: number) => `入侵 ${n}次 · 挡住 ${held}次`,
-    stage: (from: number, to: number) => (from === to ? `第${from}波 不变` : `第${from}波 → 第${to}波`),
     gold: (g: number) => `累积金币 +${F(g)}`,
     later: '稍后',
   },
