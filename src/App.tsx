@@ -479,7 +479,8 @@ export default function App() {
           </section>
         </div>
       )}
-      <nav className="tabs">
+      {/* 강화 창이 열려 있으면 아래 강화 버튼을 숨긴다(2026-10-08 사용자). 닫기는 창의 X */}
+      <nav className="tabs" style={panel?.name === 'upgrade' ? { display: 'none' } : undefined}>
         {TABS.map((t) => (
           <button
             key={t}

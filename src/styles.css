@@ -657,8 +657,10 @@ button.pill.ticket.buy:disabled { animation: none; filter: grayscale(0.6) bright
 .rp-layer .sprite.swing-fast { animation-duration: calc(var(--frames) * 64ms / var(--spd, 1)); }
 .look-fx { display: block; margin-top: 4px; color: var(--gold); font-size: 14px; }
 .shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.shop-card { position: relative; display: grid; justify-items: center; align-content: start; gap: 3px; padding: 4px 3px 6px; text-align: center; border: 10px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 10px stretch; background: #1d0b14eb; background-clip: padding-box; image-rendering: pixelated; }
+.shop-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 3px 6px; text-align: center; border: 10px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 10px stretch; background: #1d0b14eb; background-clip: padding-box; image-rendering: pixelated; }
 .shop-card img { width: 84px; height: 84px; image-rendering: pixelated; }
+/* 가격·받기 버튼은 칸 맨 아래로(설명 길이가 달라도 한 줄로 맞춘다, 2026-10-08 사용자) */
+.shop-card > .shop-price { margin-top: auto; }
 .shop-card b { font-weight: 400; font-size: 15px; color: var(--bone); line-height: 1.1; }
 .shop-card.best { filter: drop-shadow(0 0 7px #c070ffcc); }
 .shop-bonus { position: absolute; top: -10px; right: -8px; z-index: 1; font-size: 12px; color: #fff; background: var(--ruby); border: 2px solid #000; padding: 0 5px; box-shadow: 0 2px 0 #000; }
