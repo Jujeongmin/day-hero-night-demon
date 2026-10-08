@@ -12,7 +12,7 @@ import { adsLeft } from '../services/ads';
 import { chooseLordSkin, passTier, planPassClaim } from '../../server/src/pass';
 import { lordSpriteId, monsterSpriteId } from '../render/skins';
 import { StarRow } from '../render/stars';
-import { nextSpeed, type Speed } from '../render/speed';
+import { type Speed } from '../render/speed';
 import { errorText, type Api, type HomeData, type SiegeWave } from '../services/api';
 import { buy } from '../services/shop';
 import { T } from '../strings/ko';
@@ -258,11 +258,11 @@ export default function CastleScene(props: {
     try { const v = Number(localStorage.getItem(SIEGE_SPEED_KEY)); return v === 2 || v === 3 ? v : 1; } catch { return 1; }
   });
   const speed: Speed = siegeSpd === 3 && !has3x ? 1 : siegeSpd;
-  const cycleSpeed = useCallback(() => {
-    const next = nextSpeed(speed, has3x);
+  // 배속은 1×·2×·3× 세 칸에서 바로 고른다(2026-10-08 사용자: 1×·3×만 보여 2×가 있는 줄 몰랐다). 3×는 상품이 없으면 프리미엄 구매로
+  const pickSpeed = useCallback((next: Speed) => {
     setSiegeSpd(next);
     try { localStorage.setItem(SIEGE_SPEED_KEY, String(next)); } catch { /* 저장 못 해도 이번 화면에서는 쓴다 */ }
-  }, [speed, has3x]);
+  }, []);
   // 부른 파도: getHome은 그 결과를 다시 주지 않으므로 여기서 들고 있다가 재생한다
   const [calledWave, setCalledWave] = useState<SiegeWave | null>(null);
   const [calling, setCalling] = useState(false);
@@ -451,13 +451,30 @@ export default function CastleScene(props: {
           {/* 공성 배속은 골드 오른쪽 (2026-09-30 사용자 결정) */}
           <span className="hud-row">
             <CurrencyPill icon="icons/gold.png" label={T.gold} value={home.gold} onPlus={tutorialOff ? () => onShop('gold') : undefined} plusLabel={T.icons.shop} />
-            <button className="pill speed" onClick={cycleSpeed}>{T.speed(speed)}</button>
-            {!has3x && <button className="pill speed locked" onClick={() => buy('premium')} aria-label={T.products.premium[0]}>{T.speed(3)}</button>}
+            <span className="speed-seg">
+              {([1, 2, 3] as Speed[]).map((x) => {
+                const locked = x === 3 && !has3x;
+                return (
+                  <button
+                    key={x} className={`pill speed ${speed === x ? 'on' : ''} ${locked ? 'locked' : ''}`}
+                    onClick={() => (locked ? buy('premium') : pickSpeed(x))} aria-pressed={speed === x} aria-label={locked ? T.products.premium[0] : T.speed(x)}
+                  >
+                    {T.speed(x)}
+                  </button>
+                );
+              })}
+            </span>
           </span>
           {home.power !== undefined && (
             <CurrencyPill icon="icons/stat_atk.png" label={T.siege.power} value={home.power} tone="power" />
           )}
         </span>
+        {/* 반복 중 도전: 배속 바로 아래 화면 가운데(2026-10-08 사용자) */}
+        {farming && replay.result !== 'breached' && !s.run && (
+          <button className="btn small gold siege-challenge hud-challenge" disabled={challenge || challengeRunning} onClick={() => setChallenge(true)}>
+            {challenge || challengeRunning ? T.siege.challengeReady : T.siege.challenge((s.siege?.stage ?? 1) + 1)}
+          </button>
+        )}
         <button className="hud-icon" data-tut="settings" onClick={onSettings} aria-label={T.settings.title}><img src="ui/settings.png" alt="" draggable={false} /></button>
         <CurrencyPill icon="icons/soul.png" label={T.soul} value={home.soul} tone="soul" onPlus={tutorialOff ? () => onShop('soul') : undefined} plusLabel={T.icons.shop} />
       </header>
@@ -475,7 +492,6 @@ export default function CastleScene(props: {
         replayStage={replay.active && lastWave?.stage ? lastWave.stage : undefined}
         advice={home.waveAdvice?.power}
         power={home.power}
-        best={s.siege?.best ?? s.siege?.stage ?? 1}
         onRank={onSiegeRank}
         lastWave={lastWave}
         replaying={replaying}
@@ -484,7 +500,6 @@ export default function CastleScene(props: {
         compact={panelOpen || (s.onboarding?.at ?? 'done') !== 'done'}
         speed={speed}
         farming={farming}
-        onChallenge={challenge || challengeRunning ? null : () => setChallenge(true)}
         onFighting={onDefending}
         onLordHp={onLordHp}
       />

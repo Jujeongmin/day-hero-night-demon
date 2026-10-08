@@ -331,7 +331,13 @@ canvas.battle {
 .siege .sprite, .rp-layer .sprite { animation-duration: calc(var(--frames) * 140ms / var(--spd, 1)); }
 .siege .sprite.walking { animation-duration: calc(var(--frames) * 90ms / var(--spd, 1)); }
 .invader.leaving { transition-duration: calc(1.2s / var(--spd, 1)); }
-.hud .pill.speed { min-width: 34px; font: inherit; color: var(--text); }
+.hud .pill.speed { min-width: 34px; font: inherit; color: var(--muted); }
+/* 배속 세 칸(2026-10-08 A안): 지금 배속만 금색. 3×는 상품이 없으면 잠김(흐리게, 누르면 프리미엄) */
+.speed-seg { display: flex; gap: 1px; }
+.hud .speed-seg .pill.speed { min-width: 0; padding: 0 3px; }
+.hud .pill.speed.on { color: var(--gold); filter: brightness(1.25); }
+/* 반복 중 도전: 배속 바로 아래 화면 가운데 */
+.hud-challenge { position: absolute; left: 50%; top: 44px; translate: -50% 0; z-index: 1; font-size: 12px; min-height: 26px; padding-block: 0; white-space: nowrap; }
 .siege-coin { position: absolute; translate: -50% 0; display: flex; align-items: center; gap: 1px; white-space: nowrap; }
 .siege-coin img { width: 18px; height: 18px; image-rendering: pixelated; }
 .siege-coin b { color: var(--gold); font-size: 13px; text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000; }
