@@ -65,6 +65,12 @@ describe('onboarding', () => {
     expect(canAdvance('cutscene', 'raid_sortie')).toBe(false);
     expect(canAdvance('nickname', 'raid_sortie')).toBe(false);
     expect(canAdvance('raid_sortie', 'raid_ult')).toBe(true);
+    // 2026-10-08: 출정 패널 → 첫 공략, 편성 → 밤 → 끝
+    expect(canAdvance('raid_sortie', 'raid_pick')).toBe(true);
+    expect(canAdvance('raid_pick', 'raid_ult')).toBe(true);
+    expect(canAdvance('place_slot', 'night')).toBe(true);
+    expect(canAdvance('night', 'end')).toBe(true);
+    expect(canAdvance('night', 'done')).toBe(false);
     expect(canAdvance('raid_ult', 'place_floor')).toBe(true);
     expect(canAdvance('upgrade_one', 'match_sortie')).toBe(true);
     // 2026-10-02: 첫 공략 결과를 닫으면 바로 끝으로(배치·강화는 의뢰가 안내)

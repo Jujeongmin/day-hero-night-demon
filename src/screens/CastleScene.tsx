@@ -16,6 +16,7 @@ import { type Speed } from '../render/speed';
 import { errorText, type Api, type HomeData, type SiegeWave } from '../services/api';
 import { buy } from '../services/shop';
 import { T } from '../strings/ko';
+import { emitTut } from '../tutorial/bus';
 import { vipOf } from '../../server/src/vip';
 import type { LordSkin, UserState } from '../../server/src/state';
 import { sortiesLeft, sortieTicketCost } from '../../server/src/sortie';
@@ -344,7 +345,8 @@ export default function CastleScene(props: {
   // 서버 시각 → 이 기기 시계: 홈을 받은 순간의 차이로 옮긴다
   const clockOffset = useMemo(() => Date.now() - home.now, [home.now]);
   const nextAt = (s.siege?.nextAt ?? 0) + clockOffset;
-  const siegeOn = !s.run && (s.onboarding?.at ?? 'done') === 'done';
+  // 튜토리얼 "밤이 됐습니다"를 넘기면(end) 바로 웨이브가 몰려온다(2026-10-08)
+  const siegeOn = !s.run && ['done', 'end'].includes(s.onboarding?.at ?? 'done');
   // 반복 중 도전은 누르는 즉시 부른다: 보던 재생을 끊고 도전 파도를 튼다(2026-10-08 사용자)
   const challengeNow = challenge && farming;
   useEffect(() => {
@@ -667,7 +669,7 @@ export default function CastleScene(props: {
               className="btn big"
               data-tut="sortie"
               disabled={busy || noTicket}
-              onClick={() => (s.introDone ? onMatch() : act(() => api.startIntroRaid(), onRaid))}
+              onClick={() => { onMatch(); if (!s.introDone) emitTut('match_opened'); }}
             >
               {T.sortie}
             </button>

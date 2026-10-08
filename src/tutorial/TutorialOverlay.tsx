@@ -122,7 +122,7 @@ export default function TutorialOverlay(props: { stage: OnboardingStage; onAdvan
       return;
     }
     const el = findTarget(step.targets);
-    if (stage === 'match_sortie' && el?.dataset.tut === 'match-first') setLaunched(true);
+    if ((stage === 'match_sortie' || stage === 'raid_pick') && el?.dataset.tut === 'match-first') setLaunched(true);
     el?.click();
   };
 

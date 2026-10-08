@@ -144,6 +144,7 @@ export const ko = {
   hallSeason: (id: string) => `시즌 ${id.slice(1)}`,
   titles: { champion: '패왕', top3: '3강', top10: '10강' } as Record<string, string>,
   noBracket: '첫 출정에서 이기면 순위 조에 들어간다',
+  matchIntro: '출정: 다른 성을 털어 금화를 가져옵니다. 상대 전투력과 난이도를 보고 고르세요.',
   stats: { hp: '체력', atk: '공격', def: '방어', spd: '속도' },
   skills: {
     taunt: (cd: number) => `도발: 공격 ${cd}번마다 2초 동안 적의 공격을 끌어온다`,
@@ -163,7 +164,9 @@ export const ko = {
     gaze: (cd: number) => `심연의 응시: 공격 ${cd}번마다 적 전체를 공격(50%)`,
   } as Record<string, (cd: number) => string>,
   tut: {
-    raidSortie: '우선 옆 동네 길드 성부터 털어 봅시다!',
+    raidSortie: '낮엔 용사로 남의 성을 털어 금화를 법니다. 출정을 누르십쇼!',
+    raidPick: '털 성을 고릅니다. 전투력이 내 성보다 낮을수록 쉽습니다. 이 견습 길드부터!',
+    night: '밤이 됐습니다! 용사들이 우리 성으로 쳐들어옵니다. 마왕님, 성을 지키십쇼!',
     raidUlt: '기가 모이면 궁극기가 저절로 나갑니다. 구경하시지요!',
     raidResult: '금화가 들어왔습니다!',
     placeFloor: '이제 우리 성도 지켜야지요. 1층을 눌러 보십쇼.',

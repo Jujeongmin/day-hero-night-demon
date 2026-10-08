@@ -6,6 +6,8 @@ import type { Target } from '../../server/src/state';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
 import { VipBadge } from '../render/Vip';
+import { npcCastle } from '../../server/src/npc';
+import { snapshotPower } from '../../server/src/economy';
 import { displayName } from '../strings/i18n';
 
 /** 난이도: 화면 위 내 전투력과 상대 전투력을 비교(2026-10-07 사용자: 숫자가 낮은데 어려움으로 뜨면 헷갈린다). 90% 미만 쉬움, 110%까지 보통, 그 위 어려움 */
@@ -27,15 +29,23 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
   const mine = home.power ?? 0;
   const diffOf = (t: Target): 'easy' | 'normal' | 'hard' => difficulty(t.power, mine);
 
+  // 첫 출정(2026-10-08 사용자): 출정 패널에서 입문 상대(침입자 길드 견습) 하나를 골라 시작한다. 입장권을 쓰지 않는다
+  const intro = !home.state.introDone;
   useEffect(() => {
+    if (intro) {
+      const c = npcCastle(0, 'intro');
+      setTargets([{ id: 'intro', nickname: c.nickname, npc: true, power: snapshotPower(c), estLoot: 0 } as Target]);
+      return;
+    }
     api.findTargets().then(setTargets).catch((e) => onError(errorText(e)));
-  }, [api, onError]);
+  }, [api, onError, intro]);
 
   async function start(id: string) {
     if (busy) return;
     setBusy(true);
     try {
-      await api.startRaid(id);
+      if (intro) await api.startIntroRaid();
+      else await api.startRaid(id);
       onStart();
     } catch (e) {
       onError(errorText(e));
@@ -46,7 +56,8 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
 
   return (
     <>
-      {!tutorial && (
+      {intro && <p className="match-intro">{T.matchIntro}</p>}
+      {!tutorial && !intro && (
         <div className="line">
           <small className="muted">{T.sortieInfo(left, BALANCE.sortiesPerDay, lordSoulLeft(home.state, now), BALANCE.lordSoulPerDay)}</small>
         </div>
@@ -56,11 +67,11 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
         <div className="line" key={t.id}>
           <span>
             <b>{displayName(t.nickname)}</b> <VipBadge level={t.vip} /> {t.npc && <span className="badge">{T.npcTag}</span>}{' '}
-            {!tutorial && (() => { const d = diffOf(t); return <span className={`diff ${d}`}>{T.diff[d]}</span>; })()}
+            {(() => { const d = diffOf(t); return <span className={`diff ${d}`}>{T.diff[d]}</span>; })()}
             <br />
-            <small>{T.power} {formatNum(t.power)} · {T.estLoot} {formatNum(t.estLoot)}</small>
+            <small>{T.power} {formatNum(t.power)}{!intro && <> · {T.estLoot} {formatNum(t.estLoot)}</>}</small>
           </span>
-          <button className="btn small" data-tut={i === 0 ? 'match-first' : undefined} disabled={busy || (!tutorial && left <= 0)} onClick={() => start(t.id)}>{T.sortie}</button>
+          <button className="btn small" data-tut={i === 0 ? 'match-first' : undefined} disabled={busy || (!tutorial && !intro && left <= 0)} onClick={() => start(t.id)}>{T.sortie}</button>
         </div>
       ))}
     </>

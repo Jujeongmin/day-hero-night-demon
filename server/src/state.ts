@@ -89,8 +89,8 @@ export interface SeasonState {
 /** 첫 실행 흐름. 서버가 앞으로만 움직이게 막는다. */
 export const ONBOARDING_ORDER = [
   'cutscene', 'nickname',
-  'raid_sortie', 'raid_ult', 'raid_result', 'place_floor', 'place_slot', 'upgrade_tab', 'upgrade_one',
-  'match_sortie', 'end', 'done',
+  'raid_sortie', 'raid_pick', 'raid_ult', 'raid_result', 'place_floor', 'place_slot', 'upgrade_tab', 'upgrade_one',
+  'match_sortie', 'night', 'end', 'done',
 ] as const;
 export type OnboardingStage = (typeof ONBOARDING_ORDER)[number];
 export interface OnboardingState { at: OnboardingStage; nicknameSet: boolean }
@@ -107,8 +107,8 @@ export function canAdvance(from: OnboardingStage, to: OnboardingStage): boolean 
   if (from === 'cutscene') return to === 'nickname';
   if (from === 'end') return to === 'done';
   const first = ONBOARDING_ORDER.indexOf('raid_sortie');
-  const last = ONBOARDING_ORDER.indexOf('match_sortie');
-  // 2026-10-02: 첫 공략 결과를 닫으면 바로 끝(end)으로. 배치·강화는 의뢰가 안내한다
+  // 2026-10-08 사용자: 출정 패널(raid_pick) → 첫 공략 → 1층 편성 → "밤이 됐다"(night) → 끝
+  const last = ONBOARDING_ORDER.indexOf('night');
   if (to === 'end') return a >= first && a <= last;
   return a >= first && a < last && b <= last;
 }

@@ -142,6 +142,7 @@ export const zhHans: Strings = {
   hallSeason: (id: string) => `赛季 ${id.slice(1)}`,
   titles: { champion: '霸王', top3: '前3强', top10: '前10强' } as Record<string, string>,
   noBracket: '赢得第一次攻略就会加入分组',
+  matchIntro: '出征：抢夺其他城堡带回金币。根据战力和难度选择。',
   stats: { hp: '体力', atk: '攻击', def: '防御', spd: '速度' },
   skills: {
     taunt: (cd: number) => `嘲讽: 每攻击${cd}次，吸引敌人攻击2秒`,
@@ -161,7 +162,9 @@ export const zhHans: Strings = {
     gaze: (cd: number) => `深渊凝视: 每攻击${cd}次，攻击全体敌人 (50%)`,
   } as Record<string, (cd: number) => string>,
   tut: {
-    raidSortie: '先从隔壁公会的城堡开始抢吧！',
+    raidSortie: '白天化身勇者去抢别人的城堡赚金币。请点出征！',
+    raidPick: '选择要抢的城堡。战力比我们越低越容易。先从这个见习公会开始！',
+    night: '夜幕降临！勇者们正攻向我们的城堡。魔王大人，请守住城堡！',
     raidUlt: '气攒满后，必杀技会自动发动。请欣赏！',
     raidResult: '金币到手了！',
     placeFloor: '现在也得守住我们的城堡。请点1层。',

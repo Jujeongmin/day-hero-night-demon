@@ -758,6 +758,7 @@ span.up-pt { cursor: default; }
 .edit-tip { position: fixed; z-index: 30; width: 240px; translate: -50% -100%; pointer-events: none; }
 .edit-tip.below { translate: -50% 0; }
 .stage-spot, .pick { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.match-intro { margin: 0 0 8px; font-size: 13px; line-height: 1.4; color: var(--bone); }
 .edit-hint { margin: 10px 2px 6px; font-size: 13px; color: var(--muted); }
 .pick { position: relative; }
 .pick.placed { filter: brightness(.8); }

@@ -250,7 +250,8 @@ export default function App() {
   // 초기화 뒤 튜토리얼 첫 단계: 열린 창(설정)을 닫아야 출정 버튼이 보인다
   const onboardingAt = home?.state.onboarding?.at;
   useEffect(() => {
-    if (onboardingAt === 'raid_sortie') setPanel(null);
+    // 밤 단계(2026-10-08): 편성 창을 닫아 탑과 몰려오는 용사가 보이게
+    if (onboardingAt === 'raid_sortie' || onboardingAt === 'night') setPanel(null);
   }, [onboardingAt]);
 
   // 막대: 연결 0~30%, 성 불러오기 30~60%, 그림 60~100%

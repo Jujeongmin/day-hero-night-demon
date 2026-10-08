@@ -3,7 +3,7 @@ import { T, type Strings } from '../strings/ko';
 
 export type TutEvent =
   | 'raid_started' | 'battle_over' | 'result_closed'
-  | 'floor_opened' | 'floor_saved' | 'upgrade_opened' | 'upgraded' | 'tapped' | 'quest_opened';
+  | 'floor_opened' | 'floor_saved' | 'upgrade_opened' | 'upgraded' | 'tapped' | 'quest_opened' | 'match_opened';
 
 /** targets: 빛낼 대상의 data-tut 값. 앞에서부터 화면에 있는 첫 번째를 쓴다. */
 /** passive: 덮개 없이 말풍선만 띄우고 누르기를 막지 않는다(저절로 진행되는 장면). near: 말풍선을 이것 바로 아래에 둔다 */
@@ -16,6 +16,8 @@ function step(s: Omit<TutStep, 'line'>, key: keyof Strings['tut']): TutStep {
 
 export const TUT_STEPS: Partial<Record<OnboardingStage, TutStep>> = {
   raid_sortie: step({ targets: ['sortie'] }, 'raidSortie'),
+  // 2026-10-08 사용자: 첫 출정도 출정 패널을 띄워 상대를 고르는 방식을 보여 준다
+  raid_pick: step({ targets: ['match-first'] }, 'raidPick'),
   raid_ult: step({ targets: [], passive: true, near: ['raid-field'] }, 'raidUlt'), // 위 줄(속도·포기)을 가리지 않게 전투 화면 아래
   raid_result: step({ targets: ['result-ok'] }, 'raidResult'),
   place_floor: step({ targets: ['floor-0'] }, 'placeFloor'),
@@ -24,17 +26,21 @@ export const TUT_STEPS: Partial<Record<OnboardingStage, TutStep>> = {
   upgrade_one: step({ targets: ['upgrade-first'] }, 'upgradeOne'),
   // 강화 창이 열려 있으면 출정 버튼이 숨으므로 먼저 창을 닫게 한다
   match_sortie: step({ targets: ['match-first', 'sortie', 'panel-close'] }, 'matchSortie'),
-  // 2026-10-02 사용자: 튜토리얼은 첫 공략까지만. 끝에서 다음 할 일 카드를 가리키고, 배치·강화는 의뢰가 안내한다
+  // 2026-10-08 사용자: 편성 뒤 "밤이 됐으니 성을 지키라" — 누르면 웨이브가 시작된다
+  night: step({ targets: [] }, 'night'),
+  // 끝에서 다음 할 일 카드를 가리키고, 강화는 의뢰가 안내한다
   end: step({ targets: ['quest-card'] }, 'end'),
 };
 
 const NEXT: Partial<Record<OnboardingStage, Partial<Record<TutEvent, OnboardingStage>>>> = {
-  raid_sortie: { raid_started: 'raid_ult' },
+  raid_sortie: { match_opened: 'raid_pick' },
+  raid_pick: { raid_started: 'raid_ult' },
   // 궁극기를 눌러도 결과창이 뜰 때까지(전투 끝) 기다린다
   raid_ult: { battle_over: 'raid_result' },
-  raid_result: { result_closed: 'end' },
+  raid_result: { result_closed: 'place_floor' },
   place_floor: { floor_opened: 'place_slot' },
-  place_slot: { floor_saved: 'upgrade_tab' },
+  place_slot: { floor_saved: 'night' },
+  night: { tapped: 'end' },
   upgrade_tab: { upgrade_opened: 'upgrade_one' },
   upgrade_one: { upgraded: 'match_sortie' },
   end: { tapped: 'done', quest_opened: 'done' },

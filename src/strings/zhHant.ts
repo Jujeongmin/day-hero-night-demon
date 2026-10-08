@@ -142,6 +142,7 @@ export const zhHant: Strings = {
   hallSeason: (id: string) => `賽季 ${id.slice(1)}`,
   titles: { champion: '霸王', top3: '前3強', top10: '前10強' } as Record<string, string>,
   noBracket: '贏得第一次攻略就會加入分組',
+  matchIntro: '出征：搶奪其他城堡帶回金幣。根據戰力和難度選擇。',
   stats: { hp: '體力', atk: '攻擊', def: '防禦', spd: '速度' },
   skills: {
     taunt: (cd: number) => `嘲諷: 每攻擊${cd}次，吸引敵人攻擊2秒`,
@@ -161,7 +162,9 @@ export const zhHant: Strings = {
     gaze: (cd: number) => `深淵凝視: 每攻擊${cd}次，攻擊全體敵人 (50%)`,
   } as Record<string, (cd: number) => string>,
   tut: {
-    raidSortie: '先從隔壁公會的城堡開始搶吧！',
+    raidSortie: '白天化身勇者去搶別人的城堡賺金幣。請按出征！',
+    raidPick: '選擇要搶的城堡。戰力比我們越低越容易。先從這個見習公會開始！',
+    night: '夜幕降臨！勇者們正攻向我們的城堡。魔王大人，請守住城堡！',
     raidUlt: '氣集滿後，必殺技會自動發動。請欣賞！',
     raidResult: '金幣到手了！',
     placeFloor: '現在也得守住我們的城堡。請按1樓。',

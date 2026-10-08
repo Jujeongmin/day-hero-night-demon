@@ -142,6 +142,7 @@ export const en: Strings = {
   hallSeason: (id: string) => `Season ${id.slice(1)}`,
   titles: { champion: 'Overlord', top3: 'Top 3', top10: 'Top 10' } as Record<string, string>,
   noBracket: 'Win your first raid to join a ranking group',
+  matchIntro: 'Sortie: rob another castle and bring back its gold. Choose by power and difficulty.',
   stats: { hp: 'HP', atk: 'ATK', def: 'DEF', spd: 'SPD' },
   skills: {
     taunt: (cd: number) => `Taunt: every ${cd} attacks, draws enemy attacks for 2 seconds`,
@@ -161,7 +162,9 @@ export const en: Strings = {
     gaze: (cd: number) => `Abyss Gaze: every ${cd} attacks, hits all enemies (50%)`,
   } as Record<string, (cd: number) => string>,
   tut: {
-    raidSortie: "Let's start by robbing the guild castle next door!",
+    raidSortie: 'By day you are a hero who robs other castles for gold. Tap Sortie!',
+    raidPick: 'Pick a castle to rob. The lower its power next to yours, the easier. Start with this apprentice guild!',
+    night: 'Night has fallen! Heroes are storming our castle. Defend it, my lord!',
     raidUlt: 'When the gauge fills, the ultimate fires on its own. Just watch!',
     raidResult: 'The gold is in!',
     placeFloor: 'Now we guard our own castle too. Tap Floor 1.',

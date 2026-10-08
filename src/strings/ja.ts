@@ -142,6 +142,7 @@ export const ja: Strings = {
   hallSeason: (id: string) => `シーズン${id.slice(1)}`,
   titles: { champion: '覇王', top3: 'トップ3', top10: 'トップ10' } as Record<string, string>,
   noBracket: '初めての攻略に勝つとグループに入る',
+  matchIntro: '出撃: 他の城を襲って金貨を持ち帰ります。戦闘力と難易度を見て選びましょう。',
   stats: { hp: '体力', atk: '攻撃', def: '防御', spd: '速さ' },
   skills: {
     taunt: (cd: number) => `挑発: 攻撃${cd}回ごとに2秒敵の攻撃を引きつける`,
@@ -161,7 +162,9 @@ export const ja: Strings = {
     gaze: (cd: number) => `深淵の凝視: 攻撃${cd}回ごとに敵全体を攻撃 (50%)`,
   } as Record<string, (cd: number) => string>,
   tut: {
-    raidSortie: 'まずは隣町のギルドの城から襲いましょう！',
+    raidSortie: '昼は勇者として他の城を襲い、金貨を稼ぎます。出撃を押してください！',
+    raidPick: '襲う城を選びます。自分の城より戦闘力が低いほど簡単です。まずは見習いギルドから！',
+    night: '夜になりました！勇者たちが我らの城に攻めてきます。魔王様、城をお守りください！',
     raidUlt: '気がたまると必殺技が勝手に出ます。ご覧あれ！',
     raidResult: '金貨が入りました！',
     placeFloor: 'さあ、我らの城も守らねば。1階を押してください。',
