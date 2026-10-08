@@ -272,6 +272,8 @@ export default function CastleScene(props: {
   const refreshAtResult = useRef(false);
   // 도전(2026-10-06): 막혀서 반복 중일 때 누르면 다음 파도가 한 단계 위
   const [challenge, setChallenge] = useState(false);
+  // 도전 파도를 재생하는 동안(결과가 뜰 때까지) 도전 버튼을 다시 누르지 못하게
+  const [challengeRunning, setChallengeRunning] = useState(false);
   const farming = s.siege?.farming === true;
   // 반복이 풀리면 눌러 둔 도전도 지운다(다음에 다시 막혔을 때 누르지 않았는데 도전이 나가지 않게)
   useEffect(() => { if (!farming) setChallenge(false); }, [farming]);
@@ -322,6 +324,9 @@ export default function CastleScene(props: {
   tierCb.current = { onFloor, onLocked };
   const onTier = useCallback((i: number, locked: boolean) => (locked ? tierCb.current.onLocked() : tierCb.current.onFloor(i)), []);
   useEffect(() => {
+    if (replay.result !== null) setChallengeRunning(false);
+  }, [replay.result]);
+  useEffect(() => {
     if (replay.result === null || !refreshAtResult.current) return;
     refreshAtResult.current = false;
     void onRefresh().catch(() => undefined);
@@ -332,9 +337,12 @@ export default function CastleScene(props: {
   const clockOffset = useMemo(() => Date.now() - home.now, [home.now]);
   const nextAt = (s.siege?.nextAt ?? 0) + clockOffset;
   const siegeOn = !s.run && (s.onboarding?.at ?? 'done') === 'done';
+  // 반복 중 도전은 누르는 즉시 부른다: 보던 재생을 끊고 도전 파도를 튼다(2026-10-08 사용자)
+  const challengeNow = challenge && farming;
   useEffect(() => {
-    if (!siegeOn || replaying || calling) return;
-    const wait = Math.max(
+    if (!siegeOn || calling) return;
+    if (replaying && !challengeNow) return;
+    const wait = challengeNow ? retryAt - Date.now() : Math.max(
       BALANCE.siegeRestMs / speed,
       nextAt - Date.now(),
       retryAt - Date.now(),
@@ -342,11 +350,11 @@ export default function CastleScene(props: {
     const id = window.setTimeout(() => {
       if (document.hidden) { setRetryAt(Date.now() + 3000); return; }
       setCalling(true);
-      const ch = challenge && farming;
+      const ch = challengeNow;
       api.callSiegeWave(speed, ch)
         .then((r) => {
           setCalledWave({ ...r.wave, gold: r.gold });
-          if (ch) setChallenge(false);
+          if (ch) { setChallenge(false); setChallengeRunning(true); }
           // 골드·단계는 재생에서 결과(막아냄/함락)가 뜰 때 새로 받는다(2026-10-06 사용자: 보상이 들어오는 때가 화면과 맞게).
           // 재생할 기록이 없으면 바로, 재생이 안 시작되면(숨은 탭 등) 늦어도 30초 뒤
           if (!r.wave.log?.events?.length) return onRefresh();
@@ -358,7 +366,7 @@ export default function CastleScene(props: {
     }, Math.max(0, wait));
     return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siegeOn, replaying, calling, speed, s.siege?.nextAt, retryAt, challenge, farming]);
+  }, [siegeOn, replaying, calling, speed, s.siege?.nextAt, retryAt, challengeNow]);
   const floorsCount = s.castle.floors.length;
   const throneFight = replay.active;
   // 영구 2배(옛 상품) 계정은 광고 2배를 쓰지 않는다
@@ -464,6 +472,7 @@ export default function CastleScene(props: {
         ground={panelOpen ? 12 : 90}
         paused={!!s.run}
         stage={s.siege?.stage ?? 1}
+        replayStage={replay.active && lastWave?.stage ? lastWave.stage : undefined}
         best={s.siege?.best ?? s.siege?.stage ?? 1}
         onRank={onSiegeRank}
         lastWave={lastWave}
@@ -473,7 +482,7 @@ export default function CastleScene(props: {
         compact={panelOpen || (s.onboarding?.at ?? 'done') !== 'done'}
         speed={speed}
         farming={farming}
-        onChallenge={challenge ? null : () => setChallenge(true)}
+        onChallenge={challenge || challengeRunning ? null : () => setChallenge(true)}
         onFighting={onDefending}
         onLordHp={onLordHp}
       />

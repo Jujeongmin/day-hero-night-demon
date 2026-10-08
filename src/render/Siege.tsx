@@ -32,10 +32,12 @@ export default function Siege(props: {
   /** 막혀서 아래 단계를 반복 중(2026-10-06). 도전 버튼: 누르면 다음 파도가 한 단계 위. 도전 대기 중이면 null */
   farming: boolean;
   onChallenge: (() => void) | null;
+  /** 지금 재생 중인 파도가 싸우는 단계(도전이면 한 단계 위). 재생 중에는 이 단계를 보인다(2026-10-08) */
+  replayStage?: number;
   /** 재생 배속. 배속 버튼은 화면 위 HUD(골드 오른쪽)에 있다 */
   speed: Speed;
 }) {
-  const { ground, paused, stage, best, onRank, lastWave, onFighting, onLordHp, compact, speed, replaying, replayResult, farming, onChallenge } = props;
+  const { ground, paused, stage, replayStage, best, onRank, lastWave, onFighting, onLordHp, compact, speed, replaying, replayResult, farming, onChallenge } = props;
   const [s, setS] = useState<SiegeState>(idleSiege);
   // 재생 중에는 싸우기 전 단계를 보여 주고, 끝나면 새 단계로 바꾼다
   const [shownStage, setShownStage] = useState(stage);
@@ -103,7 +105,7 @@ export default function Siege(props: {
         <>
           <div className="siege-stage">
             <button className="pill" onClick={onRank}>
-              {breached ? T.siege.breachedFarm : farming && !running ? T.siege.farm(shownStage) : T.siege.stage(shownStage)}
+              {breached ? T.siege.breachedFarm : farming && !running ? T.siege.farm(shownStage) : T.siege.stage(running && replayStage ? replayStage : shownStage)}
               {!breached && <small> · {T.siege.best(Math.max(best, shownStage))}</small>}
             </button>
             {farming && !breached && (

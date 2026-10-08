@@ -21,6 +21,9 @@ describe('continuous siege (2026-10-06)', () => {
     expect(siegeCallBlock({ nextAt: T0 + 9000, now: T0 + 8999 })).toBe('SIEGE_TOO_SOON');
     expect(siegeCallBlock({ nextAt: T0 + 9000, now: T0 + 9000 })).toBe(null);
     expect(siegeCallBlock({ nextAt: undefined, now: T0 })).toBe(null);
+    // 반복 중 도전은 바로(2026-10-08)
+    expect(siegeCallBlock({ nextAt: T0 + 9000, now: T0, challenge: true })).toBe(null);
+    expect(siegeCallBlock({ nextAt: T0 + 9000, now: T0, challenge: false })).toBe('SIEGE_TOO_SOON');
   });
 
   it('replay length: enter + sped-up fight (all floors at once) + result; long waves play up to 3x faster', () => {

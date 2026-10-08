@@ -106,9 +106,12 @@ export function siegeReplayMs(log: SiegeLog | undefined): number {
 /**
  * 다음 파도를 부를 수 없는 이유(되면 null). 이어지는 공성(2026-10-06): 게임을 켜 둔 동안 화면이 재생을 끝내면 부른다.
  * 직전 파도의 재생이 끝나는 시각(nextAt, 서버가 전투 기록으로 계산) 전에는 막는다 — 재생을 건너뛰고 연달아 불러 단계를 올리는 조작 방지.
- * 정상 플레이는 재생이 끝난 뒤 부르므로 기다리지 않는다. 자리를 비운 동안은 runSiege의 2분 주기 그대로
+ * 정상 플레이는 재생이 끝난 뒤 부르므로 기다리지 않는다. 자리를 비운 동안은 runSiege의 2분 주기 그대로.
+ * 반복 중 도전(challenge)은 누르는 즉시 시작한다(2026-10-08 사용자). 이기면 반복이 풀려 다음부터는 다시 재생 간격을 지키고,
+ * 지면 같은 단계 반복이라 연달아 눌러도 단계가 오르지 않는다. 골드는 흐른 시간만큼이라 일찍 불러도 늘지 않는다
  */
-export function siegeCallBlock(p: { nextAt: number | undefined; now: number }): 'SIEGE_TOO_SOON' | null {
+export function siegeCallBlock(p: { nextAt: number | undefined; now: number; challenge?: boolean }): 'SIEGE_TOO_SOON' | null {
+  if (p.challenge) return null;
   return p.now < (p.nextAt ?? 0) ? 'SIEGE_TOO_SOON' : null;
 }
 

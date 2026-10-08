@@ -568,9 +568,10 @@ export class Server {
       const { s } = await advanceSiege(me, await loadState(me, now), now);
       const sp = siegeSpeed(speed, s.perks?.speed3 === true);
       if (sp === null) throw new Error('NO_SPEED3');
-      const block = siegeCallBlock({ nextAt: s.siege.nextAt, now });
-      if (block) throw new Error(block);
       const ch = challenge === true;
+      // 반복 중 도전은 재생 간격을 기다리지 않는다(2026-10-08)
+      const block = siegeCallBlock({ nextAt: s.siege.nextAt, now, challenge: ch && s.siege.farming === true });
+      if (block) throw new Error(block);
       const fightStage = siegeFightStage({ stage: s.siege.stage, farming: s.siege.farming, challenge: ch });
       const fought = fightWave({
         account: me, stage: fightStage, at: now, castleLevel: s.castle.level, floors: resolveFloors(s), mult: siegeDefenseMult(heroGrowth(s)), lordStars: lordStarsOf(s), lordLooks: lordLooksOf(s), lordSkin: wornLookOf(s), record: true,
