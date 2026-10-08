@@ -43,9 +43,15 @@ describe('power tips', () => {
     expect(featuresOf({ ...s, stars: { lord: 1 } }).awaken).toBe(true);
   });
 
-  it('recommends one upgrade: the cheapest monster first, nothing when broke', () => {
+  it('recommends one upgrade: castle when affordable, else the cheapest monster, nothing when broke', () => {
     const s = defaultState('a', 0, 's1');
     expect(recommendedUpgrade(s, 0, 0)).toBeNull();
-    expect(recommendedUpgrade(s, 1e9, 0)?.kind).toBe('monster');
+    expect(recommendedUpgrade(s, 1e9, 0)?.kind).toBe('castle');
+    expect(recommendedUpgrade(s, 10_000, 0)?.kind).toBe('monster');
+  });
+  it('saves for the castle: a gold upgrade costing over a tenth of the castle is not recommended (2026-10-08)', () => {
+    const s = defaultState('a', 0, 's1');
+    const pricey = { ...s, roster: { slime: { level: 30 }, skeleton: { level: 30 } } };
+    expect(recommendedUpgrade(pricey, 150_000, 0)).toBeNull();
   });
 });

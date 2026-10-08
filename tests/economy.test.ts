@@ -14,10 +14,10 @@ describe('growth curve', () => {
     expect([1, 2, 10].map(lordLevel)).toEqual([1, 11, 91]);
   });
 
-  it('wave gold = 3 invaders × 500 × 1.18^(stage−1) (2026-10-07 gold ×100)', () => {
-    expect(waveGold(1)).toBe(1500);
-    expect(waveGold(2)).toBe(1770);
-    expect(waveGold(11)).toBe(Math.round(1500 * Math.pow(1.18, 10)));
+  it('wave gold = 3 invaders × 1000 × 1.18^(stage−1) (2026-10-08 wave gold ×2)', () => {
+    expect(waveGold(1)).toBe(3000);
+    expect(waveGold(2)).toBe(3540);
+    expect(waveGold(11)).toBe(Math.round(3000 * Math.pow(1.18, 10)));
   });
 
   it('fixed gold rewards stay until stage 10, then grow ×1.18 per stage', () => {
@@ -66,10 +66,10 @@ describe('economy', () => {
     expect(unitUpgradeCost(1, 1)!).toBeGreaterThan(unitUpgradeCost(49, 0)!);
   });
 
-  it('castle upgrade = 3 × the ten lord levels it adds, null at max', () => {
+  it('castle upgrade = the ten lord levels it adds (2026-10-08: factor 3 → 1), null at max', () => {
     let sum = 0;
     for (let l = 1; l < 11; l++) sum += 5000 * Math.pow(1.3, l - 1);
-    expect(castleUpgradeCost(1)).toBe(Math.round(sum * 3));
+    expect(castleUpgradeCost(1)).toBe(Math.round(sum));
     expect(castleUpgradeCost(10)).toBeNull();
   });
 

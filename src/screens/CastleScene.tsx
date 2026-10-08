@@ -259,6 +259,14 @@ export default function CastleScene(props: {
   });
   const speed: Speed = siegeSpd === 3 && !has3x ? 1 : siegeSpd;
   // 배속은 1×·2×·3× 세 칸에서 바로 고른다(2026-10-08 사용자: 1×·3×만 보여 2×가 있는 줄 몰랐다). 3×는 상품이 없으면 프리미엄 구매로
+  const [speedOpen, setSpeedOpen] = useState(false);
+  // 펼친 배속 칸은 바깥을 누르면 닫는다
+  useEffect(() => {
+    if (!speedOpen) return;
+    const close = (e: PointerEvent) => { if (!(e.target as Element | null)?.closest('.speed-pick')) setSpeedOpen(false); };
+    document.addEventListener('pointerdown', close, { capture: true });
+    return () => document.removeEventListener('pointerdown', close, { capture: true });
+  }, [speedOpen]);
   const pickSpeed = useCallback((next: Speed) => {
     setSiegeSpd(next);
     try { localStorage.setItem(SIEGE_SPEED_KEY, String(next)); } catch { /* 저장 못 해도 이번 화면에서는 쓴다 */ }
@@ -451,30 +459,30 @@ export default function CastleScene(props: {
           {/* 공성 배속은 골드 오른쪽 (2026-09-30 사용자 결정) */}
           <span className="hud-row">
             <CurrencyPill icon="icons/gold.png" label={T.gold} value={home.gold} onPlus={tutorialOff ? () => onShop('gold') : undefined} plusLabel={T.icons.shop} />
-            <span className="speed-seg">
-              {([1, 2, 3] as Speed[]).map((x) => {
-                const locked = x === 3 && !has3x;
-                return (
-                  <button
-                    key={x} className={`pill speed ${speed === x ? 'on' : ''} ${locked ? 'locked' : ''}`}
-                    onClick={() => (locked ? buy('premium') : pickSpeed(x))} aria-pressed={speed === x} aria-label={locked ? T.products.premium[0] : T.speed(x)}
-                  >
-                    {T.speed(x)}
-                  </button>
-                );
-              })}
+            {/* 배속은 지금 배속 한 칸, 누르면 1×·2×·3× 펼침(2026-10-08 B안: 윗줄을 깔끔하게) */}
+            <span className="speed-pick">
+              <button className="pill speed on" onClick={() => setSpeedOpen((o) => !o)} aria-expanded={speedOpen} aria-label={T.speed(speed)}>{T.speed(speed)}<i aria-hidden>▾</i></button>
+              {speedOpen && (
+                <span className="speed-menu">
+                  {([1, 2, 3] as Speed[]).map((x) => {
+                    const locked = x === 3 && !has3x;
+                    return (
+                      <button
+                        key={x} className={`pill speed ${speed === x ? 'on' : ''} ${locked ? 'locked' : ''}`}
+                        onClick={() => { setSpeedOpen(false); if (locked) buy('premium'); else pickSpeed(x); }} aria-pressed={speed === x} aria-label={locked ? T.products.premium[0] : T.speed(x)}
+                      >
+                        {T.speed(x)}
+                      </button>
+                    );
+                  })}
+                </span>
+              )}
             </span>
           </span>
           {home.power !== undefined && (
             <CurrencyPill icon="icons/stat_atk.png" label={T.siege.power} value={home.power} tone="power" />
           )}
         </span>
-        {/* 반복 중 도전: 배속 바로 아래 화면 가운데(2026-10-08 사용자) */}
-        {farming && replay.result !== 'breached' && !s.run && (
-          <button className="btn small gold siege-challenge hud-challenge" disabled={challenge || challengeRunning} onClick={() => setChallenge(true)}>
-            {challenge || challengeRunning ? T.siege.challengeReady : T.siege.challenge((s.siege?.stage ?? 1) + 1)}
-          </button>
-        )}
         <button className="hud-icon" data-tut="settings" onClick={onSettings} aria-label={T.settings.title}><img src="ui/settings.png" alt="" draggable={false} /></button>
         <CurrencyPill icon="icons/soul.png" label={T.soul} value={home.soul} tone="soul" onPlus={tutorialOff ? () => onShop('soul') : undefined} plusLabel={T.icons.shop} />
       </header>
@@ -500,6 +508,7 @@ export default function CastleScene(props: {
         compact={panelOpen || (s.onboarding?.at ?? 'done') !== 'done'}
         speed={speed}
         farming={farming}
+        onChallenge={challenge || challengeRunning ? null : () => setChallenge(true)}
         onFighting={onDefending}
         onLordHp={onLordHp}
       />

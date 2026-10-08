@@ -125,9 +125,10 @@ export const BALANCE = {
     powerScale: 100,
     /** 성 1레벨 = 마왕 10레벨 */
     lordLevelsPerCastle: 10,
-    castleCostFactor: 3,
-    /** 공성 침입자 1명을 막을 때 골드(1단계 기준) */
-    goldPerInvader: 500,
+    /** 2026-10-08 사용자 승인(무과금이 20분 안에 막힘): 3 → 1. 성 2를 7분쯤에 */
+    castleCostFactor: 1,
+    /** 공성 침입자 1명을 막을 때 골드(1단계 기준). 2026-10-08 사용자 승인: 500 → 1000(웨이브·방치·출정 골드 2배) */
+    goldPerInvader: 1000,
     /** 방치 수입(시간당) = 공성 최고 단계 파도 골드 × 2 (2026-09-30 사용자 승인: 5 → 2, 자리 비운 보상이 너무 컸다) */
     idleWavesPerHour: 2,
     /** NPC 공략 전리품 = 파도 5번 값 */
@@ -347,21 +348,24 @@ export const BALANCE = {
   quests: {
     daily: { sortie: 3, win: 1, upgrade: 10, idle: 1, soulEach: 5, soulAll: 20 },
     guide: [
-      // 2026-10-02: 튜토리얼에서 배치를 빼고 첫 의뢰로(1층 3칸)
+      // 2026-10-08 사용자: 초반 성 Lv3·4 의뢰가 너무 어렵다 → 강화 레벨 의뢰로, 성은 2 → 3 → 4 순서로 뒤에
       { kind: 'filled', target: 3, soul: 10, gold: 100000 },
       { kind: 'unit', id: 'slime', target: 5, soul: 10, gold: 100000 },
       { kind: 'wins', target: 3, soul: 10, gold: 100000 },
-      // 2026-10-06: 소환이 성 Lv 3에 열려서 소환 의뢰 앞의 성 의뢰를 2 → 3
-      { kind: 'castle', target: 3, soul: 10, gold: 100000 },
-      { kind: 'filled', target: 6, soul: 10, gold: 100000 },
+      { kind: 'unit', id: 'skeleton', target: 10, soul: 10, gold: 100000 },
+      { kind: 'siege', target: 10, soul: 10, gold: 100000 },
       { kind: 'idle', target: 1, soul: 10, gold: 100000 },
       { kind: 'summon', target: 1, soul: 20, gold: 300000 },
-      { kind: 'siege', target: 10, soul: 20, gold: 300000 },
-      { kind: 'castle', target: 4, soul: 20, gold: 300000 },
-      { kind: 'filled', target: 9, soul: 20, gold: 300000 },
+      { kind: 'anyLevel', target: 15, soul: 20, gold: 300000 },
+      { kind: 'castle', target: 2, soul: 20, gold: 300000 },
+      { kind: 'filled', target: 6, soul: 20, gold: 300000 },
+      { kind: 'siege', target: 20, soul: 30, gold: 600000 },
       { kind: 'wins', target: 15, soul: 30, gold: 600000 },
       { kind: 'anyLevel', target: 25, soul: 30, gold: 600000 },
+      { kind: 'castle', target: 3, soul: 30, gold: 600000 },
       { kind: 'siege', target: 30, soul: 30, gold: 600000 },
+      { kind: 'castle', target: 4, soul: 50, gold: 600000 },
+      { kind: 'filled', target: 9, soul: 50, gold: 600000 },
       { kind: 'stars', target: 1, soul: 50, gold: 600000 },
     ] as { kind: 'unit' | 'wins' | 'castle' | 'filled' | 'idle' | 'summon' | 'siege' | 'anyLevel' | 'stars'; id?: string; target: number; soul: number; gold: number }[],
     /** 목록 뒤: 공성 최고 +10단계 → 공략 +10승 → 몬스터 별 합 +1 을 돌아가며 */

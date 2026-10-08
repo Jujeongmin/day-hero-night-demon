@@ -51,7 +51,18 @@ export function powerTips(s: UserState, gold: number, soul: number): Tip[] {
  * 강화 탭에 "추천" 표시, 강화 창에서 그 줄이 빛난다. 없으면 null
  */
 export function recommendedUpgrade(s: UserState, gold: number, soul: number): { kind: 'monster' | 'castle' | 'lord' | 'hero'; unit: string } | null {
-  const t = powerTips(s, gold, soul).find((x) => x.kind === 'monster' || x.kind === 'castle' || x.kind === 'lord' || x.kind === 'hero');
+  const tips = powerTips(s, gold, soul);
+  // 성을 올릴 수 있으면 성이 먼저(층이 열리고 마왕이 10레벨 오른다)
+  if (tips.some((x) => x.kind === 'castle')) return { kind: 'castle', unit: 'castle' };
+  const t = tips.find((x) => x.kind === 'monster' || x.kind === 'lord' || x.kind === 'hero');
   if (!t) return null;
+  // 성 비용의 1/10보다 비싼 골드 강화는 추천하지 않고 성을 모으게 한다(2026-10-08: 싼 강화만 가리켜 성을 영영 못 올렸다)
+  const castle = castleUpgradeCost(s.castle.level);
+  if (castle !== null && t.kind !== 'lord') {
+    const cost = t.kind === 'hero'
+      ? unitUpgradeCost(s.heroes[t.unit as HeroId]?.level ?? 1, s.stars?.[t.unit as HeroId] ?? 0)
+      : unitUpgradeCost(s.roster[t.unit as MonsterId]?.level ?? 1, s.stars?.[t.unit as MonsterId] ?? 0);
+    if (cost !== null && cost * 10 > castle) return null;
+  }
   return { kind: t.kind as 'monster' | 'castle' | 'lord' | 'hero', unit: t.kind === 'castle' ? 'castle' : t.unit! };
 }
