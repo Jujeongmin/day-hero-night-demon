@@ -436,12 +436,12 @@ export default function CastleScene(props: {
   // 기록 배지: 지금 복수할 수 있는 침입(실제 플레이어가 이겼고, 24시간 안, 아직 복수 안 함)
   const questBadge = claimableQuests(s, Date.now());
   const showQuest = !s.run && ['done', 'end'].includes(s.onboarding?.at ?? 'done');
-  // 기록 배지(2026-10-08 사용자): 다른 유저가 새로 약탈해 갔으면 그 수. 기록을 열어 보면 사라진다(본 시각은 이 기기에 기억)
+  // 기록 배지(2026-10-08 사용자): 다른 유저가 새로 털러 온 수(약탈당함·막아 냄 모두). 기록을 열어 보면 사라진다(본 시각은 이 기기에 기억)
   const seenKey = `log.seen.${s.profile.createdAt}`;
   const [logSeen, setLogSeen] = useState(() => {
     try { return Number(localStorage.getItem(seenKey)) || 0; } catch { return 0; }
   });
-  const plundered = s.raidLog.filter((e) => !e.npc && e.attackerWon);
+  const plundered = s.raidLog.filter((e) => !e.npc);
   const newPlunder = plundered.filter((e) => e.at > logSeen).length;
   const openLog = () => {
     const latest = Math.max(logSeen, ...plundered.map((e) => e.at));

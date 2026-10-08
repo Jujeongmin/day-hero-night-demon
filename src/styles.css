@@ -19,8 +19,12 @@
 html, body, #root { height: 100%; margin: 0; background: #000; color: var(--text); font-family: var(--font); }
 /* 게임 화면: 글자·그림을 끌어 선택하지 않게 (입력칸만 예외) */
 body { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-/* 두 손가락 확대·두 번 탭 확대를 막고 한 손가락 스크롤만(2026-10-08 사용자) */
-html, body { touch-action: pan-x pan-y; }
+/* 화면은 손가락으로 끌어도 움직이지 않는다(2026-10-08 사용자: 화면을 잡고 위아래로 움직이면 움직인다 — iOS 튕김·감싼 페이지로 끌림).
+   확대도 막힌다. 스크롤이 필요한 목록(.sheet-body, .shop-body)만 세로로 끌 수 있고, 끝에 닿아도 바깥으로 넘기지 않는다 */
+   (html·body에 none을 걸면 안쪽 목록 스크롤까지 막혀서, 페이지 튕김·바깥으로 끌림은 overscroll-behavior로, 끌기 자체는 스크롤 없는 게임 화면에서만 끈다) */
+html, body { touch-action: pan-x pan-y; overscroll-behavior: none; overflow: hidden; }
+.scene, .raid-scene, .tabs { touch-action: none; }
+.sheet-body, .shop-body { overscroll-behavior: contain; }
 img { -webkit-user-drag: none; }
 input, textarea { user-select: text; -webkit-user-select: text; }
 /* 모바일에서 누를 때 뜨는 기본 회색 상자와 기본 버튼 모양을 끈다 */
