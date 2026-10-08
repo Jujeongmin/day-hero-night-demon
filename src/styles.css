@@ -749,6 +749,10 @@ span.up-pt { cursor: default; }
 .stage-empty { display: block; height: 56px; }
 .stage-arrow { position: relative; z-index: 1; margin-bottom: -4px; color: var(--gold); font-size: 20px; line-height: 1; text-shadow: 0 2px 0 #000; animation: stageArrow .9s steps(2) infinite; }
 @keyframes stageArrow { 50% { translate: 0 4px; } }
+/* 편성 능력 카드(2026-10-08): PC 마우스 올리면 몬스터 위(공간이 없으면 아래)에 뜬다. 꾹 누르기는 강화 창 설명과 같은 가운데 창 */
+.edit-tip { position: fixed; z-index: 30; width: 240px; translate: -50% -100%; pointer-events: none; }
+.edit-tip.below { translate: -50% 0; }
+.stage-spot, .pick { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .edit-hint { margin: 10px 2px 6px; font-size: 13px; color: var(--muted); }
 .pick { position: relative; }
 .pick.placed { filter: brightness(.8); }
