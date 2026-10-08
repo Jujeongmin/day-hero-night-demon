@@ -39,7 +39,7 @@ function BountyCard(props: { api: Api; home: HomeData; busy: boolean; onFight: (
       <span className="bounty-info">
         <small className="bounty-title">{T.bounty.title}</small>
         <b>{T.bounty.name(T.units[boss])}</b>
-        <span className="bounty-weak"><Portrait id={weak} label={T.units[weak]} inner={18} />{T.bounty.weak(T.units[weak])}</span>
+        <span className="bounty-weak"><Portrait id={weak} label={T.units[weak]} inner={26} />{T.bounty.weak(T.units[weak])}</span>
         <small className="muted">
           {T.bounty.best(Math.round(today.best * 100))} · {T.bounty.tries(left, BALANCE.bounty.triesPerDay)}{rank !== null && <> · {T.bounty.rank(rank)}</>}
         </small>
@@ -69,7 +69,7 @@ function CampaignMap(props: { home: HomeData; busy: boolean; onFight: () => void
     const state = n < c.stage ? 'done' : n === c.stage ? 'now' : 'lock';
     return (
       <span key={i} className={`camp-node ${state} ${l.boss ? 'boss' : ''}`}>
-        {l.boss ? <Portrait id="lord" label={T.campaign.boss} inner={20} /> : state === 'done' ? '✓' : l.slot}
+        {l.boss ? <Portrait id="lord" label={T.campaign.boss} inner={30} /> : state === 'done' ? '✓' : l.slot}
       </span>
     );
   };
@@ -102,12 +102,12 @@ function Scout(props: { t: Target }) {
         <span className="scout-floor" key={i}>
           <small>{T.scoutFloor(i + 1)}</small>
           {f.length === 0 ? <small className="muted">-</small> : f.map((m, j) => (
-            <Portrait key={j} id={monsterSpriteId(m.id, m.gear)} label={T.units[m.id]} inner={22} />
+            <Portrait key={j} id={monsterSpriteId(m.id, m.gear)} label={T.units[m.id]} inner={34} />
           ))}
         </span>
       ))}
       {props.t.lord && (
-        <span className="scout-floor"><small>{T.throne}</small><Portrait id="lord" label={T.units.lord} inner={22} /></span>
+        <span className="scout-floor"><small>{T.throne}</small><Portrait id="lord" label={T.units.lord} inner={34} /></span>
       )}
     </div>
   );

@@ -777,7 +777,7 @@ span.up-pt { cursor: default; }
 .bounty-title { color: var(--gold); font-size: 11px; }
 .bounty-info b { font-weight: 400; font-size: 16px; color: var(--bone); }
 .bounty-weak { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #7dff8a; }
-.bounty-weak .portrait { width: 22px; height: 22px; }
+.bounty-weak .portrait { width: 26px; height: 26px; }
 .bounty-result { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 6px; }
 .bounty-result b { font-weight: 400; font-size: 18px; color: var(--bone); }
 /* 출정 창 탭·원정 지도(2026-10-08 승인) */
@@ -788,11 +788,11 @@ span.up-pt { cursor: default; }
 .camp-title { font-weight: 400; color: var(--gold); text-align: center; }
 .camp-row { display: flex; justify-content: space-between; gap: 4px; padding: 0 8px; }
 .camp-row.rev { flex-direction: row-reverse; }
-.camp-node { display: grid; place-items: center; width: 36px; height: 36px; font-size: 14px; color: var(--muted); border: 8px solid transparent; border-image: url(/ui/pill.png) 8 fill / 8px stretch; image-rendering: pixelated; }
+.camp-node { display: grid; place-items: center; width: 44px; height: 44px; font-size: 14px; color: var(--muted); border: 8px solid transparent; border-image: url(/ui/pill.png) 8 fill / 8px stretch; image-rendering: pixelated; }
 .camp-node.done { color: #7dff8a; }
 .camp-node.now { color: var(--gold); filter: brightness(1.35); animation: dotPop 1.4s ease-in-out infinite; }
 .camp-node.lock { opacity: .55; }
-.camp-node.boss .portrait { width: 26px; height: 26px; }
+.camp-node.boss .portrait { width: 30px; height: 30px; }
 .coin-ic { display: inline-block; width: 14px; height: 14px; margin: 0 1px; vertical-align: -2px; image-rendering: pixelated; }
 .nowrap { white-space: nowrap; }
 /* 정찰·다시 찾기 */
@@ -802,7 +802,9 @@ span.up-pt { cursor: default; }
 .scout { display: flex; flex-wrap: wrap; gap: 4px 10px; padding: 4px 2px 2px; }
 .scout-floor { display: inline-flex; align-items: center; gap: 2px; }
 .scout-floor small { color: var(--muted); font-size: 11px; margin-right: 2px; }
-.scout-floor .portrait { width: 26px; height: 26px; }
+.scout-floor .portrait { width: 34px; height: 34px; }
+/* 작은 초상화(정찰·원정 보스 칸·약점 용사)는 틀 없이 그림만 크게, 어두운 그림이 묻히지 않게 조금 밝게(2026-10-08 사용자) */
+.scout-floor .portrait, .camp-node .portrait, .bounty-weak .portrait { border: 0; overflow: visible; filter: brightness(1.2) drop-shadow(0 1px 0 #000); }
 .reroll { align-self: center; margin-top: 4px; }
 .edit-hint { margin: 10px 2px 6px; font-size: 13px; color: var(--muted); }
 .pick { position: relative; }
