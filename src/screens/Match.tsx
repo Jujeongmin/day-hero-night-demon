@@ -1,11 +1,14 @@
 import { BALANCE } from '../../server/src/catalog';
 import { formatNum } from '../../server/src/growth';
-import { lordSoulLeft, sortiesLeft } from '../../server/src/sortie';
+import { lordSoulLeft, sortiesLeft, sortieTicketCost } from '../../server/src/sortie';
+import { bountyOf, bountyToday, bountyTriesLeft } from '../../server/src/bounty';
 import { useEffect, useState } from 'react';
-import type { Target } from '../../server/src/state';
+import { dayKey, type Target } from '../../server/src/state';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
 import { VipBadge } from '../render/Vip';
+import { Portrait } from '../render/Sprite';
+import { monsterSpriteId } from '../render/skins';
 import { npcCastle } from '../../server/src/npc';
 import { snapshotPower } from '../../server/src/economy';
 import { displayName } from '../strings/i18n';
@@ -17,14 +20,64 @@ function difficulty(power: number, normal: number): 'easy' | 'normal' | 'hard' {
   return 'hard';
 }
 
+/** 오늘의 현상수배(2026-10-08 승인: 출정 창 맨 위 카드). 보스·약점 용사·남은 도전·오늘 최고·순위, [도전] */
+function BountyCard(props: { api: Api; home: HomeData; busy: boolean; onFight: () => void }) {
+  const { api, home } = props;
+  const now = Date.now();
+  const { boss, weak } = bountyOf(dayKey(now));
+  const today = bountyToday(home.state, now);
+  const left = bountyTriesLeft(home.state, now);
+  const [rank, setRank] = useState<number | null>(null);
+  useEffect(() => {
+    if (today.dmg <= 0) return;
+    api.getBountyRank().then((r) => setRank(r.rank)).catch(() => undefined);
+  }, [api, today.dmg]);
+  return (
+    <div className="bounty-card">
+      <span className="bounty-boss"><Portrait id={monsterSpriteId(boss, undefined)} label={T.units[boss]} inner={44} /></span>
+      <span className="bounty-info">
+        <small className="bounty-title">{T.bounty.title}</small>
+        <b>{T.bounty.name(T.units[boss])}</b>
+        <span className="bounty-weak"><Portrait id={weak} label={T.units[weak]} inner={18} />{T.bounty.weak(T.units[weak])}</span>
+        <small className="muted">
+          {T.bounty.best(Math.round(today.best * 100))} · {T.bounty.tries(left, BALANCE.bounty.triesPerDay)}{rank !== null && <> · {T.bounty.rank(rank)}</>}
+        </small>
+      </span>
+      <button className="btn small gold" disabled={props.busy || left <= 0} onClick={props.onFight}>{T.bounty.go}</button>
+    </div>
+  );
+}
+
+/** 정찰(2026-10-08): 상대 성의 층마다 서 있는 몬스터, 옥좌의 마왕 */
+function Scout(props: { t: Target }) {
+  const floors = props.t.floors ?? [];
+  return (
+    <div className="scout">
+      {floors.map((f, i) => (
+        <span className="scout-floor" key={i}>
+          <small>{T.scoutFloor(i + 1)}</small>
+          {f.length === 0 ? <small className="muted">-</small> : f.map((m, j) => (
+            <Portrait key={j} id={monsterSpriteId(m.id, m.gear)} label={T.units[m.id]} inner={22} />
+          ))}
+        </span>
+      ))}
+      {props.t.lord && (
+        <span className="scout-floor"><small>{T.throne}</small><Portrait id="lord" label={T.units.lord} inner={22} /></span>
+      )}
+    </div>
+  );
+}
+
 export default function Match(props: { api: Api; home: HomeData; onStart: () => void; onError: (m: string) => void; onRefresh: () => Promise<void> }) {
-  const { api, home, onStart, onError } = props;
+  const { api, home, onStart, onError, onRefresh } = props;
   // 출정 입장권: 튜토리얼 출정은 쓰지 않는다. 다 쓰면 홈 출정 버튼이 멈추고 그 옆 "+"로 산다
   const tutorial = home.state.onboarding?.at === 'match_sortie';
   const now = Date.now();
   const left = sortiesLeft(home.state, now);
   const [targets, setTargets] = useState<Target[] | null>(null);
   const [busy, setBusy] = useState(false);
+  // 정찰로 펼친 상대
+  const [open, setOpen] = useState<string | null>(null);
   // NPC·실제 플레이어 모두 화면 위 내 전투력과 같은 잣대로 비교한다(실제 승패는 출정하는 용사가 정한다)
   const mine = home.power ?? 0;
   const diffOf = (t: Target): 'easy' | 'normal' | 'hard' => difficulty(t.power, mine);
@@ -40,13 +93,31 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
     api.findTargets().then(setTargets).catch((e) => onError(errorText(e)));
   }, [api, onError, intro]);
 
-  async function start(id: string) {
+  async function run(fn: () => Promise<unknown>) {
     if (busy) return;
     setBusy(true);
     try {
-      if (intro) await api.startIntroRaid();
-      else await api.startRaid(id);
+      await fn();
       onStart();
+    } catch (e) {
+      onError(errorText(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // 상대 다시 찾기: 하루 무료 rerollFree번, 그 뒤 입장권 값의 1/rerollCostDiv 골드
+  const r = home.state.reroll && home.state.reroll.day === dayKey(now) ? home.state.reroll.n : 0;
+  const freeLeft = Math.max(0, BALANCE.rerollFree - r);
+  const rerollCost = Math.max(1, Math.round(sortieTicketCost(home.state) / BALANCE.rerollCostDiv));
+  async function reroll() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const res = await api.rerollTargets();
+      setTargets(res.targets);
+      setOpen(null);
+      await onRefresh();
     } catch (e) {
       onError(errorText(e));
     } finally {
@@ -57,6 +128,7 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
   return (
     <>
       {intro && <p className="match-intro">{T.matchIntro}</p>}
+      {!tutorial && !intro && <BountyCard api={api} home={home} busy={busy} onFight={() => run(() => api.startBounty())} />}
       {!tutorial && !intro && (
         <div className="line">
           <small className="muted">{T.sortieInfo(left, BALANCE.sortieMax, lordSoulLeft(home.state, now), BALANCE.lordSoulPerDay)}</small>
@@ -64,16 +136,25 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
       )}
       {!targets && <p className="muted">{T.loading}</p>}
       {targets?.map((t, i) => (
-        <div className="line" key={t.id}>
-          <span>
-            <b>{displayName(t.nickname)}</b> <VipBadge level={t.vip} /> {t.npc && <span className="badge">{T.npcTag}</span>}{' '}
-            {(() => { const d = diffOf(t); return <span className={`diff ${d}`}>{T.diff[d]}</span>; })()}
-            <br />
-            <small>{T.power} {formatNum(t.power)}{!intro && <> · {T.estLoot} {formatNum(t.estLoot)}</>}</small>
-          </span>
-          <button className="btn small" data-tut={i === 0 ? 'match-first' : undefined} disabled={busy || (!tutorial && !intro && left <= 0)} onClick={() => start(t.id)}>{T.sortie}</button>
+        <div className="target" key={t.id}>
+          <div className="line">
+            <span>
+              <b>{displayName(t.nickname)}</b> <VipBadge level={t.vip} /> {t.npc && <span className="badge">{T.npcTag}</span>}{' '}
+              {(() => { const d = diffOf(t); return <span className={`diff ${d}`}>{T.diff[d]}</span>; })()}
+              <br />
+              <small>{T.power} {formatNum(t.power)}{!intro && <> · {T.estLoot} {formatNum(t.estLoot)}</>}</small>
+            </span>
+            <span className="target-btns">
+              {t.floors && <button className={`btn small ghost ${open === t.id ? 'on' : ''}`} onClick={() => setOpen(open === t.id ? null : t.id)}>{T.scout}{open === t.id ? '▴' : '▾'}</button>}
+              <button className="btn small" data-tut={i === 0 ? 'match-first' : undefined} disabled={busy || (!tutorial && !intro && left <= 0)} onClick={() => run(() => (intro ? api.startIntroRaid() : api.startRaid(t.id)))}>{T.sortie}</button>
+            </span>
+          </div>
+          {open === t.id && <Scout t={t} />}
         </div>
       ))}
+      {!tutorial && !intro && targets && (
+        <button className="btn small ghost reroll" disabled={busy || (freeLeft <= 0 && home.gold < rerollCost)} onClick={reroll}>{T.reroll(freeLeft, rerollCost)}</button>
+      )}
     </>
   );
 }

@@ -54,6 +54,8 @@ export interface EndResult {
   lordDefeated: boolean;
   offerStarter: boolean;
   honor?: number;
+  /** 현상수배 결과(2026-10-08): 깎은 비율·오늘 최고(0~1)·새로 넘은 단계 수·준 피해 */
+  bounty?: { frac: number; best: number; newTiers: number; dmg: number };
 }
 
 export interface LeagueRow { rank: number; nickname: string; honor: number; ghost: boolean; me: boolean; vip?: number; title?: TitleKind | null }
@@ -97,6 +99,9 @@ export function createApi(server: RemoteServer) {
     summon: (kind: 'one' | 'ten') => call<{ cost: number; soul: number; results: SummonResult[]; summon: { pulls: number; sinceHigh: number; sinceLegend?: number }; toPity: number; toLegend: number }>('summon', [kind]),
     wearGear: (monster: string, gear: string | null) => call<{ gear: NonNullable<UserState['gear']> }>('wearGear', [monster, gear]),
     findTargets: () => call<Target[]>('findTargets'),
+    rerollTargets: () => call<{ targets: Target[]; cost: number; reroll: { day: string; n: number } }>('rerollTargets'),
+    startBounty: () => call<RunResult>('startBounty'),
+    getBountyRank: () => call<{ rank: number | null; count: number; top: { nickname: string; dmg: number; me: boolean; vip: number }[] }>('getBountyRank'),
     startRaid: (targetId: string) => call<RunResult>('startRaid', [targetId]),
     startIntroRaid: () => call<RunResult>('startIntroRaid'),
     revenge: (logId: string) => call<RunResult>('revenge', [logId]),

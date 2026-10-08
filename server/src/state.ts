@@ -33,6 +33,8 @@ export interface CastleSnapshot {
   mult?: number;
   /** 마왕 각성 별(플레이어 성) */
   lordStars?: number;
+  /** 현상수배 보스 성(bounty.ts): 1층의 보스·약점 용사·레벨 */
+  bounty?: { boss: MonsterId; weak: HeroId; level: number; hpMult: number };
 }
 
 export interface Run {
@@ -74,6 +76,9 @@ export interface Target {
   npc: boolean;
   /** 상대 VIP 등급(배지 표시) */
   vip?: number;
+  /** 정찰(2026-10-08): 층마다 서 있는 몬스터(아래층부터). 옥좌에 마왕이 있으면 lord */
+  floors?: { id: MonsterId; stars?: number; gear?: string }[][];
+  lord?: boolean;
 }
 
 export interface SeasonState {
@@ -156,6 +161,10 @@ export interface UserState {
   stars: Partial<Record<StarUnit, number>>;
   /** 지난 시즌 전체 순위 칭호(1~10위). 받은 다음 시즌 동안만 보인다(league.ts activeTitle) */
   title?: { kind: 'champion' | 'top3' | 'top10'; season: string } | null;
+  /** 현상수배(bounty.ts, 2026-10-08): 그날 도전 수·최고 비율(0~1)·받은 단계 수·최고 피해 */
+  bounty?: { day: string; tries: number; best: number; tier: number; dmg: number };
+  /** 출정 상대 다시 찾기(2026-10-08): 그날 쓴 횟수. 하루 BALANCE.rerollFree번 무료 */
+  reroll?: { day: string; n: number };
   /** 출정 입장권(sortie.ts, 2026-10-08): at 시각에 n장. 없으면 가득 찬 것으로 본다 */
   sortie?: { n: number; at: number };
   /** 오늘(한국 시간) 마왕 처치 영혼석 횟수 (sortie.ts). sorties·bought는 옛 하루 입장권 기록(쓰지 않음) */

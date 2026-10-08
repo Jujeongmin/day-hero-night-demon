@@ -260,6 +260,27 @@ export const BALANCE = {
    * 복수·튜토리얼은 입장권을 쓰지 않는다
    */
   sortieMax: 10,
+  /** 출정 상대 다시 찾기(2026-10-08 사용자 승인): 하루 무료 횟수, 그 뒤 값 = 입장권 값 ÷ rerollCostDiv */
+  rerollFree: 3,
+  rerollCostDiv: 5,
+  /**
+   * 현상수배 보스(2026-10-08 사용자 승인, bounty.ts): 하루 3번, 30초 동안 깎은 비율로 보상. 보스는 날마다 돌아가며 약점 용사 피해 +50%.
+   * 보스 = 그 몬스터의 용사 평균 레벨 능력치 × atkMult(공격·방어·체력) × 보스별 hp(체력만 더). 단계 보상은 웨이브 최고 단계 골드 × waves.
+   * 보스별 hp는 용사 셋이 보스와 같은 레벨일 때 30초에 약 40%를 깎도록 맞췄다(2026-10-08 시뮬레이션). 약점 용사를 키우면 더 깎는다
+   */
+  bounty: {
+    triesPerDay: 3,
+    tryWaves: 2,
+    weakDmg: 1.5,
+    atkMult: 1,
+    bosses: [
+      { boss: 'golem', weak: 'archer', hp: 21 }, { boss: 'dragon', weak: 'knight', hp: 32 }, { boss: 'spider', weak: 'priest', hp: 51 },
+      { boss: 'werewolf', weak: 'archer', hp: 51 }, { boss: 'vampire', weak: 'knight', hp: 37 }, { boss: 'banshee', weak: 'priest', hp: 54 },
+    ] as { boss: MonsterId; weak: HeroId; hp: number }[],
+    tiers: [
+      { pct: 0.1, waves: 3 }, { pct: 0.25, waves: 5 }, { pct: 0.5, waves: 8 }, { pct: 0.75, waves: 12 }, { pct: 1, waves: 20, soul: 20 },
+    ] as { pct: number; waves: number; soul?: number }[],
+  },
   sortieRegenMs: 10 * 60_000,
   sortieTicketLootMult: 0.5,
   /** 마왕 처치 영혼석(lordDefeatSoul)은 하루 이 횟수까지 (2026-10-01 사용자 결정) */

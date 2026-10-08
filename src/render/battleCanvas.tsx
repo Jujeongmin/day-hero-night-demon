@@ -58,7 +58,10 @@ export function preloadSprites(): void {
 }
 
 /** 발 위치(아래 가운데) */
-function positions(b: FloorBattle): Record<string, { x: number; y: number }> {
+/** 현상수배 보스(2026-10-08)는 이만큼 크게, 가운데 오른쪽에 */
+const BOSS_SCALE = 2.4;
+
+function positions(b: FloorBattle, boss = false): Record<string, { x: number; y: number }> {
   const out: Record<string, { x: number; y: number }> = {};
   const heroes = b.fighters.filter((f) => f.side === 'hero');
   const enemies = b.fighters.filter((f) => f.side === 'enemy');
@@ -66,7 +69,7 @@ function positions(b: FloorBattle): Record<string, { x: number; y: number }> {
   const throne = enemies.length === 1 && enemies[0].kind === 'lord';
   const rows = throne ? [122, 156, 190] : [86, 136, 186];
   heroes.forEach((f, i) => { out[f.key] = { x: f.row === 'front' ? 88 : 44, y: rows[i] }; });
-  enemies.forEach((f, i) => { out[f.key] = throne ? { x: 178, y: 178 } : { x: i % 2 === 0 ? 156 : 200, y: rows[i] }; });
+  enemies.forEach((f, i) => { out[f.key] = boss ? { x: 172, y: 196 } : throne ? { x: 178, y: 178 } : { x: i % 2 === 0 ? 156 : 200, y: rows[i] }; });
   return out;
 }
 
@@ -76,7 +79,7 @@ function spriteOf(f: Fighter, lordSkin: LordSkin | undefined): string {
 }
 
 /** 한 칸 그리기. 시트가 없으면 이름표 상자 */
-function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, sprite: string, anim: 'idle' | 'attack' | 'death', frame: number, x: number, y: number, now: number) {
+function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, sprite: string, anim: 'idle' | 'attack' | 'death', frame: number, x: number, y: number, now: number, scale = 1) {
   const name = `${sprite}_${anim}`;
   const img = image(name);
   const flip = f.side === 'enemy';
@@ -90,8 +93,8 @@ function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, sprite: string, ani
   }
   const s = strips[name];
   const fi = Math.min(frame, s.frames - 1);
-  const dw = s.w * UNIT_SCALE;
-  const dh = s.h * UNIT_SCALE;
+  const dw = s.w * UNIT_SCALE * scale;
+  const dh = s.h * UNIT_SCALE * scale;
   ctx.save();
   ctx.translate(x, y);
   if (flip) ctx.scale(-1, 1);
@@ -119,14 +122,14 @@ function drawStars(ctx: CanvasRenderingContext2D, n: number | undefined, x: numb
 }
 
 /** 체력바 위치: 대기 그림의 머리 위 4px. 그림 영역을 모르면 예전처럼 발에서 50px 위 */
-function hpBarY(sprite: string, footY: number): number {
+function hpBarY(sprite: string, footY: number, scale = 1): number {
   const s = strips[`${sprite}_idle`];
-  if (!s?.box) return footY - 50;
-  return Math.round(footY - s.h * UNIT_SCALE * 0.84 + s.box[1] * UNIT_SCALE - 8);
+  if (!s?.box) return footY - 50 * scale;
+  return Math.round(footY - s.h * UNIT_SCALE * scale * 0.84 + s.box[1] * UNIT_SCALE * scale - 8);
 }
 
 /** swingAt: 유닛마다 공격 동작을 시작한 화면 시각(유닛마다 따로 끝까지 보인다, 2026-10-07) */
-interface View { hp: Record<string, number>; fx: Fx | null; fxAt: number; downAt: Record<string, number>; swingAt: Record<string, number>; step: number; speed: number; lordSkin?: LordSkin; bg: string }
+interface View { hp: Record<string, number>; fx: Fx | null; fxAt: number; downAt: Record<string, number>; swingAt: Record<string, number>; step: number; speed: number; lordSkin?: LordSkin; bg: string; boss?: boolean }
 
 function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: number) {
   ctx.clearRect(0, 0, W, H);
@@ -139,7 +142,7 @@ function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: numbe
     ctx.fillStyle = '#1b1b1b';
     ctx.fillRect(0, 0, W, H);
   }
-  const pos = positions(b);
+  const pos = positions(b, v.boss);
   ctx.font = `10px ${uiFont()}`;
   ctx.textAlign = 'center';
   const idleFrame = Math.floor(now / IDLE_MS);
@@ -161,15 +164,17 @@ function draw(ctx: CanvasRenderingContext2D, b: FloorBattle, v: View, now: numbe
     const sprite = spriteOf(f, v.lordSkin);
     const s = strips[`${sprite}_${anim}`];
     if (anim === 'idle' && s) frame %= s.frames;
-    drawUnit(ctx, f, sprite, anim, frame, p.x, p.y, now);
-    const barY = hpBarY(sprite, p.y);
+    const big = v.boss && f.side === 'enemy' ? BOSS_SCALE : 1;
+    drawUnit(ctx, f, sprite, anim, frame, p.x, p.y, now, big);
+    const barY = hpBarY(sprite, p.y, big);
+    const barW = big > 1 ? 70 : 30;
 
     if (hp > 0) {
       drawStars(ctx, f.stars, p.x, barY - 2);
       ctx.fillStyle = '#000a';
-      ctx.fillRect(p.x - 15, barY, 30, 4);
+      ctx.fillRect(p.x - barW / 2, barY, barW, 4);
       ctx.fillStyle = f.side === 'hero' ? '#3cf07a' : '#ff5a5a';
-      ctx.fillRect(p.x - 15, barY, 30 * Math.max(0, hp / f.maxHp), 4);
+      ctx.fillRect(p.x - barW / 2, barY, barW * Math.max(0, hp / f.maxHp), 4);
     }
     if (v.fx?.key === f.key && v.fx.text) {
       const rise = Math.min(1, (now - v.fxAt) / v.step) * 8;
@@ -197,6 +202,8 @@ export default function BattleCanvas(props: {
   lordSkin?: LordSkin;
   /** 배경 시트 이름(`floorBgId`) */
   bg: string;
+  /** 현상수배 보스전: 적 하나를 크게 그린다 */
+  boss?: boolean;
   onDone: () => void;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -223,7 +230,7 @@ export default function BattleCanvas(props: {
     // 이미 쓰러져 있던 캐릭터는 쓰러진 마지막 프레임으로 둔다
     const downAt: Record<string, number> = Object.fromEntries(b.fighters.map((f) => [f.key, start - 10_000]));
     const step = STEP_MS / speedRef.current;
-    const view: View = { hp: hp0, fx: null, fxAt: start, downAt, swingAt: {}, step, speed: speedRef.current, lordSkin: props.lordSkin, bg: props.bg };
+    const view: View = { hp: hp0, fx: null, fxAt: start, downAt, swingAt: {}, step, speed: speedRef.current, lordSkin: props.lordSkin, bg: props.bg, boss: props.boss };
 
     // 공격 속도 전투(2026-10-06): 일어난 일을 전투 시각(at)에 맞춰 보여 준다. 배속이면 시계가 그만큼 빨리 간다
     let i = 0;

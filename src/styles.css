@@ -770,6 +770,25 @@ span.up-pt { cursor: default; }
 .stage-spot, .pick { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .match-intro { margin: 0 0 8px; font-size: 13px; line-height: 1.4; color: var(--bone); }
 .ticket-timer { margin-left: 4px; font-size: .75em; color: var(--muted); }
+/* 현상수배 카드(2026-10-08 승인: 출정 창 맨 위) */
+.bounty-card { display: flex; align-items: center; gap: 8px; padding: 6px 4px 8px; border-bottom: 1px dashed #efe3c833; }
+.bounty-boss .portrait { width: 56px; height: 56px; }
+.bounty-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.bounty-title { color: var(--gold); font-size: 11px; }
+.bounty-info b { font-weight: 400; font-size: 16px; color: var(--bone); }
+.bounty-weak { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #7dff8a; }
+.bounty-weak .portrait { width: 22px; height: 22px; }
+.bounty-result { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 6px; }
+.bounty-result b { font-weight: 400; font-size: 18px; color: var(--bone); }
+/* 정찰·다시 찾기 */
+.target { border-bottom: 1px dashed #efe3c833; padding-bottom: 4px; }
+.target > .line { border-bottom: 0; padding-bottom: 0; }
+.target-btns { display: flex; gap: 4px; flex: none; }
+.scout { display: flex; flex-wrap: wrap; gap: 4px 10px; padding: 4px 2px 2px; }
+.scout-floor { display: inline-flex; align-items: center; gap: 2px; }
+.scout-floor small { color: var(--muted); font-size: 11px; margin-right: 2px; }
+.scout-floor .portrait { width: 26px; height: 26px; }
+.reroll { align-self: center; margin-top: 4px; }
 .edit-hint { margin: 10px 2px 6px; font-size: 13px; color: var(--muted); }
 .pick { position: relative; }
 .pick.placed { filter: brightness(.8); }

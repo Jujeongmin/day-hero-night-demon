@@ -11,8 +11,16 @@ export default function Result(props: { result: EndResult; onClose: () => void; 
   const r = props.result;
   return (
     <>
+      {/* 현상수배(2026-10-08): 깎은 비율과 오늘 최고, 새로 넘은 단계 */}
+      {r.bounty && (
+        <div className="bounty-result">
+          <b>{T.bounty.result(Math.round(r.bounty.frac * 100))}</b>
+          <small className="muted">{T.bounty.best(Math.round(r.bounty.best * 100))}</small>
+          {r.bounty.newTiers > 0 && <small className="gold-text">{T.bounty.newTier(r.bounty.newTiers)}</small>}
+        </div>
+      )}
       <div className="result-gain">
-        <span><img src="icons/gold.png" alt="" draggable={false} /><b>+{formatNum(r.loot)}</b>{T.loot}</span>
+        <span><img src="icons/gold.png" alt="" draggable={false} /><b>+{formatNum(r.loot)}</b>{r.bounty ? T.gold : T.loot}</span>
         {r.honor !== undefined && <span><img src="icons/honor.png" alt="" draggable={false} /><b>+{r.honor}</b>{T.honor}</span>}
         {r.soul > 0 && <span><img src="icons/soul.png" alt="" draggable={false} /><b>+{r.soul}</b>{T.soul}</span>}
       </div>

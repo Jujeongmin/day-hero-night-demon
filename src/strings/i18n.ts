@@ -83,8 +83,8 @@ export function displayName(raw: string): string {
   if (raw === '침입자 길드') return n.guild;
   if (raw === '침입자 길드 견습') return n.guildApprentice;
   if (raw === '침입자 길드 신참') return n.guildRookie;
-  let m = /^침입자 길드 (\d+)단$/.exec(raw);
-  if (m) return n.guildTier(Number(m[1]));
+  let m = /^침입자 길드 (\d+)단(?: (#\d+))?$/.exec(raw);
+  if (m) return m[2] ? `${n.guildTier(Number(m[1]))} ${m[2]}` : n.guildTier(Number(m[1]));
   m = /^그림자 마왕 (\d+)$/.exec(raw);
   if (m) return n.ghost(Number(m[1]));
   m = /^마왕 #([0-9A-Za-z]+)$/.exec(raw);

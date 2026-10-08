@@ -17,6 +17,11 @@ export function floorEnemies(s: CastleSnapshot, floor: number): EnemySpec[] {
     if (s.throneEmpty && !s.shadow) return [];
     return [{ id: 'lord', level: s.lordLevel ?? lordLevel(s.castleLevel), mult: (s.mult ?? 1) * (s.throneEmpty ? 0.5 : 1) * lordMult(s.lordStars, snapshotLooks(s)), ...(s.lordStars ? { stars: s.lordStars } : {}), ...(s.lordSkin ? { look: s.lordSkin } : {}) }];
   }
+  // 현상수배 보스(2026-10-08): 체력만 크게 키운 거대 보스 하나
+  if (s.bounty) {
+    const B = BALANCE.bounty;
+    return floor === 0 ? [{ id: s.bounty.boss, level: s.bounty.level, mult: B.atkMult, hpMult: s.bounty.hpMult }] : [];
+  }
   // 각성 별은 능력치 배수로 곱한다
   return s.floors[floor].monsters.map((m) => {
     const k = (s.mult ?? 1) * monsterMult(m.stars, m.gear) * castleAuraMult(s.lordSkin);
@@ -80,7 +85,11 @@ export function beginFloor(run: Run, tactic: Tactic, heroes: Record<HeroId, { le
   if (runStatus(run) !== 'choose_tactic') throw new Error('지금은 전술을 고를 수 없다');
   const party = HERO_ORDER
     .filter((id) => (run.heroesHp[id] ?? 1) > 0)
-    .map((id) => ({ id, level: heroes[id].level, hp: run.heroesHp[id], ...(heroes[id].mult && heroes[id].mult !== 1 ? { mult: heroes[id].mult } : {}) }));
+    .map((id) => ({
+      id, level: heroes[id].level, hp: run.heroesHp[id], ...(heroes[id].mult && heroes[id].mult !== 1 ? { mult: heroes[id].mult } : {}),
+      // 현상수배 약점 용사는 피해 +50%
+      ...(run.snapshot.bounty?.weak === id ? { dmgMult: BALANCE.bounty.weakDmg } : {}),
+    }));
   const f = run.floor;
   // 부활해서 다시 시작하는 층이면 몬스터는 남은 체력으로
   const left = run.enemiesHp;
@@ -156,3 +165,22 @@ export function lordDefeated(run: Run): boolean {
   return runStatus(run) === 'victory' && (!run.snapshot.throneEmpty || run.snapshot.shadow);
 }
 
+
+/** 현상수배에서 보스 체력을 깎은 비율(0~1). 보스를 쓰러뜨렸으면 1 */
+export function bountyFraction(run: Run): number {
+  if (runStatus(run) === 'victory') return 1;
+  const boss = run.battle?.fighters.find((f) => f.side === 'enemy');
+  if (!boss) return 0;
+  return Math.max(0, Math.min(1, 1 - boss.hp / boss.maxHp));
+}
+
+/** 현상수배에서 보스에게 준 피해(순위용). 쓰러뜨렸으면 최대 체력 */
+export function bountyDamage(run: Run): number {
+  if (runStatus(run) === 'victory') {
+    // 이긴 판은 전투 기록이 비워지므로 보스 최대 체력을 다시 만든다
+    const { battle } = createFloorBattle({ heroes: [], enemies: floorEnemies(run.snapshot, 0), tactic: 'charge', seed: 0 });
+    return battle.fighters[0]?.maxHp ?? 0;
+  }
+  const boss = run.battle?.fighters.find((f) => f.side === 'enemy');
+  return boss ? boss.maxHp - boss.hp : 0;
+}

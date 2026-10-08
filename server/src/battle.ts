@@ -31,6 +31,8 @@ export interface Fighter {
   stars?: number;
   /** 다음 공격 시각(전투 시작부터 ms) */
   next: number;
+  /** 주는 피해 배수(현상수배 약점 용사). 없으면 1 */
+  dmgMult?: number;
   /** 마왕이 입은 외형(고유 효과 LOOK_EFFECTS) */
   look?: string;
   /** 리치 왕 부활을 이미 썼다 */
@@ -72,9 +74,11 @@ export interface FloorLog {
 }
 
 /** key: 같은 종류가 여럿일 때(공성 침입자) 한 명씩 구분하는 이름. 없으면 종류 이름 */
-export interface HeroSpec { id: HeroId | InvaderId; level: number; hp?: number; mult?: number; key?: string }
+/** dmgMult: 이 용사가 주는 피해 배수(현상수배 약점 용사 +50%, 2026-10-08) */
+export interface HeroSpec { id: HeroId | InvaderId; level: number; hp?: number; mult?: number; key?: string; dmgMult?: number }
 /** hp: 이어 싸우는 몬스터의 남은 체력(공성에서 층에 다시 침입자가 올라올 때). 없으면 가득 */
-export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number; gear?: string; stars?: number; look?: string; hp?: number }
+/** hpMult: 체력만 늘리는 배수(현상수배 보스, 2026-10-08) */
+export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number; gear?: string; stars?: number; look?: string; hp?: number; hpMult?: number }
 
 /** 마왕 외형 효과(없으면 빈 객체) */
 function lookOf(f: Fighter) {
@@ -108,7 +112,8 @@ export function createFloorBattle(input: {
     let s = scaleStats(def.stats, h.level, h.mult ?? 1);
     if (input.tactic === 'charge') s = { ...s, atk: Math.round(s.atk * 1.2), def: Math.round(s.def * 0.8) };
     if (input.tactic === 'guard') s = { ...s, def: Math.round(s.def * 1.3), spd: s.spd - 1 };
-    fighters.push(makeFighter(`h:${h.key ?? h.id}`, 'hero', h.id, h.level, def.row, s, h.hp ?? s.hp, def.skill, def.cooldown));
+    const hf = makeFighter(`h:${h.key ?? h.id}`, 'hero', h.id, h.level, def.row, s, h.hp ?? s.hp, def.skill, def.cooldown);
+    fighters.push(h.dmgMult && h.dmgMult !== 1 ? { ...hf, dmgMult: h.dmgMult } : hf);
   }
   input.enemies.forEach((e, i) => {
     if (e.id === 'lord') {
@@ -118,7 +123,8 @@ export function createFloorBattle(input: {
       fighters.push({ ...f, ...(e.stars ? { stars: e.stars } : {}), ...(e.look ? { look: e.look } : {}) });
     } else {
       const def = MONSTERS[e.id];
-      const s = scaleStats(def.stats, e.level, e.mult ?? 1);
+      const base = scaleStats(def.stats, e.level, e.mult ?? 1);
+      const s = e.hpMult ? { ...base, hp: Math.round(base.hp * e.hpMult) } : base;
       const f = makeFighter(`e${i}:${e.id}`, 'enemy', e.id, e.level, i === 0 ? 'front' : 'back', s, e.hp ?? s.hp, def.skill, def.cooldown);
       fighters.push({ ...f, ...(e.gear ? { gear: e.gear } : {}), ...(e.stars ? { stars: e.stars } : {}) });
     }
@@ -320,7 +326,7 @@ function chooseTarget(b: FloorBattle, f: Fighter): Fighter | null {
 
 function strike(b: FloorBattle, f: Fighter, t: Fighter, mult: number, def: number, events: BattleEvent[], skill?: SkillId): void {
   // 마왕은 2배 자주 치는 대신 한 방이 절반(초당 피해는 같다)
-  const raw = calcDamage(f.atk, mult, def);
+  const raw = f.dmgMult ? Math.round(calcDamage(f.atk, mult, def) * f.dmgMult) : calcDamage(f.atk, mult, def);
   const dmg = f.kind === 'lord' ? Math.max(1, Math.round(raw * BALANCE.lordAttack.damageMult)) : raw;
   events.push(skill ? { t: 'attack', from: f.key, to: t.key, dmg, skill } : { t: 'attack', from: f.key, to: t.key, dmg });
   applyDamage(b, t, dmg, events);

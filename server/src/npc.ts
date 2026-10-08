@@ -34,8 +34,10 @@ export function npcCastle(tier: number, seedKey: string): CastleSnapshot {
     }
     floors.push({ monsters });
   }
+  // 성 번호: 같은 등급이라도 다시 찾으면 다른 성이라는 게 보이게(2026-10-08)
+  const no = 1 + Math.floor(rngNext(s).value * 99);
   return {
-    owner: `npc:${t}:${seedKey}`, nickname: `침입자 길드 ${t}단`, castleLevel: Math.min(BALANCE.maxCastleLevel, floorsCount),
+    owner: `npc:${t}:${seedKey}`, nickname: `침입자 길드 ${t}단 #${no}`, castleLevel: Math.min(BALANCE.maxCastleLevel, floorsCount),
     floors, throneEmpty: false, shadow: false, lordLevel: level, mult,
   };
 }

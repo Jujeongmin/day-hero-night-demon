@@ -532,3 +532,53 @@ describe('quests', () => {
     expect(await fails(server.claimDaily('upgrade'))).toBe(true);
   });
 });
+
+describe('bounty, scouting and rerolls (2026-10-08)', () => {
+  /** 튜토리얼을 끝낸 계정(입문 출정까지) */
+  async function ready(server: any, acct: string, nick: string) {
+    server.connect({ account: acct });
+    await server.getHome();
+    await server.advanceOnboarding('nickname');
+    await server.setNickname(nick);
+    await server.startIntroRaid();
+    await server.autoPlay();
+    await server.endRaid(false);
+    await server.advanceOnboarding('end');
+    await server.advanceOnboarding('done');
+  }
+
+  test('the bounty boss takes three tries a day and pays gold by the share carved off', async (server) => {
+    await ready(server, 't90-bounty', '현상수배꾼');
+    const gold0 = (await server.getHome()).gold;
+    let paid = 0;
+    for (let i = 0; i < 3; i++) {
+      const r = await server.startBounty();
+      expect(r.run.target.startsWith('bounty:')).toBe(true);
+      await server.autoPlay();
+      const end = await server.endRaid(false);
+      expect(end.bounty.frac).toBeGreaterThan(0);
+      expect(end.loot).toBeGreaterThan(0);
+      paid += end.loot;
+    }
+    expect(await fails(server.startBounty())).toBe(true);
+    const home = await server.getHome();
+    expect(home.gold).toBe(gold0 + paid);
+    expect(home.state.bounty.tries).toBe(3);
+    expect(home.state.run).toBe(null);
+    const rank = await server.getBountyRank();
+    expect(rank.rank).toBe(1);
+  });
+
+  test('targets stay until a raid or a reroll; three free rerolls, then gold; targets carry scouting', async (server) => {
+    await ready(server, 't91-reroll', '다시찾기꾼');
+    const a = await server.findTargets();
+    expect(a.length).toBeGreaterThan(0);
+    expect(a.every((t: any) => Array.isArray(t.floors))).toBe(true);
+    expect(await server.findTargets()).toEqual(a);
+    for (let i = 0; i < 3; i++) expect((await server.rerollTargets()).cost).toBe(0);
+    const before = (await server.getHome()).gold;
+    const paid = await server.rerollTargets();
+    expect(paid.cost).toBeGreaterThan(0);
+    expect((await server.getHome()).gold).toBe(before - paid.cost);
+  });
+});

@@ -105,6 +105,8 @@ export default function Raid(props: {
       void finish(false);
     } else if (status === 'wiped') {
       emitTut('battle_over');
+      // 현상수배는 지는 판이 없다: 시간이 다 되거나 용사가 쓰러지면 바로 결과로(부활 없음)
+      if (run && run.target.startsWith('bounty:')) void finish(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, playing]);
@@ -113,7 +115,9 @@ export default function Raid(props: {
 
   const b = step ? step.battle : run.battle;
   const floorNow = step ? step.floor : run.floor;
-  const stages = [...run.snapshot.floors.map((_, i) => T.floor(i + 1)), T.throne];
+  // 현상수배 보스전(2026-10-08): 이름은 "거대 ○○", 단계 줄은 보스 하나
+  const boss = run.snapshot.bounty?.boss;
+  const stages = boss ? [T.bounty.title] : [...run.snapshot.floors.map((_, i) => T.floor(i + 1)), T.throne];
   const revives = home.state.credits.revive;
 
   return (
@@ -122,7 +126,7 @@ export default function Raid(props: {
       <img className="backdrop" src="sprites/bg_night.png" alt="" draggable={false} />
       <img className="raid-backdrop" src="sprites/tower.png" alt="" draggable={false} />
       <header className="hud">
-        <span className="pill">{displayName(run.snapshot.nickname)}</span>
+        <span className="pill">{boss ? T.bounty.name(T.units[boss]) : displayName(run.snapshot.nickname)}</span>
         <span className="hud-row">
           <button className="pill" onClick={() => setSpeed(nextSpeed(speed, has3x))}>{T.speed(speed)}</button>
           {!has3x && <button className="pill locked" onClick={() => buy('premium')} aria-label={T.products.premium[0]}>{T.speed(3)}</button>}
@@ -130,7 +134,7 @@ export default function Raid(props: {
         </span>
       </header>
 
-      <BattleCanvas battle={b} events={step ? step.events : NO_EVENTS} speed={speed} lordSkin={run.snapshot.lordSkin} bg={floorBgId(floorNow, run.snapshot.floors.length)} onDone={() => setAt((i) => i + 1)} />
+      <BattleCanvas battle={b} events={step ? step.events : NO_EVENTS} speed={speed} lordSkin={run.snapshot.lordSkin} bg={floorBgId(floorNow, run.snapshot.floors.length)} boss={!!boss} onDone={() => setAt((i) => i + 1)} />
 
       <div className="scene-foot progress">
         {stages.map((label, i) => (
@@ -140,7 +144,7 @@ export default function Raid(props: {
     </div>
 
     {/* 싸우는 동안은 아래 창 없이 전투 화면을 크게. 전멸했을 때만 부활 창 — 화면 가운데(2026-10-07 사용자: 아래에 있으면 눈에 안 띈다) */}
-    {status === 'wiped' && !playing && (
+    {status === 'wiped' && !playing && !boss && (
     <div className="modal-dim">
     <section className="sheet modal raid-sheet">
       <header className="sheet-head">

@@ -9,7 +9,8 @@ import {
 import { checkNickname, nicknameKey } from './nickname';
 
 import { npcCastle, npcRaids, npcTiersFor, TUTORIAL_TARGET, tutorialCastle } from './npc';
-import { advanceRound, autoRun, beginFloor, lordDefeated, reviveRun, runStatus, startRun } from './raid';
+import { advanceRound, autoRun, beginFloor, bountyDamage, bountyFraction, lordDefeated, reviveRun, runStatus, startRun } from './raid';
+import { bountyCastle, bountyReward, bountyToday, bountyTriesLeft, isBountyTarget } from './bounty';
 import { planAdReward } from './ads';
 import type { SiegeLog } from './siegeBattle';
 import { spendFor, vipOf, vipPerks } from './vip';
@@ -23,7 +24,7 @@ import { addSpend, planSpendClaim, spendOf } from './spend';
 import { planSummon, planWearGear, pullsToLegend, pullsToPity, summonOf } from './summon';
 import {
   canAdvance, dayKey, defaultState, GOLD_SCALE, heroGrowth, isNew, isStage, migrateGrowth, resetState, resolveFloors, withDefaults,
-  type CastleSnapshot, type OnboardingState, type RaidLogEntry, type Run, type Target, type UserState,
+  type CastleSnapshot, type OnboardingState, type RaidLogEntry, type ResolvedFloor, type Run, type Target, type UserState,
 } from './state';
 
 /** 데이터 초기화 확인 단어(화면 언어마다 다르다: 한국어·영어·일본어·중국어). 클라이언트 T.settings.resetWord와 같게 */
@@ -103,13 +104,46 @@ function npcTierOf(target: string): number {
   return Number.isFinite(tier) ? Math.max(1, tier) : 1;
 }
 
-function npcTargets(s: UserState, now: number): Target[] {
-  // 고정 등급(모두에게 같은 난이도): 용사 평균 레벨 −1 / 같음 / +1
+const bountyCollection = (day: string) => `bounty_${day}`;
+
+function rerollOf(s: UserState, now: number): { day: string; n: number } {
+  const day = dayKey(now);
+  return s.reroll && s.reroll.day === day ? s.reroll : { day, n: 0 };
+}
+
+function rerollCost(s: UserState): number {
+  return Math.max(1, Math.round(sortieTicketCost(s) / BALANCE.rerollCostDiv));
+}
+
+/** 현상수배 정산(endRaid 락 안): 깎은 비율 → 도전 골드 + 오늘 처음 넘은 단계, 최고 피해면 순위 갱신 */
+async function settleBounty(me: string, s: UserState, run: Run, now: number) {
+  const frac = bountyFraction(run);
+  const dmg = bountyDamage(run);
+  const today = bountyToday(s, now);
+  const rw = bountyReward(frac, today, s.siege.best);
+  if (rw.gold > 0) await $asset.mint('gold', rw.gold);
+  if (rw.soul > 0) await $asset.mint('soul', rw.soul);
+  const bounty = { ...today, best: Math.max(today.best, frac), tier: rw.tier, dmg: Math.max(today.dmg, dmg) };
+  await save(me, { run: null, bounty });
+  if (dmg > today.dmg) {
+    await $global.addCollectionItem(bountyCollection(today.day), { account: me, nickname: s.profile.nickname, dmg, at: now, vip: vipOf(s) }, { id: me });
+  }
+  return { won: frac >= 1, loot: rw.gold, soul: rw.soul, lordDefeated: false, offerStarter: false, bounty: { frac, best: bounty.best, newTiers: rw.newTiers, dmg } };
+}
+
+/** 정찰용 층별 몬스터(2026-10-08) */
+function scoutOf(floors: ResolvedFloor[]): NonNullable<Target['floors']> {
+  return floors.map((f) => f.monsters.map((m) => ({ id: m.id, ...(m.stars ? { stars: m.stars } : {}), ...(m.gear ? { gear: m.gear } : {}) })));
+}
+
+function npcTargets(s: UserState, now: number, salt = 0): Target[] {
+  // 고정 등급(모두에게 같은 난이도): 용사 평균 레벨 −1 / 같음 / +1. 다시 찾기(salt)마다 구성이 바뀐다
   return npcTiersFor(heroGrowth(s)).map((tier, i) => {
-    const c = npcCastle(tier, `${dayKey(now)}-${i}`);
+    const c = npcCastle(tier, `${dayKey(now)}-${salt}-${i}`);
     return {
       id: c.owner, nickname: c.nickname, power: snapshotPower(c),
       castleLevel: c.castleLevel, estLoot: npcLoot(tier), npc: true,
+      floors: scoutOf(c.floors), lord: !c.throneEmpty || c.shadow,
     };
   });
 }
@@ -247,6 +281,7 @@ async function realTargets(me: string, s: UserState, now: number): Promise<Targe
     out.push({
       id: r.account, nickname: r.nickname, power: r.power, castleLevel: r.castleLevel,
       estLoot: lootAmount(gold, pvpLootCap(r.floors ?? [])), npc: false, vip: r.vip ?? 0,
+      floors: scoutOf(r.floors ?? []), lord: true,
     });
   }
   return out;
@@ -955,12 +990,66 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await loadState(me, now);
-      const targets = s.onboarding.at === 'match_sortie'
-        ? [tutorialTarget()]
-        : [...(await realTargets(me, s, now)), ...npcTargets(s, now)].slice(0, 3);
+      if (s.onboarding.at === 'match_sortie') {
+        const targets = [tutorialTarget()];
+        await save(me, { lastTargets: targets });
+        return targets;
+      }
+      // 출정하거나 다시 찾기 전까지는 같은 상대(2026-10-08: 창을 다시 열면 공짜로 바뀌던 것을 막는다). 옛 목록(정찰 정보 없음)은 새로
+      if (s.lastTargets.length > 0 && s.lastTargets.every((t) => t.floors)) return s.lastTargets;
+      const targets = [...(await realTargets(me, s, now)), ...npcTargets(s, now, rerollOf(s, now).n)].slice(0, 3);
       await save(me, { lastTargets: targets });
       return targets;
     });
+  }
+
+  /** 출정 상대 다시 찾기(2026-10-08): 하루 rerollFree번 무료, 그 뒤 입장권 값의 1/rerollCostDiv 골드 */
+  async rerollTargets() {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      if (s.onboarding.at !== 'done' || s.run) throw new Error('지금은 다시 찾을 수 없다');
+      const r = rerollOf(s, now);
+      const cost = r.n < BALANCE.rerollFree ? 0 : rerollCost(s);
+      if (cost > 0) {
+        if (!(await $asset.has('gold', cost))) throw new Error('골드가 부족하다');
+        await $asset.burn('gold', cost);
+      }
+      const reroll = { day: r.day, n: r.n + 1 };
+      const targets = [...(await realTargets(me, s, now)), ...npcTargets(s, now, reroll.n)].slice(0, 3);
+      await save(me, { lastTargets: targets, reroll });
+      return { targets, cost, reroll };
+    });
+  }
+
+  /** 현상수배 보스에 도전(2026-10-08): 하루 triesPerDay번, 입장권을 쓰지 않는다. 시작하는 순간 한 번으로 센다 */
+  async startBounty() {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      if (s.onboarding.at !== 'done' || !s.introDone) throw new Error('지금은 도전할 수 없다');
+      if (bountyTriesLeft(s, now) <= 0) throw new Error('NO_BOUNTY');
+      const today = bountyToday(s, now);
+      const snapshot = bountyCastle(today.day, heroGrowth(s));
+      return beginRun(me, s, snapshot, { isRevenge: false, revengeLogId: null, extra: { bounty: { ...today, tries: today.tries + 1 } } }, now);
+    });
+  }
+
+  /** 오늘 현상수배 순위: 내 순위와 위 3명(준 피해 순) */
+  async getBountyRank() {
+    const me = $sender.account;
+    const now = Date.now();
+    const s = await loadState(me, now);
+    const today = bountyToday(s, now);
+    const rows = await $global.getCollectionItems(bountyCollection(today.day), { orderBy: [{ field: 'dmg', direction: 'desc' }], limit: 100 });
+    const i = rows.findIndex((r: any) => r.account === me);
+    return {
+      rank: i >= 0 ? i + 1 : null,
+      count: rows.length,
+      top: rows.slice(0, 3).map((r: any) => ({ nickname: r.nickname, dmg: r.dmg, me: r.account === me, vip: r.vip ?? 0 })),
+    };
   }
 
   async startRaid(targetId: string) {
@@ -974,7 +1063,11 @@ export class Server {
       const tutorial = t.id === TUTORIAL_TARGET;
       if (!tutorial && sortiesLeft(s, now) <= 0) throw new Error('NO_SORTIE');
       const snapshot = await buildSnapshot(t.id, now);
-      const extra: Partial<UserState> = tutorial ? {} : { sortie: spendSortie(s, now), quests: bumpQuests(s, now, { daily: 'sortie' }) };
+      // 다음에 창을 열면 새 상대. 다른 유저를 털러 가면 내 보호막은 바로 꺼진다(2026-10-08, 라스트 워 "전쟁광")
+      const extra: Partial<UserState> = tutorial ? {} : {
+        sortie: spendSortie(s, now), quests: bumpQuests(s, now, { daily: 'sortie' }), lastTargets: [],
+        ...(t.npc ? {} : { shieldUntil: 0 }),
+      };
       return beginRun(me, s, snapshot, { isRevenge: false, revengeLogId: null, extra }, now);
     });
   }
@@ -1037,6 +1130,7 @@ export class Server {
       const now = Date.now();
       const s = await loadState(me, now);
       if (!s.run) throw new Error('공략 중이 아니다');
+      if (isBountyTarget(s.run.target)) throw new Error('현상수배는 부활할 수 없다');
       if (s.credits.revive < 1) throw new Error('NO_REVIVE_CREDIT');
       // 되살린 뒤 끝까지 이어서 계산한다(화면은 걸음을 재생)
       const r = autoRun(reviveRun(s.run), heroGrowth(s));
@@ -1050,7 +1144,7 @@ export class Server {
     // 락 밖에서 대상만 알아낸 뒤, 두 계정 락을 오름차순으로 잡는다.
     const peek = (await $global.getUserState(me)) as Partial<UserState>;
     const target = peek?.run?.target ?? null;
-    const accounts = target && !target.startsWith('npc:') ? [me, target] : [me];
+    const accounts = target && !target.startsWith('npc:') && !isBountyTarget(target) ? [me, target] : [me];
     return withLocks(accounts, async () => {
       const now = Date.now();
       const s = await loadState(me, now);
@@ -1059,6 +1153,8 @@ export class Server {
       if (run.target !== target) throw new Error('다시 시도해줘');
       const status = runStatus(run);
       if (abandon !== true && status !== 'victory' && status !== 'wiped') throw new Error('공략이 끝나지 않았다');
+      // 현상수배: 깎은 비율로 보상(포기해도 이미 계산된 결과 그대로), 순위 기록. 명예·약탈·첫 승리는 없다
+      if (isBountyTarget(run.target)) return settleBounty(me, s, run, now);
       // 포기는 항상 진 것(2026-10-07): 출정은 시작할 때 끝까지 계산해 두므로 이기는 판의 재생 중에 포기해도 승리로 치면 화면과 어긋난다
       const won = abandon !== true && status === 'victory';
       let loot = 0;
@@ -1093,7 +1189,7 @@ export class Server {
       if (now - entry.at > BALANCE.revengeWindowMs) throw new Error('복수 기한(24시간)이 지났다');
       const today = dayKey(now);
       const used = s.revengeUsed.day === today ? s.revengeUsed.count : 0;
-      const extra: Partial<UserState> = { revengeUsed: { day: today, count: used + 1 } };
+      const extra: Partial<UserState> = { revengeUsed: { day: today, count: used + 1 }, shieldUntil: 0 };
       if (used >= BALANCE.freeRevengesPerDay + vipPerks(vipOf(s)).revengeExtra) {
         if (s.credits.revenge < 1) throw new Error('NO_REVENGE_CREDIT');
         extra.credits = { ...s.credits, revenge: s.credits.revenge - 1 };
