@@ -56,6 +56,8 @@ export interface EndResult {
   honor?: number;
   /** 현상수배 결과(2026-10-08): 깎은 비율·오늘 최고(0~1)·새로 넘은 단계 수·준 피해 */
   bounty?: { frac: number; best: number; newTiers: number; dmg: number };
+  /** 원정 결과(2026-10-08): 도전한 칸(0부터)과 처음 깼는지 */
+  campaign?: { stage: number; cleared: boolean };
 }
 
 export interface LeagueRow { rank: number; nickname: string; honor: number; ghost: boolean; me: boolean; vip?: number; title?: TitleKind | null }
@@ -101,6 +103,7 @@ export function createApi(server: RemoteServer) {
     findTargets: () => call<Target[]>('findTargets'),
     rerollTargets: () => call<{ targets: Target[]; cost: number; reroll: { day: string; n: number } }>('rerollTargets'),
     startBounty: () => call<RunResult>('startBounty'),
+    startCampaign: () => call<RunResult>('startCampaign'),
     getBountyRank: () => call<{ rank: number | null; count: number; top: { nickname: string; dmg: number; me: boolean; vip: number }[] }>('getBountyRank'),
     startRaid: (targetId: string) => call<RunResult>('startRaid', [targetId]),
     startIntroRaid: () => call<RunResult>('startIntroRaid'),

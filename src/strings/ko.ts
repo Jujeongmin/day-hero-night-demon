@@ -149,6 +149,20 @@ export const ko = {
   scout: '정찰',
   scoutFloor: (n: number) => `${n}층`,
   /** 현상수배 보스(2026-10-08) */
+  /** 원정 지도(2026-10-08) */
+  campaign: {
+    tab: '원정',
+    raidTab: '약탈',
+    chapter: (n: number) => `${n}장`,
+    stage: (c: number, s: number) => `원정 ${c}-${s}`,
+    go: (c: number, s: number) => `${c}-${s} 도전`,
+    tries: (n: number, max: number) => `남은 도전 ${n}/${max}`,
+    firstClear: '처음 깨면',
+    boss: '보스',
+    cleared: (c: number, s: number) => `${c}-${s} 돌파!`,
+    failed: (c: number, s: number) => `${c}-${s} 돌파 실패`,
+    hint: '하루 5번 도전. 지면 그 칸을 다시, 장 끝 보스를 깨면 영혼석',
+  },
   bounty: {
     title: '오늘의 현상수배',
     name: (unit: string) => `거대 ${unit}`,
@@ -331,6 +345,7 @@ export const ko = {
     NO_REVENGE_CREDIT: '오늘 무료 복수 3회를 다 썼다. 복수권이 필요하다',
     NO_SORTIE: '출정 입장권이 없다. 10분마다 1장씩 차고, 골드로 살 수도 있다',
     NO_BOUNTY: '오늘 현상수배 도전을 다 했다',
+    NO_CAMPAIGN: '오늘 원정 도전을 다 했다',
     NO_SOUL: '영혼석이 부족하다',
     MAX_STARS: '이미 최대 각성이다',
     AWAKEN_FIRST: '레벨 50이다. 각성해야 더 오른다',

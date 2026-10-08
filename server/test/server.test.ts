@@ -582,3 +582,32 @@ describe('bounty, scouting and rerolls (2026-10-08)', () => {
     expect((await server.getHome()).gold).toBe(before - paid.cost);
   });
 });
+
+describe('expedition map (2026-10-08)', () => {
+  test('a cleared stage pays once and moves on; five tries a day', async (server) => {
+    server.connect({ account: 't92-camp' });
+    await server.getHome();
+    await server.advanceOnboarding('nickname');
+    await server.setNickname('원정꾼');
+    await server.startIntroRaid();
+    await server.autoPlay();
+    await server.endRaid(false);
+    await server.advanceOnboarding('end');
+    await server.advanceOnboarding('done');
+    const r = await server.startCampaign();
+    expect(r.run.target).toBe('camp:0');
+    await server.autoPlay();
+    const end = await server.endRaid(false);
+    expect(end.campaign.stage).toBe(0);
+    const home = await server.getHome();
+    if (end.won) {
+      expect(end.campaign.cleared).toBe(true);
+      expect(end.loot).toBeGreaterThan(0);
+      expect(home.state.campaign.stage).toBe(1);
+    } else {
+      expect(home.state.campaign.stage).toBe(0);
+    }
+    for (let i = 0; i < 4; i++) { await server.startCampaign(); await server.autoPlay(); await server.endRaid(false); }
+    expect(await fails(server.startCampaign())).toBe(true);
+  });
+});

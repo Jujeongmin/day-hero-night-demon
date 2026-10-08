@@ -2,6 +2,7 @@ import { formatNum } from '../../server/src/growth';
 import type { EndResult } from '../services/api';
 import { buy } from '../services/shop';
 import { T } from '../strings/ko';
+import { stageLabel } from '../../server/src/campaign';
 
 /**
  * 공략 결과(2026-10-02 승인 B): 약탈·명예·영혼석을 큰 아이콘 숫자로, 아래에 다시 출정·확인.
@@ -11,6 +12,11 @@ export default function Result(props: { result: EndResult; onClose: () => void; 
   const r = props.result;
   return (
     <>
+      {/* 원정(2026-10-08): 돌파했는지 */}
+      {r.campaign && (() => {
+        const l = stageLabel(r.campaign.stage);
+        return <div className="bounty-result"><b>{r.campaign.cleared ? T.campaign.cleared(l.chapter, l.slot) : T.campaign.failed(l.chapter, l.slot)}</b></div>;
+      })()}
       {/* 현상수배(2026-10-08): 깎은 비율과 오늘 최고, 새로 넘은 단계 */}
       {r.bounty && (
         <div className="bounty-result">
@@ -20,7 +26,7 @@ export default function Result(props: { result: EndResult; onClose: () => void; 
         </div>
       )}
       <div className="result-gain">
-        <span><img src="icons/gold.png" alt="" draggable={false} /><b>+{formatNum(r.loot)}</b>{r.bounty ? T.gold : T.loot}</span>
+        <span><img src="icons/gold.png" alt="" draggable={false} /><b>+{formatNum(r.loot)}</b>{r.bounty || r.campaign ? T.gold : T.loot}</span>
         {r.honor !== undefined && <span><img src="icons/honor.png" alt="" draggable={false} /><b>+{r.honor}</b>{T.honor}</span>}
         {r.soul > 0 && <span><img src="icons/soul.png" alt="" draggable={false} /><b>+{r.soul}</b>{T.soul}</span>}
       </div>

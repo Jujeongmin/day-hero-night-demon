@@ -385,7 +385,7 @@ export default function App() {
         body = <Match api={api} home={home} onStart={startRaid} onError={onError} onRefresh={refresh} />;
         break;
       case 'result':
-        title = panel.result.bounty ? T.bounty.title : panel.result.won ? T.victory : T.defeat;
+        title = panel.result.bounty ? T.bounty.title : panel.result.campaign ? T.campaign.tab : panel.result.won ? T.victory : T.defeat;
         body = (
           <Result
             result={panel.result}

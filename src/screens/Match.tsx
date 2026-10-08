@@ -2,6 +2,7 @@ import { BALANCE } from '../../server/src/catalog';
 import { formatNum } from '../../server/src/growth';
 import { lordSoulLeft, sortiesLeft, sortieTicketCost } from '../../server/src/sortie';
 import { bountyOf, bountyToday, bountyTriesLeft } from '../../server/src/bounty';
+import { campaignCastle, campaignOf, campaignReward, campaignTriesLeft, stageLabel } from '../../server/src/campaign';
 import { useEffect, useState } from 'react';
 import { dayKey, type Target } from '../../server/src/state';
 import { errorText, type Api, type HomeData } from '../services/api';
@@ -48,6 +49,50 @@ function BountyCard(props: { api: Api; home: HomeData; busy: boolean; onFight: (
   );
 }
 
+/**
+ * 원정 지도(2026-10-08 승인: 출정 창 [약탈 | 원정] 탭). 지금 장의 10칸(5칸씩 두 줄, 둘째 줄은 거꾸로 이어진다),
+ * 깬 칸 ✓, 지금 칸 금색, 장 끝은 보스. 아래에 지금 칸의 성(정찰)·처음 깨면 받을 것·[도전]
+ */
+function CampaignMap(props: { home: HomeData; busy: boolean; onFight: () => void }) {
+  const { home } = props;
+  const now = Date.now();
+  const c = campaignOf(home.state, now);
+  const per = BALANCE.campaign.perChapter;
+  const cur = stageLabel(c.stage);
+  const first = (cur.chapter - 1) * per;
+  const left = campaignTriesLeft(home.state, now);
+  const castle = campaignCastle(c.stage);
+  const reward = campaignReward(c.stage, home.state.siege.best);
+  const node = (i: number) => {
+    const n = first + i;
+    const l = stageLabel(n);
+    const state = n < c.stage ? 'done' : n === c.stage ? 'now' : 'lock';
+    return (
+      <span key={i} className={`camp-node ${state} ${l.boss ? 'boss' : ''}`}>
+        {l.boss ? <Portrait id="lord" label={T.campaign.boss} inner={20} /> : state === 'done' ? '✓' : l.slot}
+      </span>
+    );
+  };
+  const half = per / 2;
+  return (
+    <div className="campaign">
+      <b className="camp-title">{T.campaign.chapter(cur.chapter)}</b>
+      <div className="camp-row">{Array.from({ length: half }, (_, i) => node(i))}</div>
+      <div className="camp-row rev">{Array.from({ length: half }, (_, i) => node(half + i))}</div>
+      <div className="line">
+        <span>
+          <b>{T.campaign.stage(cur.chapter, cur.slot)}</b>{cur.boss && <span className="badge">{T.campaign.boss}</span>}
+          <br />
+          <small>{T.power} {formatNum(snapshotPower(castle))} · <span className="nowrap">{T.campaign.firstClear} <img className="coin-ic" src="icons/gold.png" alt="" draggable={false} />{formatNum(reward.gold)}{reward.soul > 0 && <> <img className="coin-ic" src="icons/soul.png" alt="" draggable={false} />{reward.soul}</>}</span></small>
+        </span>
+        <button className="btn small gold" disabled={props.busy || left <= 0} onClick={props.onFight}>{T.campaign.go(cur.chapter, cur.slot)}</button>
+      </div>
+      <Scout t={{ floors: castle.floors.map((f) => f.monsters.map((m) => ({ id: m.id }))), lord: true } as Target} />
+      <small className="muted">{T.campaign.tries(left, BALANCE.campaign.triesPerDay)} · {T.campaign.hint}</small>
+    </div>
+  );
+}
+
 /** 정찰(2026-10-08): 상대 성의 층마다 서 있는 몬스터, 옥좌의 마왕 */
 function Scout(props: { t: Target }) {
   const floors = props.t.floors ?? [];
@@ -78,6 +123,14 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
   const [busy, setBusy] = useState(false);
   // 정찰로 펼친 상대
   const [open, setOpen] = useState<string | null>(null);
+  // 출정 창 탭: 약탈(현상수배 + 상대) | 원정. 이 기기에 기억
+  const [tab, setTabState] = useState<'raid' | 'campaign'>(() => {
+    try { return localStorage.getItem('match.tab') === 'campaign' ? 'campaign' : 'raid'; } catch { return 'raid'; }
+  });
+  const setTab = (t: 'raid' | 'campaign') => {
+    setTabState(t);
+    try { localStorage.setItem('match.tab', t); } catch { /* 저장 못 해도 이번 창에서는 쓴다 */ }
+  };
   // NPC·실제 플레이어 모두 화면 위 내 전투력과 같은 잣대로 비교한다(실제 승패는 출정하는 용사가 정한다)
   const mine = home.power ?? 0;
   const diffOf = (t: Target): 'easy' | 'normal' | 'hard' => difficulty(t.power, mine);
@@ -128,6 +181,14 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
   return (
     <>
       {intro && <p className="match-intro">{T.matchIntro}</p>}
+      {!tutorial && !intro && (
+        <div className="match-tabs">
+          <button className={`btn small ${tab === 'raid' ? 'on' : 'ghost'}`} onClick={() => setTab('raid')}>{T.campaign.raidTab}</button>
+          <button className={`btn small ${tab === 'campaign' ? 'on' : 'ghost'}`} onClick={() => setTab('campaign')}>{T.campaign.tab}</button>
+        </div>
+      )}
+      {!tutorial && !intro && tab === 'campaign' && <CampaignMap home={home} busy={busy} onFight={() => run(() => api.startCampaign())} />}
+      {(tutorial || intro || tab === 'raid') && <>
       {!tutorial && !intro && <BountyCard api={api} home={home} busy={busy} onFight={() => run(() => api.startBounty())} />}
       {!tutorial && !intro && (
         <div className="line">
@@ -155,6 +216,7 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
       {!tutorial && !intro && targets && (
         <button className="btn small ghost reroll" disabled={busy || (freeLeft <= 0 && home.gold < rerollCost)} onClick={reroll}>{T.reroll(freeLeft, rerollCost)}</button>
       )}
+      </>}
     </>
   );
 }

@@ -5,6 +5,7 @@ import AdButton from '../render/AdButton';
 import type { BattleEvent } from '../../server/src/battle';
 import BattleCanvas from '../render/battleCanvas';
 import { floorBgId } from '../render/skins';
+import { stageLabel } from '../../server/src/campaign';
 import { nextSpeed, type Speed } from '../render/speed';
 import { playBgm, sfx } from '../services/audio';
 import { buy } from '../services/shop';
@@ -117,6 +118,8 @@ export default function Raid(props: {
   const floorNow = step ? step.floor : run.floor;
   // 현상수배 보스전(2026-10-08): 이름은 "거대 ○○", 단계 줄은 보스 하나
   const boss = run.snapshot.bounty?.boss;
+  // 원정(2026-10-08): 이름은 "원정 1-4"
+  const camp = run.target.startsWith('camp:') ? stageLabel(Number(run.target.slice(5))) : null;
   const stages = boss ? [T.bounty.title] : [...run.snapshot.floors.map((_, i) => T.floor(i + 1)), T.throne];
   const revives = home.state.credits.revive;
 
@@ -126,7 +129,7 @@ export default function Raid(props: {
       <img className="backdrop" src="sprites/bg_night.png" alt="" draggable={false} />
       <img className="raid-backdrop" src="sprites/tower.png" alt="" draggable={false} />
       <header className="hud">
-        <span className="pill">{boss ? T.bounty.name(T.units[boss]) : displayName(run.snapshot.nickname)}</span>
+        <span className="pill">{boss ? T.bounty.name(T.units[boss]) : camp ? T.campaign.stage(camp.chapter, camp.slot) : displayName(run.snapshot.nickname)}</span>
         <span className="hud-row">
           <button className="pill" onClick={() => setSpeed(nextSpeed(speed, has3x))}>{T.speed(speed)}</button>
           {!has3x && <button className="pill locked" onClick={() => buy('premium')} aria-label={T.products.premium[0]}>{T.speed(3)}</button>}

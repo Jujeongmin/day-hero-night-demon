@@ -161,6 +161,8 @@ export interface UserState {
   stars: Partial<Record<StarUnit, number>>;
   /** 지난 시즌 전체 순위 칭호(1~10위). 받은 다음 시즌 동안만 보인다(league.ts activeTitle) */
   title?: { kind: 'champion' | 'top3' | 'top10'; season: string } | null;
+  /** 원정 지도(campaign.ts, 2026-10-08): 다음에 깰 칸(0부터)과 그날 도전 수 */
+  campaign?: { stage: number; day: string; tries: number };
   /** 현상수배(bounty.ts, 2026-10-08): 그날 도전 수·최고 비율(0~1)·받은 단계 수·최고 피해 */
   bounty?: { day: string; tries: number; best: number; tier: number; dmg: number };
   /** 출정 상대 다시 찾기(2026-10-08): 그날 쓴 횟수. 하루 BALANCE.rerollFree번 무료 */

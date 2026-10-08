@@ -147,6 +147,20 @@ export const zhHans: Strings = {
   scout: '侦察',
   scoutFloor: (n: number) => `${n}层`,
   /** 悬赏首领（2026-10-08） */
+  /** 远征地图（2026-10-08） */
+  campaign: {
+    tab: '远征',
+    raidTab: '掠夺',
+    chapter: (n: number) => `第${n}章`,
+    stage: (c: number, s: number) => `远征 ${c}-${s}`,
+    go: (c: number, s: number) => `挑战 ${c}-${s}`,
+    tries: (n: number, max: number) => `剩余挑战 ${n}/${max}`,
+    firstClear: '首次通关',
+    boss: '首领',
+    cleared: (c: number, s: number) => `${c}-${s} 突破！`,
+    failed: (c: number, s: number) => `${c}-${s} 突破失败`,
+    hint: '每天挑战5次。失败就重打这一格，击败章末首领得魂石',
+  },
   bounty: {
     title: '今日悬赏',
     name: (unit: string) => `巨型${unit}`,
@@ -328,6 +342,7 @@ export const zhHans: Strings = {
     NO_REVENGE_CREDIT: '今天3次免费复仇已用完，需要复仇券',
     NO_SORTIE: '没有出征券。每10分钟恢复1张，也可用金币购买',
     NO_BOUNTY: '今天的悬赏挑战已用完',
+    NO_CAMPAIGN: '今天的远征挑战已用完',
     NO_SOUL: '魂石不足',
     MAX_STARS: '已经完全觉醒',
     AWAKEN_FIRST: '已达50级，觉醒后才能继续提升',

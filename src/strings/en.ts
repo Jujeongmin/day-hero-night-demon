@@ -147,6 +147,20 @@ export const en: Strings = {
   scout: 'Scout',
   scoutFloor: (n: number) => `F${n}`,
   /** Bounty boss (2026-10-08) */
+  /** Expedition map (2026-10-08) */
+  campaign: {
+    tab: 'Expedition',
+    raidTab: 'Raid',
+    chapter: (n: number) => `Chapter ${n}`,
+    stage: (c: number, s: number) => `Expedition ${c}-${s}`,
+    go: (c: number, s: number) => `Fight ${c}-${s}`,
+    tries: (n: number, max: number) => `Tries ${n}/${max}`,
+    firstClear: 'First clear',
+    boss: 'Boss',
+    cleared: (c: number, s: number) => `${c}-${s} cleared!`,
+    failed: (c: number, s: number) => `${c}-${s} not cleared`,
+    hint: '5 tries a day. Lose and retry the same stage; beat the chapter boss for soulstones',
+  },
   bounty: {
     title: "Today's Bounty",
     name: (unit: string) => `Giant ${unit}`,
@@ -328,6 +342,7 @@ export const en: Strings = {
     NO_REVENGE_CREDIT: "You've used today's 3 free revenges. You need a revenge ticket",
     NO_SORTIE: 'No sortie tickets. One refills every 10 minutes, or buy one with gold',
     NO_BOUNTY: 'No bounty tries left today',
+    NO_CAMPAIGN: 'No expedition tries left today',
     NO_SOUL: 'Not enough soulstones',
     MAX_STARS: 'Already fully awakened',
     AWAKEN_FIRST: 'Level 50 reached. Awaken to keep growing',

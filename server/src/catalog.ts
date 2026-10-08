@@ -260,6 +260,8 @@ export const BALANCE = {
    * 복수·튜토리얼은 입장권을 쓰지 않는다
    */
   sortieMax: 10,
+  /** 원정 지도(2026-10-08 사용자 승인, campaign.ts): 한 장 10칸, 하루 5번, 처음 깨면 웨이브 골드 3번 몫, 장 끝 보스 칸은 영혼석 30 더. 두 칸마다 NPC 한 등급, 보스 칸은 두 등급 위 */
+  campaign: { perChapter: 10, triesPerDay: 5, clearWaves: 3, bossSoul: 30, tierEvery: 2, bossTierUp: 2 },
   /** 출정 상대 다시 찾기(2026-10-08 사용자 승인): 하루 무료 횟수, 그 뒤 값 = 입장권 값 ÷ rerollCostDiv */
   rerollFree: 3,
   rerollCostDiv: 5,

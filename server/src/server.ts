@@ -11,6 +11,7 @@ import { checkNickname, nicknameKey } from './nickname';
 import { npcCastle, npcRaids, npcTiersFor, TUTORIAL_TARGET, tutorialCastle } from './npc';
 import { advanceRound, autoRun, beginFloor, bountyDamage, bountyFraction, lordDefeated, reviveRun, runStatus, startRun } from './raid';
 import { bountyCastle, bountyReward, bountyToday, bountyTriesLeft, isBountyTarget } from './bounty';
+import { campaignCastle, campaignOf, campaignReward, campaignTriesLeft, isCampaignTarget } from './campaign';
 import { planAdReward } from './ads';
 import type { SiegeLog } from './siegeBattle';
 import { spendFor, vipOf, vipPerks } from './vip';
@@ -129,6 +130,18 @@ async function settleBounty(me: string, s: UserState, run: Run, now: number) {
     await $global.addCollectionItem(bountyCollection(today.day), { account: me, nickname: s.profile.nickname, dmg, at: now, vip: vipOf(s) }, { id: me });
   }
   return { won: frac >= 1, loot: rw.gold, soul: rw.soul, lordDefeated: false, offerStarter: false, bounty: { frac, best: bounty.best, newTiers: rw.newTiers, dmg } };
+}
+
+/** 원정 정산(endRaid 락 안): 이긴 칸이 지금 깰 칸이면 다음 칸으로 + 보상 */
+async function settleCampaign(me: string, s: UserState, run: Run, won: boolean, now: number) {
+  const c = campaignOf(s, now);
+  const n = Number(run.target.slice('camp:'.length));
+  const cleared = won && n === c.stage;
+  const rw = cleared ? campaignReward(n, s.siege.best) : { gold: 0, soul: 0 };
+  if (rw.gold > 0) await $asset.mint('gold', rw.gold);
+  if (rw.soul > 0) await $asset.mint('soul', rw.soul);
+  await save(me, { run: null, campaign: cleared ? { ...c, stage: c.stage + 1 } : c });
+  return { won, loot: rw.gold, soul: rw.soul, lordDefeated: false, offerStarter: false, campaign: { stage: n, cleared } };
 }
 
 /** 정찰용 층별 몬스터(2026-10-08) */
@@ -1037,6 +1050,19 @@ export class Server {
     });
   }
 
+  /** 원정 지도의 다음 칸에 도전(2026-10-08): 하루 triesPerDay번, 입장권 안 씀. 시작하는 순간 한 번으로 센다 */
+  async startCampaign() {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      if (s.onboarding.at !== 'done' || !s.introDone) throw new Error('지금은 도전할 수 없다');
+      if (campaignTriesLeft(s, now) <= 0) throw new Error('NO_CAMPAIGN');
+      const c = campaignOf(s, now);
+      return beginRun(me, s, campaignCastle(c.stage), { isRevenge: false, revengeLogId: null, extra: { campaign: { ...c, tries: c.tries + 1 } } }, now);
+    });
+  }
+
   /** 오늘 현상수배 순위: 내 순위와 위 3명(준 피해 순) */
   async getBountyRank() {
     const me = $sender.account;
@@ -1144,7 +1170,7 @@ export class Server {
     // 락 밖에서 대상만 알아낸 뒤, 두 계정 락을 오름차순으로 잡는다.
     const peek = (await $global.getUserState(me)) as Partial<UserState>;
     const target = peek?.run?.target ?? null;
-    const accounts = target && !target.startsWith('npc:') && !isBountyTarget(target) ? [me, target] : [me];
+    const accounts = target && !target.startsWith('npc:') && !isBountyTarget(target) && !isCampaignTarget(target) ? [me, target] : [me];
     return withLocks(accounts, async () => {
       const now = Date.now();
       const s = await loadState(me, now);
@@ -1155,6 +1181,8 @@ export class Server {
       if (abandon !== true && status !== 'victory' && status !== 'wiped') throw new Error('공략이 끝나지 않았다');
       // 현상수배: 깎은 비율로 보상(포기해도 이미 계산된 결과 그대로), 순위 기록. 명예·약탈·첫 승리는 없다
       if (isBountyTarget(run.target)) return settleBounty(me, s, run, now);
+      // 원정: 이기면 다음 칸으로, 처음 깬 칸 보상. 명예·약탈은 없다
+      if (isCampaignTarget(run.target)) return settleCampaign(me, s, run, abandon !== true && status === 'victory', now);
       // 포기는 항상 진 것(2026-10-07): 출정은 시작할 때 끝까지 계산해 두므로 이기는 판의 재생 중에 포기해도 승리로 치면 화면과 어긋난다
       const won = abandon !== true && status === 'victory';
       let loot = 0;

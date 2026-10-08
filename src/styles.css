@@ -780,6 +780,21 @@ span.up-pt { cursor: default; }
 .bounty-weak .portrait { width: 22px; height: 22px; }
 .bounty-result { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 6px; }
 .bounty-result b { font-weight: 400; font-size: 18px; color: var(--bone); }
+/* 출정 창 탭·원정 지도(2026-10-08 승인) */
+.match-tabs { display: flex; gap: 4px; }
+.match-tabs .btn { flex: 1; }
+.match-tabs .btn.on { color: var(--gold); filter: brightness(1.2); }
+.campaign { display: flex; flex-direction: column; gap: 6px; }
+.camp-title { font-weight: 400; color: var(--gold); text-align: center; }
+.camp-row { display: flex; justify-content: space-between; gap: 4px; padding: 0 8px; }
+.camp-row.rev { flex-direction: row-reverse; }
+.camp-node { display: grid; place-items: center; width: 36px; height: 36px; font-size: 14px; color: var(--muted); border: 8px solid transparent; border-image: url(/ui/pill.png) 8 fill / 8px stretch; image-rendering: pixelated; }
+.camp-node.done { color: #7dff8a; }
+.camp-node.now { color: var(--gold); filter: brightness(1.35); animation: dotPop 1.4s ease-in-out infinite; }
+.camp-node.lock { opacity: .55; }
+.camp-node.boss .portrait { width: 26px; height: 26px; }
+.coin-ic { display: inline-block; width: 14px; height: 14px; margin: 0 1px; vertical-align: -2px; image-rendering: pixelated; }
+.nowrap { white-space: nowrap; }
 /* 정찰·다시 찾기 */
 .target { border-bottom: 1px dashed #efe3c833; padding-bottom: 4px; }
 .target > .line { border-bottom: 0; padding-bottom: 0; }

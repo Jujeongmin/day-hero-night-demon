@@ -147,6 +147,20 @@ export const ja: Strings = {
   scout: '偵察',
   scoutFloor: (n: number) => `${n}階`,
   /** 指名手配ボス（2026-10-08） */
+  /** 遠征マップ（2026-10-08） */
+  campaign: {
+    tab: '遠征',
+    raidTab: '略奪',
+    chapter: (n: number) => `第${n}章`,
+    stage: (c: number, s: number) => `遠征 ${c}-${s}`,
+    go: (c: number, s: number) => `${c}-${s} に挑戦`,
+    tries: (n: number, max: number) => `残り挑戦 ${n}/${max}`,
+    firstClear: '初クリア',
+    boss: 'ボス',
+    cleared: (c: number, s: number) => `${c}-${s} 突破！`,
+    failed: (c: number, s: number) => `${c}-${s} 突破失敗`,
+    hint: '1日5回挑戦。負けたら同じマスに再挑戦、章の最後のボスを倒すと魂石',
+  },
   bounty: {
     title: '今日の指名手配',
     name: (unit: string) => `巨大${unit}`,
@@ -328,6 +342,7 @@ export const ja: Strings = {
     NO_REVENGE_CREDIT: '今日の無料復讐3回を使い切った。復讐券が必要だ',
     NO_SORTIE: '出撃券がない。10分ごとに1枚たまり、ゴールドでも買える',
     NO_BOUNTY: '今日の指名手配の挑戦は終わった',
+    NO_CAMPAIGN: '今日の遠征の挑戦は終わった',
     NO_SOUL: '魂石が足りない',
     MAX_STARS: 'すでに最大覚醒だ',
     AWAKEN_FIRST: 'レベル50。覚醒するとさらに上がる',
