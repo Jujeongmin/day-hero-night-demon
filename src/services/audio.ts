@@ -46,7 +46,16 @@ let bgmName: Bgm | null = null;
 let bgmEl: HTMLAudioElement | null = null;
 /** BGM 재생이 거부되면(입력 전 자동 재생) 다음 입력 때 다시 시도한다 */
 let bgmRetry = false;
-const sfxCache = new Map<Sfx, HTMLAudioElement>();
+/**
+ * 효과음은 Web Audio로 낸다(2026-10-08 사용자: 할수록 렉이 쌓인다). 예전처럼 소리마다 <audio>를 복제하면
+ * 공성 중 초당 10번 가까이 미디어 플레이어가 생겨 휴대폰(안드로이드 크롬은 동시에 둘 수 있는 수가 적다)에서 갈수록 무거워졌다.
+ * 파일은 한 번 받아 풀어 두고, 낼 때마다 가벼운 재생 노드만 만든다
+ */
+let ctx: AudioContext | null = null;
+const buffers = new Map<Sfx, Promise<AudioBuffer | null>>();
+/** 동시에 울리는 효과음 수 상한(넘으면 건너뛴다) */
+const MAX_VOICES = 8;
+let voices = 0;
 
 /** 파일을 다시 만들면 올린다(브라우저에 남은 옛 파일 대신 새 파일을 받게). 배경음 2 = 평균 -24dB로 줄임, 3 = 80kbps 재인코딩(2026-10-07), sfx_tap 2 = Gear fast lock tap(2026-10-02) */
 const VERSION: Partial<Record<string, number>> = { bgm_home: 3, bgm_battle: 3, sfx_tap: 2 };
@@ -60,6 +69,10 @@ function src(name: string): string {
 export function unlockAudio(): void {
   const first = !unlocked;
   unlocked = true;
+  // 입력 순간에 소리 장치를 깨운다(iOS·크롬은 입력 안에서만 허락한다). 자주 쓰는 효과음은 미리 풀어 둔다
+  const c = audioCtx();
+  if (c && c.state === 'suspended') void c.resume().catch(() => undefined);
+  if (first && c) for (const n of ['sfx_tap', 'sfx_attack', 'sfx_hit'] as Sfx[]) void bufferOf(n);
   if (bgmName && (first || bgmRetry)) startBgm(bgmName);
 }
 
@@ -97,36 +110,64 @@ const FADE_MS = 400;
 const SFX_GAIN: Partial<Record<Sfx, number>> = { sfx_lord: 0.4, sfx_summon: 0.7 };
 const sfxVolume = (name: Sfx) => prefs.sfxVol * (SFX_GAIN[name] ?? 1);
 
-export function sfx(name: Sfx): void {
-  if (!unlocked || !prefs.sfxOn) return;
-  let base = sfxCache.get(name);
-  if (!base) {
-    base = new Audio(src(name));
-    base.preload = 'auto';
-    sfxCache.set(name, base);
+function audioCtx(): AudioContext | null {
+  if (ctx) return ctx;
+  const C = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!C) return null;
+  try {
+    ctx = new C();
+  } catch {
+    return null;
   }
-  // 겹쳐 울릴 수 있게 복제해서 재생한다
-  const el = base.cloneNode() as HTMLAudioElement;
-  el.volume = sfxVolume(name);
-  el.play().catch(() => {});
-  const max = SFX_MAX_MS[name];
-  if (max) fadeOutAt(el, max - FADE_MS, sfxVolume(name));
+  return ctx;
 }
 
-/** at(ms) 시점부터 FADE_MS 동안 줄여서 멈춘다 */
-function fadeOutAt(el: HTMLAudioElement, at: number, from: number): void {
-  window.setTimeout(() => {
-    const steps = 8;
-    let i = 0;
-    const id = window.setInterval(() => {
-      i += 1;
-      el.volume = Math.max(0, from * (1 - i / steps));
-      if (i >= steps) {
-        window.clearInterval(id);
-        el.pause();
-      }
-    }, FADE_MS / steps);
-  }, at);
+function bufferOf(name: Sfx): Promise<AudioBuffer | null> {
+  let p = buffers.get(name);
+  if (!p) {
+    const c = audioCtx();
+    p = !c
+      ? Promise.resolve(null)
+      : fetch(src(name))
+        .then((r) => r.arrayBuffer())
+        // 옛 Safari는 콜백 방식만 된다
+        .then((b) => new Promise<AudioBuffer>((res, rej) => { c.decodeAudioData(b, res, rej); }))
+        .catch(() => null);
+    buffers.set(name, p);
+  }
+  return p;
+}
+
+export function sfx(name: Sfx): void {
+  if (!unlocked || !prefs.sfxOn) return;
+  const c = audioCtx();
+  if (!c) return;
+  if (c.state === 'suspended') void c.resume().catch(() => undefined);
+  void bufferOf(name).then((buf) => {
+    if (!buf || voices >= MAX_VOICES) return;
+    const vol = sfxVolume(name);
+    const gain = c.createGain();
+    gain.gain.value = vol;
+    gain.connect(c.destination);
+    const node = c.createBufferSource();
+    node.buffer = buf;
+    node.connect(gain);
+    // 원본이 긴 효과음은 max에서 FADE_MS 동안 줄여 끈다
+    const max = SFX_MAX_MS[name];
+    if (max) {
+      const at = c.currentTime + (max - FADE_MS) / 1000;
+      gain.gain.setValueAtTime(vol, at);
+      gain.gain.linearRampToValueAtTime(0, at + FADE_MS / 1000);
+      node.stop(at + FADE_MS / 1000 + 0.05);
+    }
+    voices += 1;
+    node.onended = () => {
+      voices -= 1;
+      node.disconnect();
+      gain.disconnect();
+    };
+    node.start();
+  });
 }
 
 export function getAudioPrefs(): AudioPrefs {

@@ -1,10 +1,10 @@
 /**
- * 공성 한 파도: 침입자를 열린 층에 고르게 나눠 모든 층이 동시에 싸운다(2026-10-06 사용자: 1층부터가 아니라 모든 층에, 몬스터도 늘 싸우게).
- * - 침입자 i번째는 몬스터가 있는 층에 번갈아 배정(층마다 섞인 구성).
- * - 모든 층 전투를 하나의 시계로 진행한다: 다음 행동이 가장 이른 층부터.
- * - 층을 뚫은 침입자는 체력을 floorRestHeal만큼 회복하고 몬스터가 살아 있는 가장 가까운 층(같으면 아래층)으로: 싸우는 중이면 합류,
- *   끝난 층이면 남은 몬스터와 다시. 모든 층의 몬스터가 쓰러진 뒤에야 옥좌로 가 마왕과 싸운다(2026-10-07).
+ * 공성 한 파도: 침입자는 모두 1층(몬스터가 있는 가장 아래층)으로 들어와 한 층씩 올라간다
+ * (2026-10-08 사용자: 1층부터 오는 컨셉을 지키자. 2026-10-06의 모든 층 동시 배분은 되돌림).
+ * - 층을 뚫은 침입자는 체력을 floorRestHeal만큼 회복하고 몬스터가 남은 가장 아래층으로, 모든 층이 비면 옥좌의 마왕에게.
+ * - 아직 침입자가 오지 않은 층의 몬스터는 제자리에서 기다린다(기록 첫 장면에 서 있다).
  * - 마왕이 쓰러지면 뚫림, 침입자가 모두 쓰러지거나 시간이 다 되면 막음.
+ * 엔진은 여러 층을 한 시계로 돌리는 그대로(지금은 한 번에 한 층만 싸운다).
  */
 import { createFloorBattle, stepInPlace, type BattleEvent, type EnemySpec, type Fighter, type FloorBattle, type HeroSpec } from './battle';
 import { BALANCE } from './catalog';
@@ -44,20 +44,18 @@ export function simulateSiege(input: {
     return battle;
   };
 
-  // 처음 배치: 몬스터가 있는 층에 침입자를 번갈아
+  // 처음 배치: 침입자는 모두 몬스터가 있는 가장 아래층으로
   const monsterFloors = input.floors.map((_, i) => i).filter((i) => i < throne && input.floors[i].enemies.length > 0);
-  const targets = monsterFloors.length > 0 ? monsterFloors : [throne];
-  const groups = targets.map(() => [] as HeroSpec[]);
-  input.heroes.forEach((h, i) => groups[i % targets.length].push(h));
-  targets.forEach((floor, gi) => {
-    if (groups[gi].length === 0) return;
-    const b = open(floor, groups[gi], 0);
-    log?.floors.push({ floor, start: b.fighters.map(unitOf) });
-  });
-  // 옥좌의 마왕은 처음부터 서 있다(침입자가 오기 전엔 싸우지 않는다)
-  if (log && !targets.includes(throne)) {
-    const { battle } = createFloorBattle({ heroes: [], enemies: left[throne], tactic: 'charge', seed: 0 });
-    log.floors.push({ floor: throne, start: battle.fighters.map(unitOf) });
+  const first = monsterFloors.length > 0 ? monsterFloors[0] : throne;
+  const b0 = open(first, input.heroes, 0);
+  log?.floors.push({ floor: first, start: b0.fighters.map(unitOf) });
+  // 나머지 층 몬스터와 옥좌의 마왕은 처음부터 서서 기다린다(침입자가 오기 전엔 싸우지 않는다)
+  if (log) {
+    for (const g of [...monsterFloors, throne]) {
+      if (g === first) continue;
+      const { battle } = createFloorBattle({ heroes: [], enemies: left[g], tactic: 'charge', seed: 0 });
+      log.floors.push({ floor: g, start: battle.fighters.map(unitOf) });
+    }
   }
 
   // 이 층에 살아 있는 몬스터가 있는가(싸우는 중이면 그 싸움, 끝났으면 남은 체력)
@@ -68,14 +66,10 @@ export function simulateSiege(input: {
       : left[g].length > 0 && left[g].some((e) => (e.hp ?? 1) > 0);
   };
 
-  /**
-   * 층을 뚫은 침입자가 다음에 갈 층(2026-10-07 사용자: 2층을 뚫어도 1층 몬스터가 살아 있으면 1층부터, 다 정리한 뒤 마왕).
-   * 몬스터가 살아 있는 층 중 가까운 층(같으면 아래층), 없으면 옥좌
-   */
+  /** 층을 뚫은 침입자가 다음에 갈 층: 몬스터가 살아 있는 가장 아래층, 없으면 옥좌 */
   const nextFloor = (from: number): number => {
     const alive = input.floors.map((_, g) => g).filter((g) => g < throne && g !== from && monstersAlive(g));
-    if (alive.length === 0) return throne;
-    return alive.sort((a, b) => Math.abs(a - from) - Math.abs(b - from) || a - b)[0];
+    return alive.length === 0 ? throne : Math.min(...alive);
   };
 
   // 층을 뚫은 침입자를 다음 층으로

@@ -16,22 +16,21 @@ describe('siege battle log (real fight replayed on the home screen)', () => {
     seed: 1000 + stage, record,
   });
 
-  it('recording does not change the result; invaders are split over every floor and events run in time order (2026-10-06)', () => {
+  it('recording does not change the result; invaders all enter floor 1, others wait, events run in time order (2026-10-08)', () => {
     for (const stage of [1, 4, 9, 15]) {
       const plain = simulateSiege(input(stage, false));
       const rec = simulateSiege(input(stage, true));
       expect(rec.won).toBe(plain.won);
       const log = rec.log!;
-      // 몬스터 층 둘에 침입자가 고르게(최대 1명 차이), 옥좌에는 처음엔 마왕만
+      // 침입자는 모두 1층으로, 2층 몬스터와 옥좌의 마왕은 서서 기다린다
       const heroesOn = (f: number) => log.floors.find((x) => x.floor === f)!.start.filter((u) => u.side === 'hero').length;
-      expect(Math.abs(heroesOn(0) - heroesOn(1))).toBeLessThanOrEqual(1);
-      expect(heroesOn(0) + heroesOn(1)).toBe(siegeWave(stage).length);
+      expect(heroesOn(0)).toBe(siegeWave(stage).length);
+      expect(heroesOn(1)).toBe(0);
+      expect(log.floors.find((x) => x.floor === 1)!.start.length).toBeGreaterThan(0);
       expect(log.floors.find((x) => x.floor === 2)!.start.map((u) => u.kind)).toEqual(['lord']);
-      // 두 층이 처음부터 같이 싸운다
-      expect(log.events.some((e) => e.floor === 0)).toBe(true);
-      expect(log.events.some((e) => e.floor === 1)).toBe(true);
       for (let k = 1; k < log.events.length; k++) expect(log.events[k].at).toBeGreaterThanOrEqual(log.events[k - 1].at);
-      // 옥좌에서 싸웠다면 누군가 올라왔다
+      // 2층에서 싸웠다면 1층에서 올라왔다, 옥좌에서 싸웠다면 누군가 올라왔다
+      if (log.events.some((e) => e.floor === 1 && e.t === 'attack')) expect(log.events.some((e) => e.t === 'join' && e.floor === 1 && e.from === 0)).toBe(true);
       if (log.events.some((e) => e.floor === 2 && e.t === 'attack')) expect(log.events.some((e) => e.t === 'join' && e.floor === 2)).toBe(true);
     }
   });
@@ -69,26 +68,25 @@ describe('away rewards (2026-09-30: siege gold halved while away)', () => {
   });
 });
 
-describe('invaders clear the floors that still stand before the lord (2026-10-07)', () => {
-  it('a floor broken early sends its invaders down to a floor still holding, and to the throne only when every floor is clear', () => {
+describe('invaders climb one floor at a time (2026-10-08: back to floor 1 first)', () => {
+  it('floor 1 first, then floor 2, and the throne only when every floor is clear', () => {
     const r = simulateSiege({
       heroes: siegeWave(20),
       floors: [
-        { enemies: [{ id: 'golem' as const, level: 30 }, { id: 'slime' as const, level: 30 }, { id: 'mushroom' as const, level: 30 }] },
         { enemies: [{ id: 'imp' as const, level: 1 }] },
+        { enemies: [{ id: 'imp' as const, level: 1 }, { id: 'slime' as const, level: 1 }] },
         { enemies: [{ id: 'lord' as const, level: 40 }] },
       ],
       seed: 77, record: true,
     });
     const joins = r.log!.events.filter((e) => e.t === 'join');
     const first = joins[0];
-    expect(first && first.t === 'join' && first.from).toBe(1);
-    expect(first.floor).toBe(0);
-    // 옥좌로 간 침입자가 있다면, 그때는 1층 몬스터가 이미 모두 쓰러졌다
+    expect(first && first.t === 'join' && first.from).toBe(0);
+    expect(first.floor).toBe(1);
     const toThrone = joins.find((e) => e.floor === 2);
-    if (toThrone) {
-      const downs = r.log!.events.filter((e) => e.t === 'down' && e.floor === 0 && e.key.startsWith('e') && e.at <= toThrone.at);
-      expect(downs.length).toBe(3);
-    }
+    expect(toThrone && toThrone.t === 'join' && toThrone.from).toBe(1);
+    // 옥좌로 가기 전에 1·2층 몬스터는 모두 쓰러졌다
+    const downs = r.log!.events.filter((e) => e.t === 'down' && e.floor < 2 && !e.key.startsWith('h:') && e.at <= toThrone!.at);
+    expect(downs.length).toBe(3);
   });
 });

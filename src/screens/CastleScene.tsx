@@ -247,6 +247,15 @@ export default function CastleScene(props: {
   // 튜토리얼이 끝난 뒤에만 상점 바로가기(+)를 보인다
   const tutorialOff = (s.onboarding?.at ?? 'done') === 'done';
   const [choose, setChoose] = useState(false);
+  // 방치 보상 받기 창은 바깥을 누르면 닫는다(2026-10-08 사용자). 보물상자 버튼은 스스로 여닫는다
+  useEffect(() => {
+    if (!choose) return;
+    const close = (e: PointerEvent) => {
+      if (!(e.target as Element | null)?.closest('.idle-choice, .idle-entry')) setChoose(false);
+    };
+    document.addEventListener('pointerdown', close, { capture: true });
+    return () => document.removeEventListener('pointerdown', close, { capture: true });
+  }, [choose]);
   // 공성 연출: 성문 앞에서 싸우는 동안 1층 몬스터가 공격 동작
   const [defending, setDefending] = useState(false);
   const onDefending = useCallback((f: boolean) => setDefending(f), []);
