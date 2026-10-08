@@ -133,7 +133,7 @@ export const zhHant: Strings = {
   leagueTitle: (id: string) => `第 ${id.slice(1)} 賽季`,
   endsIn: (ms: number) => `距離結束 ${Math.max(0, Math.floor(ms / 86_400_000))}天 ${Math.max(0, Math.floor((ms % 86_400_000) / 3_600_000))}小時`,
   myHonor: (h: number) => `我的榮譽 ${h}`,
-  bracketTitle: '我的分組 (30人)',
+  bracketTitle: '同組排名 (最多30人)',
   seasonReward: (a: number, b: number, c: number, d: number) => `賽季結束獎勵 (分組排名): 第1名 魂石${a} · 第2〜3名 ${b} · 第4〜10名 ${c} · 其他 ${d}`,
   honorHow: '榮譽: 攻略勝利 10 · 擊敗魔王 +5 · 復仇 2倍 · 防守成功 3',
   topTitle: '全服前20名',
