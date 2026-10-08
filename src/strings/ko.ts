@@ -61,6 +61,7 @@ export const ko = {
   floor: (n: number) => `${n}층`,
   emptySlot: '빈 칸',
   clearSlot: '비우기',
+  pickHint: '보유 몬스터 — 누르면 ▼ 자리에 들어가요',
   placedAt: (n: number) => `${n}층`,
   logTitle: '방어 기록',
   logDefended: (name: string) => `${name}의 침입을 막았다`,

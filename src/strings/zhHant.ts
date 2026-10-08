@@ -61,6 +61,7 @@ export const zhHant: Strings = {
   floor: (n: number) => `${n}樓`,
   emptySlot: '空位',
   clearSlot: '移除',
+  pickHint: '擁有的怪物 — 點擊放到 ▼ 位置',
   placedAt: (n: number) => `${n}層`,
   logTitle: '防守紀錄',
   logDefended: (name: string) => `擋下了${name}的入侵`,

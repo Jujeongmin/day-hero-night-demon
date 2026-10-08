@@ -61,6 +61,7 @@ export const zhHans: Strings = {
   floor: (n: number) => `${n}层`,
   emptySlot: '空位',
   clearSlot: '移除',
+  pickHint: '拥有的怪物 — 点击放到 ▼ 位置',
   placedAt: (n: number) => `${n}层`,
   logTitle: '防守记录',
   logDefended: (name: string) => `挡住了${name}的入侵`,

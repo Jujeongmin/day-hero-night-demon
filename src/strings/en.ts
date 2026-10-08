@@ -61,6 +61,7 @@ export const en: Strings = {
   floor: (n: number) => `Floor ${n}`,
   emptySlot: 'Empty',
   clearSlot: 'Clear',
+  pickHint: 'Your monsters — tap one to put it on ▼',
   placedAt: (n: number) => `F${n}`,
   logTitle: 'Defense log',
   logDefended: (name: string) => `Held off ${name}`,

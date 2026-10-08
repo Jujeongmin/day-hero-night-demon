@@ -61,6 +61,7 @@ export const ja: Strings = {
   floor: (n: number) => `${n}階`,
   emptySlot: '空き',
   clearSlot: '外す',
+  pickHint: '手持ちのモンスター — タップで ▼ に配置',
   placedAt: (n: number) => `${n}階`,
   logTitle: '防衛記録',
   logDefended: (name: string) => `${name}の侵入を防いだ`,

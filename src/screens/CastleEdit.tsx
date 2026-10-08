@@ -1,10 +1,21 @@
 import { useState } from 'react';
 import { MONSTERS, type MonsterId } from '../../server/src/catalog';
-import { Portrait } from '../render/Sprite';
-import { monsterSpriteId } from '../render/skins';
+import Sprite, { Portrait } from '../render/Sprite';
+import { floorBgId, monsterSpriteId } from '../render/skins';
+import { floorsUnlocked } from '../../server/src/economy';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { emitTut } from '../tutorial/bus';
 import { T } from '../strings/ko';
+
+/**
+ * 고른 칸에 몬스터를 넣은 새 층 배치. 같은 층 다른 칸에 있던 몬스터면 그 칸은 비우고 옮겨 온다(자리 바꾸기 아님),
+ * 고른 칸에 있던 몬스터는 빠진다(2026-10-08 사용자: 슬라임-해골-늑대인간에서 해골 칸에 슬라임 → 빈칸-슬라임-늑대인간)
+ */
+export function placeInSlot<M extends string>(monsters: readonly (M | null)[], slot: number, m: M | null): (M | null)[] {
+  const next = monsters.map((x) => (m !== null && x === m ? null : x));
+  next[slot] = m;
+  return next;
+}
 
 /** 칸을 누르고 몬스터를 누르면 바로 저장된다. 키보드 없이 클릭만으로 끝난다. */
 export default function CastleEdit(props: { api: Api; home: HomeData; floor: number; onSaved: () => Promise<void>; onError: (m: string) => void }) {
@@ -36,25 +47,24 @@ export default function CastleEdit(props: { api: Api; home: HomeData; floor: num
   }
 
   function place(m: MonsterId | null) {
-    // 같은 층의 다른 칸에 있던 몬스터는 자리를 바꾼다
-    const next = [...current.monsters];
-    const here = m ? next.indexOf(m) : -1;
-    if (here >= 0 && here !== slot) next[here] = next[slot];
-    next[slot] = m;
+    const next = placeInSlot(current.monsters, slot, m);
     void save(next);
     setSlot((slot + 1) % next.length);
   }
 
   return (
     <>
-      <div className="row">
+      {/* 위: 이 층 무대(그 층 전투 배경 위에 몬스터가 선다). 아래 목록과 생김새가 달라 "여기에 넣는다"가 보이게(2026-10-08 사용자 A안) */}
+      <div className="edit-stage" style={{ backgroundImage: `url(sprites/${floorBgId(floor, floorsUnlocked(s.castle.level))}.png)` }}>
         {current.monsters.map((m, i) => (
-          <button key={i} className={`btn slot ${slot === i ? 'on' : ''}`} onClick={() => setSlot(i)}>
-            {m ? <Portrait id={monsterSpriteId(m, s.gear?.worn[m])} label={T.units[m]} /> : <span className="portrait" />}
+          <button key={i} className={`stage-spot ${slot === i ? 'on' : ''}`} onClick={() => setSlot(i)} aria-label={m ? T.units[m] : T.emptySlot}>
+            {slot === i && <span className="stage-arrow" aria-hidden>▼</span>}
+            {m ? <Sprite id={monsterSpriteId(m, s.gear?.worn[m])} label={T.units[m]} flip scale={0.9} /> : <span className="stage-empty" />}
             <small>{m ? T.units[m] : T.emptySlot}</small>
           </button>
         ))}
       </div>
+      <p className="edit-hint">{T.pickHint}</p>
       <div className="chips">
         {owned.map((id) => {
           const at = whereOf(id);
