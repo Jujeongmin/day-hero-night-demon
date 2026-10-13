@@ -69,6 +69,8 @@ export const zhHant: Strings = {
   ult: { knight: '盾牌衝鋒', archer: '箭雨', priest: '祝福' } as Record<string, string>,
   giveUp: '放棄',
   confirmGiveUp: '要放棄攻略嗎？沒有掠奪金幣。',
+  giveUpBoss: '跳過戰鬥查看結果？已造成的傷害獎勵照常獲得。',
+  giveUpCamp: '放棄這次遠征？本次挑戰算作失敗。',
   revive: (n: number) => `復活 (持有 ${n})`,
   victory: '攻陷！',
   defeat: '全滅',

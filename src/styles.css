@@ -783,6 +783,7 @@ span.up-pt { cursor: default; }
 .bounty-time .loading-bar { max-width: 100%; }
 .bounty-time .loading-fill, .bounty-time .loading-knob { transition: none; }
 .bounty-time small { font-size: 13px; color: var(--bone); text-shadow: 0 2px 0 #000; }
+.giveup-text { margin: 4px 2px 8px; text-align: center; color: var(--bone); }
 .bounty-result { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 6px; }
 .bounty-result b { font-weight: 400; font-size: 18px; color: var(--bone); }
 /* 출정 창 탭·원정 지도(2026-10-08 승인) */

@@ -69,6 +69,8 @@ export const en: Strings = {
   ult: { knight: 'Shield Charge', archer: 'Arrow Rain', priest: 'Blessing' } as Record<string, string>,
   giveUp: 'Give up',
   confirmGiveUp: 'Give up this raid? You get no loot gold.',
+  giveUpBoss: 'Skip to the result? You still get rewards for the damage dealt.',
+  giveUpCamp: 'Give up this expedition stage? This try counts as a loss.',
   revive: (n: number) => `Revive (${n} left)`,
   victory: 'Conquered!',
   defeat: 'Wiped out',

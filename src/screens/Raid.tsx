@@ -42,6 +42,8 @@ export default function Raid(props: {
     try { localStorage.setItem(RAID_SPEED_KEY, String(next)); } catch { /* 저장 못 해도 이번 출정에서는 쓴다 */ }
   };
   const busy = useRef(false);
+  // 포기 확인은 게임 안 창으로(2026-10-13 사용자: 브라우저 확인창이 주소와 함께 떴다)
+  const [askGiveUp, setAskGiveUp] = useState(false);
   const playing = at < steps.length;
   const step = playing ? steps[at] : null;
 
@@ -145,7 +147,7 @@ export default function Raid(props: {
         <span className="hud-row">
           <button className="pill" onClick={() => setSpeed(nextSpeed(speed, has3x))}>{T.speed(speed)}</button>
           {!has3x && <button className="pill locked" onClick={() => buy('premium')} aria-label={T.products.premium[0]}>{T.speed(3)}</button>}
-          <button className="pill" onClick={() => { if (window.confirm(T.confirmGiveUp)) void finish(true); }}>{T.giveUp}</button>
+          <button className="pill" onClick={() => setAskGiveUp(true)}>{T.giveUp}</button>
         </span>
       </header>
 
@@ -167,6 +169,21 @@ export default function Raid(props: {
         ))}
       </div>
     </div>
+
+    {askGiveUp && (
+      <div className="modal-dim" onClick={() => setAskGiveUp(false)}>
+        <section className="sheet modal raid-sheet" onClick={(e) => e.stopPropagation()}>
+          <header className="sheet-head"><span>{T.giveUp}</span></header>
+          <div className="sheet-body">
+            <p className="giveup-text">{boss ? T.giveUpBoss : camp ? T.giveUpCamp : T.confirmGiveUp}</p>
+            <div className="row">
+              <button className="btn" onClick={() => { setAskGiveUp(false); void finish(true); }}>{T.giveUp}</button>
+              <button className="btn gold" onClick={() => setAskGiveUp(false)}>{T.cancel}</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    )}
 
     {/* 싸우는 동안은 아래 창 없이 전투 화면을 크게. 전멸했을 때만 부활 창 — 화면 가운데(2026-10-07 사용자: 아래에 있으면 눈에 안 띈다) */}
     {status === 'wiped' && !playing && !boss && (

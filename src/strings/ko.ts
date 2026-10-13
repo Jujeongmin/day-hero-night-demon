@@ -69,6 +69,8 @@ export const ko = {
   ult: { knight: '방패 돌진', archer: '화살비', priest: '축복' } as Record<string, string>,
   giveUp: '포기',
   confirmGiveUp: '공략을 포기할까? 약탈 골드는 없다.',
+  giveUpBoss: '전투를 건너뛰고 결과를 볼까? 깎은 만큼 보상은 그대로 받는다.',
+  giveUpCamp: '원정을 포기할까? 이번 도전은 실패로 친다.',
   revive: (n: number) => `부활 (보유 ${n})`,
   victory: '함락!',
   defeat: '전멸',

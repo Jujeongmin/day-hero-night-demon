@@ -69,6 +69,8 @@ export const ja: Strings = {
   ult: { knight: 'シールドチャージ', archer: '矢の雨', priest: '祝福' } as Record<string, string>,
   giveUp: '撤退',
   confirmGiveUp: '攻略をあきらめる？略奪ゴールドはない。',
+  giveUpBoss: '戦闘を飛ばして結果を見る？削った分の報酬はそのまま受け取れる。',
+  giveUpCamp: '遠征をあきらめる？今回の挑戦は失敗になる。',
   revive: (n: number) => `復活 (所持 ${n})`,
   victory: '陥落！',
   defeat: '全滅',
