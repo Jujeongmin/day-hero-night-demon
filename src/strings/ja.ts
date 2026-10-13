@@ -35,7 +35,7 @@ export const ja: Strings = {
     one: '×1', ten: '×10', max: '最大',
     nextFloor: (n: number) => `次: ${n}階が開く`,
     nextUnit: (name: string) => `次: ${name}が加入`,
-    nextLord: '次: 魔王が強くなる',
+    nextLord: (from: number, to: number, x: number) => `次: 魔王 Lv${from} → Lv${to}（能力 約${x}倍）`,
     lordShort: '星ごとに×1.1',
     heroBonus: (p: number) => `略奪·防衛 +${p}%`,
     awaken: '覚醒', recruit: '加入', maxLv: '最大',

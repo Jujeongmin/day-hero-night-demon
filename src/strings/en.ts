@@ -35,7 +35,7 @@ export const en: Strings = {
     one: '×1', ten: '×10', max: 'Max',
     nextFloor: (n: number) => `Next: floor ${n} opens`,
     nextUnit: (name: string) => `Next: ${name} joins`,
-    nextLord: 'Next: stronger Demon Lord',
+    nextLord: (from: number, to: number, x: number) => `Next: Demon Lord Lv${from} → Lv${to} (stats about ×${x})`,
     lordShort: '×1.1 per star',
     heroBonus: (p: number) => `Loot·Defense +${p}%`,
     awaken: 'Awaken', recruit: 'Recruit', maxLv: 'Max',

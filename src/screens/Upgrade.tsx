@@ -5,9 +5,9 @@ import { lordSpriteId } from '../render/skins';
 import { featuresOf } from '../../server/src/features';
 import { recommendedUpgrade } from '../render/powerTips';
 import { memo, useState } from 'react';
-import { BALANCE, HEROES, MONSTERS, type HeroId, type MonsterId, type SkillId, type Stats } from '../../server/src/catalog';
+import { BALANCE, HEROES, LORD, MONSTERS, scaleStats, type HeroId, type MonsterId, type SkillId, type Stats } from '../../server/src/catalog';
 import { castleUpgradeCost, floorsUnlocked, heroBonusLevels, unitUpgradeCost } from '../../server/src/economy';
-import { awakenCost, formatNum } from '../../server/src/growth';
+import { awakenCost, formatNum, lordLevel } from '../../server/src/growth';
 import { planUpgradeMany } from '../../server/src/castle';
 import { heroGrowth, type StarUnit } from '../../server/src/state';
 import { Portrait } from '../render/Sprite';
@@ -171,7 +171,12 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
       const u = MONSTERS[id].unlock;
       return 'castleLevel' in u && u.castleLevel === lv + 1;
     });
-    return joins.length > 0 ? T.up.nextUnit(joins.map((id) => T.units[id]).join('·')) : T.up.nextLord;
+    if (joins.length > 0) return T.up.nextUnit(joins.map((id) => T.units[id]).join('·'));
+    // 새로 열리는 게 없으면 마왕이 얼마나 세지는지(2026-10-13 사용자: "마왕 강화"만으로는 모르겠다)
+    const from = lordLevel(lv);
+    const to = lordLevel(lv + 1);
+    const mult = scaleStats(LORD.stats, to, 1).hp / scaleStats(LORD.stats, from, 1).hp;
+    return T.up.nextLord(from, to, Math.round(mult * 10) / 10);
   })();
   // 약탈 골드·공성 방어 보너스(%). 강화 한 번 = 성장 레벨 25/49 → 약 +0.5%. 소수 한 자리
   const pct1 = (x: number) => Math.round(x * 10) / 10;

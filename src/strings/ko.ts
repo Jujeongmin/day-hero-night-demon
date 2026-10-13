@@ -35,7 +35,7 @@ export const ko = {
     one: '×1', ten: '×10', max: '최대',
     nextFloor: (n: number) => `다음: ${n}층 열림`,
     nextUnit: (name: string) => `다음: ${name} 합류`,
-    nextLord: '다음: 마왕 강화',
+    nextLord: (from: number, to: number, x: number) => `다음: 마왕 Lv${from} → Lv${to} (능력치 약 ${x}배)`,
     lordShort: '별마다 ×1.1',
     heroBonus: (p: number) => `약탈·방어 +${p}%`,
     awaken: '각성', recruit: '영입', maxLv: '최대',

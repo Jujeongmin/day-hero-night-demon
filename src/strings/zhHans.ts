@@ -35,7 +35,7 @@ export const zhHans: Strings = {
     one: '×1', ten: '×10', max: '最大',
     nextFloor: (n: number) => `下一级: 开放第${n}层`,
     nextUnit: (name: string) => `下一级: ${name}加入`,
-    nextLord: '下一级: 魔王变强',
+    nextLord: (from: number, to: number, x: number) => `下一级: 魔王 Lv${from} → Lv${to}（属性约${x}倍）`,
     lordShort: '每颗星×1.1',
     heroBonus: (p: number) => `掠夺·防御 +${p}%`,
     awaken: '觉醒', recruit: '招募', maxLv: '最大',
