@@ -204,6 +204,8 @@ export default function BattleCanvas(props: {
   bg: string;
   /** 현상수배 보스전: 적 하나를 크게 그린다 */
   boss?: boolean;
+  /** 매 프레임 지금 전투 시각(ms)을 알린다(현상수배 남은 시간 막대) */
+  onClock?: (ms: number) => void;
   onDone: () => void;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -211,6 +213,8 @@ export default function BattleCanvas(props: {
   done.current = props.onDone;
   // 배속은 재생 중에 바뀌어도 처음부터 다시 틀지 않고 지금 위치에서 빠르기만 바꾼다
   const speedRef = useRef(props.speed);
+  const clockRef = useRef(props.onClock);
+  clockRef.current = props.onClock;
   speedRef.current = props.speed;
 
   useEffect(() => {
@@ -268,6 +272,7 @@ export default function BattleCanvas(props: {
         if (i >= frames.length) timer = window.setTimeout(() => done.current(), 700 / spd);
       }
       draw(ctx, b, view, now);
+      clockRef.current?.(Math.max(0, clock));
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);

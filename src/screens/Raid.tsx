@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { BALANCE } from '../../server/src/catalog';
 import { runStatus, type RunStatus, type RunStep } from '../../server/src/raid';
 import type { Run } from '../../server/src/state';
 import AdButton from '../render/AdButton';
@@ -112,6 +113,17 @@ export default function Raid(props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, playing]);
 
+  // 현상수배 남은 시간 막대(2026-10-13 사용자): 전투 시계를 받아 막대만 직접 바꾼다(매 프레임 화면 전체를 다시 그리지 않게)
+  const timeFill = useRef<HTMLSpanElement>(null);
+  const timeKnob = useRef<HTMLImageElement>(null);
+  const timeText = useRef<HTMLElement>(null);
+  const onClock = useCallback((ms: number) => {
+    const left = Math.max(0, 1 - ms / BALANCE.maxBattleMs);
+    if (timeFill.current) timeFill.current.style.width = `${left * 100}%`;
+    if (timeKnob.current) timeKnob.current.style.left = `${left * 100}%`;
+    if (timeText.current) timeText.current.textContent = T.bounty.time(Math.ceil((BALANCE.maxBattleMs - Math.min(ms, BALANCE.maxBattleMs)) / 1000));
+  }, []);
+
   if (!run || !status) return <div className="scene center">{T.loading}</div>;
 
   const b = step ? step.battle : run.battle;
@@ -137,7 +149,17 @@ export default function Raid(props: {
         </span>
       </header>
 
-      <BattleCanvas battle={b} events={step ? step.events : NO_EVENTS} speed={speed} lordSkin={run.snapshot.lordSkin} bg={floorBgId(floorNow, run.snapshot.floors.length)} boss={!!boss} onDone={() => setAt((i) => i + 1)} />
+      <BattleCanvas battle={b} events={step ? step.events : NO_EVENTS} speed={speed} lordSkin={run.snapshot.lordSkin} bg={floorBgId(floorNow, run.snapshot.floors.length)} boss={!!boss} onClock={boss ? onClock : undefined} onDone={() => setAt((i) => i + 1)} />
+
+      {boss && (
+        <div className="bounty-time">
+          <div className="loading-bar" role="progressbar" aria-label={T.bounty.timeLabel}>
+            <span className="loading-fill" ref={timeFill} style={{ width: '100%' }} />
+            <img className="loading-knob" ref={timeKnob} src="ui/knob.png" alt="" draggable={false} style={{ left: '100%' }} />
+          </div>
+          <small ref={timeText}>{T.bounty.time(BALANCE.maxBattleMs / 1000)}</small>
+        </div>
+      )}
 
       <div className="scene-foot progress">
         {stages.map((label, i) => (

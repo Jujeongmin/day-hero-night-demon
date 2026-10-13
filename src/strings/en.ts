@@ -169,6 +169,8 @@ export const en: Strings = {
     tries: (n: number, max: number) => `Tries ${n}/${max}`,
     rank: (r: number) => `#${r} today`,
     go: 'Fight',
+    time: (s: number) => `${s}s left`,
+    timeLabel: 'Time left',
     hint: 'Rewards for the HP you carve off in 30s; more the first time you pass 10/25/50/75/100%',
     result: (p: number) => `You carved off ${p}% of the boss`,
     newTier: (n: number) => `${n} new tier reward${n > 1 ? 's' : ''}!`,

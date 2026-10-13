@@ -778,6 +778,11 @@ span.up-pt { cursor: default; }
 .bounty-info b { font-weight: 400; font-size: 16px; color: var(--bone); }
 .bounty-weak { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #7dff8a; }
 .bounty-weak .portrait { width: 26px; height: 26px; }
+/* 현상수배 남은 시간 막대(2026-10-13): 로딩 막대 모양 그대로, 전투 화면 위쪽 */
+.bounty-time { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 24px 0; }
+.bounty-time .loading-bar { max-width: 100%; }
+.bounty-time .loading-fill, .bounty-time .loading-knob { transition: none; }
+.bounty-time small { font-size: 13px; color: var(--bone); text-shadow: 0 2px 0 #000; }
 .bounty-result { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 6px; }
 .bounty-result b { font-weight: 400; font-size: 18px; color: var(--bone); }
 /* 출정 창 탭·원정 지도(2026-10-08 승인) */

@@ -169,6 +169,8 @@ export const ja: Strings = {
     tries: (n: number, max: number) => `残り挑戦 ${n}/${max}`,
     rank: (r: number) => `今日 ${r}位`,
     go: '挑戦',
+    time: (s: number) => `残り ${s}秒`,
+    timeLabel: '残り時間',
     hint: '30秒で削った体力に応じて報酬、10・25・50・75・100%を初めて超えるとさらに',
     result: (p: number) => `ボスの体力を${p}%削った`,
     newTier: (n: number) => `新しい段階報酬 ${n}個！`,

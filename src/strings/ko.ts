@@ -171,6 +171,8 @@ export const ko = {
     tries: (n: number, max: number) => `남은 도전 ${n}/${max}`,
     rank: (r: number) => `오늘 ${r}위`,
     go: '도전',
+    time: (s: number) => `남은 시간 ${s}초`,
+    timeLabel: '남은 시간',
     hint: '30초 동안 깎은 체력만큼 보상, 10·25·50·75·100%를 처음 넘기면 더',
     result: (p: number) => `보스 체력 ${p}%를 깎았다`,
     newTier: (n: number) => `새 단계 보상 ${n}개!`,

@@ -169,6 +169,8 @@ export const zhHant: Strings = {
     tries: (n: number, max: number) => `剩餘挑戰 ${n}/${max}`,
     rank: (r: number) => `今日第${r}名`,
     go: '挑戰',
+    time: (s: number) => `剩餘 ${s}秒`,
+    timeLabel: '剩餘時間',
     hint: '按30秒內削減的生命給獎勵，首次超過10·25·50·75·100%再加',
     result: (p: number) => `削掉了首領${p}%的生命`,
     newTier: (n: number) => `新階段獎勵 ${n}個！`,
