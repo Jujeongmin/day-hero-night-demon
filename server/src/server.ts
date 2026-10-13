@@ -10,6 +10,7 @@ import { checkNickname, nicknameKey } from './nickname';
 
 import { npcCastle, npcRaids, npcTiersFor, TUTORIAL_TARGET, tutorialCastle } from './npc';
 import { advanceRound, autoRun, beginFloor, bountyDamage, bountyFraction, lordDefeated, reviveRun, runStatus, startRun } from './raid';
+import { eligible, MATCH_BANDS, pickRealTargets } from './matchmaking';
 import { bountyCastle, bountyReward, bountyToday, bountyTriesLeft, isBountyTarget } from './bounty';
 import { campaignCastle, campaignOf, campaignReward, campaignTriesLeft, isCampaignTarget } from './campaign';
 import { planAdReward } from './ads';
@@ -273,21 +274,16 @@ async function finishRun(me: string, s: UserState, run: Run, won: boolean, loot:
 
 async function realTargets(me: string, s: UserState, now: number): Promise<Target[]> {
   const power = castlePower(s.castle.level, resolveFloors(s), lordStarsOf(s), lordLooksOf(s), wornLookOf(s));
-  const rows = await $global.getCollectionItems('castles', {
+  // ±50% 안을 먼저 받고, 비면 전체에서 가장 가까운 성을 찾는다(고르기는 matchmaking.ts)
+  let rows: any[] = await $global.getCollectionItems('castles', {
     filters: [
-      { field: 'power', operator: '>=', value: Math.floor(power * 0.8) },
-      { field: 'power', operator: '<=', value: Math.ceil(power * 1.2) },
+      { field: 'power', operator: '>=', value: Math.floor(power * (1 - MATCH_BANDS[1])) },
+      { field: 'power', operator: '<=', value: Math.ceil(power * (1 + MATCH_BANDS[1])) },
     ],
-    limit: 50,
+    limit: 100,
   });
-  const pool = rows.filter((r: any) => r.account !== me && (r.shieldUntil ?? 0) <= now);
-  let st = seedFrom(me, now);
-  const picked: any[] = [];
-  while (picked.length < 3 && pool.length > 0) {
-    const r = rngNext(st);
-    st = r.state;
-    picked.push(pool.splice(Math.floor(r.value * pool.length), 1)[0]);
-  }
+  if (eligible(rows, me, now).length === 0) rows = await $global.getCollectionItems('castles', { limit: 200 });
+  const picked: any[] = pickRealTargets(rows, me, power, now, seedFrom(me, now));
   const out: Target[] = [];
   for (const r of picked) {
     const gold = await $asset.get('gold', r.account);
@@ -1009,7 +1005,15 @@ export class Server {
         return targets;
       }
       // 출정하거나 다시 찾기 전까지는 같은 상대(2026-10-08: 창을 다시 열면 공짜로 바뀌던 것을 막는다). 옛 목록(정찰 정보 없음)은 새로
-      if (s.lastTargets.length > 0 && s.lastTargets.every((t) => t.floors)) return s.lastTargets;
+      if (s.lastTargets.length > 0 && s.lastTargets.every((t) => t.floors)) {
+        // 고정된 목록에 실제 유저가 없으면 열 때마다 다시 찾아 앞에 끼운다(2026-10-13: NPC만 남아 유저가 안 보이던 것)
+        if (s.lastTargets.some((t) => !t.npc)) return s.lastTargets;
+        const real = await realTargets(me, s, now);
+        if (real.length === 0) return s.lastTargets;
+        const targets = [...real, ...s.lastTargets].slice(0, 3);
+        await save(me, { lastTargets: targets });
+        return targets;
+      }
       const targets = [...(await realTargets(me, s, now)), ...npcTargets(s, now, rerollOf(s, now).n)].slice(0, 3);
       await save(me, { lastTargets: targets });
       return targets;

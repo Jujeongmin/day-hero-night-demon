@@ -611,3 +611,21 @@ describe('expedition map (2026-10-08)', () => {
     expect(await fails(server.startCampaign())).toBe(true);
   });
 });
+
+describe('real players show up as sortie targets (2026-10-13)', () => {
+  test('another player is offered, and an NPC-only list gets them added on reopen', async (server) => {
+    for (const [acct, nick] of [['t93-host', '상대유저'], ['t93-seeker', '찾는유저']]) {
+      server.connect({ account: acct });
+      await server.getHome();
+      await server.advanceOnboarding('nickname');
+      await server.setNickname(nick);
+      await server.startIntroRaid();
+      await server.autoPlay();
+      await server.endRaid(false);
+      await server.advanceOnboarding('end');
+      await server.advanceOnboarding('done');
+    }
+    const targets = await server.findTargets();
+    expect(targets.some((t: any) => !t.npc && t.id === 't93-host')).toBe(true);
+  });
+});
