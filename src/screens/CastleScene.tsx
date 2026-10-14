@@ -20,7 +20,7 @@ import { T } from '../strings/ko';
 import { emitTut } from '../tutorial/bus';
 import { vipOf } from '../../server/src/vip';
 import type { LordSkin, UserState } from '../../server/src/state';
-import { nextSortieAt, sortiesLeft, sortieTicketCost } from '../../server/src/sortie';
+import { nextSortieAt, sortiesLeft } from '../../server/src/sortie';
 import { claimableQuests } from '../../server/src/quests';
 import { QuestCard, type QuestGo } from './Quests';
 import { Portrait } from '../render/Sprite';
@@ -513,7 +513,7 @@ export default function CastleScene(props: {
   // 출정 입장권(2026-10-01 승인): 튜토리얼이 끝난 뒤에만 쓴다. 0장이면 출정 버튼은 멈추고 "+"로 골드 한 장
   const ticketsOn = (s.onboarding?.at ?? 'done') === 'done' && s.introDone;
   const tickets = sortiesLeft(s, Date.now());
-  const ticketCost = sortieTicketCost(s);
+  const ticketCost = BALANCE.sortieSoul;
   const noTicket = ticketsOn && tickets <= 0;
 
   const unitScale = k * 0.7;
@@ -748,8 +748,9 @@ export default function CastleScene(props: {
             {ticketsOn && (
               <span className={`pill ticket ${noTicket ? 'empty' : ''}`} aria-label={T.sortieInfo(tickets, BALANCE.sortieMax, 0, 0)}>
                 <img src="ui/ticket.png" alt="" draggable={false} />{tickets}/{BALANCE.sortieMax}<TicketTimer at={nextSortieAt(s, Date.now())} />
-                <button className={`ticket-plus ${noTicket ? 'pulse' : ''}`} disabled={busy || home.gold < ticketCost} onClick={() => act(() => api.buySortie())} aria-label={T.buyTicket(ticketCost)}>
-                  <img src="ui/plus.png" alt="" draggable={false} /><img className="coin" src="icons/gold.png" alt="" draggable={false} />{formatNum(ticketCost)}
+                {/* 영혼석 10개로 한 장(2026-10-14 사용자). 모자라면 상점 영혼석으로 */}
+                <button className={`ticket-plus ${noTicket ? 'pulse' : ''}`} disabled={busy} onClick={() => (home.soul < ticketCost ? onShop('soul') : act(() => api.buySortie()))} aria-label={T.buyTicket(ticketCost)}>
+                  <img src="ui/plus.png" alt="" draggable={false} /><img className="coin" src="icons/soul.png" alt="" draggable={false} />{formatNum(ticketCost)}
                 </button>
               </span>
             )}

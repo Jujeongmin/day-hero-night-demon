@@ -44,7 +44,7 @@ export function nextSortieAt(s: Pick<UserState, 'sortie'>, now: number): number 
   return t.n >= BALANCE.sortieMax ? null : t.at + BALANCE.sortieRegenMs;
 }
 
-/** 입장권 한 장 골드 값: 내 몬스터 평균 레벨의 NPC 공략 전리품 × 0.5 */
+/** 입장권 한 장 골드 값: 내 몬스터 평균 레벨의 NPC 공략 전리품 × 0.5. 2026-10-14부터 입장권은 영혼석(BALANCE.sortieSoul)으로 사고, 이 값은 다시 찾기 비용 계산에만 */
 export function sortieTicketCost(s: Pick<UserState, 'roster' | 'stars'>): number {
   return Math.max(1, Math.round(npcLoot(avgMonsterLevel(s.roster, s.stars ?? {})) * BALANCE.sortieTicketLootMult));
 }

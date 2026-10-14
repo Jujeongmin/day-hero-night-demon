@@ -972,9 +972,10 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await loadState(me, now);
-      const cost = sortieTicketCost(s);
-      if (!(await $asset.has('gold', cost))) throw new Error('골드가 부족하다');
-      await $asset.burn('gold', cost);
+      // 영혼석으로 산다(2026-10-14 사용자)
+      const cost = BALANCE.sortieSoul;
+      if (!(await $asset.has('soul', cost))) throw new Error('NO_SOUL');
+      await $asset.burn('soul', cost);
       const sortie = addSortie(s, now);
       await save(me, { sortie });
       return { cost, sortie };
