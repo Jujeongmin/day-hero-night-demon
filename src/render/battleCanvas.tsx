@@ -5,6 +5,7 @@ import { sfx } from '../services/audio';
 import { sfxForFx } from './sfxMap';
 import { auraBlur, AURA, lordSpriteId, monsterSpriteId } from './skins';
 import { starTiers, type StarTier } from './stars';
+import { drawStarBack, drawStarFront, starOutline } from './starFxDraw';
 
 const starImages: Record<StarTier, HTMLImageElement> = (() => {
   const make = (t: StarTier) => { const i = new Image(); i.src = `ui/star_${t}.png`; return i; };
@@ -95,6 +96,9 @@ function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, sprite: string, ani
   const fi = Math.min(frame, s.frames - 1);
   const dw = s.w * UNIT_SCALE * scale;
   const dh = s.h * UNIT_SCALE * scale;
+  // 각성 별 이펙트(2026-10-14 C안): 쓰러지면 끈다
+  const starred = anim !== 'death' && (f.stars ?? 0) > 0;
+  if (starred) drawStarBack(ctx, x, y, f.stars, now, UNIT_SCALE * scale);
   ctx.save();
   ctx.translate(x, y);
   if (flip) ctx.scale(-1, 1);
@@ -103,10 +107,17 @@ function drawUnit(ctx: CanvasRenderingContext2D, f: Fighter, sprite: string, ani
   if (f.kind === 'lord' && sprite !== 'lord' && anim !== 'death') {
     ctx.shadowColor = AURA.color;
     ctx.shadowBlur = auraBlur(now);
+  } else if (starred) {
+    const o = starOutline(f.stars);
+    if (o) {
+      ctx.shadowColor = o.color;
+      ctx.shadowBlur = o.blur * UNIT_SCALE * scale;
+    }
   }
   // 캔버스는 여백 포함 정사각형이고 캐릭터 발은 대략 아래에서 1/6 지점이다
   ctx.drawImage(img, fi * s.w, 0, s.w, s.h, -dw / 2, -dh * 0.84, dw, dh);
   ctx.restore();
+  if (starred) drawStarFront(ctx, x, y, f.stars, now, UNIT_SCALE * scale);
 }
 
 /** 각성 별: 체력바 바로 위에 작게(동 5 = 은 1, 은 5 = 금 1). 아래 끝이 y */

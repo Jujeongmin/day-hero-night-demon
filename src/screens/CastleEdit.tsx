@@ -5,6 +5,7 @@ import type { UserState } from '../../server/src/state';
 import { StarRow } from '../render/stars';
 import { skillText, unitStats } from '../render/unitStats';
 import Sprite, { Portrait } from '../render/Sprite';
+import { starPortraitClass } from '../render/StarFx';
 import { floorBgId, monsterSpriteId } from '../render/skins';
 import { floorsUnlocked } from '../../server/src/economy';
 import { errorText, type Api, type HomeData } from '../services/api';
@@ -156,7 +157,7 @@ export default function CastleEdit(props: { api: Api; home: HomeData; floor: num
           const at = whereOf(id);
           return (
             <button key={id} className={`btn small pick ${at >= 0 ? 'placed' : ''}`} data-tut={id === firstFree ? 'pick-first' : undefined} disabled={busy} onClick={unitTip.guard(() => place(id))} {...unitTip.bind(id)}>
-              <Portrait id={monsterSpriteId(id, s.gear?.worn[id])} label={T.units[id]} />
+              <Portrait id={monsterSpriteId(id, s.gear?.worn[id])} label={T.units[id]} className={starPortraitClass(s.stars?.[id])} />
               <small>{T.units[id]}</small>
               {at >= 0 && <em className="pick-at">{T.placedAt(at + 1)}</em>}
             </button>

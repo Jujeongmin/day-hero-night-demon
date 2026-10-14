@@ -83,12 +83,14 @@ function settle(run: Run, events: BattleEvent[]): { run: Run; events: BattleEven
   };
 }
 
-export function beginFloor(run: Run, tactic: Tactic, heroes: Record<HeroId, { level: number; mult?: number }>): { run: Run; events: BattleEvent[]; battle: FloorBattle } {
+export function beginFloor(run: Run, tactic: Tactic, heroes: Record<HeroId, { level: number; mult?: number; stars?: number }>): { run: Run; events: BattleEvent[]; battle: FloorBattle } {
   if (runStatus(run) !== 'choose_tactic') throw new Error('지금은 전술을 고를 수 없다');
   const party = HERO_ORDER
     .filter((id) => (run.heroesHp[id] ?? 1) > 0)
     .map((id) => ({
       id, level: heroes[id].level, hp: run.heroesHp[id], ...(heroes[id].mult && heroes[id].mult !== 1 ? { mult: heroes[id].mult } : {}),
+      // 각성 별은 화면 이펙트용(능력치는 level·mult에 이미 들어 있다)
+      ...(heroes[id].stars ? { stars: heroes[id].stars } : {}),
       // 현상수배 약점 용사는 피해 +50%
       ...(run.snapshot.bounty?.weak === id ? { dmgMult: BALANCE.bounty.weakDmg } : {}),
     }));
@@ -135,7 +137,7 @@ export interface RunStep { floor: number; battle: FloorBattle; events: BattleEve
  * 공략을 끝까지(승리 또는 전멸) 한 번에 계산한다(2026-10-06: 라운드마다 서버를 부르던 렉 제거).
  * 전술·궁극기는 화면이 하던 자동 규칙 그대로(autoTactic, 기가 차면 살아 있는 첫 용사).
  */
-export function autoRun(run: Run, heroes: Record<HeroId, { level: number; mult?: number }>): { run: Run; steps: RunStep[] } {
+export function autoRun(run: Run, heroes: Record<HeroId, { level: number; mult?: number; stars?: number }>): { run: Run; steps: RunStep[] } {
   const steps: RunStep[] = [];
   let r = run;
   // 층마다: 시작(전술 자동) → 끝날 때까지 행동을 하나씩. 층 수 상한으로 멈춘다
@@ -194,7 +196,7 @@ export const WIN_TRIES = 5;
  * 내 용사로 이 성을 털 때 이길 확률(0~1, 2026-10-14 사용자: 쉬움인데 몬스터에게 죽는다).
  * 난이도를 성 전투력끼리 비교하지 않고 실제 출정 전투를 WIN_TRIES번 돌려 이긴 비율로 정한다(싸우는 건 내 성이 아니라 내 용사라서)
  */
-export function winChance(snapshot: CastleSnapshot, heroes: Record<HeroId, { level: number; mult?: number }>, account: string): number {
+export function winChance(snapshot: CastleSnapshot, heroes: Record<HeroId, { level: number; mult?: number; stars?: number }>, account: string): number {
   let won = 0;
   for (let i = 0; i < WIN_TRIES; i++) {
     const r = autoRun(startRun({ account, snapshot, isRevenge: false, revengeLogId: null, now: i + 1 }), heroes);

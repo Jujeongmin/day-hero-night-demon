@@ -908,3 +908,27 @@ span.up-pt { cursor: default; }
 .siege-advice.ok { color: #7dff8a; }
 .siege-advice.inline { position: static; translate: none; }
 .pill.siege-advice { font-size: 12px; padding: 0 4px; }
+
+/* 각성 별 이펙트(2026-10-14 사용자 C안, 크게): 동 = 오라, 은 = + 반짝이·옅은 테두리 빛, 금 = + 진한 테두리 빛·퍼지는 고리. 전투 캔버스는 render/starFxDraw.ts */
+.star-fx { --c: 232, 150, 80; position: absolute; left: 50%; bottom: calc(11px * var(--s)); width: 0; height: 0; pointer-events: none; }
+.star-fx.silver { --c: 200, 225, 255; }
+.star-fx.gold { --c: 255, 211, 77; }
+.star-fx > span { position: absolute; }
+.sf-glow { z-index: -1; --r: calc((34px + 12px * var(--k)) * var(--s)); left: calc(-1 * var(--r)); top: calc(-26px * var(--s) - var(--r)); width: calc(2 * var(--r)); height: calc(2 * var(--r)); border-radius: 50%; background: radial-gradient(closest-side, rgba(var(--c), calc(.5 + .3 * var(--k))), rgba(var(--c), 0)); animation: sf-pulse 2.4s ease-in-out infinite; }
+.star-fx.silver .sf-glow { --r: calc((39px + 12px * var(--k)) * var(--s)); }
+.star-fx.gold .sf-glow { --r: calc((44px + 12px * var(--k)) * var(--s)); }
+.sf-floor { z-index: -1; --w: calc((24px + 10px * var(--k)) * var(--s)); left: calc(-1 * var(--w)); top: calc(-6px * var(--s)); width: calc(2 * var(--w)); height: calc(12px * var(--s)); border-radius: 50%; background: rgba(var(--c), calc(.6 + .3 * var(--k))); }
+.sf-ring { z-index: -1; left: calc(-46px * var(--s)); top: calc(-13px * var(--s)); width: calc(92px * var(--s)); height: calc(26px * var(--s)); border-radius: 50%; border: calc(3px * var(--s)) solid rgb(var(--c)); box-sizing: border-box; animation: sf-ring 2.2s linear infinite; }
+.sf-ring.late { animation-delay: -1.1s; }
+.sf-spark { z-index: 1; left: calc(var(--x) * 26px * var(--s)); top: 0; width: 3px; height: 3px; background: rgb(var(--c)); animation: sf-rise 1.5s linear infinite; }
+.sf-spark.big { width: 4px; height: 4px; box-shadow: 4px 0 0 -1px rgb(var(--c)), -4px 0 0 -1px rgb(var(--c)), 0 4px 0 -1px rgb(var(--c)), 0 -4px 0 -1px rgb(var(--c)); }
+@keyframes sf-pulse { 50% { opacity: .65; } }
+@keyframes sf-ring { from { transform: scale(.35); opacity: 1; } to { transform: scale(1); opacity: 0; } }
+@keyframes sf-rise { 0% { transform: translateY(calc(-4px * var(--s))); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(calc(-70px * var(--s))); opacity: 0; } }
+.star-o-silver .sprite { filter: drop-shadow(0 0 2px rgba(200, 225, 255, .9)) drop-shadow(0 0 4px rgba(200, 225, 255, .6)); }
+.star-o-gold .sprite { filter: drop-shadow(0 0 2px #ffd34d) drop-shadow(0 0 6px #ffd34dcc); }
+/* 목록 초상화: 테두리 빛 */
+.star-pt.bronze { filter: drop-shadow(0 0 3px #e8965099); }
+.star-pt.silver { filter: drop-shadow(0 0 3px #c8e1ff) drop-shadow(0 0 2px #c8e1ff99); }
+.star-pt.gold { filter: drop-shadow(0 0 3px #ffd34d) drop-shadow(0 0 6px #ffd34dbb); animation: sf-pt 2.4s ease-in-out infinite; }
+@keyframes sf-pt { 50% { filter: drop-shadow(0 0 2px #ffd34d) drop-shadow(0 0 3px #ffd34d88); } }

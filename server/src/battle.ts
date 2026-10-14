@@ -79,7 +79,7 @@ export interface FloorLog {
 
 /** key: 같은 종류가 여럿일 때(공성 침입자) 한 명씩 구분하는 이름. 없으면 종류 이름 */
 /** dmgMult: 이 용사가 주는 피해 배수(현상수배 약점 용사 +50%, 2026-10-08) */
-export interface HeroSpec { id: HeroId | InvaderId; level: number; hp?: number; mult?: number; key?: string; dmgMult?: number }
+export interface HeroSpec { id: HeroId | InvaderId; level: number; hp?: number; mult?: number; key?: string; dmgMult?: number; stars?: number }
 /** hp: 이어 싸우는 몬스터의 남은 체력(공성에서 층에 다시 침입자가 올라올 때). 없으면 가득 */
 /** hpMult: 체력만 늘리는 배수(현상수배 보스, 2026-10-08) */
 export interface EnemySpec { id: MonsterId | 'lord'; level: number; mult?: number; gear?: string; stars?: number; look?: string; hp?: number; hpMult?: number }
@@ -117,7 +117,7 @@ export function createFloorBattle(input: {
     if (input.tactic === 'charge') s = { ...s, atk: Math.round(s.atk * 1.2), def: Math.round(s.def * 0.8) };
     if (input.tactic === 'guard') s = { ...s, def: Math.round(s.def * 1.3), spd: s.spd - 1 };
     const hf = makeFighter(`h:${h.key ?? h.id}`, 'hero', h.id, h.level, def.row, s, h.hp ?? s.hp, def.skill, def.cooldown);
-    fighters.push(h.dmgMult && h.dmgMult !== 1 ? { ...hf, dmgMult: h.dmgMult } : hf);
+    fighters.push({ ...hf, ...(h.dmgMult && h.dmgMult !== 1 ? { dmgMult: h.dmgMult } : {}), ...(h.stars ? { stars: h.stars } : {}) });
   }
   input.enemies.forEach((e, i) => {
     if (e.id === 'lord') {

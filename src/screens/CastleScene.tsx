@@ -12,6 +12,7 @@ import { adsLeft } from '../services/ads';
 import { chooseLordSkin, passTier, planPassClaim } from '../../server/src/pass';
 import { lordSpriteId, monsterSpriteId } from '../render/skins';
 import { StarRow } from '../render/stars';
+import { StarFx, starOutlineClass } from '../render/StarFx';
 import { type Speed } from '../render/speed';
 import { errorText, type Api, type HomeData, type SiegeWave } from '../services/api';
 import { buy } from '../services/shop';
@@ -81,7 +82,8 @@ const ReplayUnit = memo(function ReplayUnit(props: {
 }) {
   const { u, back, crowd } = props;
   return (
-    <div className={`unit-at rp-unit ${u.side} ${u.dead ? 'dead' : ''} ${back ? 'back-row' : ''} ${crowd && u.kind !== 'captain' ? 'crowd' : ''}`} style={at(props.x, props.y)}>
+    <div className={`unit-at rp-unit ${u.side} ${u.dead ? 'dead' : ''} ${back ? 'back-row' : ''} ${crowd && u.kind !== 'captain' ? 'crowd' : ''} ${!u.dead && u.side === 'enemy' && !(u.kind === 'lord' && props.lordSkin) ? starOutlineClass(props.stars) : ''}`} style={at(props.x, props.y)}>
+      {!u.dead && u.side === 'enemy' && <StarFx n={props.stars} scale={props.scale} />}
       {!u.dead && u.side === 'enemy' && <StarRow n={props.stars} className="unit-stars" />}
       {/* 침입자도 모두 체력바(2026-10-06 사용자). 무리(7명+)는 작게 */}
       {!u.dead && <span className="rp-hp"><span style={{ transform: `scaleX(${Math.max(0, u.hp / u.maxHp)})` }} /></span>}
@@ -181,7 +183,8 @@ const TowerView = memo(function TowerView(props: {
 
           {/* 공성 재생 중에는 재생 층이 마왕·몬스터를 그린다 */}
           {!replay.active && (
-            <div className={`unit-at lord-at ${rubyAura ? 'aura ruby' : lordSkin ? 'aura' : ''}`} style={at(50, THRONE.stand)}>
+            <div className={`unit-at lord-at ${rubyAura ? 'aura ruby' : lordSkin ? 'aura' : starOutlineClass(s.stars?.lord)}`} style={at(50, THRONE.stand)}>
+              <StarFx n={s.stars?.lord} scale={unitScale} />
               <StarRow n={s.stars?.lord} className="unit-stars" />
               {!s.run && <span className="lord-hp"><span style={{ width: `${(replaying ? 1 : lordHp) * 100}%` }} /></span>}
               {/* 옛 연출(성문 앞 싸움) 동안에는 마왕도 공격 동작 */}
@@ -196,7 +199,8 @@ const TowerView = memo(function TowerView(props: {
               <div key={i}>
                 {/* 싸우는 층은 재생 층이 그린다. 이미 뚫린 층의 몬스터는 파도가 끝날 때까지 쓰러진 채로 */}
                 {!locked && !replay.active && floor.monsters.map((m, j) => m && (
-                  <div className="unit-at" key={j} style={at(SLOT_X[j], tier.stand)}>
+                  <div className={`unit-at ${starOutlineClass(s.stars?.[m])}`} key={j} style={at(SLOT_X[j], tier.stand)}>
+                    <StarFx n={s.stars?.[m]} scale={unitScale} />
                     <StarRow n={s.stars?.[m]} className="unit-stars" />
                     <Sprite id={monsterSpriteId(m, s.gear?.worn[m])} anim={defending && !replaying && i === 0 ? 'attack' : 'idle'} label={T.units[m]} flip scale={unitScale} />
                   </div>

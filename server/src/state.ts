@@ -323,11 +323,11 @@ export function resetState(s: UserState, now: number): UserState {
 }
 
 /** 용사 셋의 성장 레벨과 별 배수(전투·NPC 등급·공성 방어·전리품 보너스용) */
-export function heroGrowth(s: Pick<UserState, 'heroes' | 'stars'>): Record<HeroId, { level: number; mult: number }> {
-  const out = {} as Record<HeroId, { level: number; mult: number }>;
+export function heroGrowth(s: Pick<UserState, 'heroes' | 'stars'>): Record<HeroId, { level: number; mult: number; stars?: number }> {
+  const out = {} as Record<HeroId, { level: number; mult: number; stars?: number }>;
   for (const id of Object.keys(s.heroes) as HeroId[]) {
     const stars = s.stars?.[id] ?? 0;
-    out[id] = { level: effLevel(s.heroes[id].level, stars), mult: starMult(stars) };
+    out[id] = { level: effLevel(s.heroes[id].level, stars), mult: starMult(stars), ...(stars > 0 ? { stars } : {}) };
   }
   return out;
 }
@@ -337,11 +337,11 @@ export function heroGrowth(s: Pick<UserState, 'heroes' | 'stars'>): Record<HeroI
  * 성 레벨·마왕 별이 몬스터에게 주는 배수(castleMonsterMult)를 용사에게도 레벨로 환산해 더한다(×2.2 ≈ +5.6레벨).
  * NPC 상대 등급·현상수배 보스·예상 승률이 모두 이 레벨을 기준으로 해서 같이 맞춰진다. 공성 방어·약탈 보너스(heroGrowth)에는 넣지 않는다
  */
-export function raidHeroes(s: Pick<UserState, 'heroes' | 'stars' | 'castle'>): Record<HeroId, { level: number; mult: number }> {
+export function raidHeroes(s: Pick<UserState, 'heroes' | 'stars' | 'castle'>): Record<HeroId, { level: number; mult: number; stars?: number }> {
   const plus = Math.log(castleMonsterMult(s.castle.level, s.stars?.lord ?? 0)) / Math.log(BALANCE.growth.statGrowth);
   const base = heroGrowth(s);
-  const out = {} as Record<HeroId, { level: number; mult: number }>;
-  for (const id of Object.keys(base) as HeroId[]) out[id] = { level: base[id].level + plus, mult: base[id].mult };
+  const out = {} as Record<HeroId, { level: number; mult: number; stars?: number }>;
+  for (const id of Object.keys(base) as HeroId[]) out[id] = { ...base[id], level: base[id].level + plus };
   return out;
 }
 

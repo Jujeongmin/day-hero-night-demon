@@ -12,6 +12,7 @@ import { planResetMonster, planUpgradeMany } from '../../server/src/castle';
 import { heroGrowth, type StarUnit } from '../../server/src/state';
 import { Portrait } from '../render/Sprite';
 import { StarRow } from '../render/stars';
+import { starPortraitClass } from '../render/StarFx';
 import { monsterSpriteId } from '../render/skins';
 import { skillText, unitStats } from '../render/unitStats';
 import { errorText, type Api, type HomeData } from '../services/api';
@@ -144,7 +145,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
     return (
       <div className={`up-row ${rec?.unit === id ? 'rec' : ''}`} key={id} data-unit={id}>
         <button className="up-pt" onClick={open} aria-label={T.up.info}>
-          <Portrait id={portrait} label={label} />
+          <Portrait id={portrait} label={label} className={starPortraitClass(stars)} />
           <i>?</i>
         </button>
         <span className="up-nm">
@@ -212,7 +213,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
       </div>
       {/* 마왕: 외형 바꾸기는 언제나(2026-10-07 사용자: 설정에만 있어 찾기 어렵다), 각성 버튼은 각성이 열린 뒤에만(단계적 해금) */}
       <div className={`up-row ${rec?.unit === 'lord' ? 'rec' : ''}`}>
-        <span className="up-pt"><Portrait id={lordSpriteId(worn === 'base' ? undefined : worn)} label={T.units.lord} /></span>
+        <span className="up-pt"><Portrait id={lordSpriteId(worn === 'base' ? undefined : worn)} label={T.units.lord} className={starPortraitClass(s.stars?.lord)} /></span>
         <span className="up-nm">
           <b>{T.units.lord} <Stars n={s.stars?.lord} />{rec?.unit === 'lord' && <em className="rec-tag">{T.rec}</em>}</b>
           {on.awaken && <small>{T.up.lordShort}</small>}
