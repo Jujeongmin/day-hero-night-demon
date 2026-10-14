@@ -1,4 +1,4 @@
-import { BALANCE, castleAuraMult, HERO_ORDER, type HeroId, type Tactic } from './catalog';
+import { BALANCE, castleAuraMult, HERO_ORDER, HEROES, scaleStats, type HeroId, type Tactic } from './catalog';
 import { createFloorBattle, firstAliveHero, playRound, restedHeroesHp, ultReady, type BattleEvent, type EnemySpec, type FloorBattle } from './battle';
 import { snapshotLooks } from './economy';
 import { castleMonsterMult, lordLevel, lordMult, monsterMult } from './growth';
@@ -74,7 +74,8 @@ function settle(run: Run, events: BattleEvent[]): { run: Run; events: BattleEven
     battle,
     run: {
       ...run,
-      heroesHp: restedHeroesHp(battle),
+      // 앞 층에서 쓰러져 이번 층에 없던 용사는 0 그대로(2026-10-14 버그: 빠지면 다음 층에서 가득 찬 채 살아났다)
+      heroesHp: { ...run.heroesHp, ...restedHeroesHp(battle) },
       battle: null,
       tactic: null,
       floor: nextFloorWithEnemies(run.snapshot, run.floor + 1),
@@ -117,12 +118,18 @@ export function advanceRound(run: Run, ult: HeroId | null): { run: Run; events: 
   return settle({ ...run, battle }, events);
 }
 
-export function reviveRun(run: Run): Run {
+/**
+ * 부활: 용사 모두 최대 체력의 50%로(2026-10-14 사용자: 앞 층에서 먼저 쓰러진 용사도 같이 살린다).
+ * 이번 층에 없던 용사의 최대 체력은 heroes(출정 용사 레벨·배수)로 계산한다
+ */
+export function reviveRun(run: Run, heroes: Record<HeroId, { level: number; mult?: number }>): Run {
   if (runStatus(run) !== 'wiped') throw new Error('부활할 상황이 아니다');
   if (run.reviveUsed) throw new Error('부활은 판당 1회다');
   const hp = { ...run.heroesHp };
-  for (const f of run.battle!.fighters) {
-    if (f.side === 'hero') hp[f.kind as HeroId] = Math.round(f.maxHp * 0.5);
+  for (const id of HERO_ORDER) {
+    const f = run.battle!.fighters.find((x) => x.side === 'hero' && x.kind === id);
+    const maxHp = f ? f.maxHp : scaleStats(HEROES[id].stats, heroes[id].level, heroes[id].mult ?? 1).hp;
+    hp[id] = Math.round(maxHp * 0.5);
   }
   // 몬스터는 쓰러뜨린 만큼 그대로: 남은 체력을 기억해 같은 층을 다시 시작할 때 이어서
   const enemiesHp: Record<string, number> = {};

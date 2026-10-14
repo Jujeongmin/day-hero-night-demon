@@ -242,7 +242,8 @@ export function simulateAuto(input: {
     }
     if (entry) log!.push(entry);
     if (battle.outcome === 'lost') return done({ won: false, floorsCleared: i });
-    hp = restedHeroesHp(battle);
+    // 앞 층에서 쓰러져 이번 층에 없던 용사는 0 그대로(빠지면 다음 층에서 살아나던 버그)
+    hp = { ...hp, ...restedHeroesHp(battle) };
     seed = battle.rng;
   }
   return done({ won: true, floorsCleared: input.floors.length });

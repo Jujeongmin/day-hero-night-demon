@@ -302,6 +302,7 @@ export const ko = {
     farm: (n: number) => `웨이브 ${n} 반복 중`,
     challenge: (n: number) => `웨이브 ${n} 도전`,
     challengeReady: '도전 중!',
+    nextIn: (s: number) => ` · ${s}초 뒤`,
     advice: (p: string) => `권장 ${p}`,
     breachedFarm: '막혔다! 이전 웨이브를 반복한다',
     stage: (n: number) => `웨이브 ${n}`,

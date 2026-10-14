@@ -932,3 +932,7 @@ span.up-pt { cursor: default; }
 .star-pt.silver { filter: drop-shadow(0 0 3px #c8e1ff) drop-shadow(0 0 2px #c8e1ff99); }
 .star-pt.gold { filter: drop-shadow(0 0 3px #ffd34d) drop-shadow(0 0 6px #ffd34dbb); animation: sf-pt 2.4s ease-in-out infinite; }
 @keyframes sf-pt { 50% { filter: drop-shadow(0 0 2px #ffd34d) drop-shadow(0 0 3px #ffd34d88); } }
+
+/* 웨이브 사이 카운트다운(2026-10-14 사용자): 웨이브 표시 안에 남은 초, 바뀔 때마다 톡 */
+.siege-next { display: inline-block; margin-left: 4px; font-weight: 400; color: var(--gold); animation: siege-tick .35s ease-out; }
+@keyframes siege-tick { from { transform: scale(1.4); } }

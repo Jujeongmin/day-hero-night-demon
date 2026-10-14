@@ -354,6 +354,13 @@ export default function CastleScene(props: {
   const [replay, setReplay] = useState<ReplayPhase>(NO_PHASE);
   const onPhase = useCallback((p: ReplayPhase) => setReplay(p), []);
   const replaying = replay.active || replay.result !== null;
+  // 웨이브 사이 쉬는 시간(2026-10-14 사용자): 재생이 끝난 순간부터 siegeRestMs(배속과 상관없이)
+  const [restUntil, setRestUntil] = useState(0);
+  const wasReplaying = useRef(false);
+  useEffect(() => {
+    if (wasReplaying.current && !replaying) setRestUntil(Date.now() + BALANCE.siegeRestMs);
+    wasReplaying.current = replaying;
+  }, [replaying]);
   // 탑 층 누르기: 바뀌지 않는 함수로 넘겨 창을 여닫을 때 탑을 다시 그리지 않게
   const tierCb = useRef({ onFloor, onLocked });
   tierCb.current = { onFloor, onLocked };
@@ -379,7 +386,7 @@ export default function CastleScene(props: {
     if (!siegeOn || calling) return;
     if (replaying && !challengeNow) return;
     const wait = challengeNow ? retryAt - Date.now() : Math.max(
-      BALANCE.siegeRestMs / speed,
+      restUntil - Date.now(),
       nextAt - Date.now(),
       retryAt - Date.now(),
     );
@@ -402,7 +409,18 @@ export default function CastleScene(props: {
     }, Math.max(0, wait));
     return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siegeOn, replaying, calling, speed, s.siege?.nextAt, retryAt, challengeNow]);
+  }, [siegeOn, replaying, calling, speed, s.siege?.nextAt, retryAt, challengeNow, restUntil]);
+  // 다음 웨이브까지 남은 초(쉬는 동안만, 1초마다)
+  const callAt = Math.max(restUntil, nextAt, retryAt);
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  const resting = siegeOn && !replaying && !calling && callAt > nowTick;
+  useEffect(() => {
+    if (!siegeOn || replaying || calling || callAt <= Date.now()) return;
+    setNowTick(Date.now());
+    const id = window.setInterval(() => setNowTick(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, [siegeOn, replaying, calling, callAt]);
+  const nextIn = resting ? Math.ceil((callAt - nowTick) / 1000) : null;
   const floorsCount = s.castle.floors.length;
   const throneFight = replay.active;
   // 영구 2배(옛 상품) 계정은 광고 2배를 쓰지 않는다
@@ -547,6 +565,7 @@ export default function CastleScene(props: {
         // 튜토리얼 중에는 공성 단계 표시·바로 부르기를 숨긴다(시선이 흩어지지 않게, 2026-10-02)
         compact={panelOpen || (s.onboarding?.at ?? 'done') !== 'done'}
         speed={speed}
+        nextIn={nextIn}
         farming={farming}
         onChallenge={challenge || challengeRunning ? null : () => setChallenge(true)}
         onFighting={onDefending}

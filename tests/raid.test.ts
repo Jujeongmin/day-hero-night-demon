@@ -56,6 +56,17 @@ describe('raid', () => {
     expect(lordDefeated(run)).toBe(true);
   });
 
+  it('a hero who fell on an earlier floor stays down through later floors and the throne (2026-10-14 bug)', () => {
+    let run = startRun({ account: 'a', snapshot: snap({ floors: [{ monsters: [{ id: 'slime', level: 1 }] }, { monsters: [{ id: 'slime', level: 1 }] }] }), isRevenge: false, revengeLogId: null, now: 0 });
+    run = { ...run, heroesHp: { priest: 0 } };
+    run = clearFloor(run, 20);
+    expect(run.heroesHp.priest).toBe(0);
+    run = clearFloor(run, 20);
+    expect(run.heroesHp.priest).toBe(0);
+    const throne = beginFloor(run, 'charge', heroes(20)).battle;
+    expect(throne.fighters.some((f) => f.kind === 'priest')).toBe(false);
+  });
+
   it('an empty throne means victory right after the last floor', () => {
     let run = startRun({ account: 'a', snapshot: snap({ throneEmpty: true }), isRevenge: false, revengeLogId: null, now: 0 });
     run = clearFloor(run, 20);
@@ -72,11 +83,23 @@ describe('raid', () => {
     let run = startRun({ account: 'a', snapshot: snap({ floors: [{ monsters: [{ id: 'dragon', level: 20 }, { id: 'dragon', level: 20 }] }] }), isRevenge: false, revengeLogId: null, now: 0 });
     run = clearFloor(run, 1);
     expect(runStatus(run)).toBe('wiped');
-    const revived = reviveRun(run);
+    const revived = reviveRun(run, heroes(1));
     expect(runStatus(revived)).toBe('choose_tactic');
     expect(revived.heroesHp.knight).toBeGreaterThan(0);
     const wipedAgain = clearFloor(revived, 1);
-    expect(() => reviveRun(wipedAgain)).toThrow();
+    expect(() => reviveRun(wipedAgain, heroes(1))).toThrow();
+  });
+
+  it('revive brings back every hero at half health, including one who fell on an earlier floor (2026-10-14)', () => {
+    let run = startRun({ account: 'a', snapshot: snap({ floors: [{ monsters: [{ id: 'dragon', level: 20 }, { id: 'dragon', level: 20 }] }] }), isRevenge: false, revengeLogId: null, now: 0 });
+    run = { ...run, heroesHp: { priest: 0 } };
+    run = clearFloor(run, 1);
+    expect(runStatus(run)).toBe('wiped');
+    expect(run.battle!.fighters.some((f) => f.kind === 'priest')).toBe(false);
+    const revived = reviveRun(run, heroes(1));
+    const priestMax = beginFloor({ ...startRun({ account: 'a', snapshot: snap(), isRevenge: false, revengeLogId: null, now: 0 }) }, 'charge', heroes(1)).battle.fighters.find((f) => f.kind === 'priest')!.maxHp;
+    expect(revived.heroesHp.priest).toBe(Math.round(priestMax * 0.5));
+    for (const id of ['knight', 'archer'] as const) expect(revived.heroesHp[id]).toBeGreaterThan(0);
   });
 
   it('cannot start a floor while fighting', () => {
@@ -124,7 +147,7 @@ describe('autoRun: the whole raid in one call (2026-10-06)', () => {
   it('a weak party wipes; after a revive it plays on to the end again', () => {
     const r = autoRun(twoFloors(), heroes(1));
     expect(runStatus(r.run)).toBe('wiped');
-    const again = autoRun(reviveRun(r.run), heroes(1));
+    const again = autoRun(reviveRun(r.run, heroes(1)), heroes(1));
     expect(again.steps.length).toBeGreaterThan(0);
     expect(['victory', 'wiped']).toContain(runStatus(again.run));
   });
@@ -137,7 +160,7 @@ describe('revive keeps the monsters hurt (2026-10-07 bug: they came back at full
     expect(runStatus(wiped)).toBe('wiped');
     const before = Object.fromEntries(wiped.battle!.fighters.filter((f) => f.side === 'enemy').map((f) => [f.key, f.hp]));
     expect(Object.values(before).some((hp, i) => hp < wiped.battle!.fighters.filter((f) => f.side === 'enemy')[i].maxHp)).toBe(true);
-    const revived = reviveRun(wiped);
+    const revived = reviveRun(wiped, heroes(1));
     const again = beginFloor(revived, 'charge', heroes(3));
     const after = Object.fromEntries(again.battle.fighters.filter((f) => f.side === 'enemy').map((f) => [f.key, f.hp]));
     expect(after).toEqual(before);

@@ -26,6 +26,8 @@ export default function Siege(props: {
   /** 탑 위에서 실제 전투를 재생하는 중(그동안 옛 연출은 쉬고, 단계 표시는 싸우기 전 단계) */
   replaying: boolean;
   replayResult: 'held' | 'breached' | null;
+  /** 다음 웨이브까지 남은 초(웨이브 사이 쉬는 동안만, 2026-10-14) */
+  nextIn?: number | null;
   onFighting: (fighting: boolean) => void;
   /** 마왕 체력(0~1): 탑 꼭대기 마왕 위 막대로 그린다 */
   onLordHp: (ratio: number) => void;
@@ -111,6 +113,8 @@ export default function Siege(props: {
           <div className="siege-stage">
             <button className="pill" onClick={onRank}>
               {breached ? T.siege.breachedFarm : farming && !running ? T.siege.farm(shownStage) : T.siege.stage(running && replayStage ? replayStage : shownStage)}
+              {/* 웨이브 사이 쉬는 동안 남은 초(2026-10-14 사용자: 쉴 틈 없이 반복돼 구분이 안 된다) */}
+              {props.nextIn != null && props.nextIn > 0 && <b className="siege-next" key={props.nextIn}>{T.siege.nextIn(props.nextIn)}</b>}
             </button>
             {farming && !breached && (
               <button className="btn small gold siege-challenge" disabled={!onChallenge} onClick={() => onChallenge?.()}>

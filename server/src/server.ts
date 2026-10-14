@@ -1192,7 +1192,7 @@ export class Server {
       if (isBountyTarget(s.run.target)) throw new Error('현상수배는 부활할 수 없다');
       if (s.credits.revive < 1) throw new Error('NO_REVIVE_CREDIT');
       // 되살린 뒤 끝까지 이어서 계산한다(화면은 걸음을 재생)
-      const r = autoRun(reviveRun(s.run), raidHeroes(s));
+      const r = autoRun(reviveRun(s.run, raidHeroes(s)), raidHeroes(s));
       await save(me, { run: r.run, credits: { ...s.credits, revive: s.credits.revive - 1 } });
       return { run: r.run, status: runStatus(r.run), steps: r.steps };
     });
