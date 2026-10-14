@@ -1,5 +1,5 @@
 import { BALANCE, castleAuraMult, LORD, MONSTERS, scaleStats } from './catalog';
-import { idlePerHour, lordLevel, lordMult, monsterMult, npcLoot, unitPower } from './growth';
+import { castleMonsterMult, idlePerHour, lordLevel, lordMult, monsterMult, npcLoot, unitPower } from './growth';
 import type { CastleSnapshot, ResolvedFloor } from './state';
 import { vipPerks } from './vip';
 
@@ -59,7 +59,8 @@ export function siegeDefenseMult(heroes: Record<string, { level: number }>): num
 export function castlePower(castleLevel: number, floors: ResolvedFloor[], lordStars = 0, lordLooks = 0, lordSkin?: string): number {
   let p = unitPower(scaleStats(LORD.stats, lordLevel(castleLevel), lordMult(lordStars, lordLooks)));
   const aura = castleAuraMult(lordSkin);
-  for (const f of floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, monsterMult(m.stars, m.gear) * aura));
+  const castleK = castleMonsterMult(castleLevel, lordStars);
+  for (const f of floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, monsterMult(m.stars, m.gear) * aura * castleK));
   return Math.round(p);
 }
 
@@ -72,7 +73,9 @@ export function snapshotLooks(c: Pick<CastleSnapshot, 'lordLooks' | 'lordSkin'>)
 export function snapshotPower(c: CastleSnapshot): number {
   const mult = c.mult ?? 1;
   let p = c.throneEmpty && !c.shadow ? 0 : unitPower(scaleStats(LORD.stats, c.lordLevel ?? lordLevel(c.castleLevel), mult * (c.throneEmpty ? 0.5 : 1) * lordMult(c.lordStars, snapshotLooks(c))));
-  for (const f of c.floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, mult * monsterMult(m.stars, m.gear) * castleAuraMult(c.lordSkin)));
+  // 플레이어 성(mult 없음)만 성 레벨·마왕 각성 보너스. NPC 성은 자기 배수 그대로
+  const castleK = c.mult === undefined ? castleMonsterMult(c.castleLevel, c.lordStars) : 1;
+  for (const f of c.floors) for (const m of f.monsters) p += unitPower(scaleStats(MONSTERS[m.id].stats, m.level, mult * monsterMult(m.stars, m.gear) * castleAuraMult(c.lordSkin) * castleK));
   return Math.round(p);
 }
 

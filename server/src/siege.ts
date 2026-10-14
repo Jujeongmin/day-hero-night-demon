@@ -1,7 +1,7 @@
 import type { HeroSpec } from './battle';
 import { simulateSiege, type SiegeLog } from './siegeBattle';
 import { BALANCE, castleAuraMult, HERO_ORDER, type HeroId, type InvaderId } from './catalog';
-import { lordLevel, lordMult, monsterMult, waveGold } from './growth';
+import { castleMonsterMult, lordLevel, lordMult, monsterMult, waveGold } from './growth';
 import { seedFrom } from './rng';
 import type { ResolvedFloor } from './state';
 import { vipPerks } from './vip';
@@ -61,7 +61,7 @@ export function siegeWave(stage: number): HeroSpec[] {
 function defenseOf(castleLevel: number, floors: ResolvedFloor[], mult: number, lordStars = 0, lordLooks = 0, lordSkin?: string) {
   const m = (k: number) => (k === 1 ? {} : { mult: k });
   // 입은 마왕 외형: 크라켄은 모든 층 몬스터, 나머지는 마왕 전투 효과
-  const aura = castleAuraMult(lordSkin);
+  const aura = castleAuraMult(lordSkin) * castleMonsterMult(castleLevel, lordStars);
   return [
     ...floors.map((f) => ({ enemies: f.monsters.map((u) => ({ id: u.id, level: u.level, ...m(mult * monsterMult(u.stars, u.gear) * aura), ...(u.gear ? { gear: u.gear } : {}) })) })),
     { enemies: [{ id: 'lord' as const, level: lordLevel(castleLevel), ...m(mult * lordMult(lordStars, lordLooks)), ...(lordSkin ? { look: lordSkin } : {}) }] },

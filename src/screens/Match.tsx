@@ -98,7 +98,8 @@ function CampaignMap(props: { home: HomeData; busy: boolean; onFight: () => void
       </div>
       <div className="target-card camp-card">
         <div className="target-main">
-          <span className="target-face"><Portrait id={cur.boss ? 'lord' : 'captain'} label="" inner={40} /></span>
+          {/* 얼굴: 보스 칸은 마왕, 아니면 1층에서 처음 만나는 몬스터(2026-10-14: 성에 없는 용사단장이 떠서 헷갈렸다) */}
+          <span className="target-face"><Portrait id={cur.boss ? 'lord' : monsterSpriteId(castle.floors[0]?.monsters[0]?.id ?? 'slime', undefined)} label="" inner={40} /></span>
           <span className="target-info">
             <b>{T.campaign.stage(cur.chapter, cur.slot)}</b>
             <span className="target-tags">
@@ -237,7 +238,8 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
           // 카드를 누르면 정찰이 펼쳐진다
           <div className={`target-card ${open === t.id ? 'open' : ''}`} key={t.id}>
             <div className="target-main" role={scoutable ? 'button' : undefined} onClick={scoutable ? () => setOpen(open === t.id ? null : t.id) : undefined}>
-              <span className="target-face"><Portrait id={t.npc ? 'captain' : 'lord'} label="" inner={40} /></span>
+              {/* 얼굴: 유저는 마왕, NPC는 1층에서 처음 만나는 몬스터(그 성에 실제로 있는 얼굴) */}
+              <span className="target-face"><Portrait id={!t.npc ? 'lord' : t.floors?.[0]?.[0] ? monsterSpriteId(t.floors[0][0].id, t.floors[0][0].gear) : 'slime'} label="" inner={40} /></span>
               <span className="target-info">
                 <b>{displayName(t.nickname)} <VipBadge level={t.vip} /></b>
                 <span className="target-tags">

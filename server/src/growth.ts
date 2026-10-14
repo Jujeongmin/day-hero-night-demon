@@ -34,9 +34,20 @@ export function monsterMult(stars: number | undefined, gear: string | undefined)
   return starMult(stars) * (gear ? BALANCE.summon.gearStatMult : 1);
 }
 
-/** 마왕 능력치 배수: 각성 별 × 외형 보유 효과(가진 외형 하나마다 +10%, 2026-10-02 사용자) */
+/** 마왕 능력치 배수: 각성 별(별마다 ×lordShare.lordPerStar) × 외형 보유 효과(가진 외형 하나마다 +10%, 2026-10-02 사용자) */
 export function lordMult(stars: number | undefined, looks: number | undefined): number {
-  return starMult(stars) * (1 + BALANCE.summon.lookOwnBonus * (looks ?? 0));
+  const n = Math.max(0, Math.min(BALANCE.awaken.maxStars, Math.floor(stars ?? 0)));
+  return Math.pow(BALANCE.lordShare.lordPerStar, n) * (1 + BALANCE.summon.lookOwnBonus * (looks ?? 0));
+}
+
+/**
+ * 성 레벨과 마왕 각성이 모든 층 몬스터에 주는 배수(2026-10-14 사용자 승인: 마왕 혼자 다 하던 구조를 나눔).
+ * (1 + monsterPerCastle)^(성 레벨 − 1) × 마왕 별마다 monsterPerLordStar(마왕이 성 레벨마다 곱으로 크는 만큼 몬스터도 곱으로)
+ */
+export function castleMonsterMult(castleLevel: number, lordStars: number | undefined): number {
+  const L = BALANCE.lordShare;
+  const n = Math.max(0, Math.min(BALANCE.awaken.maxStars, Math.floor(lordStars ?? 0)));
+  return Math.pow(1 + L.monsterPerCastle, Math.max(1, castleLevel) - 1) * Math.pow(L.monsterPerLordStar, n);
 }
 
 /** 별 n개째를 다는 영혼석. 최대 별을 넘으면 null */
@@ -72,7 +83,9 @@ export function unitUpgradeCost(level: number, stars = 0): number | null {
 export function castleUpgradeCost(level: number): number | null {
   if (level >= BALANCE.maxCastleLevel) return null;
   let sum = 0;
-  for (let l = lordLevel(level); l < lordLevel(level + 1); l++) sum += G.unitCostBase * Math.pow(G.costGrowth, l - 1);
+  // 마왕 레벨과 따로 예전 10레벨치 그대로(2026-10-14: 마왕 레벨을 5로 줄여도 성 비용은 같게)
+  const from = G.castleCostLevels * (Math.max(1, level) - 1) + 1;
+  for (let l = from; l < from + G.castleCostLevels; l++) sum += G.unitCostBase * Math.pow(G.costGrowth, l - 1);
   return Math.round(sum * G.castleCostFactor);
 }
 

@@ -1,7 +1,7 @@
 import { BALANCE, HERO_ORDER, type MonsterId } from './catalog';
 import { simulateAuto, type EnemySpec } from './battle';
 import { avgMonsterLevel } from './economy';
-import { lordLevel } from './growth';
+import { lordLevel, castleMonsterMult } from './growth';
 import { rngNext, seedFrom } from './rng';
 import type { CastleSnapshot, ResolvedFloor } from './state';
 
@@ -61,12 +61,14 @@ export function npcRaids(p: {
   const count = Math.max(0, Math.min(BALANCE.npcRaidMax, due));
   // 습격해 오는 용사 = 내 성 몬스터 평균 레벨(비슷한 세기)
   const heroLevel = avgMonsterLevel(p.floors);
+  // 성 레벨 보너스(2026-10-14). 습격 계산은 각성 별을 모른다
+  const castleK = castleMonsterMult(p.castleLevel, 0);
   const raids: { at: number; attackerWon: boolean }[] = [];
   for (let i = 0; i < count; i++) {
     const at = p.lastRaidAt + (i + 1) * BALANCE.npcRaidEveryMs;
     const throne: EnemySpec[] = [{ id: 'lord', level: lordLevel(p.castleLevel) }];
     const floors = [
-      ...p.floors.map((f) => ({ enemies: f.monsters.map((m) => ({ id: m.id, level: m.level })) })),
+      ...p.floors.map((f) => ({ enemies: f.monsters.map((m) => ({ id: m.id, level: m.level, mult: castleK })) })),
       { enemies: throne },
     ];
     const r = simulateAuto({ heroes: HERO_ORDER.map((id) => ({ id, level: heroLevel })), floors, seed: seedFrom(p.account, at) });

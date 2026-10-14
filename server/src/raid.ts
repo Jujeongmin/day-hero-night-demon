@@ -1,7 +1,7 @@
 import { BALANCE, castleAuraMult, HERO_ORDER, type HeroId, type Tactic } from './catalog';
 import { createFloorBattle, firstAliveHero, playRound, restedHeroesHp, ultReady, type BattleEvent, type EnemySpec, type FloorBattle } from './battle';
 import { snapshotLooks } from './economy';
-import { lordLevel, lordMult, monsterMult } from './growth';
+import { castleMonsterMult, lordLevel, lordMult, monsterMult } from './growth';
 import { seedFrom } from './rng';
 import type { CastleSnapshot, Run } from './state';
 
@@ -24,7 +24,9 @@ export function floorEnemies(s: CastleSnapshot, floor: number): EnemySpec[] {
   }
   // 각성 별은 능력치 배수로 곱한다
   return s.floors[floor].monsters.map((m) => {
-    const k = (s.mult ?? 1) * monsterMult(m.stars, m.gear) * castleAuraMult(s.lordSkin);
+    // 플레이어 성(mult 없음)은 성 레벨·마왕 각성 보너스(2026-10-14)
+    const castleK = s.mult === undefined ? castleMonsterMult(s.castleLevel, s.lordStars) : 1;
+    const k = (s.mult ?? 1) * monsterMult(m.stars, m.gear) * castleAuraMult(s.lordSkin) * castleK;
     return { id: m.id, level: m.level, ...(k !== 1 ? { mult: k } : {}), ...(m.gear ? { gear: m.gear } : {}), ...(m.stars ? { stars: m.stars } : {}) };
   });
 }

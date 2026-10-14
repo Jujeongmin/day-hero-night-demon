@@ -163,6 +163,8 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
   };
 
   const castleCost = castleUpgradeCost(s.castle.level);
+  // 성을 올리면 무엇이 열리든 모든 층 몬스터가 함께 세진다(2026-10-14)
+  const monstersUp = T.up.monstersUp(Math.round((1 + BALANCE.lordShare.monsterPerCastle) * 10) / 10);
   const nextCastle = (() => {
     const lv = s.castle.level;
     if (castleCost === null) return null;
@@ -199,7 +201,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
       </div>
       <div className={`up-row ${rec?.unit === 'castle' ? 'rec' : ''}`} data-unit="castle">
         <span className="up-pt"><Portrait id="castle" label={T.throne} /></span>
-        <span className="up-nm"><b>{T.castleLevel(s.castle.level)}{rec?.unit === 'castle' && <em className="rec-tag">{T.rec}</em>}</b>{nextCastle && <small>{nextCastle}</small>}</span>
+        <span className="up-nm"><b>{T.castleLevel(s.castle.level)}{rec?.unit === 'castle' && <em className="rec-tag">{T.rec}</em>}</b>{nextCastle && <small>{nextCastle} · {monstersUp}</small>}</span>
         <button className="btn small up-bt" disabled={busy || castleCost === null || home.gold < castleCost} onClick={() => act(() => api.upgrade('castle', null))}>
           {castleCost === null ? T.maxLevel : gold(castleCost)}
         </button>

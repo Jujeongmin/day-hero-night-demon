@@ -123,8 +123,10 @@ export const BALANCE = {
     unitCostBase: 5000,
     /** 전투력 표시 배수(2026-10-07 사용자, 시작 100 → 10,000) */
     powerScale: 100,
-    /** 성 1레벨 = 마왕 10레벨 */
+    /** 성 1레벨 = 마왕 10레벨(성 레벨마다 모든 몬스터도 강해진다: BALANCE.lordShare) */
     lordLevelsPerCastle: 10,
+    /** 성 강화 비용은 예전처럼 "마왕 10레벨치 강화 비용 합"으로 고정(마왕 레벨을 줄여도 비용은 그대로) */
+    castleCostLevels: 10,
     /** 2026-10-08 사용자 승인(무과금이 20분 안에 막힘): 3 → 1. 성 2를 7분쯤에 */
     castleCostFactor: 1,
     /** 공성 침입자 1명을 막을 때 골드(1단계 기준). 2026-10-08 사용자 승인: 500 → 1000(웨이브·방치·출정 골드 2배) */
@@ -260,6 +262,12 @@ export const BALANCE = {
    * 복수·튜토리얼은 입장권을 쓰지 않는다
    */
   sortieMax: 10,
+  /**
+   * 마왕 몰빵 구조 나누기(2026-10-14 사용자 승인 A안: 마왕 각성 효율이 너무 좋아 몬스터는 바로 죽고 마왕만 남았다).
+   * 성 레벨마다 모든 층 몬스터 ×(1 + monsterPerCastle)(곱, 마왕이 성마다 10레벨 크는 만큼 몬스터도), 마왕 각성 별마다 마왕 ×lordPerStar(전에는 ×1.1) · 모든 층 몬스터 ×monsterPerLordStar.
+   * 시뮬레이션(성2~6): 막는 웨이브 +6·+7·+3·−1·−3, 성 전체 힘 중 마왕 22·45·69·91·98% → 11·12·13·19·35%. 몬스터·용사 자기 각성(별마다 ×1.1)은 그대로
+   */
+  lordShare: { monsterPerCastle: 1.2, lordPerStar: 1.07, monsterPerLordStar: 1.03 },
   /** 원정 지도(2026-10-08 사용자 승인, campaign.ts): 한 장 10칸, 하루 5번, 처음 깨면 웨이브 골드 3번 몫, 장 끝 보스 칸은 영혼석 30 더. 두 칸마다 NPC 한 등급, 보스 칸은 두 등급 위 */
   campaign: { perChapter: 10, triesPerDay: 5, clearWaves: 3, bossSoul: 30, tierEvery: 2, bossTierUp: 2 },
   /** 출정 상대 다시 찾기(2026-10-08 사용자 승인): 하루 무료 횟수, 그 뒤 값 = 입장권 값 ÷ rerollCostDiv */

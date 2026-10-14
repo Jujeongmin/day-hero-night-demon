@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BALANCE, LORD, MONSTERS, scaleStats } from '../server/src/catalog';
 import { planAwaken } from '../server/src/castle';
 import { castlePower, snapshotPower } from '../server/src/economy';
-import { awakenCost, effLevel, lordLevel, starMult, unitPower } from '../server/src/growth';
+import { awakenCost, effLevel, lordLevel, lordMult, starMult, unitPower } from '../server/src/growth';
 import { activeTitle, seasonRewardSoul, titleForGlobalRank } from '../server/src/league';
 import { grantFor, soulPackAmount, SOUL_PACKS } from '../server/src/purchases';
 import { floorEnemies } from '../server/src/raid';
@@ -50,13 +50,16 @@ describe('awakening (2026-10-02: level 50 then awaken, level back to 1, stars up
     const floors = resolveFloors(s);
     expect(floors[0].monsters).toEqual([{ id: 'slime', level: effLevel(1, 5), stars: 5 }, { id: 'skeleton', level: 1 }]);
     const snap = { owner: 'a', nickname: 'x', castleLevel: 1, floors, throneEmpty: false, shadow: false, lordStars: 3 };
-    expect(floorEnemies(snap, 0)[0].mult).toBeCloseTo(starMult(5));
-    expect(floorEnemies(snap, 0)[1].mult).toBeUndefined();
-    expect(floorEnemies(snap, 1)[0].mult).toBeCloseTo(starMult(3));
+    // 2026-10-14: 마왕 별은 마왕 ×1.07, 모든 층 몬스터 ×1.03
+    const lordStarK = Math.pow(BALANCE.lordShare.monsterPerLordStar, 3);
+    expect(floorEnemies(snap, 0)[0].mult).toBeCloseTo(starMult(5) * lordStarK);
+    expect(floorEnemies(snap, 0)[1].mult).toBeCloseTo(lordStarK);
+    expect(floorEnemies(snap, 1)[0].mult).toBeCloseTo(lordMult(3, 0));
     const plain = castlePower(1, resolveFloors(defaultState('a', 0, 's1')));
-    const lordGain = unitPower(scaleStats(LORD.stats, lordLevel(1), starMult(3))) - unitPower(scaleStats(LORD.stats, lordLevel(1)));
-    const slimeGain = unitPower(scaleStats(MONSTERS.slime.stats, effLevel(1, 5), starMult(5))) - unitPower(scaleStats(MONSTERS.slime.stats, 1));
-    expect(castlePower(1, floors, 3)).toBe(Math.round(plain + lordGain + slimeGain));
+    const lordGain = unitPower(scaleStats(LORD.stats, lordLevel(1), lordMult(3, 0))) - unitPower(scaleStats(LORD.stats, lordLevel(1)));
+    const slimeGain = unitPower(scaleStats(MONSTERS.slime.stats, effLevel(1, 5), starMult(5) * lordStarK)) - unitPower(scaleStats(MONSTERS.slime.stats, 1));
+    const skeletonGain = unitPower(scaleStats(MONSTERS.skeleton.stats, 1, lordStarK)) - unitPower(scaleStats(MONSTERS.skeleton.stats, 1));
+    expect(Math.abs(castlePower(1, floors, 3) - (plain + lordGain + slimeGain + skeletonGain))).toBeLessThanOrEqual(1);
     expect(snapshotPower(snap)).toBe(castlePower(1, floors, 3));
   });
 

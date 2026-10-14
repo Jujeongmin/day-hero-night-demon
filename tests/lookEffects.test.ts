@@ -75,7 +75,8 @@ describe('lord look effects (2026-10-06)', () => {
     const floors: ResolvedFloor[] = [{ monsters: [{ id: 'slime', level: 5 }, { id: 'imp', level: 5 }] }] as never;
     expect(castlePower(3, floors, 0, 0, 'spend1')).toBeGreaterThan(castlePower(3, floors, 0, 0));
     const snap = { owner: 'x', nickname: 'x', castleLevel: 3, floors, throneEmpty: false, shadow: false, lordSkin: 'spend1' } as CastleSnapshot;
-    expect(floorEnemies(snap, 0)[0].mult).toBeCloseTo(1.1);
+    // 크라켄 +10% × 성 레벨 보너스(성 3: ×2.2²) — 2026-10-14
+    expect(floorEnemies(snap, 0)[0].mult).toBeCloseTo(1.1 * Math.pow(2.2, 2));
     expect(floorEnemies(snap, 1)[0].look).toBe('spend1');
   });
 });

@@ -250,7 +250,8 @@ describe('lord look bonus (2026-10-02)', () => {
     expect(lordMult(0, 0)).toBe(1);
     expect(lordMult(0, 1)).toBeCloseTo(1.1);
     expect(lordMult(0, 3)).toBeCloseTo(1.3);
-    expect(lordMult(2, 2)).toBeCloseTo(starMult(2) * 1.2);
+    // 마왕 별은 ×1.07(2026-10-14, 몬스터 별 ×1.1과 따로)
+    expect(lordMult(2, 2)).toBeCloseTo(Math.pow(1.07, 2) * 1.2);
     const floors = resolveFloors(defaultState('a', 0, 's1'));
     expect(castlePower(1, floors, 0, 2)).toBeGreaterThan(castlePower(1, floors, 0, 1));
     const snap = { owner: 'a', nickname: 'x', castleLevel: 1, floors, throneEmpty: false, shadow: false };
