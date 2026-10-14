@@ -25,7 +25,7 @@ import { rngNext, seedFrom } from './rng';
 import { addSpend, planSpendClaim, spendOf } from './spend';
 import { planSummon, planWearGear, pullsToLegend, pullsToPity, summonOf } from './summon';
 import {
-  canAdvance, dayKey, defaultState, GOLD_SCALE, heroGrowth, isNew, isStage, migrateGrowth, resetState, resolveFloors, withDefaults,
+  canAdvance, dayKey, defaultState, GOLD_SCALE, heroGrowth, raidHeroes, isNew, isStage, migrateGrowth, resetState, resolveFloors, withDefaults,
   type CastleSnapshot, type OnboardingState, type RaidLogEntry, type ResolvedFloor, type Run, type Target, type UserState,
 } from './state';
 
@@ -147,7 +147,7 @@ async function settleCampaign(me: string, s: UserState, run: Run, won: boolean, 
 
 /** 상대마다 내 용사로 이길 확률을 붙인다(목록을 열 때마다 새로: 용사를 키우면 바로 바뀐다). 성을 못 읽으면 빼지 않고 승률 없이 */
 async function withWinChance(me: string, s: UserState, targets: Target[], now: number): Promise<Target[]> {
-  const heroes = heroGrowth(s);
+  const heroes = raidHeroes(s);
   const out: Target[] = [];
   for (const t of targets) {
     try {
@@ -166,7 +166,7 @@ function scoutOf(floors: ResolvedFloor[]): NonNullable<Target['floors']> {
 
 function npcTargets(s: UserState, now: number, salt = 0): Target[] {
   // 고정 등급(모두에게 같은 난이도): 용사 평균 레벨 −1 / 같음 / +1. 다시 찾기(salt)마다 구성이 바뀐다
-  return npcTiersFor(heroGrowth(s)).map((tier, i) => {
+  return npcTiersFor(raidHeroes(s)).map((tier, i) => {
     const c = npcCastle(tier, `${dayKey(now)}-${salt}-${i}`);
     return {
       id: c.owner, nickname: c.nickname, power: snapshotPower(c),
@@ -1063,7 +1063,7 @@ export class Server {
       if (s.onboarding.at !== 'done' || !s.introDone) throw new Error('지금은 도전할 수 없다');
       if (bountyTriesLeft(s, now) <= 0) throw new Error('NO_BOUNTY');
       const today = bountyToday(s, now);
-      const snapshot = bountyCastle(today.day, heroGrowth(s));
+      const snapshot = bountyCastle(today.day, raidHeroes(s));
       return beginRun(me, s, snapshot, { isRevenge: false, revengeLogId: null, extra: { bounty: { ...today, tries: today.tries + 1 } } }, now);
     });
   }
@@ -1133,7 +1133,7 @@ export class Server {
       const s = await loadState(me, now);
       if (!s.run) throw new Error('공략 중이 아니다');
       if (!TACTICS.includes(tactic as Tactic)) throw new Error('잘못된 전술이다');
-      const r = beginFloor(s.run, tactic as Tactic, heroGrowth(s));
+      const r = beginFloor(s.run, tactic as Tactic, raidHeroes(s));
       await save(me, { run: r.run });
       return { run: r.run, events: r.events, status: runStatus(r.run) };
     });
@@ -1149,7 +1149,7 @@ export class Server {
       const now = Date.now();
       const s = await loadState(me, now);
       if (!s.run) throw new Error('공략 중이 아니다');
-      const r = autoRun(s.run, heroGrowth(s));
+      const r = autoRun(s.run, raidHeroes(s));
       if (r.steps.length) await save(me, { run: r.run });
       return { run: r.run, status: runStatus(r.run), steps: r.steps };
     });
@@ -1177,7 +1177,7 @@ export class Server {
       if (isBountyTarget(s.run.target)) throw new Error('현상수배는 부활할 수 없다');
       if (s.credits.revive < 1) throw new Error('NO_REVIVE_CREDIT');
       // 되살린 뒤 끝까지 이어서 계산한다(화면은 걸음을 재생)
-      const r = autoRun(reviveRun(s.run), heroGrowth(s));
+      const r = autoRun(reviveRun(s.run), raidHeroes(s));
       await save(me, { run: r.run, credits: { ...s.credits, revive: s.credits.revive - 1 } });
       return { run: r.run, status: runStatus(r.run), steps: r.steps };
     });

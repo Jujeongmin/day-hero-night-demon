@@ -31,3 +31,16 @@ describe('expedition map (2026-10-08)', () => {
     expect(campaignOf({}, NOW)).toEqual({ stage: 0, day: dayKey(NOW), tries: 0 });
   });
 });
+
+describe('raid heroes carry the castle strength (2026-10-14 option A)', () => {
+  it('castle level and lord stars add hero levels for raids only', async () => {
+    const { raidHeroes, heroGrowth, defaultState } = await import('../server/src/state');
+    const s = defaultState('a', 0, 's1');
+    expect(raidHeroes(s)).toEqual(heroGrowth(s));
+    const up = { ...s, castle: { ...s.castle, level: 3 }, stars: { lord: 5 } };
+    const plus = raidHeroes(up).knight.level - heroGrowth(up).knight.level;
+    // ×2.2² × 1.03⁵ ≈ +12.5 레벨
+    expect(plus).toBeGreaterThan(11);
+    expect(plus).toBeLessThan(14);
+  });
+});

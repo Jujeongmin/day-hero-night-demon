@@ -1,5 +1,5 @@
 import { BALANCE, MONSTERS, type HeroId, type MonsterId, type Tactic } from './catalog';
-import { awakenCost, effLevel, starMult } from './growth';
+import { awakenCost, effLevel, starMult, castleMonsterMult } from './growth';
 import type { FloorBattle } from './battle';
 
 /** 함정은 2026-09-29 폐기. 옛 저장본의 trap 칸은 읽지 않는다. */
@@ -329,6 +329,19 @@ export function heroGrowth(s: Pick<UserState, 'heroes' | 'stars'>): Record<HeroI
     const stars = s.stars?.[id] ?? 0;
     out[id] = { level: effLevel(s.heroes[id].level, stars), mult: starMult(stars) };
   }
+  return out;
+}
+
+/**
+ * 출정 나가는 용사(2026-10-14 사용자 승인 A안: "전투력이 높다 했는데 지면 억울하다").
+ * 성 레벨·마왕 별이 몬스터에게 주는 배수(castleMonsterMult)를 용사에게도 레벨로 환산해 더한다(×2.2 ≈ +5.6레벨).
+ * NPC 상대 등급·현상수배 보스·예상 승률이 모두 이 레벨을 기준으로 해서 같이 맞춰진다. 공성 방어·약탈 보너스(heroGrowth)에는 넣지 않는다
+ */
+export function raidHeroes(s: Pick<UserState, 'heroes' | 'stars' | 'castle'>): Record<HeroId, { level: number; mult: number }> {
+  const plus = Math.log(castleMonsterMult(s.castle.level, s.stars?.lord ?? 0)) / Math.log(BALANCE.growth.statGrowth);
+  const base = heroGrowth(s);
+  const out = {} as Record<HeroId, { level: number; mult: number }>;
+  for (const id of Object.keys(base) as HeroId[]) out[id] = { level: base[id].level + plus, mult: base[id].mult };
   return out;
 }
 

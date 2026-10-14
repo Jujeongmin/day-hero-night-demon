@@ -4,7 +4,7 @@ import { lordSoulLeft, sortiesLeft, sortieTicketCost } from '../../server/src/so
 import { bountyOf, bountyToday, bountyTriesLeft } from '../../server/src/bounty';
 import { campaignCastle, campaignOf, campaignReward, campaignTriesLeft, stageLabel } from '../../server/src/campaign';
 import { useEffect, useMemo, useState } from 'react';
-import { dayKey, heroGrowth, type Target } from '../../server/src/state';
+import { dayKey, raidHeroes, type Target } from '../../server/src/state';
 import { winChance } from '../../server/src/raid';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
@@ -73,7 +73,7 @@ function CampaignMap(props: { home: HomeData; busy: boolean; onFight: () => void
   const reward = campaignReward(c.stage, home.state.siege.best);
   const power = snapshotPower(castle);
   // 원정 칸은 정해진 성이라 화면에서 바로 싸워 본다
-  const win = useMemo(() => winChance(castle, heroGrowth(home.state), 'campaign'), [c.stage, home.state.heroes, home.state.stars]);
+  const win = useMemo(() => winChance(castle, raidHeroes(home.state), 'campaign'), [c.stage, home.state.heroes, home.state.stars, home.state.castle.level]);
   const d = difficultyOf(win);
   const cleared = c.stage - first;
   const node = (i: number) => {
