@@ -156,6 +156,7 @@ export const ja: Strings = {
     tab: '遠征',
     raidTab: '略奪',
     chapter: (n: number) => `第${n}章`,
+    progress: (n: number, max: number) => `進行 ${n}/${max}`,
     stage: (c: number, s: number) => `遠征 ${c}-${s}`,
     go: (c: number, s: number) => `${c}-${s} に挑戦`,
     tries: (n: number, max: number) => `残り挑戦 ${n}/${max}`,

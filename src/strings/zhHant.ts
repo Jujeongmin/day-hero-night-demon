@@ -156,6 +156,7 @@ export const zhHant: Strings = {
     tab: '遠征',
     raidTab: '掠奪',
     chapter: (n: number) => `第${n}章`,
+    progress: (n: number, max: number) => `進度 ${n}/${max}`,
     stage: (c: number, s: number) => `遠征 ${c}-${s}`,
     go: (c: number, s: number) => `挑戰 ${c}-${s}`,
     tries: (n: number, max: number) => `剩餘挑戰 ${n}/${max}`,

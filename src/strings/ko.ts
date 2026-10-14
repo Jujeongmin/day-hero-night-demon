@@ -158,6 +158,7 @@ export const ko = {
     tab: '원정',
     raidTab: '약탈',
     chapter: (n: number) => `${n}장`,
+    progress: (n: number, max: number) => `진행 ${n}/${max}`,
     stage: (c: number, s: number) => `원정 ${c}-${s}`,
     go: (c: number, s: number) => `${c}-${s} 도전`,
     tries: (n: number, max: number) => `남은 도전 ${n}/${max}`,

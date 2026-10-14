@@ -774,7 +774,7 @@ span.up-pt { cursor: default; }
    위: 진짜 탭 + 입장권 칩 / 현상수배: 밝은 양피지 포스터(bubble.png 9조각) / 상대: 어두운 카드(frame_sq) 한 장씩, 주 버튼만 금색 */
 .match-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; border-bottom: 2px solid #6b2a3a; margin-bottom: 4px; }
 .match-tabs { display: flex; gap: 2px; }
-.match-tab { min-width: 72px; padding: 6px 12px 5px; background: none; border: 8px solid transparent; border-bottom: 0; border-image: url(/ui/frame_sq.png) 10 10 0 fill / 8px 8px 0 stretch; image-rendering: pixelated; font: inherit; font-size: 15px; color: var(--muted); opacity: .55; cursor: pointer; }
+.match-tab { min-width: 72px; padding: 2px 12px 9px; background: none; border: 8px solid transparent; border-bottom: 0; border-image: url(/ui/frame_sq.png) 10 10 0 fill / 8px 8px 0 stretch; image-rendering: pixelated; font: inherit; font-size: 15px; color: var(--muted); opacity: .55; cursor: pointer; }
 .match-tab.on { color: var(--gold); opacity: 1; }
 .ticket-chip { display: inline-flex; align-items: center; gap: 3px; font-size: 13px; margin-bottom: 4px; }
 .ticket-chip img { width: 18px; height: 18px; image-rendering: pixelated; }
@@ -813,15 +813,30 @@ span.up-pt { cursor: default; }
 .match-tabs { display: flex; gap: 4px; }
 .match-tabs .btn { flex: 1; }
 .match-tabs .btn.on { color: var(--gold); filter: brightness(1.2); }
-.campaign { display: flex; flex-direction: column; gap: 6px; }
-.camp-title { font-weight: 400; color: var(--gold); text-align: center; }
-.camp-row { display: flex; justify-content: space-between; gap: 4px; padding: 0 8px; }
+/* 원정 A안(2026-10-14): 머리 줄(장·진행·남은 도전 칩), 길로 이은 칸, 지금 칸 카드(약탈 카드와 같은 모양) */
+.campaign { display: flex; flex-direction: column; gap: 8px; }
+.camp-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.camp-head b { font-weight: 400; font-size: 17px; color: var(--gold); }
+.camp-head b small { font-size: 12px; color: var(--muted); margin-left: 4px; }
+.camp-path { display: flex; flex-direction: column; align-items: stretch; padding: 4px 6px; }
+.camp-row { display: flex; align-items: center; }
 .camp-row.rev { flex-direction: row-reverse; }
-.camp-node { display: grid; place-items: center; width: 44px; height: 44px; font-size: 14px; color: var(--muted); border: 8px solid transparent; border-image: url(/ui/pill.png) 8 fill / 8px stretch; image-rendering: pixelated; }
-.camp-node.done { color: #7dff8a; }
-.camp-node.now { color: var(--gold); filter: brightness(1.35); animation: dotPop 1.4s ease-in-out infinite; }
-.camp-node.lock { opacity: .55; }
-.camp-node.boss .portrait { width: 30px; height: 30px; }
+.camp-link { flex: 1; height: 0; border-top: 3px dashed #6b2a3a; margin: 0 2px; }
+.camp-link.done { border-top-color: #7dff8a99; }
+.camp-turn { align-self: flex-end; width: 0; height: 14px; margin-right: 21px; border-right: 3px dashed #6b2a3a; }
+.camp-turn.done { border-right-color: #7dff8a99; }
+.camp-node { position: relative; flex: none; display: grid; place-items: center; width: 42px; height: 42px; font-size: 14px; color: var(--muted); border: 8px solid transparent; border-image: url(/ui/pill.png) 8 fill / 8px stretch; image-rendering: pixelated; }
+.camp-node.done { color: #7dff8a; opacity: .7; }
+.camp-node.now { width: 50px; height: 50px; font-size: 18px; color: var(--gold); filter: brightness(1.35) drop-shadow(0 0 6px #ffcf4d88); animation: dotPop 1.4s ease-in-out infinite; }
+.camp-node.lock { opacity: .45; }
+.camp-node.boss { width: 54px; height: 54px; }
+.camp-node.boss .portrait { width: 34px; height: 34px; }
+.camp-node.boss em { position: absolute; bottom: -14px; left: 50%; translate: -50% 0; font-style: normal; font-size: 10px; color: var(--ruby); text-shadow: 0 1px 0 #000; }
+.camp-card .scout { padding-left: 52px; }
+.badge.boss { color: var(--ruby); border-color: #ff4a5e88; }
+.camp-hint { font-size: 11px; color: var(--muted); text-align: center; }
+:lang(ko) .camp-hint { word-break: keep-all; }
+.camp-first { font-size: 10px; color: var(--muted); margin-bottom: -3px; }
 .coin-ic { display: inline-block; width: 14px; height: 14px; margin: 0 1px; vertical-align: -2px; image-rendering: pixelated; }
 .nowrap { white-space: nowrap; }
 /* 정찰·다시 찾기 */

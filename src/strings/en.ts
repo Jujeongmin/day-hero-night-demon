@@ -156,6 +156,7 @@ export const en: Strings = {
     tab: 'Expedition',
     raidTab: 'Raid',
     chapter: (n: number) => `Chapter ${n}`,
+    progress: (n: number, max: number) => `${n}/${max} cleared`,
     stage: (c: number, s: number) => `Expedition ${c}-${s}`,
     go: (c: number, s: number) => `Fight ${c}-${s}`,
     tries: (n: number, max: number) => `Tries ${n}/${max}`,

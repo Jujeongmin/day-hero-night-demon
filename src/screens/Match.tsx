@@ -67,32 +67,58 @@ function CampaignMap(props: { home: HomeData; busy: boolean; onFight: () => void
   const left = campaignTriesLeft(home.state, now);
   const castle = campaignCastle(c.stage);
   const reward = campaignReward(c.stage, home.state.siege.best);
+  const power = snapshotPower(castle);
+  const d = difficulty(power, home.power ?? 0);
+  const cleared = c.stage - first;
   const node = (i: number) => {
     const n = first + i;
     const l = stageLabel(n);
     const state = n < c.stage ? 'done' : n === c.stage ? 'now' : 'lock';
     return (
-      <span key={i} className={`camp-node ${state} ${l.boss ? 'boss' : ''}`}>
-        {l.boss ? <Portrait id="lord" label={T.campaign.boss} inner={30} /> : state === 'done' ? '✓' : l.slot}
+      <span key={`n${i}`} className={`camp-node ${state} ${l.boss ? 'boss' : ''}`} aria-label={T.campaign.stage(l.chapter, l.slot)}>
+        {l.boss ? <><Portrait id="lord" label={T.campaign.boss} inner={34} /><em>BOSS</em></> : state === 'done' ? '✓' : l.slot}
       </span>
     );
   };
+  // 칸 사이를 잇는 길(깬 구간은 밝게)
+  const link = (i: number) => <span key={`l${i}`} className={`camp-link ${first + i + 1 <= c.stage ? 'done' : ''}`} />;
   const half = per / 2;
+  const row = (from: number) => Array.from({ length: half }, (_, k) => [node(from + k), k < half - 1 ? link(from + k) : null]).flat();
   return (
+    // 2026-10-14 A안: 위 장 제목·진행·남은 도전 칩 / 길로 이은 10칸 / 지금 칸은 약탈과 같은 카드(정찰 늘 펼침)
     <div className="campaign">
-      <b className="camp-title">{T.campaign.chapter(cur.chapter)}</b>
-      <div className="camp-row">{Array.from({ length: half }, (_, i) => node(i))}</div>
-      <div className="camp-row rev">{Array.from({ length: half }, (_, i) => node(half + i))}</div>
-      <div className="line">
-        <span>
-          <b>{T.campaign.stage(cur.chapter, cur.slot)}</b>{cur.boss && <span className="badge">{T.campaign.boss}</span>}
-          <br />
-          <small>{T.power} {formatNum(snapshotPower(castle))} · <span className="nowrap">{T.campaign.firstClear} <img className="coin-ic" src="icons/gold.png" alt="" draggable={false} />{formatNum(reward.gold)}{reward.soul > 0 && <> <img className="coin-ic" src="icons/soul.png" alt="" draggable={false} />{reward.soul}</>}</span></small>
-        </span>
-        <button className="btn small gold" disabled={props.busy || left <= 0} onClick={props.onFight}>{T.campaign.go(cur.chapter, cur.slot)}</button>
+      <div className="camp-head">
+        <b>{T.campaign.chapter(cur.chapter)} <small>{T.campaign.progress(cleared, per)}</small></b>
+        <span className="pill ticket-chip"><img src="icons/stat_atk.png" alt="" draggable={false} />{T.campaign.tries(left, BALANCE.campaign.triesPerDay)}</span>
       </div>
-      <Scout t={{ floors: castle.floors.map((f) => f.monsters.map((m) => ({ id: m.id }))), lord: true } as Target} />
-      <small className="muted">{T.campaign.tries(left, BALANCE.campaign.triesPerDay)} · {T.campaign.hint}</small>
+      <div className="camp-path">
+        <div className="camp-row">{row(0)}</div>
+        <span className={`camp-turn ${first + half <= c.stage ? 'done' : ''}`} />
+        <div className="camp-row rev">{row(half)}</div>
+      </div>
+      <div className="target-card camp-card">
+        <div className="target-main">
+          <span className="target-face"><Portrait id={cur.boss ? 'lord' : 'captain'} label="" inner={40} /></span>
+          <span className="target-info">
+            <b>{T.campaign.stage(cur.chapter, cur.slot)}</b>
+            <span className="target-tags">
+              {cur.boss && <span className="badge boss">{T.campaign.boss}</span>}
+              <span className={`diff ${d}`}>{T.diff[d]}</span>
+            </span>
+            <small className="target-power"><img className="coin-ic" src="icons/stat_atk.png" alt="" draggable={false} />{formatNum(power)}</small>
+          </span>
+          <span className="target-go">
+            <small className="camp-first">{T.campaign.firstClear}</small>
+            <span className="target-loot">
+              <img className="coin-ic" src="icons/gold.png" alt="" draggable={false} />{formatNum(reward.gold)}
+              {reward.soul > 0 && <><img className="coin-ic" src="icons/soul.png" alt="" draggable={false} />{reward.soul}</>}
+            </span>
+            <button className="btn small gold" disabled={props.busy || left <= 0} onClick={props.onFight}>{T.campaign.go(cur.chapter, cur.slot)}</button>
+          </span>
+        </div>
+        <Scout t={{ floors: castle.floors.map((f) => f.monsters.map((m) => ({ id: m.id }))), lord: true } as Target} />
+      </div>
+      <small className="camp-hint">{T.campaign.hint}</small>
     </div>
   );
 }
