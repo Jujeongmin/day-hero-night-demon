@@ -770,20 +770,43 @@ span.up-pt { cursor: default; }
 .stage-spot, .pick { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .match-intro { margin: 0 0 8px; font-size: 13px; line-height: 1.4; color: var(--bone); }
 .ticket-timer { margin-left: 4px; font-size: .75em; color: var(--muted); }
-/* 현상수배 카드(2026-10-08 승인: 출정 창 맨 위) */
-.bounty-card { display: flex; align-items: center; gap: 8px; padding: 6px 4px 8px; border-bottom: 1px dashed #efe3c833; }
-.bounty-boss .portrait { width: 56px; height: 56px; }
-.bounty-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-.bounty-title { color: var(--gold); font-size: 11px; }
-.bounty-info b { font-weight: 400; font-size: 16px; color: var(--bone); }
-.bounty-weak { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #7dff8a; }
-.bounty-weak .portrait { width: 26px; height: 26px; }
-/* 현상수배 남은 시간 막대(2026-10-13): 로딩 막대 모양 그대로, 전투 화면 위쪽 */
-.bounty-time { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 24px 0; }
-.bounty-time .loading-bar { max-width: 100%; }
-.bounty-time .loading-fill, .bounty-time .loading-knob { transition: none; }
-.bounty-time small { font-size: 13px; color: var(--bone); text-shadow: 0 2px 0 #000; }
-.giveup-text { margin: 4px 2px 8px; text-align: center; color: var(--bone); }
+/* 출정 창 A안(2026-10-14 사용자 승인: 다 똑같아 보여 구분이 안 됐다).
+   위: 진짜 탭 + 입장권 칩 / 현상수배: 밝은 양피지 포스터(bubble.png 9조각) / 상대: 어두운 카드(frame_sq) 한 장씩, 주 버튼만 금색 */
+.match-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; border-bottom: 2px solid #6b2a3a; margin-bottom: 4px; }
+.match-tabs { display: flex; gap: 2px; }
+.match-tab { min-width: 72px; padding: 6px 12px 5px; background: none; border: 8px solid transparent; border-bottom: 0; border-image: url(/ui/frame_sq.png) 10 10 0 fill / 8px 8px 0 stretch; image-rendering: pixelated; font: inherit; font-size: 15px; color: var(--muted); opacity: .55; cursor: pointer; }
+.match-tab.on { color: var(--gold); opacity: 1; }
+.ticket-chip { display: inline-flex; align-items: center; gap: 3px; font-size: 13px; margin-bottom: 4px; }
+.ticket-chip img { width: 18px; height: 18px; image-rendering: pixelated; }
+.wanted { margin: 4px 0 6px; border: 1px solid transparent; border-image: url(/ui/bubble.png) 21 22 16 28 fill / 42px 44px 32px 56px round; padding: 14px 22px 14px 48px; image-rendering: pixelated; color: #3a1c14; filter: drop-shadow(0 2px 4px #000a); }
+.wanted-title { display: block; font-size: 12px; color: #9a1426; }
+.wanted-body { display: flex; align-items: center; gap: 10px; }
+.wanted-boss { flex: none; width: 50px; display: grid; place-items: center; }
+.wanted-boss .portrait { width: 56px; height: 60px; border: 0; overflow: visible; }
+.wanted-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.wanted-info b { font-weight: 400; font-size: 18px; color: #2a0e0a; }
+.wanted-info small { font-size: 12px; color: #6a4a3a; }
+.wanted-weak { display: flex; align-items: center; gap: 3px; font-size: 12px; color: #1f7a2e; word-break: keep-all; }
+.wanted-weak .portrait { width: 24px; height: 24px; border: 0; overflow: visible; }
+.wanted-go { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: none; }
+.wanted-go small { font-size: 11px; color: #6a4a3a; }
+.sheet-body h4.match-sub { margin: 6px 2px 2px; color: var(--bone); font-size: 14px; }
+.target-card { border: 8px solid transparent; border-image: url(/ui/frame_sq.png) 10 fill / 8px stretch; image-rendering: pixelated; padding: 2px 4px; }
+.target-card.open { filter: brightness(1.12); }
+.target-main { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.target-face .portrait { width: 44px; height: 44px; }
+.target-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.target-info b { font-weight: 400; font-size: 15px; color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.target-tags { display: flex; gap: 4px; }
+.badge.player { color: #7dd3ff; border-color: #7dd3ff88; }
+.badge.npc { color: var(--muted); border-color: #efe3c855; }
+.target-power { display: flex; align-items: center; gap: 2px; font-size: 12px; color: var(--muted); }
+.target-power em { margin-left: auto; font-style: normal; font-size: 11px; opacity: .8; }
+.target-go { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex: none; }
+.target-loot { display: inline-flex; align-items: center; gap: 2px; font-size: 15px; color: var(--gold); }
+.target-loot .coin-ic { width: 16px; height: 16px; }
+.reroll { align-self: center; margin-top: 6px; padding: 4px 8px; background: none; border: 0; font: inherit; font-size: 13px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.reroll:disabled { opacity: .45; cursor: default; }
 .bounty-result { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 6px; }
 .bounty-result b { font-weight: 400; font-size: 18px; color: var(--bone); }
 /* 출정 창 탭·원정 지도(2026-10-08 승인) */
@@ -802,16 +825,12 @@ span.up-pt { cursor: default; }
 .coin-ic { display: inline-block; width: 14px; height: 14px; margin: 0 1px; vertical-align: -2px; image-rendering: pixelated; }
 .nowrap { white-space: nowrap; }
 /* 정찰·다시 찾기 */
-.target { border-bottom: 1px dashed #efe3c833; padding-bottom: 4px; }
-.target > .line { border-bottom: 0; padding-bottom: 0; }
-.target-btns { display: flex; gap: 4px; flex: none; }
 .scout { display: flex; flex-wrap: wrap; gap: 4px 10px; padding: 4px 2px 2px; }
 .scout-floor { display: inline-flex; align-items: center; gap: 2px; }
 .scout-floor small { color: var(--muted); font-size: 11px; margin-right: 2px; }
 .scout-floor .portrait { width: 34px; height: 34px; }
 /* 작은 초상화(정찰·원정 보스 칸·약점 용사)는 틀 없이 그림만 크게, 어두운 그림이 묻히지 않게 조금 밝게(2026-10-08 사용자) */
 .scout-floor .portrait, .camp-node .portrait, .bounty-weak .portrait { border: 0; overflow: visible; filter: brightness(1.2) drop-shadow(0 1px 0 #000); }
-.reroll { align-self: center; margin-top: 4px; }
 .edit-hint { margin: 10px 2px 6px; font-size: 13px; color: var(--muted); }
 .pick { position: relative; }
 .pick.placed { filter: brightness(.8); }

@@ -76,6 +76,8 @@ export const zhHant: Strings = {
   defeat: '全滅',
   toHome: '回主頁',
   npcTag: 'NPC',
+  playerTag: '玩家',
+  pickTarget: '選擇要搶的城堡',
   power: '戰力',
   estLoot: '預計掠奪',
   speed: (x: number) => `${x}×`,

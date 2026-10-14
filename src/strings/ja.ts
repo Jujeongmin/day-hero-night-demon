@@ -76,6 +76,8 @@ export const ja: Strings = {
   defeat: '全滅',
   toHome: 'ホームへ',
   npcTag: 'NPC',
+  playerTag: 'ユーザー',
+  pickTarget: '襲う城を選ぶ',
   power: '戦闘力',
   estLoot: '予想略奪',
   speed: (x: number) => `${x}×`,

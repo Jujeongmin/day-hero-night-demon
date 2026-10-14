@@ -76,6 +76,8 @@ export const en: Strings = {
   defeat: 'Wiped out',
   toHome: 'Home',
   npcTag: 'NPC',
+  playerTag: 'Player',
+  pickTarget: 'Pick a castle to raid',
   power: 'Power',
   estLoot: 'Est. loot',
   speed: (x: number) => `${x}×`,

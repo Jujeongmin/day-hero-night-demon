@@ -34,17 +34,21 @@ function BountyCard(props: { api: Api; home: HomeData; busy: boolean; onFight: (
     api.getBountyRank().then((r) => setRank(r.rank)).catch(() => undefined);
   }, [api, today.dmg]);
   return (
-    <div className="bounty-card">
-      <span className="bounty-boss"><Portrait id={monsterSpriteId(boss, undefined)} label={T.units[boss]} inner={44} /></span>
-      <span className="bounty-info">
-        <small className="bounty-title">{T.bounty.title}</small>
-        <b>{T.bounty.name(T.units[boss])}</b>
-        <span className="bounty-weak"><Portrait id={weak} label={T.units[weak]} inner={26} />{T.bounty.weak(T.units[weak])}</span>
-        <small className="muted">
-          {T.bounty.best(Math.round(today.best * 100))} · {T.bounty.tries(left, BALANCE.bounty.triesPerDay)}{rank !== null && <> · {T.bounty.rank(rank)}</>}
-        </small>
-      </span>
-      <button className="btn small gold" disabled={props.busy || left <= 0} onClick={props.onFight}>{T.bounty.go}</button>
+    // 2026-10-14 A안: 밝은 양피지 포스터(튜토리얼 말풍선 틀)로 다른 줄과 확실히 구분
+    <div className="wanted">
+      <small className="wanted-title">WANTED · {T.bounty.title}</small>
+      <div className="wanted-body">
+        <span className="wanted-boss"><Portrait id={monsterSpriteId(boss, undefined)} label={T.units[boss]} inner={56} /></span>
+        <span className="wanted-info">
+          <b>{T.bounty.name(T.units[boss])}</b>
+          <span className="wanted-weak"><Portrait id={weak} label={T.units[weak]} inner={24} />{T.bounty.weak(T.units[weak])}</span>
+          <small>{T.bounty.best(Math.round(today.best * 100))}{rank !== null && <> · {T.bounty.rank(rank)}</>}</small>
+        </span>
+        <span className="wanted-go">
+          <button className="btn gold" disabled={props.busy || left <= 0} onClick={props.onFight}>{T.bounty.go}</button>
+          <small>{T.bounty.tries(left, BALANCE.bounty.triesPerDay)}</small>
+        </span>
+      </div>
     </div>
   );
 }
@@ -182,39 +186,54 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
     <>
       {intro && <p className="match-intro">{T.matchIntro}</p>}
       {!tutorial && !intro && (
-        <div className="match-tabs">
-          <button className={`btn small ${tab === 'raid' ? 'on' : 'ghost'}`} onClick={() => setTab('raid')}>{T.campaign.raidTab}</button>
-          <button className={`btn small ${tab === 'campaign' ? 'on' : 'ghost'}`} onClick={() => setTab('campaign')}>{T.campaign.tab}</button>
+        <div className="match-top">
+          <span className="match-tabs" role="tablist">
+            <button role="tab" aria-selected={tab === 'raid'} className={`match-tab ${tab === 'raid' ? 'on' : ''}`} onClick={() => setTab('raid')}>{T.campaign.raidTab}</button>
+            <button role="tab" aria-selected={tab === 'campaign'} className={`match-tab ${tab === 'campaign' ? 'on' : ''}`} onClick={() => setTab('campaign')}>{T.campaign.tab}</button>
+          </span>
+          {tab === 'raid' && (
+            <span className="pill ticket-chip" aria-label={T.sortieInfo(left, BALANCE.sortieMax, lordSoulLeft(home.state, now), BALANCE.lordSoulPerDay)}>
+              <img src="ui/ticket.png" alt="" draggable={false} />{left}/{BALANCE.sortieMax}
+            </span>
+          )}
         </div>
       )}
       {!tutorial && !intro && tab === 'campaign' && <CampaignMap home={home} busy={busy} onFight={() => run(() => api.startCampaign())} />}
       {(tutorial || intro || tab === 'raid') && <>
       {!tutorial && !intro && <BountyCard api={api} home={home} busy={busy} onFight={() => run(() => api.startBounty())} />}
-      {!tutorial && !intro && (
-        <div className="line">
-          <small className="muted">{T.sortieInfo(left, BALANCE.sortieMax, lordSoulLeft(home.state, now), BALANCE.lordSoulPerDay)}</small>
-        </div>
-      )}
+      {!tutorial && !intro && <h4 className="match-sub">{T.pickTarget}</h4>}
       {!targets && <p className="muted">{T.loading}</p>}
-      {targets?.map((t, i) => (
-        <div className="target" key={t.id}>
-          <div className="line">
-            <span>
-              <b>{displayName(t.nickname)}</b> <VipBadge level={t.vip} /> {t.npc && <span className="badge">{T.npcTag}</span>}{' '}
-              {(() => { const d = diffOf(t); return <span className={`diff ${d}`}>{T.diff[d]}</span>; })()}
-              <br />
-              <small>{T.power} {formatNum(t.power)}{!intro && <> · {T.estLoot} {formatNum(t.estLoot)}</>}</small>
-            </span>
-            <span className="target-btns">
-              {t.floors && <button className={`btn small ghost ${open === t.id ? 'on' : ''}`} onClick={() => setOpen(open === t.id ? null : t.id)}>{T.scout}{open === t.id ? '▴' : '▾'}</button>}
-              <button className="btn small" data-tut={i === 0 ? 'match-first' : undefined} disabled={busy || (!tutorial && !intro && left <= 0)} onClick={() => run(() => (intro ? api.startIntroRaid() : api.startRaid(t.id)))}>{T.sortie}</button>
-            </span>
+      {targets?.map((t, i) => {
+        const d = diffOf(t);
+        const scoutable = !!t.floors;
+        return (
+          // 상대 카드(2026-10-14 A안): 왼쪽 얼굴(유저 = 마왕, NPC = 용사단장), 이름·유저/NPC·난이도, 전투력 / 오른쪽 예상 약탈과 [출정].
+          // 카드를 누르면 정찰이 펼쳐진다
+          <div className={`target-card ${open === t.id ? 'open' : ''}`} key={t.id}>
+            <div className="target-main" role={scoutable ? 'button' : undefined} onClick={scoutable ? () => setOpen(open === t.id ? null : t.id) : undefined}>
+              <span className="target-face"><Portrait id={t.npc ? 'captain' : 'lord'} label="" inner={40} /></span>
+              <span className="target-info">
+                <b>{displayName(t.nickname)} <VipBadge level={t.vip} /></b>
+                <span className="target-tags">
+                  <span className={`badge ${t.npc ? 'npc' : 'player'}`}>{t.npc ? T.npcTag : T.playerTag}</span>
+                  <span className={`diff ${d}`}>{T.diff[d]}</span>
+                </span>
+                <small className="target-power"><img className="coin-ic" src="icons/stat_atk.png" alt="" draggable={false} />{formatNum(t.power)}{scoutable && <em>{T.scout}{open === t.id ? '▴' : '▾'}</em>}</small>
+              </span>
+              <span className="target-go">
+                {!intro && <span className="target-loot"><img className="coin-ic" src="icons/gold.png" alt="" draggable={false} />{formatNum(t.estLoot)}</span>}
+                <button
+                  className="btn small gold" data-tut={i === 0 ? 'match-first' : undefined} disabled={busy || (!tutorial && !intro && left <= 0)}
+                  onClick={(e) => { e.stopPropagation(); void run(() => (intro ? api.startIntroRaid() : api.startRaid(t.id))); }}
+                >{T.sortie}</button>
+              </span>
+            </div>
+            {open === t.id && <Scout t={t} />}
           </div>
-          {open === t.id && <Scout t={t} />}
-        </div>
-      ))}
+        );
+      })}
       {!tutorial && !intro && targets && (
-        <button className="btn small ghost reroll" disabled={busy || (freeLeft <= 0 && home.gold < rerollCost)} onClick={reroll}>{T.reroll(freeLeft, rerollCost)}</button>
+        <button className="reroll" disabled={busy || (freeLeft <= 0 && home.gold < rerollCost)} onClick={reroll}>↻ {T.reroll(freeLeft, rerollCost)}</button>
       )}
       </>}
     </>
