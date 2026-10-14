@@ -182,6 +182,13 @@ export const BALANCE = {
   lordAttack: { intervalMult: 0.5, damageMult: 0.5 },
   /** 층 하나 전투 시간 상한(넘으면 침입한 쪽 패배) */
   maxBattleMs: 30_000,
+  /** 공성 웨이브는 시간 제한 없이 끝까지 싸운다(2026-10-14 사용자: 2배속 10초쯤에 안 끝났는데 다음 웨이브로 넘어갔다). 연장전(siegeOvertime)으로 끝나므로 이 상한은 안전장치일 뿐 */
+  siegeBattleCapMs: 600_000,
+  /**
+   * 공성 연장전(2026-10-14 사용자 승인): 골렘+성직자처럼 서로 못 쓰러뜨리는 교착을 끝낸다.
+   * 층 전투가 afterMs를 넘으면 양쪽 피해가 doubleEveryMs마다 2배(연속으로 커진다)
+   */
+  siegeOvertime: { afterMs: 30_000, doubleEveryMs: 10_000 },
   /** 궁극기 기 충전(초당) */
   ultChargePerSec: 34,
   /** 층을 넘어갈 때 살아 있는 용사가 회복하는 최대 체력 비율 */

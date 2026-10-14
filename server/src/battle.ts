@@ -51,6 +51,10 @@ export interface FloorBattle {
   ultUsed: boolean;
   raiseUsed: boolean;
   outcome: 'ongoing' | 'won' | 'lost';
+  /** 이 전투의 시간 제한(ms). 없으면 BALANCE.maxBattleMs(출정·현상수배 30초). 공성은 끝까지 싸운다(siegeBattleCapMs) */
+  limitMs?: number;
+  /** 연장전: 오래 끌면 양쪽 피해가 커진다(공성만, BALANCE.siegeOvertime) */
+  overtime?: boolean;
 }
 
 /** at: 일어난 전투 시각(ms). 화면이 이 시각에 맞춰 재생한다 */
@@ -104,7 +108,7 @@ export function attackIntervalMs(f: Pick<Fighter, 'spd' | 'web'> & { kind?: Unit
 }
 
 export function createFloorBattle(input: {
-  heroes: HeroSpec[]; enemies: EnemySpec[]; tactic: Tactic; seed: number;
+  heroes: HeroSpec[]; enemies: EnemySpec[]; tactic: Tactic; seed: number; limitMs?: number; overtime?: boolean;
 }): { battle: FloorBattle; events: BattleEvent[] } {
   const fighters: Fighter[] = [];
   for (const h of input.heroes) {
@@ -134,6 +138,8 @@ export function createFloorBattle(input: {
   const battle: FloorBattle = {
     round: 0, t: 0, rng: input.seed >>> 0, fighters, tactic: input.tactic,
     ultCharge: 0, ultUsed: false, raiseUsed: false, outcome: 'ongoing',
+    ...(input.limitMs ? { limitMs: input.limitMs } : {}),
+    ...(input.overtime ? { overtime: true } : {}),
   };
   const events: BattleEvent[] = [];
   checkOutcome(battle, events);
@@ -162,7 +168,7 @@ export function stepInPlace(b: FloorBattle, ult: HeroId | null, out: BattleEvent
   if (!b.ultUsed) b.ultCharge = Math.min(100, b.ultCharge + (BALANCE.ultChargePerSec * (now - b.t)) / 1000);
   b.t = now;
   b.round += 1;
-  if (b.t >= BALANCE.maxBattleMs) {
+  if (b.t >= (b.limitMs ?? BALANCE.maxBattleMs)) {
     b.outcome = 'lost';
     events.push({ t: 'end', outcome: 'lost' });
   } else {
@@ -324,10 +330,18 @@ function chooseTarget(b: FloorBattle, f: Fighter): Fighter | null {
   return pick(b, front.length ? front : foes);
 }
 
+/** 연장전 피해 배수: afterMs가 지나면 doubleEveryMs마다 2배 */
+export function overtimeMult(b: Pick<FloorBattle, 't' | 'overtime'>): number {
+  const O = BALANCE.siegeOvertime;
+  if (!b.overtime || b.t <= O.afterMs) return 1;
+  return Math.pow(2, (b.t - O.afterMs) / O.doubleEveryMs);
+}
+
 function strike(b: FloorBattle, f: Fighter, t: Fighter, mult: number, def: number, events: BattleEvent[], skill?: SkillId): void {
   // 마왕은 2배 자주 치는 대신 한 방이 절반(초당 피해는 같다)
   const raw = f.dmgMult ? Math.round(calcDamage(f.atk, mult, def) * f.dmgMult) : calcDamage(f.atk, mult, def);
-  const dmg = f.kind === 'lord' ? Math.max(1, Math.round(raw * BALANCE.lordAttack.damageMult)) : raw;
+  const base = f.kind === 'lord' ? Math.max(1, Math.round(raw * BALANCE.lordAttack.damageMult)) : raw;
+  const dmg = Math.round(base * overtimeMult(b));
   events.push(skill ? { t: 'attack', from: f.key, to: t.key, dmg, skill } : { t: 'attack', from: f.key, to: t.key, dmg });
   applyDamage(b, t, dmg, events);
   // 흡혈(상시): 준 피해의 일부를 회복

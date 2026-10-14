@@ -39,7 +39,7 @@ export function simulateSiege(input: {
   let seq = 0;
 
   const open = (floor: number, heroes: HeroSpec[], now: number) => {
-    const { battle } = createFloorBattle({ heroes, enemies: left[floor], tactic: 'charge', seed: (input.seed + floor * 7919 + seq++ * 104729) >>> 0 });
+    const { battle } = createFloorBattle({ heroes, enemies: left[floor], tactic: 'charge', seed: (input.seed + floor * 7919 + seq++ * 104729) >>> 0, limitMs: BALANCE.siegeBattleCapMs, overtime: true });
     slots[floor] = { battle, t0: now };
     return battle;
   };

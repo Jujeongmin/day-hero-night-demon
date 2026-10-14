@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE } from '../server/src/catalog';
 import {
-  createFloorBattle, heroesHp, playRound, restedHeroesHp, simulateAuto, ultReady,
+  createFloorBattle, heroesHp, overtimeMult, playRound, restedHeroesHp, simulateAuto, ultReady,
   type BattleEvent, type FloorBattle,
 } from '../server/src/battle';
 
@@ -117,6 +117,20 @@ describe('battle', () => {
     const r = playRound(battle, null);
     expect(r.battle.outcome).toBe('lost');
     expect(r.events.at(-1)).toEqual({ t: 'end', outcome: 'lost', at: BALANCE.maxBattleMs });
+  });
+
+  it('siege floors keep fighting past maxBattleMs (2026-10-14)', () => {
+    const { battle } = createFloorBattle({ heroes: heroes(1), enemies: [{ id: 'slime', level: 20 }], tactic: 'guard', seed: 9, limitMs: BALANCE.siegeBattleCapMs, overtime: true });
+    for (const f of battle.fighters) f.next = BALANCE.maxBattleMs;
+    expect(playRound(battle, null).battle.outcome).toBe('ongoing');
+  });
+
+  it('overtime doubles damage every doubleEveryMs after afterMs, siege only', () => {
+    const O = BALANCE.siegeOvertime;
+    expect(overtimeMult({ t: O.afterMs, overtime: true })).toBe(1);
+    expect(overtimeMult({ t: O.afterMs + O.doubleEveryMs, overtime: true })).toBeCloseTo(2);
+    expect(overtimeMult({ t: O.afterMs + 3 * O.doubleEveryMs, overtime: true })).toBeCloseTo(8);
+    expect(overtimeMult({ t: O.afterMs + 3 * O.doubleEveryMs })).toBe(1);
   });
 
   it('heroesHp reports every hero', () => {
