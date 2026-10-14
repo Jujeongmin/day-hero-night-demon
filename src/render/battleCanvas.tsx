@@ -204,8 +204,8 @@ export default function BattleCanvas(props: {
   bg: string;
   /** 현상수배 보스전: 적 하나를 크게 그린다 */
   boss?: boolean;
-  /** 매 프레임 지금 전투 시각(ms)을 알린다(현상수배 남은 시간 막대) */
-  onClock?: (ms: number) => void;
+  /** 매 프레임 지금 전투 시각(ms)과 첫 적의 남은 체력 비율(0~1)을 알린다(현상수배 남은 시간·깎은 체력) */
+  onClock?: (ms: number, enemyLeft: number) => void;
   onDone: () => void;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -272,7 +272,10 @@ export default function BattleCanvas(props: {
         if (i >= frames.length) timer = window.setTimeout(() => done.current(), 700 / spd);
       }
       draw(ctx, b, view, now);
-      clockRef.current?.(Math.max(0, clock));
+      if (clockRef.current) {
+        const foe = b.fighters.find((f) => f.side === 'enemy');
+        clockRef.current(Math.max(0, clock), foe ? Math.max(0, view.hp[foe.key] ?? foe.hp) / foe.maxHp : 1);
+      }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);

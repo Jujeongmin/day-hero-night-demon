@@ -119,7 +119,14 @@ export default function Raid(props: {
   const timeFill = useRef<HTMLSpanElement>(null);
   const timeKnob = useRef<HTMLImageElement>(null);
   const timeText = useRef<HTMLElement>(null);
-  const onClock = useCallback((ms: number) => {
+  const dmgText = useRef<HTMLElement>(null);
+  const nextText = useRef<HTMLElement>(null);
+  const onClock = useCallback((ms: number, enemyLeft: number) => {
+    // 깎은 체력과 아직 넘지 못한 다음 보상 단계(2026-10-14 가독성)
+    const carved = Math.floor((1 - enemyLeft) * 100);
+    const next = BALANCE.bounty.tiers.find((t) => t.pct * 100 > carved);
+    if (dmgText.current) dmgText.current.textContent = T.bounty.live(carved);
+    if (nextText.current) nextText.current.textContent = next ? T.bounty.nextTier(Math.round(next.pct * 100)) : T.bounty.allTiers;
     const left = Math.max(0, 1 - ms / BALANCE.maxBattleMs);
     if (timeFill.current) timeFill.current.style.width = `${left * 100}%`;
     if (timeKnob.current) timeKnob.current.style.left = `${left * 100}%`;
@@ -155,6 +162,7 @@ export default function Raid(props: {
 
       {boss && (
         <div className="bounty-time">
+          <div className="bounty-live"><b ref={dmgText}>{T.bounty.live(0)}</b><small ref={nextText}>{T.bounty.nextTier(10)}</small></div>
           <div className="loading-bar" role="progressbar" aria-label={T.bounty.timeLabel}>
             <span className="loading-fill" ref={timeFill} style={{ width: '100%' }} />
             <img className="loading-knob" ref={timeKnob} src="ui/knob.png" alt="" draggable={false} style={{ left: '100%' }} />

@@ -807,8 +807,25 @@ span.up-pt { cursor: default; }
 .target-loot .coin-ic { width: 16px; height: 16px; }
 .reroll { align-self: center; margin-top: 6px; padding: 4px 8px; background: none; border: 0; font: inherit; font-size: 13px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .reroll:disabled { opacity: .45; cursor: default; }
-.bounty-result { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 6px; }
+/* 현상수배 보스전(2026-10-13 남은 시간, 2026-10-14 가독성): 전투 틀 아래에 깎은 체력·다음 보상, 남은 시간 막대 */
+.bounty-time { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 16px; padding: 0 16px; }
+.bounty-time .loading-bar { width: 100%; max-width: 100%; }
+.bounty-time .loading-fill, .bounty-time .loading-knob { transition: none; }
+.bounty-time small { font-size: 13px; color: var(--bone); text-shadow: 0 2px 0 #000; }
+.bounty-live { display: flex; align-items: baseline; gap: 10px; }
+.bounty-live b { font-weight: 400; font-size: 22px; color: var(--gold); text-shadow: 0 2px 0 #000, 2px 0 0 #000, -2px 0 0 #000; }
+.bounty-live small { font-size: 13px; color: #7dff8a; }
+/* 결과창: 큰 비율, 단계 칸 */
+.bounty-result { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 8px; }
 .bounty-result b { font-weight: 400; font-size: 18px; color: var(--bone); }
+.bounty-big { font-size: 40px; line-height: 1; color: var(--gold); text-shadow: 0 3px 0 #7a1020, 2px 0 0 #2a0610, -2px 0 0 #2a0610; }
+.bounty-result > small { font-size: 13px; color: var(--bone); }
+.bounty-tiers { display: flex; gap: 4px; margin: 6px 0 2px; }
+.bounty-tier { position: relative; min-width: 46px; padding: 6px 2px 4px; text-align: center; font-size: 13px; color: var(--muted); border: 6px solid transparent; border-image: url(/ui/pill.png) 8 fill / 6px stretch; image-rendering: pixelated; opacity: .6; }
+.bounty-tier.got { color: var(--gold); opacity: 1; }
+.bounty-tier em { position: absolute; top: -12px; left: 50%; translate: -50% 0; font-style: normal; font-size: 10px; color: #7dff8a; text-shadow: 0 1px 0 #000; }
+.bounty-tier.new em { color: var(--gold); }
+.bounty-best { font-size: 12px !important; color: var(--muted) !important; }
 /* 출정 창 탭·원정 지도(2026-10-08 승인) */
 .match-tabs { display: flex; gap: 4px; }
 .match-tabs .btn { flex: 1; }
