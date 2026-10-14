@@ -70,6 +70,9 @@ export interface LeagueData {
   seasonId: string;
   endsAt: number;
   myHonor: number;
+  /** 시즌 전체 순위(첫 출정 승리 전이면 null). 2026-10-14부터 조 없이 전체 순위만 */
+  myRank?: number | null;
+  /** 옛 조 순위(2026-10-14부터 비어 있다) */
   bracket: LeagueRow[];
   top: { nickname: string; honor: number; me: boolean; vip?: number; title?: TitleKind | null }[];
   /** 명예의 전당: 최근 시즌 1~3위 */

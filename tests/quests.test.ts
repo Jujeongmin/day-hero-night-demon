@@ -31,8 +31,8 @@ describe('quests (2026-10-02)', () => {
     for (const [d, n] of [['win', 1], ['upgrade', 10], ['idle', 1]] as const) q = bumpQuests({ quests: q }, DAY, { daily: d, n });
     expect(planClaimDaily({ quests: q }, DAY, 'all').soul).toBe(BALANCE.quests.daily.soulAll);
     expect(() => planClaimDaily({ quests: q }, DAY, 'nope')).toThrow();
-    // 하루 합 40 = 5 × 4 + 20
-    expect(BALANCE.quests.daily.soulEach * 4 + BALANCE.quests.daily.soulAll).toBe(40);
+    // 하루 합 22 = 3 × 4 + 10 (2026-10-14 절반)
+    expect(BALANCE.quests.daily.soulEach * 4 + BALANCE.quests.daily.soulAll).toBe(22);
   });
 
   it('guide steps go in order, the server checks progress, and the list keeps going forever', () => {
@@ -43,7 +43,7 @@ describe('quests (2026-10-02)', () => {
     expect(() => planClaimGuide(s, DAY)).toThrow('QUEST_NOT_DONE');
     s.castle.floors[0].monsters = ['slime', 'skeleton', 'werewolf'];
     const got = planClaimGuide(s, DAY);
-    expect(got.soul).toBe(10);
+    expect(got.soul).toBe(5);
     expect(got.gold).toBeGreaterThanOrEqual(1000);
     expect(got.quests.guide).toBe(1);
     s.quests = got.quests;

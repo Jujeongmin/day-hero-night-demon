@@ -129,8 +129,8 @@ export const BALANCE = {
     castleCostLevels: 10,
     /** 2026-10-08 사용자 승인(무과금이 20분 안에 막힘): 3 → 1. 성 2를 7분쯤에 */
     castleCostFactor: 1,
-    /** 공성 침입자 1명을 막을 때 골드(1단계 기준). 2026-10-08 사용자 승인: 500 → 1000(웨이브·방치·출정 골드 2배) */
-    goldPerInvader: 1000,
+    /** 공성 침입자 1명을 막을 때 골드(1단계 기준). 2026-10-08 사용자 승인: 500 → 1000(웨이브·방치·출정 골드 2배). 2026-10-14 사용자: 돈·영혼석이 너무 잘 벌린다 → 500으로 되돌림(그 뒤 웨이브가 쉬워졌다) */
+    goldPerInvader: 500,
     /** 방치 수입(시간당) = 공성 최고 단계 파도 골드 × 2 (2026-09-30 사용자 승인: 5 → 2, 자리 비운 보상이 너무 컸다) */
     idleWavesPerHour: 2,
     /** NPC 공략 전리품 = 파도 5번 값 */
@@ -219,8 +219,9 @@ export const BALANCE = {
    */
   /** 2026-10-07 사용자: 소환은 처음부터 보이게(summonCastle 1) */
   unlocks: { heroesCastle: 2, summonCastle: 1, awakenLevel: 50 },
-  /** 처음 도달한 10단계마다 영혼석 = 그 단계 수 (2026-09-29 승인). 계정당 한 번, 초기화해도 다시 받지 않는다 */
+  /** 처음 도달한 10단계마다 영혼석 siegeMilestoneSoul (2026-09-29 승인: 그 단계 수 → 2026-10-14 사용자: 돈·영혼석이 너무 잘 벌린다: 10 고정). 계정당 한 번, 초기화해도 다시 받지 않는다 */
   siegeMilestoneEvery: 10,
+  siegeMilestoneSoul: 10,
   /** 용사 레벨(3명 합 − 3) 1마다: 공략 전리품 +1%(서버가 새로 지급), 공성 방어 능력치 +1% (2026-09-29 승인, 최대 레벨 100에 맞춰 +2%/+5%에서 낮춤) */
   heroLootPerLevel: 0.01,
   heroSiegePerLevel: 0.01,
@@ -230,7 +231,8 @@ export const BALANCE = {
   freeRevengesPerDay: 3,
   npcRaidEveryMs: 2 * 3_600_000,
   npcRaidMax: 4,
-  firstWinSoul: 5,
+  /** 2026-10-14 사용자: 돈·영혼석이 너무 잘 벌린다 → 영혼석 보상 절반(5 → 3) */
+  firstWinSoul: 3,
   lordDefeatSoul: 3,
   startGold: 30_000,
   seasonMs: 14 * 86_400_000,
@@ -279,7 +281,7 @@ export const BALANCE = {
    */
   lordShare: { monsterPerCastle: 1.2, lordPerStar: 1.07, monsterPerLordStar: 1.03 },
   /** 원정 지도(2026-10-08 사용자 승인, campaign.ts): 한 장 10칸, 하루 5번, 처음 깨면 웨이브 골드 3번 몫, 장 끝 보스 칸은 영혼석 30 더. 두 칸마다 NPC 한 등급, 보스 칸은 두 등급 위 */
-  campaign: { perChapter: 10, triesPerDay: 5, clearWaves: 3, bossSoul: 30, tierEvery: 2, bossTierUp: 2 },
+  campaign: { perChapter: 10, triesPerDay: 5, clearWaves: 3, /** 보스 칸 영혼석 30 → 15(2026-10-14 절반) */ bossSoul: 15, tierEvery: 2, bossTierUp: 2 },
   /** 출정 상대 다시 찾기(2026-10-08 사용자 승인): 하루 무료 횟수, 그 뒤 값 = 입장권 값 ÷ rerollCostDiv */
   rerollFree: 3,
   rerollCostDiv: 5,
@@ -298,15 +300,17 @@ export const BALANCE = {
       { boss: 'werewolf', weak: 'archer', hp: 51 }, { boss: 'vampire', weak: 'knight', hp: 37 }, { boss: 'banshee', weak: 'priest', hp: 54 },
     ] as { boss: MonsterId; weak: HeroId; hp: number }[],
     tiers: [
-      { pct: 0.1, waves: 3 }, { pct: 0.25, waves: 5 }, { pct: 0.5, waves: 8 }, { pct: 0.75, waves: 12 }, { pct: 1, waves: 20, soul: 20 },
+      { pct: 0.1, waves: 3 }, { pct: 0.25, waves: 5 }, { pct: 0.5, waves: 8 }, { pct: 0.75, waves: 12 }, { pct: 1, waves: 20, soul: 10 },
     ] as { pct: number; waves: number; soul?: number }[],
   },
   sortieRegenMs: 10 * 60_000,
   sortieTicketLootMult: 0.5,
   /** 마왕 처치 영혼석(lordDefeatSoul)은 하루 이 횟수까지 (2026-10-01 사용자 결정) */
-  lordSoulPerDay: 10,
+  /** 2026-10-14 사용자: 돈·영혼석이 너무 잘 벌린다 → 절반(10 → 5) */
+  lordSoulPerDay: 5,
   /** 공성 최고 단계를 새로 올릴 때마다 영혼석 (2026-10-01 사용자 결정, 10단계 보상과 별도) */
-  siegeBestSoul: 10,
+  /** 2026-10-14 사용자: 돈·영혼석이 너무 잘 벌린다 → 10 → 1 */
+  siegeBestSoul: 1,
   /**
    * VIP (2026-09-30 사용자 승인, 후보표 https://claude.ai/artifact/PKHH6cZBjthFcSDgxK4qyL 그대로).
    * 누적 결제 VX로 1~10. 배열은 등급 1~10의 값(0번 칸 없음, VIP 0은 기존 값). 시간 단축·편의·지위만, 전투 능력치·명예는 없다
@@ -385,34 +389,35 @@ export const BALANCE = {
     legendLooks: ['summon1', 'hydra'] as string[],
   },
   /**
-   * 의뢰(2026-10-02 사용자 승인). 일일 의뢰: 한국 시간 0시에 새로, 하나에 영혼석 soulEach, 모두 하면 soulAll 더(하루 40).
+   * 의뢰(2026-10-02 사용자 승인). 일일 의뢰: 한국 시간 0시에 새로, 하나에 영혼석 soulEach, 모두 하면 soulAll 더(하루 40 → 2026-10-14 사용자: 돈·영혼석이 너무 잘 벌린다: 22).
    * 성장 의뢰: 한 번에 하나, 순서대로. 골드는 공성 최고 단계에 맞춰 커진다(scaledGold). 목록이 끝나면 cycle이 끝없이 돈다
    */
   quests: {
-    daily: { sortie: 3, win: 1, upgrade: 10, idle: 1, soulEach: 5, soulAll: 20 },
+    daily: { sortie: 3, win: 1, upgrade: 10, idle: 1, soulEach: 3, soulAll: 10 },
     guide: [
+      // 2026-10-14 사용자: 돈·영혼석이 너무 잘 벌린다 → 영혼석 절반
       // 2026-10-08 사용자: 초반 성 Lv3·4 의뢰가 너무 어렵다 → 강화 레벨 의뢰로, 성은 2 → 3 → 4 순서로 뒤에
-      { kind: 'filled', target: 3, soul: 10, gold: 100000 },
-      { kind: 'unit', id: 'slime', target: 5, soul: 10, gold: 100000 },
-      { kind: 'wins', target: 3, soul: 10, gold: 100000 },
-      { kind: 'unit', id: 'skeleton', target: 10, soul: 10, gold: 100000 },
-      { kind: 'siege', target: 10, soul: 10, gold: 100000 },
-      { kind: 'idle', target: 1, soul: 10, gold: 100000 },
-      { kind: 'summon', target: 1, soul: 20, gold: 300000 },
-      { kind: 'anyLevel', target: 15, soul: 20, gold: 300000 },
-      { kind: 'castle', target: 2, soul: 20, gold: 300000 },
-      { kind: 'filled', target: 6, soul: 20, gold: 300000 },
-      { kind: 'siege', target: 20, soul: 30, gold: 600000 },
-      { kind: 'wins', target: 15, soul: 30, gold: 600000 },
-      { kind: 'anyLevel', target: 25, soul: 30, gold: 600000 },
-      { kind: 'castle', target: 3, soul: 30, gold: 600000 },
-      { kind: 'siege', target: 30, soul: 30, gold: 600000 },
-      { kind: 'castle', target: 4, soul: 50, gold: 600000 },
-      { kind: 'filled', target: 9, soul: 50, gold: 600000 },
-      { kind: 'stars', target: 1, soul: 50, gold: 600000 },
+      { kind: 'filled', target: 3, soul: 5, gold: 100000 },
+      { kind: 'unit', id: 'slime', target: 5, soul: 5, gold: 100000 },
+      { kind: 'wins', target: 3, soul: 5, gold: 100000 },
+      { kind: 'unit', id: 'skeleton', target: 10, soul: 5, gold: 100000 },
+      { kind: 'siege', target: 10, soul: 5, gold: 100000 },
+      { kind: 'idle', target: 1, soul: 5, gold: 100000 },
+      { kind: 'summon', target: 1, soul: 10, gold: 300000 },
+      { kind: 'anyLevel', target: 15, soul: 10, gold: 300000 },
+      { kind: 'castle', target: 2, soul: 10, gold: 300000 },
+      { kind: 'filled', target: 6, soul: 10, gold: 300000 },
+      { kind: 'siege', target: 20, soul: 15, gold: 600000 },
+      { kind: 'wins', target: 15, soul: 15, gold: 600000 },
+      { kind: 'anyLevel', target: 25, soul: 15, gold: 600000 },
+      { kind: 'castle', target: 3, soul: 15, gold: 600000 },
+      { kind: 'siege', target: 30, soul: 15, gold: 600000 },
+      { kind: 'castle', target: 4, soul: 25, gold: 600000 },
+      { kind: 'filled', target: 9, soul: 25, gold: 600000 },
+      { kind: 'stars', target: 1, soul: 25, gold: 600000 },
     ] as { kind: 'unit' | 'wins' | 'castle' | 'filled' | 'idle' | 'summon' | 'siege' | 'anyLevel' | 'stars'; id?: string; target: number; soul: number; gold: number }[],
     /** 목록 뒤: 공성 최고 +10단계 → 공략 +10승 → 몬스터 별 합 +1 을 돌아가며 */
-    cycle: { siegeStep: 10, winsStep: 10, starsStep: 1, soul: 20, gold: 800_000 },
+    cycle: { siegeStep: 10, winsStep: 10, starsStep: 1, soul: 10, gold: 800_000 },
   },
   /** 시즌 순위 보상(2026-10-01 승인). 브래킷(30명) 순위별 영혼석 */
   seasonRankSoul: { first: 300, top3: 180, top10: 90, rest: 20 },

@@ -50,6 +50,6 @@ describe('siege milestones', () => {
     expect(milestoneSoul(1, 9)).toBe(0);
     expect(milestoneSoul(9, 10)).toBe(10);
     expect(milestoneSoul(10, 19)).toBe(0);
-    expect(milestoneSoul(5, 31)).toBe(10 + 20 + 30);
+    expect(milestoneSoul(5, 31)).toBe(3 * BALANCE.siegeMilestoneSoul);
   });
 });

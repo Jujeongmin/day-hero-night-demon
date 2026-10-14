@@ -229,7 +229,7 @@ describe('season pass look', () => {
 });
 
 describe('league', () => {
-  test('winning adds honor and places you in a 30-player bracket', async (server) => {
+  test('winning adds honor and puts you on the global ranking (2026-10-14: no groups)', async (server) => {
     server.connect({ account: `t17-${Date.now()}` });
     await server.getHome();
     await server.startIntroRaid();
@@ -238,8 +238,8 @@ describe('league', () => {
     expect(end.honor).toBe(10); // 입문 NPC는 마왕이 없어 기본 10
     const lg = await server.getLeague();
     expect(lg.myHonor).toBe(10);
-    expect(lg.bracket.length).toBeGreaterThanOrEqual(1); // 2026-10-07: 실제 유저만(빈자리 채우지 않음)
-    expect(lg.bracket.some((r: any) => r.me)).toBe(true);
+    expect(lg.myRank).toBeGreaterThanOrEqual(1);
+    expect(lg.top.some((r: any) => r.me)).toBe(true);
   });
 });
 
@@ -466,12 +466,18 @@ describe('sortie tickets & gold for soulstones (2026-10-01)', () => {
     expect(await fails(server.buyGold('gold_mountain'))).toBe(true);
   });
 
-  test('a sortie ticket costs gold and adds one on top', async (server) => {
+  test('a sortie ticket costs 10 soulstones and adds one on top (2026-10-14)', async (server) => {
     server.connect({ account: 't63-ticket' });
     await server.getHome();
+    expect(await fails(server.buySortie())).toBe(true);
+    await server.$onItemPurchased({ account: 't63-ticket', purchaseId: 'p-t63', productId: 'soul_pouch', quantity: 1 });
+    const before = (await server.getHome()).soul;
     const r = await server.buySortie();
+    expect(r.cost).toBe(10);
     expect(r.sortie.n).toBe(11);
-    expect((await server.getHome()).gold).toBe(30000 - r.cost);
+    const home = await server.getHome();
+    expect(home.soul).toBe(before - 10);
+    expect(home.gold).toBe(30000);
   });
 });
 
@@ -523,12 +529,12 @@ describe('quests', () => {
     expect(await fails(server.claimGuide())).toBe(true);
     await server.setFloor(0, ['slime', 'skeleton', 'werewolf'], null);
     const g = await server.claimGuide();
-    expect(g.soul).toBe(10);
+    expect(g.soul).toBe(5);
     // 그다음 슬라임 Lv.5는 위에서 이미 채웠다
-    expect((await server.claimGuide()).soul).toBe(10);
+    expect((await server.claimGuide()).soul).toBe(5);
     expect(await fails(server.claimGuide())).toBe(true);
     await server.upgradeMany('monster', 'skeleton', 6);
-    expect((await server.claimDaily('upgrade')).soul).toBe(5);
+    expect((await server.claimDaily('upgrade')).soul).toBe(3);
     expect(await fails(server.claimDaily('upgrade'))).toBe(true);
   });
 });

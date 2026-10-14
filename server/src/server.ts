@@ -369,23 +369,19 @@ async function scaleGold(me: string, s: UserState): Promise<UserState> {
   return { ...s, goldScale: GOLD_SCALE, siege };
 }
 
+/** 시즌 전체 순위(1부터): 나보다 명예가 높은 사람 수 + 1. 동점은 같은 순위 */
+async function globalRankOf(seasonId: string, honor: number): Promise<number> {
+  return (await $global.countCollectionItems(leagueCollection(seasonId), { filters: [{ field: 'honor', operator: '>', value: honor }] })) + 1;
+}
+
 async function rollSeason(account: string, s: UserState, now: number): Promise<UserState> {
   const current = seasonIdAt(now);
   if (s.season.id === current) return s;
   s = await settleSpend(account, s, now);
   let soul = 0;
+  // bracketId가 있으면 그 시즌 순위에 올라 있다(첫 출정 승리 때 붙는다). 조는 더 쓰지 않고 표시·보상 모두 전체 순위(2026-10-14 사용자)
   if (s.season.bracketId && s.season.rewardedFor !== s.season.id) {
-    const rows = await $global.getCollectionItems(leagueCollection(s.season.id), {
-      filters: [{ field: 'bracketId', operator: '==', value: s.season.bracketId }],
-      limit: 100,
-    });
-    const end = seasonStartOf(s.season.id) + BALANCE.seasonMs;
-    const ranked = rankBracket(
-      rows.map((r: any) => ({ id: r.account, nickname: r.nickname, honor: r.honor })),
-      s.season.bracketId, seasonStartOf(s.season.id), end,
-    );
-    const me = ranked.find((r) => r.id === account);
-    if (me) soul = seasonRewardSoul(me.rank);
+    soul = seasonRewardSoul(await globalRankOf(s.season.id, s.season.honor));
     // 전체 순위 1~10위: 칭호, 1위는 그 시즌 한정 외형. 명예의 전당은 처음 넘어온 사람이 남긴다
     const top = await $global.getCollectionItems(leagueCollection(s.season.id), { orderBy: [{ field: 'honor', direction: 'desc' }], limit: BALANCE.globalRankTitles.top10 });
     await recordHall(s.season.id, top, now);
@@ -1358,20 +1354,15 @@ export class Server {
     return withLocks([me], async () => {
       const now = Date.now();
       const s = await rollSeason(me, await loadState(me, now), now);
+      // 전체 순위만(2026-10-14 사용자: 조 없이 전체 상위 + 내 정보). 상위 20명과 내 순위
       const col = leagueCollection(s.season.id);
-      const start = seasonStartOf(s.season.id);
-      const rows = s.season.bracketId
-        ? await $global.getCollectionItems(col, { filters: [{ field: 'bracketId', operator: '==', value: s.season.bracketId }], limit: 100 })
-        : [];
-      const bracket = s.season.bracketId
-        ? rankBracket(rows.map((r: any) => ({ id: r.account, nickname: r.nickname, honor: r.honor, vip: r.vip ?? 0, title: r.title ?? null })), s.season.bracketId, start, now)
-        : [];
-      const top = await $global.getCollectionItems(col, { orderBy: [{ field: 'honor', direction: 'desc' }], limit: 10 });
+      const top = await $global.getCollectionItems(col, { orderBy: [{ field: 'honor', direction: 'desc' }], limit: 20 });
       return {
         seasonId: s.season.id,
         endsAt: seasonEndsAt(now),
         myHonor: s.season.honor,
-        bracket: bracket.map((r) => ({ rank: r.rank, nickname: r.nickname, honor: r.honor, ghost: r.ghost, me: r.id === me, vip: r.vip ?? 0, title: r.title ?? null })),
+        myRank: s.season.bracketId ? await globalRankOf(s.season.id, s.season.honor) : null,
+        bracket: [],
         top: top.map((r: any) => ({ nickname: r.nickname, honor: r.honor, me: r.account === me, vip: r.vip ?? 0, title: r.title ?? null })),
         hall: await hallOfFame(),
       };

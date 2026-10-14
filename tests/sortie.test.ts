@@ -38,9 +38,9 @@ describe('sortie tickets and lord soul cap (2026-10-01 user decision)', () => {
     expect(sortieTicketCost(s)).toBe(Math.round(npcLoot(Math.floor(1 + 19 * 25 / 49)) * BALANCE.sortieTicketLootMult));
   });
 
-  it('lord-kill soul is paid 10 times a day', () => {
+  it('lord-kill soul is paid 5 times a day (2026-10-14 halved)', () => {
     const s = defaultState('a', NOW, 's1');
-    expect(lordSoulLeft(s, NOW)).toBe(10);
-    expect(lordSoulLeft({ ...s, daily: { day: dayKey(NOW), sorties: 0, bought: 0, lordSoul: 10 } }, NOW)).toBe(0);
+    expect(lordSoulLeft(s, NOW)).toBe(5);
+    expect(lordSoulLeft({ ...s, daily: { day: dayKey(NOW), sorties: 0, bought: 0, lordSoul: 5 } }, NOW)).toBe(0);
   });
 });

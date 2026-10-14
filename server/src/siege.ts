@@ -72,7 +72,8 @@ function defenseOf(castleLevel: number, floors: ResolvedFloor[], mult: number, l
 export function milestoneSoul(oldBest: number, newBest: number): number {
   const every = BALANCE.siegeMilestoneEvery;
   let soul = 0;
-  for (let m = (Math.floor(oldBest / every) + 1) * every; m <= newBest; m += every) soul += m;
+  // 2026-10-14 사용자 결정: 10단계마다 그 단계 수 → siegeMilestoneSoul 고정
+  for (let m = (Math.floor(oldBest / every) + 1) * every; m <= newBest; m += every) soul += BALANCE.siegeMilestoneSoul;
   return soul;
 }
 

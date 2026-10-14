@@ -19,9 +19,9 @@ describe('expedition map (2026-10-08)', () => {
     expect(campaignCastle(4).owner).toBe('camp:4');
     expect(campaignCastle(9).throneEmpty).toBe(false);
   });
-  it('first clear pays 3 wave golds, the boss adds 30 soulstones', () => {
+  it('first clear pays 3 wave golds, the boss adds 15 soulstones (2026-10-14 halved)', () => {
     expect(campaignReward(3, 20)).toEqual({ gold: waveGold(20) * 3, soul: 0 });
-    expect(campaignReward(9, 20)).toEqual({ gold: waveGold(20) * 3, soul: 30 });
+    expect(campaignReward(9, 20)).toEqual({ gold: waveGold(20) * 3, soul: 15 });
   });
   it('five tries a day, progress stays across days', () => {
     const s = { campaign: { stage: 7, day: dayKey(NOW), tries: 5 } };

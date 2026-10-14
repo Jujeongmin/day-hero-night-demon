@@ -82,7 +82,7 @@ const $global = {
     if (acct === account) notifyMine();
     return clone(store.users[acct]);
   },
-  async getCollectionItems(id: string, opts: { filters?: Filter[]; orderBy?: Order[]; limit?: number } = {}) {
+  async getCollectionItems(id: string, opts: { filters?: Filter[]; orderBy?: Order[]; limit?: number; startAfter?: unknown } = {}) {
     let rows = Object.entries(store.collections[id] ?? {}).map(([__id, v]) => ({ ...v, __id }));
     for (const f of opts.filters ?? []) rows = rows.filter((r) => matches(r, f));
     for (const o of [...(opts.orderBy ?? [])].reverse()) {
@@ -93,7 +93,19 @@ const $global = {
         return o.direction === 'desc' ? -c : c;
       });
     }
-    return clone(opts.limit ? rows.slice(0, opts.limit) : rows);
+    // 커서: 첫 orderBy 필드 값 기준으로 엄격하게 다음부터(공식 문서와 같게)
+    const first = opts.orderBy?.[0];
+    if (first && opts.startAfter !== undefined) {
+      const cur = opts.startAfter as never;
+      rows = rows.filter((r) => (first.direction === 'desc' ? (r[first.field] as never) < cur : (r[first.field] as never) > cur));
+    }
+    // 공식 서버처럼 한 번에 최대 100개
+    return clone(rows.slice(0, Math.min(opts.limit ?? 100, 100)));
+  },
+  async countCollectionItems(id: string, opts: { filters?: Filter[] } = {}) {
+    let rows = Object.values(store.collections[id] ?? {});
+    for (const f of opts.filters ?? []) rows = rows.filter((r) => matches(r as Record<string, unknown>, f));
+    return rows.length;
   },
   async getCollectionItem(id: string, itemId: string) {
     const v = store.collections[id]?.[itemId];

@@ -14,10 +14,10 @@ describe('growth curve', () => {
     expect([1, 2, 10].map(lordLevel)).toEqual([1, 11, 91]);
   });
 
-  it('wave gold = 3 invaders × 1000 × 1.18^(stage−1) (2026-10-08 wave gold ×2)', () => {
-    expect(waveGold(1)).toBe(3000);
-    expect(waveGold(2)).toBe(3540);
-    expect(waveGold(11)).toBe(Math.round(3000 * Math.pow(1.18, 10)));
+  it('wave gold = 3 invaders × 500 × 1.18^(stage−1) (2026-10-14 back to 500)', () => {
+    expect(waveGold(1)).toBe(1500);
+    expect(waveGold(2)).toBe(1770);
+    expect(waveGold(11)).toBe(Math.round(1500 * Math.pow(1.18, 10)));
   });
 
   it('fixed gold rewards stay until stage 10, then grow ×1.18 per stage', () => {

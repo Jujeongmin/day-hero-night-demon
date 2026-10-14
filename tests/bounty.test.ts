@@ -30,7 +30,7 @@ describe('bounty boss (2026-10-08)', () => {
     expect(bountyReward(0.3, fresh, 20)).toEqual({ gold: w * (2 + 3 + 5), soul: 0, tier: 2, newTiers: 2 });
     // 같은 날 다시 30%: 단계는 이미 받았다
     expect(bountyReward(0.3, { ...fresh, tier: 2 }, 20)).toEqual({ gold: w * 2, soul: 0, tier: 2, newTiers: 0 });
-    expect(bountyReward(1, { ...fresh, tier: 2 }, 20)).toEqual({ gold: w * (2 + 8 + 12 + 20), soul: 20, tier: 5, newTiers: 3 });
+    expect(bountyReward(1, { ...fresh, tier: 2 }, 20)).toEqual({ gold: w * (2 + 8 + 12 + 20), soul: 10, tier: 5, newTiers: 3 });
   });
 
   it('the boss is the others-average level, huge HP; the weak hero hits +50%', () => {

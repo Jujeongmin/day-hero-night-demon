@@ -75,10 +75,9 @@ function Ranking(props: { api: Api; onError: (m: string) => void }) {
         <span>{T.leagueTitle(data.seasonId)} · {T.myHonor(data.myHonor)}</span>
         <span>{T.endsIn(data.endsAt - Date.now())}</span>
       </div>
+      {/* 2026-10-14 사용자: 글이 길다 → 보상 한 줄, 명예 얻는 법 한 줄 */}
       <small className="muted league-info">
         {T.seasonReward(seasonRewardSoul(1), seasonRewardSoul(2), seasonRewardSoul(4), seasonRewardSoul(11))}
-        <br />
-        {T.globalReward}
         <br />
         {T.honorHow}
       </small>
@@ -93,22 +92,21 @@ function Ranking(props: { api: Api; onError: (m: string) => void }) {
           ))}
         </>
       )}
-      <h4>{T.bracketTitle}</h4>
-      {data.bracket.length === 0 && <span>{T.noBracket}</span>}
-      {/* 10등까지만, 내가 그 밖이면 내 줄을 맨 아래에(2026-10-07 사용자) */}
-      {[...data.bracket.slice(0, 10), ...data.bracket.slice(10).filter((r) => r.me)].map((r, i) => (
-        <div className="line" key={i} style={r.me ? { fontWeight: 700 } : undefined}>
-          <span>{r.rank}. {displayName(r.nickname)} <VipBadge level={r.vip} /> <Title kind={r.title} /></span>
-          <span>{r.honor}</span>
-        </div>
-      ))}
+      {/* 전체 순위만(2026-10-14 사용자: 조 없이 전체 상위 + 내 정보). 내가 20위 밖이면 맨 아래 내 줄 */}
       <h4>{T.topTitle}</h4>
+      {data.top.length === 0 && <span>{T.noBracket}</span>}
       {data.top.map((r, i) => (
-        <div className="line" key={i} style={r.me ? { fontWeight: 700 } : undefined}>
+        <div className="line" key={i} style={r.me ? { fontWeight: 700, color: 'var(--gold)' } : undefined}>
           <span>{i + 1}. {displayName(r.nickname)} <VipBadge level={r.vip} /> <Title kind={r.title} /></span>
           <span>{r.honor}</span>
         </div>
       ))}
+      {!data.top.some((r) => r.me) && (
+        <div className="line" style={{ fontWeight: 700, color: 'var(--gold)' }}>
+          <span>{data.myRank ? T.myRank(data.myRank) : T.noBracket}</span>
+          <span>{data.myHonor}</span>
+        </div>
+      )}
     </>
   );
 }
