@@ -3,7 +3,7 @@ import CurrencyPill from '../render/CurrencyPill';
 import { BALANCE, HERO_ORDER, LORD, MONSTERS, type HeroId } from '../../server/src/catalog';
 import { floorsUnlocked } from '../../server/src/economy';
 import { siegeCount } from '../../server/src/siege';
-import { formatNum, waveGold } from '../../server/src/growth';
+import { formatNum, waveGold, formatSoul } from '../../server/src/growth';
 import AdButton from '../render/AdButton';
 import Siege, { powerText } from '../render/Siege';
 import { useSiegeReplay, type ReplayState, type RUnit } from '../render/siegeReplay';
@@ -750,7 +750,7 @@ export default function CastleScene(props: {
                 <img src="ui/ticket.png" alt="" draggable={false} />{tickets}/{BALANCE.sortieMax}<TicketTimer at={nextSortieAt(s, Date.now())} />
                 {/* 영혼석 10개로 한 장(2026-10-14 사용자). 모자라면 상점 영혼석으로 */}
                 <button className={`ticket-plus ${noTicket ? 'pulse' : ''}`} disabled={busy} onClick={() => (home.soul < ticketCost ? onShop('soul') : act(() => api.buySortie()))} aria-label={T.buyTicket(ticketCost)}>
-                  <img src="ui/plus.png" alt="" draggable={false} /><img className="coin" src="icons/soul.png" alt="" draggable={false} />{formatNum(ticketCost)}
+                  <img src="ui/plus.png" alt="" draggable={false} /><img className="coin" src="icons/soul.png" alt="" draggable={false} />{formatSoul(ticketCost)}
                 </button>
               </span>
             )}

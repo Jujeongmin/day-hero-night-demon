@@ -113,6 +113,11 @@ export function unitPower(stats: { hp: number; atk: number; def: number }): numb
 }
 
 /** 큰 숫자 표시: 1234 → 1.2k, 3.4m, 1.1b, 2t, 그 위로 aa·ab…zz(1000배마다) */
+/** 영혼석 숫자: 줄이지 않고 쉼표로(2026-10-14 사용자: 1.2k는 너무 적어 보인다) */
+export function formatSoul(n: number): string {
+  return Number.isFinite(n) ? Math.round(n).toLocaleString('en-US') : '∞';
+}
+
 export function formatNum(n: number): string {
   if (!Number.isFinite(n)) return '∞';
   const a = Math.abs(n);

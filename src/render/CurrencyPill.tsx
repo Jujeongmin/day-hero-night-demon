@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { formatNum } from '../../server/src/growth';
+import { formatNum, formatSoul } from '../../server/src/growth';
 
 const COUNT_MS = 700;
 const FLASH_MS = 900;
@@ -13,7 +13,8 @@ const POP_MS = 1300;
 export default function CurrencyPill(props: { icon: string; label: string; value: number; tone?: 'gold' | 'soul' | 'power'; onPlus?: () => void; plusLabel?: string }) {
   const { value } = props;
   // 전투력은 100만 아래까지 쉼표 넣은 정확한 숫자(2026-10-07 사용자: 강화해도 10.0k→10.1k라 오르는 느낌이 약하다)
-  const fmt = (n: number) => (props.tone === 'power' && Math.abs(n) < 1e6 ? Math.round(n).toLocaleString('en-US') : formatNum(n));
+  // 영혼석은 줄이지 않고 쉼표로(2026-10-14 사용자)
+  const fmt = (n: number) => (props.tone === 'soul' ? formatSoul(n) : props.tone === 'power' && Math.abs(n) < 1e6 ? Math.round(n).toLocaleString('en-US') : formatNum(n));
   const [shown, setShown] = useState(value);
   const [gain, setGain] = useState(false);
   // 떠오르는 숫자: key가 바뀌면 애니메이션을 처음부터

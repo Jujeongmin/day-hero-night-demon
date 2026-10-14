@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { BALANCE } from '../../server/src/catalog';
-import { avgMonsterLevel, formatNum, GOLD_PACK_IDS, goldPackAmount, scaledGold, type GoldPackId } from '../../server/src/growth';
+import { avgMonsterLevel, formatNum, GOLD_PACK_IDS, goldPackAmount, scaledGold, type GoldPackId, formatSoul } from '../../server/src/growth';
 import { premiumValuePct, SHOP_PRODUCTS, soulPackAmount, type SoulPackId } from '../../server/src/purchases';
 import AdButton from '../render/AdButton';
 import CurrencyPill from '../render/CurrencyPill';
@@ -62,7 +62,7 @@ function SpendRow(props: { api: Api; home: HomeData; onRefresh: () => Promise<vo
         <span className="shop-spend-reward">
           {next.look
             ? <><Sprite id={lordSpriteId(next.look as LordSkin)} scale={0.5} label={T.settings.looks[next.look] ?? next.look} /><small>{T.settings.lookFx[next.look] ?? T.spend.look}</small></>
-            : <><img src="icons/soul.png" alt="" draggable={false} />{formatNum(next.soul)}</>}
+            : <><img src="icons/soul.png" alt="" draggable={false} />{formatSoul(next.soul)}</>}
         </span>
       )}
       {ready && <button className="btn small gold glow" disabled={busy} onClick={() => void claim()}>{T.spend.claim}</button>}
@@ -126,10 +126,10 @@ export default function Shop(props: {
   // 묶음마다 처음 한 번은 영혼석 2배(서버 grantFor와 같은 규칙)
   const firstBuy = (id: SoulPackId) => !(home.state.firstBuys ?? []).includes(id);
   const soulGet = (id: SoulPackId) => soulPackAmount(id, vip) * (firstBuy(id) ? BALANCE.firstBuyMult : 1);
+  // 보너스 = 같은 VX로 주머니만 샀을 때보다 더 받는 영혼석 개수(2026-10-14 사용자: % 대신 +N개)
   const soulBonus = (id: SoulPackId) => {
-    const p = BALANCE.soulPacks[id];
     const base = BALANCE.soulPacks.soul_pouch;
-    return Math.round(((p.soul / p.vx) / (base.soul / base.vx) - 1) * 100);
+    return Math.max(0, soulPackAmount(id, vip) - Math.round(soulPackAmount('soul_pouch', vip) * (BALANCE.soulPacks[id].vx / base.vx)));
   };
   const descOf = (id: ProductId) => (id === 'starter_pack' ? T.starterDesc(scaledGold(BALANCE.starterGold, best)) : T.products[id][1]);
 
@@ -182,8 +182,8 @@ export default function Shop(props: {
               const bonus = soulBonus(id);
               const first = firstBuy(id);
               return card(id, id, T.products[id][0],
-                <span className="shop-amt soul">{first && <s>{formatNum(soulPackAmount(id, vip))}</s>}{formatNum(soulGet(id))}</span>,
-                priceButton(id), first ? T.shop.firstX2 : bonus > 0 ? (id === 'soul_altar' ? `BEST +${bonus}%` : `+${bonus}%`) : undefined, id === 'soul_altar');
+                <span className="shop-amt soul">{first && <s>{formatSoul(soulPackAmount(id, vip))}</s>}{formatSoul(soulGet(id))}</span>,
+                priceButton(id), first ? T.shop.firstX2 : bonus > 0 ? (id === 'soul_altar' ? `BEST ${T.shop.bonusN(formatSoul(bonus))}` : T.shop.bonusN(formatSoul(bonus))) : undefined, id === 'soul_altar');
             })}
           </div>
         )}
@@ -193,11 +193,12 @@ export default function Shop(props: {
             {GOLD_PACK_IDS.map((id) => {
               const pack = BALANCE.goldPacks[id];
               const gold = goldPackAmount(id, best, avgLevel);
-              const bonus = Math.round(((gold / pack.soul) / (goldPackAmount('gold_pouch', best, avgLevel) / BALANCE.goldPacks.gold_pouch.soul) - 1) * 100);
+              // 같은 영혼석으로 주머니만 샀을 때보다 더 받는 골드(2026-10-14: % 대신 개수)
+              const bonus = Math.max(0, gold - Math.round(goldPackAmount('gold_pouch', best, avgLevel) * (pack.soul / BALANCE.goldPacks.gold_pouch.soul)));
               return card(id, id, T.products[id][0],
                 <span className="shop-amt gold">{formatNum(gold)}</span>,
-                <button className="shop-price" disabled={goldBusy} onClick={() => void buyGold(id)}><img src="icons/soul.png" alt="" draggable={false} />{formatNum(pack.soul)}</button>,
-                bonus > 0 ? `+${bonus}%` : undefined);
+                <button className="shop-price" disabled={goldBusy} onClick={() => void buyGold(id)}><img src="icons/soul.png" alt="" draggable={false} />{formatSoul(pack.soul)}</button>,
+                bonus > 0 ? T.shop.bonusGold(formatNum(bonus)) : undefined);
             })}
           </div>
         )}

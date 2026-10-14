@@ -1,4 +1,4 @@
-import { formatNum as F } from '../../server/src/growth';
+import { formatNum as F, formatSoul as S } from '../../server/src/growth';
 import type { Strings } from './ko';
 
 /** 日本語. 모양은 ko.ts(Strings)와 같다 */
@@ -54,7 +54,7 @@ export const ja: Strings = {
   heroIntro: '勇者 = 出撃で他の城を攻める自分の部隊 · レベルが上がると城の防御も上がる',
   heroRole: { knight: '前で敵の攻撃を受け止める', archer: '後ろから矢を射る(時々2連射)', priest: '傷ついた味方を回復する' } as Record<string, string>,
   spend: { title: 'シーズン累計購入', claim: '受け取る', done: '全段階達成', look: '限定外見', got: (name: string) => `新しい外見「${name}」を手に入れた！` },
-  shop: { valuePct: (p: number) => `効率${p}%`, firstX2: '初回2倍', title: '魔王の宝物庫', once: '1回限り', season: '今シーズン', best: 'BEST', tabs: { soul: '魂石', gold: 'ゴールド', special: '特別' } as Record<'soul' | 'gold' | 'special', string> },
+  shop: { valuePct: (p: number) => `効率${p}%`, firstX2: '初回2倍', bonusN: (n: string) => `+${n}個ボーナス`, bonusGold: (n: string) => `+${n} ボーナス`, title: '魔王の宝物庫', once: '1回限り', season: '今シーズン', best: 'BEST', tabs: { soul: '魂石', gold: 'ゴールド', special: '特別' } as Record<'soul' | 'gold' | 'special', string> },
   idleBtn: '放置報酬',
   claimIdle: (g: number) => `放置収入を受け取る (+${F(g)})`,
   sortie: '出撃',
@@ -131,12 +131,12 @@ export const ja: Strings = {
     soul_relic: ['魂石の聖遺物', '魂石'],
   } as Record<string, [string, string]>,
   goldPackDesc: (gold: number, bonus: number) => (bonus > 0 ? `ゴールド ${F(gold)} · ${bonus}%お得` : `ゴールド ${F(gold)}`),
-  soulPackDesc: (soul: number, bonus: number) => (bonus > 0 ? `魂石 ${F(soul)} · ${bonus}%お得` : `魂石 ${F(soul)}`),
+  soulPackDesc: (soul: number, bonus: number) => (bonus > 0 ? `魂石 ${S(soul)} · +${S(bonus)}個ボーナス` : `魂石 ${S(soul)}`),
   sortieInfo: (left: number, total: number, lord: number, lordCap: number) => `出撃券 ${left}/${total}（10分ごとに1枚）· 今日の魔王撃破の魂石 ${lord}/${lordCap}`,
-  buyTicket: (soul: number) => `出撃券を買う（魂石 ${F(soul)}）`,
-  goldForSoul: (soul: number) => `魂石 ${F(soul)}`,
+  buyTicket: (soul: number) => `出撃券を買う（魂石 ${S(soul)}）`,
+  goldForSoul: (soul: number) => `魂石 ${S(soul)}`,
   gainGold: (n: number) => `ゴールド +${F(n)}`,
-  gainSoul: (n: number) => `魂石 +${F(n)}`,
+  gainSoul: (n: number) => `魂石 +${S(n)}`,
   buyStarter: 'スターターパックを見る',
   starterDesc: (gold: number) => `ネクロマンサー + ゴールド ${F(gold)} + 魂石30`,
   leagueTitle: (id: string) => `シーズン ${id.slice(1)}`,
@@ -429,7 +429,7 @@ export const ja: Strings = {
     upTab: '強化',
     tab: '覚醒',
     hint: '星ひとつごとに全能力×1.1。魂石を使い、リセットしても残る。',
-    btn: (soul: number) => `覚醒（魂石 ${F(soul)}）`,
+    btn: (soul: number) => `覚醒（魂石 ${S(soul)}）`,
     max: '最大覚醒',
     lordHint: '星ごとに魔王×1.07、全階のモンスターも×1.03',
     mult: (now: string, next: string | null) => (next ? `能力 ×${now} → ×${next}` : `能力 ×${now}`),
@@ -461,7 +461,7 @@ export const ja: Strings = {
     tenNote: '10+1回はエピック以上が1つ確定。',
     pityNote: (n: number) => `エピック以上なしで${n}回目の召喚はエピック以上が確定。出たら数え直し。`,
     legendPityNote: (n: number) => `レジェンドなしで${n}回目の召喚はレジェンドが確定。出たら数え直し。`,
-    dupNote: (epic: number, legend: number) => `持っている外見が出たら魂石に変わる(エピック${epic}、伝説${F(legend)})。`,
+    dupNote: (epic: number, legend: number) => `持っている外見が出たら魂石に変わる(エピック${epic}、伝説${S(legend)})。`,
     detail: { tap: 'タップで詳しく', gear: (m: string, p: number) => `${m}専用の装備外見 · 着けると能力 +${p}%`, legend: (p: number) => `魔王の外見 · 持っているだけで魔王の能力 +${p}%`, dup: (n: number) => `所持済みのため魂石${n}に変換`, soul: (n: number) => `魂石${n}個を獲得`, wear: '強化画面で着けられる', wearLord: '強化画面の魔王の行で着けられる' },
     gear: {
       'slime:crown': 'スライム王', 'slime:helm': '騎士スライム', 'skeleton:royal': '骸骨王', 'skeleton:dread': '恐怖の鎧',

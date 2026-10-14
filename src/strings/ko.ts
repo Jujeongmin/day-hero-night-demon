@@ -1,4 +1,4 @@
-import { formatNum as F } from '../../server/src/growth';
+import { formatNum as F, formatSoul as S } from '../../server/src/growth';
 
 /** 한국어 사전(기준). 다른 언어 사전은 이 모양(Strings)을 그대로 따른다. 화면은 T를 쓰고, 언어를 고르면 T가 바뀐다(src/strings/i18n.ts). */
 export const ko = {
@@ -54,7 +54,7 @@ export const ko = {
   heroIntro: '용사 = 출정 때 남의 성을 공격하는 내 공격대 · 레벨이 오르면 내 성 방어도 오른다',
   heroRole: { knight: '앞에서 적의 공격을 받아 낸다', archer: '뒤에서 활을 쏜다(가끔 두 번 연사)', priest: '다친 아군을 치료한다' } as Record<string, string>,
   spend: { title: '시즌 누적 결제', claim: '받기', done: '모든 단계 달성', look: '한정 외형', got: (name: string) => `새 외형 「${name}」을 얻었다!` },
-  shop: { valuePct: (p: number) => `효율 ${p}%`, firstX2: '첫 구매 2배', title: '마왕의 보물고', once: '한 번만', season: '이번 시즌', best: 'BEST', tabs: { soul: '영혼석', gold: '골드', special: '특별' } as Record<'soul' | 'gold' | 'special', string> },
+  shop: { valuePct: (p: number) => `효율 ${p}%`, firstX2: '첫 구매 2배', bonusN: (n: string) => `+${n}개 보너스`, bonusGold: (n: string) => `+${n} 보너스`, title: '마왕의 보물고', once: '한 번만', season: '이번 시즌', best: 'BEST', tabs: { soul: '영혼석', gold: '골드', special: '특별' } as Record<'soul' | 'gold' | 'special', string> },
   idleBtn: '방치 보상',
   claimIdle: (g: number) => `방치 수입 받기 (+${F(g)})`,
   sortie: '출정',
@@ -132,12 +132,12 @@ export const ko = {
   } as Record<string, [string, string]>,
   /** 골드 묶음 설명: 이 계정이 받을 골드와 100 VX 대비 더 주는 비율 */
   goldPackDesc: (gold: number, bonus: number) => (bonus > 0 ? `골드 ${F(gold)} · ${bonus}% 더` : `골드 ${F(gold)}`),
-  soulPackDesc: (soul: number, bonus: number) => (bonus > 0 ? `영혼석 ${F(soul)} · ${bonus}% 더` : `영혼석 ${F(soul)}`),
+  soulPackDesc: (soul: number, bonus: number) => (bonus > 0 ? `영혼석 ${S(soul)} · +${S(bonus)}개 보너스` : `영혼석 ${S(soul)}`),
   sortieInfo: (left: number, total: number, lord: number, lordCap: number) => `출정 입장권 ${left}/${total} (10분마다 1장) · 오늘 마왕 처치 영혼석 ${lord}/${lordCap}`,
-  buyTicket: (soul: number) => `입장권 사기 (영혼석 ${F(soul)})`,
-  goldForSoul: (soul: number) => `영혼석 ${F(soul)}`,
+  buyTicket: (soul: number) => `입장권 사기 (영혼석 ${S(soul)})`,
+  goldForSoul: (soul: number) => `영혼석 ${S(soul)}`,
   gainGold: (n: number) => `골드 +${F(n)}`,
-  gainSoul: (n: number) => `영혼석 +${F(n)}`,
+  gainSoul: (n: number) => `영혼석 +${S(n)}`,
   buyStarter: '스타터팩 보기',
   /** 골드는 공성 최고 단계에 맞춰 커진다(서버 scaledGold와 같은 값) */
   starterDesc: (gold: number) => `네크로맨서 + 골드 ${F(gold)} + 영혼석 30`,
@@ -440,7 +440,7 @@ export const ko = {
     upTab: '강화',
     tab: '각성',
     hint: '별 하나마다 모든 능력치 ×1.1. 영혼석을 쓰고, 초기화해도 남는다.',
-    btn: (soul: number) => `각성 (영혼석 ${F(soul)})`,
+    btn: (soul: number) => `각성 (영혼석 ${S(soul)})`,
     max: '최대 각성',
     lordHint: '별마다 마왕 ×1.07, 모든 층 몬스터도 ×1.03',
     mult: (now: string, next: string | null) => (next ? `능력치 ×${now} → ×${next}` : `능력치 ×${now}`),
@@ -472,7 +472,7 @@ export const ko = {
     tenNote: '10+1회는 영웅 이상 하나가 확정이다.',
     pityNote: (n: number) => `영웅 이상 없이 ${n}번째 소환은 영웅 이상이 확정이고, 영웅·전설이 나오면 다시 센다.`,
     legendPityNote: (n: number) => `전설 없이 ${n}번째 소환은 전설이 확정이고, 전설이 나오면 다시 센다.`,
-    dupNote: (epic: number, legend: number) => `이미 가진 외형이 나오면 영혼석으로 바꿔 준다(영웅 ${epic}, 전설 ${F(legend)}).`,
+    dupNote: (epic: number, legend: number) => `이미 가진 외형이 나오면 영혼석으로 바꿔 준다(영웅 ${epic}, 전설 ${S(legend)}).`,
     detail: { tap: '눌러서 크게 보기', gear: (m: string, p: number) => `${m} 전용 장비 외형 · 입으면 능력치 +${p}%`, legend: (p: number) => `마왕 외형 · 가지고만 있어도 마왕 능력치 +${p}%`, dup: (n: number) => `이미 가진 외형이라 영혼석 ${n}으로 받았다`, soul: (n: number) => `영혼석 ${n}개를 받았다`, wear: '강화 창에서 입힐 수 있다', wearLord: '강화 창의 마왕 줄에서 입힐 수 있다' },
     gear: {
       'slime:crown': '슬라임 왕', 'slime:helm': '기사 슬라임', 'skeleton:royal': '해골 왕', 'skeleton:dread': '공포의 갑옷',

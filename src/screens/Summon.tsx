@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BALANCE } from '../../server/src/catalog';
-import { formatNum } from '../../server/src/growth';
+import { formatNum, formatSoul } from '../../server/src/growth';
 import type { SummonResult } from '../../server/src/summon';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { sfx } from '../services/audio';
@@ -218,7 +218,7 @@ export default function Summon(props: {
                     <>
                       {r.item && !r.dup && <span className="tag">{T.summon.fresh}</span>}
                       {item ? <Portrait id={item} label={name ?? ''} inner={40} /> : <img src="icons/soul.png" alt="" draggable={false} />}
-                      <b>{r.soul > 0 ? `+${formatNum(r.soul)}` : name}</b>
+                      <b>{r.soul > 0 ? `+${formatSoul(r.soul)}` : name}</b>
                       {r.grade === 'legend' && !r.dup && r.item && <small className="card-fx">{T.settings.lookFx[r.item]}</small>}
                     </>
                   )}

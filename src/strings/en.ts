@@ -1,4 +1,4 @@
-import { formatNum as F } from '../../server/src/growth';
+import { formatNum as F, formatSoul as S } from '../../server/src/growth';
 import type { Strings } from './ko';
 
 /** English. 모양은 ko.ts(Strings)와 같다 */
@@ -54,7 +54,7 @@ export const en: Strings = {
   heroIntro: 'Heroes = your raid party that attacks other castles · leveling them also raises your castle defense',
   heroRole: { knight: 'Holds the front and draws enemy attacks', archer: 'Shoots from the back (sometimes twice)', priest: 'Heals hurt allies' } as Record<string, string>,
   spend: { title: 'Season spending', claim: 'Claim', done: 'All tiers reached', look: 'Limited look', got: (name: string) => `New look: ${name}!` },
-  shop: { valuePct: (p: number) => `${p}% value`, firstX2: 'First buy ×2', title: "Demon Lord's Vault", once: 'One time', season: 'This season', best: 'BEST', tabs: { soul: 'Soulstones', gold: 'Gold', special: 'Special' } as Record<'soul' | 'gold' | 'special', string> },
+  shop: { valuePct: (p: number) => `${p}% value`, firstX2: 'First buy ×2', bonusN: (n: string) => `+${n} bonus`, bonusGold: (n: string) => `+${n} bonus`, title: "Demon Lord's Vault", once: 'One time', season: 'This season', best: 'BEST', tabs: { soul: 'Soulstones', gold: 'Gold', special: 'Special' } as Record<'soul' | 'gold' | 'special', string> },
   idleBtn: 'Idle loot',
   claimIdle: (g: number) => `Collect idle income (+${F(g)})`,
   sortie: 'Raid',
@@ -131,12 +131,12 @@ export const en: Strings = {
     soul_relic: ['Soulstone Relic', 'Soulstones'],
   } as Record<string, [string, string]>,
   goldPackDesc: (gold: number, bonus: number) => (bonus > 0 ? `${F(gold)} gold · ${bonus}% more` : `${F(gold)} gold`),
-  soulPackDesc: (soul: number, bonus: number) => (bonus > 0 ? `${F(soul)} soulstones · ${bonus}% more` : `${F(soul)} soulstones`),
+  soulPackDesc: (soul: number, bonus: number) => (bonus > 0 ? `${S(soul)} soulstones · +${S(bonus)} bonus` : `${S(soul)} soulstones`),
   sortieInfo: (left: number, total: number, lord: number, lordCap: number) => `Sortie tickets ${left}/${total} (1 every 10 min) · Lord-kill soulstones today ${lord}/${lordCap}`,
-  buyTicket: (soul: number) => `Buy a ticket (${F(soul)} soulstones)`,
-  goldForSoul: (soul: number) => `${F(soul)} soulstones`,
+  buyTicket: (soul: number) => `Buy a ticket (${S(soul)} soulstones)`,
+  goldForSoul: (soul: number) => `${S(soul)} soulstones`,
   gainGold: (n: number) => `+${F(n)} gold`,
-  gainSoul: (n: number) => `+${F(n)} soulstones`,
+  gainSoul: (n: number) => `+${S(n)} soulstones`,
   buyStarter: 'See Starter Pack',
   starterDesc: (gold: number) => `Necromancer + ${F(gold)} gold + 30 soulstones`,
   leagueTitle: (id: string) => `Season ${id.slice(1)}`,
@@ -429,7 +429,7 @@ export const en: Strings = {
     upTab: 'Upgrade',
     tab: 'Awaken',
     hint: 'Each star multiplies all stats by 1.1. Costs soulstones and stays after a reset.',
-    btn: (soul: number) => `Awaken (${F(soul)} soulstones)`,
+    btn: (soul: number) => `Awaken (${S(soul)} soulstones)`,
     max: 'Fully awakened',
     lordHint: 'Per star: lord ×1.07, every floor monster ×1.03',
     mult: (now: string, next: string | null) => (next ? `Stats ×${now} → ×${next}` : `Stats ×${now}`),
@@ -461,7 +461,7 @@ export const en: Strings = {
     tenNote: '10+1 guarantees at least one Epic or better.',
     pityNote: (n: number) => `Your ${n}th summon without an Epic or better is guaranteed Epic or better. The count restarts whenever one drops.`,
     legendPityNote: (n: number) => `Your ${n}th summon without a Legend is guaranteed Legend. The count restarts whenever one drops.`,
-    dupNote: (epic: number, legend: number) => `A look you already own turns into soulstones (Epic ${epic}, Legendary ${F(legend)}).`,
+    dupNote: (epic: number, legend: number) => `A look you already own turns into soulstones (Epic ${epic}, Legendary ${S(legend)}).`,
     detail: { tap: 'Tap for details', gear: (m: string, p: number) => `Gear look for the ${m} · +${p}% stats when worn`, legend: (p: number) => `Demon Lord look · +${p}% lord stats just for owning it`, dup: (n: number) => `Already owned, turned into ${n} soulstones`, soul: (n: number) => `Got ${n} soulstones`, wear: 'Wear it from the upgrade panel', wearLord: 'Wear it from the Demon Lord row in the upgrade panel' },
     gear: {
       'slime:crown': 'Slime King', 'slime:helm': 'Knight Slime', 'skeleton:royal': 'Skeleton King', 'skeleton:dread': 'Dread Armor',

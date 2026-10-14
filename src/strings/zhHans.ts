@@ -1,4 +1,4 @@
-import { formatNum as F } from '../../server/src/growth';
+import { formatNum as F, formatSoul as S } from '../../server/src/growth';
 import type { Strings } from './ko';
 
 /** 简体中文. 모양은 ko.ts(Strings)와 같다 */
@@ -54,7 +54,7 @@ export const zhHans: Strings = {
   heroIntro: '勇者 = 出征时攻打其他城堡的我方队伍 · 升级还会提高城堡防御',
   heroRole: { knight: '在前方承受敌人的攻击', archer: '从后方射箭(偶尔连射两次)', priest: '治疗受伤的队友' } as Record<string, string>,
   spend: { title: '赛季累计消费', claim: '领取', done: '全部达成', look: '限定外观', got: (name: string) => `获得新外观「${name}」！` },
-  shop: { valuePct: (p: number) => `效率${p}%`, firstX2: '首购双倍', title: '魔王宝库', once: '限购一次', season: '本赛季', best: 'BEST', tabs: { soul: '魂石', gold: '金币', special: '特别' } as Record<'soul' | 'gold' | 'special', string> },
+  shop: { valuePct: (p: number) => `效率${p}%`, firstX2: '首购双倍', bonusN: (n: string) => `额外+${n}个`, bonusGold: (n: string) => `额外+${n}`, title: '魔王宝库', once: '限购一次', season: '本赛季', best: 'BEST', tabs: { soul: '魂石', gold: '金币', special: '特别' } as Record<'soul' | 'gold' | 'special', string> },
   idleBtn: '挂机奖励',
   claimIdle: (g: number) => `领取挂机收益 (+${F(g)})`,
   sortie: '出征',
@@ -131,12 +131,12 @@ export const zhHans: Strings = {
     soul_relic: ['魂石圣遗物', '魂石'],
   } as Record<string, [string, string]>,
   goldPackDesc: (gold: number, bonus: number) => (bonus > 0 ? `金币 ${F(gold)} · 多送${bonus}%` : `金币 ${F(gold)}`),
-  soulPackDesc: (soul: number, bonus: number) => (bonus > 0 ? `魂石 ${F(soul)} · 多送${bonus}%` : `魂石 ${F(soul)}`),
+  soulPackDesc: (soul: number, bonus: number) => (bonus > 0 ? `魂石 ${S(soul)} · 额外+${S(bonus)}个` : `魂石 ${S(soul)}`),
   sortieInfo: (left: number, total: number, lord: number, lordCap: number) => `出征券 ${left}/${total}（每10分钟1张）· 今日击败魔王魂石 ${lord}/${lordCap}`,
-  buyTicket: (soul: number) => `购买出征券（魂石 ${F(soul)}）`,
-  goldForSoul: (soul: number) => `魂石 ${F(soul)}`,
+  buyTicket: (soul: number) => `购买出征券（魂石 ${S(soul)}）`,
+  goldForSoul: (soul: number) => `魂石 ${S(soul)}`,
   gainGold: (n: number) => `金币 +${F(n)}`,
-  gainSoul: (n: number) => `魂石 +${F(n)}`,
+  gainSoul: (n: number) => `魂石 +${S(n)}`,
   buyStarter: '查看新手礼包',
   starterDesc: (gold: number) => `死灵法师 + 金币 ${F(gold)} + 魂石30`,
   leagueTitle: (id: string) => `第 ${id.slice(1)} 赛季`,
@@ -429,7 +429,7 @@ export const zhHans: Strings = {
     upTab: '强化',
     tab: '觉醒',
     hint: '每颗星让全部能力×1.1。消耗魂石，重置后仍保留。',
-    btn: (soul: number) => `觉醒（魂石 ${F(soul)}）`,
+    btn: (soul: number) => `觉醒（魂石 ${S(soul)}）`,
     max: '已完全觉醒',
     lordHint: '每颗星魔王×1.07，所有楼层怪物也×1.03',
     mult: (now: string, next: string | null) => (next ? `能力 ×${now} → ×${next}` : `能力 ×${now}`),
@@ -461,7 +461,7 @@ export const zhHans: Strings = {
     tenNote: '10+1次必得一个英雄以上。',
     pityNote: (n: number) => `连续没有英雄以上时，第${n}次召唤必得英雄以上；抽到后重新计算。`,
     legendPityNote: (n: number) => `连续没有传说时，第${n}次召唤必得传说；抽到后重新计算。`,
-    dupNote: (epic: number, legend: number) => `抽到已有的外观会换成魂石(英雄${epic}、传说${F(legend)})。`,
+    dupNote: (epic: number, legend: number) => `抽到已有的外观会换成魂石(英雄${epic}、传说${S(legend)})。`,
     detail: { tap: '点击查看详情', gear: (m: string, p: number) => `${m}专属装备外观 · 穿戴后能力 +${p}%`, legend: (p: number) => `魔王外观 · 拥有即魔王能力 +${p}%`, dup: (n: number) => `已拥有，转换为魂石${n}`, soul: (n: number) => `获得魂石${n}个`, wear: '可在强化界面穿戴', wearLord: '可在强化界面的魔王一栏穿戴' },
     gear: {
       'slime:crown': '史莱姆王', 'slime:helm': '骑士史莱姆', 'skeleton:royal': '骷髅王', 'skeleton:dread': '恐惧之铠',

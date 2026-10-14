@@ -7,7 +7,7 @@ import { recommendedUpgrade } from '../render/powerTips';
 import { memo, useState } from 'react';
 import { BALANCE, HEROES, LORD, MONSTERS, scaleStats, type HeroId, type MonsterId, type SkillId, type Stats } from '../../server/src/catalog';
 import { castleUpgradeCost, floorsUnlocked, heroBonusLevels, unitUpgradeCost } from '../../server/src/economy';
-import { awakenCost, formatNum, lordLevel } from '../../server/src/growth';
+import { awakenCost, formatNum, lordLevel, formatSoul } from '../../server/src/growth';
 import { planResetMonster, planUpgradeMany } from '../../server/src/castle';
 import { heroGrowth, type StarUnit } from '../../server/src/state';
 import { Portrait } from '../render/Sprite';
@@ -92,7 +92,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
     props.onShop();
   };
   const gold = (n: number) => <><img src="icons/gold.png" alt="" draggable={false} />{formatNum(n)}</>;
-  const soul = (n: number) => <><img src="icons/soul.png" alt="" draggable={false} />{formatNum(n)}</>;
+  const soul = (n: number) => <><img src="icons/soul.png" alt="" draggable={false} />{formatSoul(n)}</>;
 
   const row = (
     id: string, label: string, level: number, onUp: () => Promise<unknown>, first: boolean,
