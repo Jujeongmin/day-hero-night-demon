@@ -71,6 +71,26 @@ const MIN_LOADING_MS = 1200;
 export default function App() {
   const { connected, server } = useServer();
   const api = useMemo(() => (server ? createApi(server) : null), [server]);
+  // 관리자 콘솔 도구(2026-10-14): 브라우저 콘솔에서 retention() 한 줄. 권한은 서버가 계정으로 확인한다
+  useEffect(() => {
+    if (!api) return;
+    (window as unknown as { retention?: () => Promise<unknown> }).retention = async () => {
+      const r = await api.adminRetention() as {
+        players: number; today: string; dau: Record<string, number>;
+        rolling: Record<string, { eligible: number; returned: number; pct: number }>;
+        exact: Record<string, { eligible: number; returned: number; pct: number }>;
+        cohorts: unknown[];
+      };
+      console.log(`전체 플레이어 ${r.players}명 · 오늘(${r.today}) 접속 ${r.dau.today} · 어제 ${r.dau.yesterday} · 최근 7일 ${r.dau.last7}`);
+      console.log('가입 후 N일이 지나서도 다시 온 비율(예전 계정 포함, 추정)');
+      console.table(r.rolling);
+      console.log('정확한 D1·D3·D7(2026-10-14 이후 가입한 계정만)');
+      console.table(r.exact);
+      console.log('가입한 날별(최근 14일, %)');
+      console.table(r.cohorts);
+      return r;
+    };
+  }, [api]);
   const [home, setHome] = useState<HomeData | null>(null);
   const [raiding, setRaiding] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);

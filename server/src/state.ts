@@ -123,6 +123,8 @@ export function canAdvance(from: OnboardingStage, to: OnboardingStage): boolean 
 export interface UserState {
   v: 1;
   profile: { nickname: string; createdAt: number; nicknameChanges: number };
+  /** 접속 기록(2026-10-14, 리텐션 조회용): 접속한 날(dayKey, 최근 60일)과 마지막 접속 시각 */
+  seen?: { days: string[]; at: number };
   castle: { level: number; floors: FloorLayout[] };
   roster: Partial<Record<MonsterId, { level: number }>>;
   heroes: Record<HeroId, { level: number }>;

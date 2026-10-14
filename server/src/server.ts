@@ -19,6 +19,7 @@ import { spendFor, vipOf, vipPerks } from './vip';
 import { championLookFor, chooseLordSkin, lookUnits, ownedLooks, planPassClaim } from './pass';
 import { bumpQuests, planClaimDaily, planClaimGuide } from './quests';
 import { grantFor } from './purchases';
+import { ADMINS, retentionReport, seenPatch, TRACKING_SINCE, type PlayerActivity } from './retention';
 import { calledWaveGold, fightWave, wavePowerAdvice, milestoneSoul, runSiege, siegeAfter, siegeCallBlock, siegeFightStage, siegeReplayMs, siegeSpeed } from './siege';
 import { noteWall, WALL_BREACHES } from './offer';
 import { rngNext, seedFrom } from './rng';
@@ -822,6 +823,9 @@ export class Server {
         await save(me, { castleSyncV: CASTLE_SYNC_V });
       }
       const siegeOffer = await siegeOfferFor(me, s, now);
+      // 접속 기록(리텐션 조회용). 하루 첫 접속, 또는 10분마다
+      const seen = seenPatch(s.seen, now);
+      if (seen) await save(me, { seen });
       return {
         state: s,
         siegeOffer,
@@ -848,6 +852,42 @@ export class Server {
         news: withNews === false ? [] : await recentNews(now),
       };
     });
+  }
+
+  /**
+   * 관리자 전용 리텐션 조회(2026-10-14 사용자). 콘솔 retention()이 부른다.
+   * 모든 플레이어(castles 컬렉션 = 계정마다 하나)를 계정 순서로 100개씩 읽고 각 계정 상태에서 가입·접속 시각을 모은다
+   */
+  async adminRetention() {
+    const me = $sender.account;
+    if (!ADMINS.includes(me)) throw new Error(`NOT_ADMIN ${me}`);
+    const now = Date.now();
+    const accounts: string[] = [];
+    let after: string | undefined;
+    for (;;) {
+      const page: any[] = await $global.getCollectionItems('castles', {
+        orderBy: [{ field: 'account', direction: 'asc' }],
+        limit: 100,
+        ...(after !== undefined ? { startAfter: after } : {}),
+      });
+      for (const r of page) if (typeof r.account === 'string' && !r.account.startsWith('npc:')) accounts.push(r.account);
+      if (page.length < 100) break;
+      after = page[page.length - 1].account;
+    }
+    const players: PlayerActivity[] = [];
+    for (let i = 0; i < accounts.length; i += 20) {
+      const rows = await Promise.all(accounts.slice(i, i + 20).map((a) => $global.getUserState(a).catch(() => null)));
+      for (const raw of rows) {
+        if (!raw || isNew(raw)) continue;
+        const s = raw as UserState;
+        const createdAt = s.profile?.createdAt ?? 0;
+        if (!createdAt) continue;
+        // 마지막 접속: 기록이 없던 예전 계정은 마지막 웨이브·방치 수령 시각으로 추정
+        const lastSeenAt = Math.max(s.seen?.at ?? 0, s.siege?.lastWaveAt ?? 0, s.idle?.lastClaimAt ?? 0, createdAt);
+        players.push({ createdAt, lastSeenAt, activeDays: s.seen?.days ?? [] });
+      }
+    }
+    return retentionReport(players, now, TRACKING_SINCE);
   }
 
   async claimIdle() {
