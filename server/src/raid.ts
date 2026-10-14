@@ -186,3 +186,19 @@ export function bountyDamage(run: Run): number {
   const boss = run.battle?.fighters.find((f) => f.side === 'enemy');
   return boss ? boss.maxHp - boss.hp : 0;
 }
+
+/** 예상 승률을 볼 때 싸워 보는 횟수 */
+export const WIN_TRIES = 5;
+
+/**
+ * 내 용사로 이 성을 털 때 이길 확률(0~1, 2026-10-14 사용자: 쉬움인데 몬스터에게 죽는다).
+ * 난이도를 성 전투력끼리 비교하지 않고 실제 출정 전투를 WIN_TRIES번 돌려 이긴 비율로 정한다(싸우는 건 내 성이 아니라 내 용사라서)
+ */
+export function winChance(snapshot: CastleSnapshot, heroes: Record<HeroId, { level: number; mult?: number }>, account: string): number {
+  let won = 0;
+  for (let i = 0; i < WIN_TRIES; i++) {
+    const r = autoRun(startRun({ account, snapshot, isRevenge: false, revengeLogId: null, now: i + 1 }), heroes);
+    if (runStatus(r.run) === 'victory') won += 1;
+  }
+  return won / WIN_TRIES;
+}

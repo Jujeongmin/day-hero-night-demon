@@ -77,6 +77,7 @@ export const en: Strings = {
   defeat: 'Wiped out',
   toHome: 'Home',
   npcTag: 'NPC',
+  winChance: (p: number) => `Win ~${p}%`,
   playerTag: 'Player',
   pickTarget: 'Pick a castle to raid',
   power: 'Power',

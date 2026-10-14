@@ -79,6 +79,8 @@ export interface Target {
   /** 정찰(2026-10-08): 층마다 서 있는 몬스터(아래층부터). 옥좌에 마왕이 있으면 lord */
   floors?: { id: MonsterId; stars?: number; gear?: string }[][];
   lord?: boolean;
+  /** 내 용사로 이길 확률(0~1). 목록을 열 때마다 서버가 실제 전투로 새로 계산한다(2026-10-14) */
+  win?: number;
 }
 
 export interface SeasonState {

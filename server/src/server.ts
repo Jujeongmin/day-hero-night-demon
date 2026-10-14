@@ -9,7 +9,7 @@ import {
 import { checkNickname, nicknameKey } from './nickname';
 
 import { npcCastle, npcRaids, npcTiersFor, TUTORIAL_TARGET, tutorialCastle } from './npc';
-import { advanceRound, autoRun, beginFloor, bountyDamage, bountyFraction, lordDefeated, reviveRun, runStatus, startRun } from './raid';
+import { advanceRound, autoRun, beginFloor, bountyDamage, bountyFraction, lordDefeated, reviveRun, runStatus, startRun, winChance } from './raid';
 import { eligible, MATCH_BANDS, pickRealTargets } from './matchmaking';
 import { bountyCastle, bountyReward, bountyToday, bountyTriesLeft, isBountyTarget } from './bounty';
 import { campaignCastle, campaignOf, campaignReward, campaignTriesLeft, isCampaignTarget } from './campaign';
@@ -143,6 +143,20 @@ async function settleCampaign(me: string, s: UserState, run: Run, won: boolean, 
   if (rw.soul > 0) await $asset.mint('soul', rw.soul);
   await save(me, { run: null, campaign: cleared ? { ...c, stage: c.stage + 1 } : c });
   return { won, loot: rw.gold, soul: rw.soul, lordDefeated: false, offerStarter: false, campaign: { stage: n, cleared } };
+}
+
+/** 상대마다 내 용사로 이길 확률을 붙인다(목록을 열 때마다 새로: 용사를 키우면 바로 바뀐다). 성을 못 읽으면 빼지 않고 승률 없이 */
+async function withWinChance(me: string, s: UserState, targets: Target[], now: number): Promise<Target[]> {
+  const heroes = heroGrowth(s);
+  const out: Target[] = [];
+  for (const t of targets) {
+    try {
+      out.push({ ...t, win: winChance(await buildSnapshot(t.id, now), heroes, me) });
+    } catch {
+      out.push(t);
+    }
+  }
+  return out;
 }
 
 /** 정찰용 층별 몬스터(2026-10-08) */
@@ -1007,16 +1021,16 @@ export class Server {
       // 출정하거나 다시 찾기 전까지는 같은 상대(2026-10-08: 창을 다시 열면 공짜로 바뀌던 것을 막는다). 옛 목록(정찰 정보 없음)은 새로
       if (s.lastTargets.length > 0 && s.lastTargets.every((t) => t.floors)) {
         // 고정된 목록에 실제 유저가 없으면 열 때마다 다시 찾아 앞에 끼운다(2026-10-13: NPC만 남아 유저가 안 보이던 것)
-        if (s.lastTargets.some((t) => !t.npc)) return s.lastTargets;
+        if (s.lastTargets.some((t) => !t.npc)) return withWinChance(me, s, s.lastTargets, now);
         const real = await realTargets(me, s, now);
-        if (real.length === 0) return s.lastTargets;
+        if (real.length === 0) return withWinChance(me, s, s.lastTargets, now);
         const targets = [...real, ...s.lastTargets].slice(0, 3);
         await save(me, { lastTargets: targets });
-        return targets;
+        return withWinChance(me, s, targets, now);
       }
       const targets = [...(await realTargets(me, s, now)), ...npcTargets(s, now, rerollOf(s, now).n)].slice(0, 3);
       await save(me, { lastTargets: targets });
-      return targets;
+      return withWinChance(me, s, targets, now);
     });
   }
 
@@ -1036,7 +1050,7 @@ export class Server {
       const reroll = { day: r.day, n: r.n + 1 };
       const targets = [...(await realTargets(me, s, now)), ...npcTargets(s, now, reroll.n)].slice(0, 3);
       await save(me, { lastTargets: targets, reroll });
-      return { targets, cost, reroll };
+      return { targets: await withWinChance(me, s, targets, now), cost, reroll };
     });
   }
 

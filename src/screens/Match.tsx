@@ -3,8 +3,9 @@ import { formatNum } from '../../server/src/growth';
 import { lordSoulLeft, sortiesLeft, sortieTicketCost } from '../../server/src/sortie';
 import { bountyOf, bountyToday, bountyTriesLeft } from '../../server/src/bounty';
 import { campaignCastle, campaignOf, campaignReward, campaignTriesLeft, stageLabel } from '../../server/src/campaign';
-import { useEffect, useState } from 'react';
-import { dayKey, type Target } from '../../server/src/state';
+import { useEffect, useMemo, useState } from 'react';
+import { dayKey, heroGrowth, type Target } from '../../server/src/state';
+import { winChance } from '../../server/src/raid';
 import { errorText, type Api, type HomeData } from '../services/api';
 import { T } from '../strings/ko';
 import { VipBadge } from '../render/Vip';
@@ -14,10 +15,13 @@ import { npcCastle } from '../../server/src/npc';
 import { snapshotPower } from '../../server/src/economy';
 import { displayName } from '../strings/i18n';
 
-/** 난이도: 화면 위 내 전투력과 상대 전투력을 비교(2026-10-07 사용자: 숫자가 낮은데 어려움으로 뜨면 헷갈린다). 90% 미만 쉬움, 110%까지 보통, 그 위 어려움 */
-function difficulty(power: number, normal: number): 'easy' | 'normal' | 'hard' {
-  if (power < normal * 0.9) return 'easy';
-  if (power <= normal * 1.1) return 'normal';
+/**
+ * 난이도 = 내 용사로 실제로 싸워 본 예상 승률(2026-10-14 사용자: 쉬움인데 몬스터에게 죽는다 — 싸우는 건 내 성이 아니라 용사).
+ * 80% 이상 쉬움, 40% 이상 보통, 그 아래 어려움
+ */
+function difficultyOf(win: number): 'easy' | 'normal' | 'hard' {
+  if (win >= 0.8) return 'easy';
+  if (win >= 0.4) return 'normal';
   return 'hard';
 }
 
@@ -68,7 +72,9 @@ function CampaignMap(props: { home: HomeData; busy: boolean; onFight: () => void
   const castle = campaignCastle(c.stage);
   const reward = campaignReward(c.stage, home.state.siege.best);
   const power = snapshotPower(castle);
-  const d = difficulty(power, home.power ?? 0);
+  // 원정 칸은 정해진 성이라 화면에서 바로 싸워 본다
+  const win = useMemo(() => winChance(castle, heroGrowth(home.state), 'campaign'), [c.stage, home.state.heroes, home.state.stars]);
+  const d = difficultyOf(win);
   const cleared = c.stage - first;
   const node = (i: number) => {
     const n = first + i;
@@ -106,7 +112,7 @@ function CampaignMap(props: { home: HomeData; busy: boolean; onFight: () => void
               {cur.boss && <span className="badge boss">{T.campaign.boss}</span>}
               <span className={`diff ${d}`}>{T.diff[d]}</span>
             </span>
-            <small className="target-power"><img className="coin-ic" src="icons/stat_atk.png" alt="" draggable={false} />{formatNum(power)}</small>
+            <small className="target-power"><img className="coin-ic" src="icons/stat_atk.png" alt="" draggable={false} />{formatNum(power)} · {T.winChance(Math.round(win * 100))}</small>
           </span>
           <span className="target-go">
             <small className="camp-first">{T.campaign.firstClear}</small>
@@ -162,9 +168,8 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
     setTabState(t);
     try { localStorage.setItem('match.tab', t); } catch { /* 저장 못 해도 이번 창에서는 쓴다 */ }
   };
-  // NPC·실제 플레이어 모두 화면 위 내 전투력과 같은 잣대로 비교한다(실제 승패는 출정하는 용사가 정한다)
-  const mine = home.power ?? 0;
-  const diffOf = (t: Target): 'easy' | 'normal' | 'hard' => difficulty(t.power, mine);
+  // 난이도는 서버가 내 용사로 싸워 본 승률(win). 입문 상대처럼 승률이 없으면 쉬움
+  const diffOf = (t: Target): 'easy' | 'normal' | 'hard' => difficultyOf(t.win ?? 1);
 
   // 첫 출정(2026-10-08 사용자): 출정 패널에서 입문 상대(침입자 길드 견습) 하나를 골라 시작한다. 입장권을 쓰지 않는다
   const intro = !home.state.introDone;
@@ -246,7 +251,7 @@ export default function Match(props: { api: Api; home: HomeData; onStart: () => 
                   <span className={`badge ${t.npc ? 'npc' : 'player'}`}>{t.npc ? T.npcTag : T.playerTag}</span>
                   <span className={`diff ${d}`}>{T.diff[d]}</span>
                 </span>
-                <small className="target-power"><img className="coin-ic" src="icons/stat_atk.png" alt="" draggable={false} />{formatNum(t.power)}{scoutable && <em>{T.scout}{open === t.id ? '▴' : '▾'}</em>}</small>
+                <small className="target-power"><img className="coin-ic" src="icons/stat_atk.png" alt="" draggable={false} />{formatNum(t.power)}{t.win !== undefined && <> · {T.winChance(Math.round(t.win * 100))}</>}{scoutable && <em>{T.scout}{open === t.id ? '▴' : '▾'}</em>}</small>
               </span>
               <span className="target-go">
                 {!intro && <span className="target-loot"><img className="coin-ic" src="icons/gold.png" alt="" draggable={false} />{formatNum(t.estLoot)}</span>}

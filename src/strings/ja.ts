@@ -77,6 +77,7 @@ export const ja: Strings = {
   defeat: '全滅',
   toHome: 'ホームへ',
   npcTag: 'NPC',
+  winChance: (p: number) => `予想勝率 ${p}%`,
   playerTag: 'ユーザー',
   pickTarget: '襲う城を選ぶ',
   power: '戦闘力',

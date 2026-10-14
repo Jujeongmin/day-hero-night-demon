@@ -77,6 +77,7 @@ export const zhHant: Strings = {
   defeat: '全滅',
   toHome: '回主頁',
   npcTag: 'NPC',
+  winChance: (p: number) => `預計勝率 ${p}%`,
   playerTag: '玩家',
   pickTarget: '選擇要搶的城堡',
   power: '戰力',

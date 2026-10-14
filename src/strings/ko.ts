@@ -77,6 +77,7 @@ export const ko = {
   defeat: '전멸',
   toHome: '홈으로',
   npcTag: 'NPC',
+  winChance: (p: number) => `예상 승률 ${p}%`,
   playerTag: '유저',
   pickTarget: '털 성 고르기',
   power: '전투력',
