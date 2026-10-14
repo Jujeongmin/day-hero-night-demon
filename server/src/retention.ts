@@ -7,7 +7,12 @@ import { dayKey } from './state';
  */
 
 /** 관리자 계정(Verse8 계정 주소). 조회는 이 계정만 부를 수 있다 */
-export const ADMINS: string[] = [];
+export const ADMINS: string[] = ['0x7b47Aa40357441418909f83728Da906b7C85d261'];
+
+/** 관리자인가(주소 대소문자는 가리지 않는다) */
+export function isAdmin(account: string): boolean {
+  return ADMINS.some((a) => a.toLowerCase() === account.toLowerCase());
+}
 
 /** 접속한 날 기록을 남기는 최대 일수(오래된 것부터 뺀다) */
 export const ACTIVE_DAYS_KEEP = 60;

@@ -19,7 +19,7 @@ import { spendFor, vipOf, vipPerks } from './vip';
 import { championLookFor, chooseLordSkin, lookUnits, ownedLooks, planPassClaim } from './pass';
 import { bumpQuests, planClaimDaily, planClaimGuide } from './quests';
 import { grantFor } from './purchases';
-import { ADMINS, retentionReport, seenPatch, TRACKING_SINCE, type PlayerActivity } from './retention';
+import { isAdmin, retentionReport, seenPatch, TRACKING_SINCE, type PlayerActivity } from './retention';
 import { calledWaveGold, fightWave, wavePowerAdvice, milestoneSoul, runSiege, siegeAfter, siegeCallBlock, siegeFightStage, siegeReplayMs, siegeSpeed } from './siege';
 import { noteWall, WALL_BREACHES } from './offer';
 import { rngNext, seedFrom } from './rng';
@@ -856,7 +856,7 @@ export class Server {
    */
   async adminRetention() {
     const me = $sender.account;
-    if (!ADMINS.includes(me)) throw new Error(`NOT_ADMIN ${me}`);
+    if (!isAdmin(me)) throw new Error(`NOT_ADMIN ${me}`);
     const now = Date.now();
     const accounts: string[] = [];
     let after: string | undefined;
