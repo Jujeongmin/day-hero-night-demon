@@ -81,13 +81,17 @@ export default function App() {
         exact: Record<string, { eligible: number; returned: number; pct: number }>;
         cohorts: unknown[];
       };
+      // 표 칸 이름을 한국어로(2026-10-14 사용자: eligible·returned·pct가 뭔지 모르겠다)
+      const ko = (t: Record<string, { eligible: number; returned: number; pct: number }>) =>
+        Object.fromEntries(Object.entries(t).map(([k, v]) => [k.toUpperCase(), { '대상(그날이 지난 사람)': v.eligible, '다시 온 사람': v.returned, '비율(%)': v.pct }]));
       console.log(`전체 플레이어 ${r.players}명 · 오늘(${r.today}) 접속 ${r.dau.today} · 어제 ${r.dau.yesterday} · 최근 7일 ${r.dau.last7}`);
       console.log('가입 후 N일이 지나서도 다시 온 비율(예전 계정 포함, 추정)');
-      console.table(r.rolling);
-      console.log('정확한 D1·D3·D7(2026-10-14 이후 가입한 계정만)');
-      console.table(r.exact);
-      console.log('가입한 날별(최근 14일, %)');
-      console.table(r.cohorts);
+      console.table(ko(r.rolling));
+      console.log('정확한 D1·D3·D7: 가입 N일째 되는 날 접속한 비율(2026-10-14 이후 가입한 계정만)');
+      console.table(ko(r.exact));
+      console.log('가입한 날별(최근 14일, %. 빈칸 = 아직 그날이 안 옴)');
+      console.table((r.cohorts as { day: string; joined: number; d1: number | null; d3: number | null; d7: number | null }[])
+        .map((c) => ({ '가입한 날': c.day, '가입 수': c.joined, 'D1(%)': c.d1 ?? '', 'D3(%)': c.d3 ?? '', 'D7(%)': c.d7 ?? '' })));
       return r;
     };
   }, [api]);
