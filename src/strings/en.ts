@@ -299,6 +299,8 @@ export const en: Strings = {
     farm: (n: number) => `Wave ${n} (repeating)`,
     challenge: (n: number) => `Challenge wave ${n}`,
     challengeReady: 'Challenging!',
+    failTitle: (n: number) => `Wave ${n} failed!`,
+    failSub: (n: number) => `Repeating wave ${n} · upgrade and challenge again`,
     nextIn: (s: number) => ` · in ${s}s`,
     advice: (p: string) => `Recommended ${p}`,
     breachedFarm: 'Breached! Repeating the wave below',

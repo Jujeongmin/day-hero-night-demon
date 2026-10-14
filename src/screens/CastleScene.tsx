@@ -354,6 +354,15 @@ export default function CastleScene(props: {
   const [replay, setReplay] = useState<ReplayPhase>(NO_PHASE);
   const onPhase = useCallback((p: ReplayPhase) => setReplay(p), []);
   const replaying = replay.active || replay.result !== null;
+  // 웨이브 실패 알림(2026-10-14 사용자): 함락 결과가 뜨면 3초 동안 화면 가운데에
+  const [failAlert, setFailAlert] = useState<number | null>(null);
+  useEffect(() => {
+    if (replay.result !== 'breached') return;
+    setFailAlert(lastWave?.stage ?? null);
+    const id = window.setTimeout(() => setFailAlert(null), 3000);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [replay.result]);
   // 웨이브 사이 쉬는 시간(2026-10-14 사용자): 재생이 끝난 순간부터 siegeRestMs(배속과 상관없이)
   const [restUntil, setRestUntil] = useState(0);
   const wasReplaying = useRef(false);
@@ -550,6 +559,13 @@ export default function CastleScene(props: {
         lordSkin={lordSkin} replaying={replaying} lordHp={lordHp} defending={defending} selected={selected} onTier={onTier}
         replayWave={replayWave} speed={speed} perKill={perKill} floorsCount={floorsCount} onPhase={onPhase}
       />
+
+      {failAlert !== null && (
+        <div className="wave-alert fail" role="status">
+          <b>{T.siege.failTitle(failAlert)}</b>
+          <small>{T.siege.failSub(Math.max(1, failAlert - 1))}</small>
+        </div>
+      )}
 
       <Siege
         ground={panelOpen ? 12 : 90}

@@ -299,6 +299,8 @@ export const zhHans: Strings = {
     farm: (n: number) => `第${n}波 重复中`,
     challenge: (n: number) => `挑战第${n}波`,
     challengeReady: '挑战中！',
+    failTitle: (n: number) => `第${n}波 失败！`,
+    failSub: (n: number) => `重复第${n}波 · 强化后再挑战`,
     nextIn: (s: number) => ` · ${s}秒后`,
     advice: (p: string) => `推荐 ${p}`,
     breachedFarm: '被突破！重复上一波',

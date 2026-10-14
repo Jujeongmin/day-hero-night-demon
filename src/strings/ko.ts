@@ -302,6 +302,8 @@ export const ko = {
     farm: (n: number) => `웨이브 ${n} 반복 중`,
     challenge: (n: number) => `웨이브 ${n} 도전`,
     challengeReady: '도전 중!',
+    failTitle: (n: number) => `웨이브 ${n} 실패!`,
+    failSub: (n: number) => `웨이브 ${n}을(를) 반복한다 · 강화하고 다시 도전`,
     nextIn: (s: number) => ` · ${s}초 뒤`,
     advice: (p: string) => `권장 ${p}`,
     breachedFarm: '막혔다! 이전 웨이브를 반복한다',

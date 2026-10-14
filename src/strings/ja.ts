@@ -299,6 +299,8 @@ export const ja: Strings = {
     farm: (n: number) => `ウェーブ${n} 繰り返し中`,
     challenge: (n: number) => `ウェーブ${n}に挑戦`,
     challengeReady: '挑戦中！',
+    failTitle: (n: number) => `ウェーブ${n} 失敗！`,
+    failSub: (n: number) => `ウェーブ${n}を繰り返す・強化して再挑戦`,
     nextIn: (s: number) => ` · ${s}秒後`,
     advice: (p: string) => `推奨 ${p}`,
     breachedFarm: '突破された！前のウェーブを繰り返す',
