@@ -110,3 +110,26 @@ export function planAwaken(s: UserState, unit: string): { soul: number; patch: P
   }
   return { soul, patch: { stars } };
 }
+
+/**
+ * 몬스터 초기화(2026-10-14 사용자: 새 유닛을 뽑을 맛이 나게): Lv1·별 0으로 되돌리고
+ * 그동안 쓴 강화 골드 전부와 각성 영혼석 전부를 돌려준다. 장비 외형·배치는 그대로.
+ * 각성하면 레벨이 1로 돌아가므로 쓴 골드 = 지난 별마다 Lv1→50 한 바퀴 + 지금 별에서 Lv1→지금 레벨(지금 가격으로)
+ */
+export function planResetMonster(s: UserState, id: string): { gold: number; soul: number; patch: Pick<UserState, 'roster' | 'stars'> } {
+  if (!(id in MONSTERS)) throw new Error('없는 몬스터다');
+  const m = s.roster[id as MonsterId];
+  if (!m) throw new Error('보유하지 않은 몬스터다');
+  const stars = s.stars?.[id as MonsterId] ?? 0;
+  if (m.level <= 1 && stars <= 0) throw new Error('NOTHING_TO_RESET');
+  let gold = 0;
+  for (let st = 0; st <= stars; st++) {
+    const top = st < stars ? BALANCE.maxUnitLevel : m.level;
+    for (let l = 1; l < top; l++) gold += unitUpgradeCost(l, st) ?? 0;
+  }
+  let soul = 0;
+  for (let k = 1; k <= stars; k++) soul += awakenCost(k) ?? 0;
+  if (!Number.isFinite(gold)) throw new Error('NOTHING_TO_RESET');
+  // 키를 지우지 않고 0으로(상태 저장이 합치기여도 확실히 0이 되게)
+  return { gold, soul, patch: { roster: { ...s.roster, [id]: { level: 1 } }, stars: { ...(s.stars ?? {}), [id]: 0 } } };
+}

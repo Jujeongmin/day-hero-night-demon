@@ -1,5 +1,5 @@
 import { BALANCE, HERO_ORDER, TACTICS, type HeroId, type Tactic } from './catalog';
-import { planAwaken, planRecruit, planUpgrade, planUpgradeMany, validateFloor } from './castle';
+import { planAwaken, planRecruit, planResetMonster, planUpgrade, planUpgradeMany, validateFloor } from './castle';
 import { castlePower, displayPower, heroLootBonus, idleIncome, lootAmount, splitOnlineIdle, npcLoot, pvpLootCap, siegeDefenseMult, snapshotPower } from './economy';
 import { avgMonsterLevel, goldPackAmount, GOLD_PACK_IDS, waveGold, type GoldPackId } from './growth';
 import { addSortie, dailyOf, lordSoulLeft, sortiesLeft, sortieTicketCost, spendSortie } from './sortie';
@@ -972,6 +972,21 @@ export class Server {
       const n = patch.stars[unit as keyof typeof patch.stars] ?? 0;
       if (n >= BALANCE.awaken.maxStars) await announce('star20', s.profile.nickname, vipOf(s), now, `${me}:${unit}`);
       return { soul, stars: patch.stars };
+    });
+  }
+
+  /** 몬스터 초기화: Lv1·별 0으로, 쓴 골드·영혼석 전부 돌려준다(계산은 서버가) */
+  async resetMonster(monster: string) {
+    const me = $sender.account;
+    return withLocks([me], async () => {
+      const now = Date.now();
+      const s = await loadState(me, now);
+      const { gold, soul, patch } = planResetMonster(s, monster);
+      await save(me, patch);
+      if (gold > 0) await $asset.mint('gold', gold);
+      if (soul > 0) await $asset.mint('soul', soul);
+      await syncCastle(me, { ...s, ...patch });
+      return { gold, soul };
     });
   }
 

@@ -521,7 +521,8 @@ button[lang='zh-Hans'] { font-family: 'Noto Sans SC', sans-serif; }
 /* 빛 번짐(filter)은 바뀔 때마다 다시 그려서 매 장면 대신 몇 단계로만 바꾼다(2026-10-07 프레임 드랍) */
 @keyframes summon-glow { 50% { filter: drop-shadow(0 0 9px #c070ff) brightness(1.1); } }
 .summon { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; background: #07030a; }
-.summon-stage { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; background: #0b0a1c url(/ui/summon_altar.png) center 85% / 720px 360px no-repeat; image-rendering: pixelated; }
+/* 제단 그림은 화면 높이의 절반쯤(최대 4배)으로 키워 가운데 아래에 두고, 위아래 가장자리는 바탕색으로 흐리게(2026-10-14 사용자: 긴 화면에서 위가 텅 비었다) */
+.summon-stage { --altar: clamp(360px, 62%, 600px); position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; background: linear-gradient(#0b0a1c, #0b0a1c00 22%, #0b0a1c00 72%, #0b0a1c) center 45% / auto var(--altar) no-repeat, url(/ui/summon_altar.png) center 45% / auto var(--altar) no-repeat, #0b0a1c; image-rendering: pixelated; }
 .summon-top { display: flex; justify-content: space-between; align-items: flex-start; }
 .summon-top .close, .summon-rates .close { background: none; border: 0; padding: 2px; width: 34px; height: 34px; }
 .summon-top .close img, .summon-rates .close img { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
@@ -729,6 +730,19 @@ span.up-pt { cursor: default; }
 .up-info { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 6px; padding: 4px 8px 8px; border: 12px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 12px stretch; background: var(--panel); background-clip: padding-box; image-rendering: pixelated; font-size: 14px; line-height: 1.35; }
 .up-info-t { display: flex; align-items: center; gap: 8px; font-size: 17px; color: var(--gold); }
 .up-info small { color: var(--muted); font-size: 12px; }
+/* 몬스터 초기화(2026-10-14): 설명 창 아래 작은 버튼, 확인창에 돌려받을 골드·영혼석 */
+.up-info .up-reset { align-self: flex-end; min-width: 72px; }
+.up-reset-dim { position: fixed; z-index: 30; padding: 16px; }
+.up-reset-sheet { max-width: 360px; }
+.up-reset-sheet .sheet-body { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.up-reset-sheet .sheet-body > small { color: var(--muted); font-size: 12px; }
+/* 버튼 글자가 두 줄로 꺾이지 않게(2026-10-14 사용자) */
+.up-reset-sheet .row { width: 100%; justify-content: center; gap: 10px; }
+.up-reset-sheet .row .btn { flex: 1; max-width: 140px; white-space: nowrap; }
+.up-info .up-reset { white-space: nowrap; }
+.up-reset-back { display: flex; gap: 14px; font-size: 18px; color: var(--gold); }
+.up-reset-back span { display: inline-flex; align-items: center; gap: 4px; }
+.up-reset-back img { width: 18px; height: 18px; image-rendering: pixelated; }
 .up-row .portrait { display: block; width: 40px; height: 40px; }
 .btn.up-bt { flex-direction: row; }
 .up-bt img { display: inline-block; }

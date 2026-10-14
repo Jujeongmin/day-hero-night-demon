@@ -8,7 +8,7 @@ import { memo, useState } from 'react';
 import { BALANCE, HEROES, LORD, MONSTERS, scaleStats, type HeroId, type MonsterId, type SkillId, type Stats } from '../../server/src/catalog';
 import { castleUpgradeCost, floorsUnlocked, heroBonusLevels, unitUpgradeCost } from '../../server/src/economy';
 import { awakenCost, formatNum, lordLevel } from '../../server/src/growth';
-import { planUpgradeMany } from '../../server/src/castle';
+import { planResetMonster, planUpgradeMany } from '../../server/src/castle';
 import { heroGrowth, type StarUnit } from '../../server/src/state';
 import { Portrait } from '../render/Sprite';
 import { StarRow } from '../render/stars';
@@ -63,7 +63,7 @@ function savedMult(): Mult {
 }
 
 /** 초상화를 누르면 뜨는 설명(스킬·다음 레벨 능력치). 바깥을 누르면 닫힌다 */
-interface Info { portrait: string; title: string; skill: string; next?: string; note?: string }
+interface Info { portrait: string; title: string; skill: string; next?: string; note?: string; reset?: { id: MonsterId; label: string } }
 
 /**
  * 강화 창 A안(2026-10-02 승인): 위에서 ×1·×10·최대를 한 번 고르면 모든 줄 버튼이 그 횟수로.
@@ -78,6 +78,9 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
   const rec = recommendedUpgrade(s, home.gold, home.soul);
   const [mult, setMultState] = useState<Mult>(savedMult);
   const [info, setInfo] = useState<Info | null>(null);
+  // 몬스터 초기화 확인창(2026-10-14 사용자): 설명 창에서 누르면 돌려받을 골드·영혼석을 보여 주고 한 번 더 묻는다
+  const [askReset, setAskReset] = useState<{ id: MonsterId; label: string } | null>(null);
+  const resetPlan = askReset ? (() => { try { return planResetMonster(s, askReset.id); } catch { return null; } })() : null;
   const setMult = (m: Mult) => {
     setMultState(m);
     try { localStorage.setItem(MULT_KEY, m); } catch { /* 저장 못 해도 이번 창에서는 쓴다 */ }
@@ -116,6 +119,7 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
       skill: skillText(unit.skill, unit.cooldown),
       next: gain ? `${T.up.nextLevel}: ${T.stats.hp} +${formatNum(gain.hp)} · ${T.stats.atk} +${formatNum(gain.atk)} · ${T.stats.def} +${formatNum(gain.def)}` : undefined,
       note,
+      ...(id in MONSTERS && (level > 1 || stars > 0) ? { reset: { id: id as MonsterId, label } } : {}),
     });
     let button;
     if (cost === null) {
@@ -260,7 +264,30 @@ function UpgradeList(props: { api: Api; home: HomeData; onRefresh: () => Promise
             <span>{info.skill}</span>
             {info.next && <small>{info.next}</small>}
             {info.note && <small>{info.note}</small>}
+            {info.reset && (
+              <button className="btn small up-reset" disabled={busy} onClick={(e) => { e.stopPropagation(); setAskReset(info.reset!); setInfo(null); }}>{T.up.reset}</button>
+            )}
           </div>
+        </div>
+      )}
+      {askReset && resetPlan && (
+        <div className="modal-dim up-reset-dim" onClick={() => setAskReset(null)}>
+          <section className="sheet modal up-reset-sheet" onClick={(e) => e.stopPropagation()}>
+            <header className="sheet-head"><span>{T.up.reset}</span></header>
+            <div className="sheet-body">
+              <span className="up-info-t"><Portrait id={monsterSpriteId(askReset.id, s.gear?.worn[askReset.id])} label={askReset.label} />{askReset.label}</span>
+              <p className="giveup-text">{T.up.resetText(askReset.label)}</p>
+              <small>{T.up.resetBack}</small>
+              <div className="up-reset-back">
+                <span>{gold(resetPlan.gold)}</span>
+                {resetPlan.soul > 0 && <span>{soul(resetPlan.soul)}</span>}
+              </div>
+              <div className="row">
+                <button className="btn" disabled={busy} onClick={() => { const id = askReset.id; setAskReset(null); void act(() => api.resetMonster(id)); }}>{T.up.reset}</button>
+                <button className="btn gold" onClick={() => setAskReset(null)}>{T.cancel}</button>
+              </div>
+            </div>
+          </section>
         </div>
       )}
     </>
