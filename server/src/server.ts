@@ -880,7 +880,10 @@ export class Server {
         if (!createdAt) continue;
         // 마지막 접속: 기록이 없던 예전 계정은 마지막 웨이브·방치 수령 시각으로 추정
         const lastSeenAt = Math.max(s.seen?.at ?? 0, s.siege?.lastWaveAt ?? 0, s.idle?.lastClaimAt ?? 0, createdAt);
-        players.push({ createdAt, lastSeenAt, activeDays: s.seen?.days ?? [] });
+        players.push({
+          createdAt, lastSeenAt, activeDays: s.seen?.days ?? [],
+          progress: { stage: s.onboarding?.at ?? 'done', best: s.siege?.best ?? 1, castle: s.castle?.level ?? 1, wins: s.quests?.wins ?? 0, guide: s.quests?.guide ?? 0 },
+        });
       }
     }
     return retentionReport(players, now, TRACKING_SINCE);

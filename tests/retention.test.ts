@@ -45,3 +45,17 @@ describe('seenPatch', () => {
     expect(seenPatch(first, now + DAY)!.days).toEqual([dayKey(now), dayKey(now + DAY)]);
   });
 });
+
+describe('dropoff', () => {
+  it('groups players a day old by where they stopped, split by whether they came back', () => {
+    const r = retentionReport([
+      { createdAt: at(3), lastSeenAt: at(3) + 5 * 60_000, activeDays: [], progress: { stage: 'raid_pick', best: 1, castle: 1, wins: 0, guide: 0 } },
+      { createdAt: at(3), lastSeenAt: at(1), activeDays: [], progress: { stage: 'done', best: 25, castle: 2, wins: 12, guide: 7 } },
+      { createdAt: at(0), lastSeenAt: at(0), activeDays: [], progress: { stage: 'cutscene', best: 1, castle: 1, wins: 0, guide: 0 } },
+    ], now, '2026-10-01');
+    expect(r.dropoff.stage).toEqual({ raid_pick: { left: 1, stayed: 0 }, done: { left: 0, stayed: 1 } });
+    expect(r.dropoff.playMinutes['3~10분']).toEqual({ left: 1, stayed: 0 });
+    expect(r.dropoff.best['20~29']).toEqual({ left: 0, stayed: 1 });
+    expect(r.dropoff.wins['0승']).toEqual({ left: 1, stayed: 0 });
+  });
+});

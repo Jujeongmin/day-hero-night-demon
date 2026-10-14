@@ -80,6 +80,7 @@ export default function App() {
         rolling: Record<string, { eligible: number; returned: number; pct: number }>;
         exact: Record<string, { eligible: number; returned: number; pct: number }>;
         cohorts: unknown[];
+        dropoff?: Record<string, Record<string, { left: number; stayed: number }>>;
       };
       // 표 칸 이름을 한국어로(2026-10-14 사용자: eligible·returned·pct가 뭔지 모르겠다)
       const ko = (t: Record<string, { eligible: number; returned: number; pct: number }>) =>
@@ -92,6 +93,15 @@ export default function App() {
       console.log('가입한 날별(최근 14일, %. 빈칸 = 아직 그날이 안 옴)');
       console.table((r.cohorts as { day: string; joined: number; d1: number | null; d3: number | null; d7: number | null }[])
         .map((c) => ({ '가입한 날': c.day, '가입 수': c.joined, 'D1(%)': c.d1 ?? '', 'D3(%)': c.d3 ?? '', 'D7(%)': c.d7 ?? '' })));
+      // 이탈 지점(2026-10-14): 가입한 지 하루가 지난 사람 중 하루 뒤에 다시 안 온 사람이 마지막에 어디까지 갔나
+      if (r.dropoff) {
+        console.log('── 이탈 지점: 가입한 지 하루 지난 사람의 마지막 상태 (안 돌아옴 = 그만둔 곳) ──');
+        const names: Record<string, string> = { stage: '튜토리얼 단계(done = 다 끝냄)', playMinutes: '가입 후 마지막 접속까지 시간', best: '최고 웨이브', castle: '성 레벨', wins: '출정 승리 수', guide: '받은 가이드 의뢰 수' };
+        for (const [dim, rows] of Object.entries(r.dropoff)) {
+          console.log(names[dim] ?? dim);
+          console.table(Object.fromEntries(Object.entries(rows).map(([k, v]) => [k, { '안 돌아옴': v.left, '돌아옴': v.stayed }])));
+        }
+      }
       return r;
     };
   }, [api]);

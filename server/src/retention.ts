@@ -23,6 +23,38 @@ export interface PlayerActivity {
   lastSeenAt: number;
   /** 접속한 날(dayKey). 기록을 시작하기 전 계정은 비어 있거나 일부만 */
   activeDays: string[];
+  /** 이탈 지점용 진행 정보(없으면 표에서 '?') */
+  progress?: { stage: string; best: number; castle: number; wins: number; guide: number };
+}
+
+/** 이탈 지점 표: 차원 → 묶음 → 다시 안 온 사람·다시 온 사람 수 */
+export type Dropoff = Record<string, Record<string, { left: number; stayed: number }>>;
+
+const bucket = (n: number, edges: number[], labels: string[]) => labels[edges.findIndex((e) => n < e)] ?? labels[labels.length - 1];
+
+/**
+ * 이탈 지점(2026-10-14 사용자): 가입한 지 하루가 지난 사람을 "하루 뒤에도 다시 왔는가"로 나눠, 마지막 상태가 어디였는지 묶는다.
+ * 다시 안 온 사람의 마지막 진행이 곧 그만둔 지점이다
+ */
+export function dropoff(players: PlayerActivity[], now: number): Dropoff {
+  const out: Dropoff = { stage: {}, playMinutes: {}, best: {}, castle: {}, wins: {}, guide: {} };
+  const add = (dim: string, key: string, stayed: boolean) => {
+    const row = (out[dim][key] ??= { left: 0, stayed: 0 });
+    if (stayed) row.stayed += 1; else row.left += 1;
+  };
+  for (const p of players) {
+    if (now - p.createdAt < DAY) continue;
+    const stayed = p.lastSeenAt - p.createdAt >= DAY;
+    const g = p.progress;
+    add('stage', g?.stage ?? '?', stayed);
+    add('playMinutes', bucket((p.lastSeenAt - p.createdAt) / 60_000, [3, 10, 30, 60, 24 * 60], ['3분 미만', '3~10분', '10~30분', '30~60분', '1시간~하루', '하루 이상']), stayed);
+    if (!g) continue;
+    add('best', bucket(g.best, [5, 10, 20, 30, 50], ['1~4', '5~9', '10~19', '20~29', '30~49', '50+']), stayed);
+    add('castle', `성 ${g.castle}`, stayed);
+    add('wins', bucket(g.wins, [1, 3, 10, 30], ['0승', '1~2승', '3~9승', '10~29승', '30승+']), stayed);
+    add('guide', bucket(g.guide, [1, 3, 6, 10, 15], ['0개', '1~2개', '3~5개', '6~9개', '10~14개', '15개+']), stayed);
+  }
+  return out;
 }
 
 const DAY = 86_400_000;
@@ -39,6 +71,7 @@ export interface RetentionReport {
   exact: Record<'d1' | 'd3' | 'd7', { eligible: number; returned: number; pct: number }>;
   /** 가입한 날별 묶음: 가입 수와 D1·D3·D7(아직 그날이 안 왔으면 null) */
   cohorts: { day: string; joined: number; d1: number | null; d3: number | null; d7: number | null }[];
+  dropoff: Dropoff;
 }
 
 const pct = (a: number, b: number) => (b === 0 ? 0 : Math.round((a / b) * 1000) / 10);
@@ -86,6 +119,7 @@ export function retentionReport(players: PlayerActivity[], now: number, tracking
     rolling,
     exact,
     cohorts,
+    dropoff: dropoff(players, now),
   };
 }
 
