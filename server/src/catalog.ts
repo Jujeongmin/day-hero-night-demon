@@ -171,7 +171,8 @@ export const BALANCE = {
    * 계산은 성장 레벨(growth.ts effLevel)로 한다: Lv1→50 한 바퀴 = 옛 곡선 growth.cycleLevels 레벨분
    */
   maxUnitLevel: 50,
-  maxCastleLevel: 10,
+  /** 성 최대 레벨(2026-10-16 사용자: 무과금 일주일에 10 도달 → 30). 비용·마왕·몬스터 배수는 같은 공식 그대로 이어진다 */
+  maxCastleLevel: 30,
   /**
    * 공격 속도 전투(2026-10-06 사용자: 턴마다가 아니라 공격 속도로). 유닛마다 다음 공격 시각을 갖고 시간 순으로 싸운다.
    * 공격 간격(ms) = baseMs × (1 + (refSpd − 속도) × perSpd): 속도 4가 1초, 7(도적·거미)이 0.76초, 1(골렘)이 1.24초(약 1.6배 차이).

@@ -70,7 +70,8 @@ describe('economy', () => {
     let sum = 0;
     for (let l = 1; l < 11; l++) sum += 5000 * Math.pow(1.3, l - 1);
     expect(castleUpgradeCost(1)).toBe(Math.round(sum));
-    expect(castleUpgradeCost(10)).toBeNull();
+    expect(castleUpgradeCost(BALANCE.maxCastleLevel)).toBeNull();
+    expect(castleUpgradeCost(10)).toBeGreaterThan(castleUpgradeCost(9)!);
   });
 
   it('floors: 1 at lv1, 2 at lv2, 3 at lv4', () => {
