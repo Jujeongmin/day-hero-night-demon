@@ -928,13 +928,12 @@ span.up-pt { cursor: default; }
 .sf-glow { z-index: -1; --r: calc((34px + 12px * var(--k)) * var(--s)); left: calc(-1 * var(--r)); top: calc(-26px * var(--s) - var(--r)); width: calc(2 * var(--r)); height: calc(2 * var(--r)); border-radius: 50%; background: radial-gradient(closest-side, rgba(var(--c), calc(.5 + .3 * var(--k))), rgba(var(--c), 0)); animation: sf-pulse 2.4s ease-in-out infinite; }
 .star-fx.silver .sf-glow { --r: calc((39px + 12px * var(--k)) * var(--s)); }
 .star-fx.gold .sf-glow { --r: calc((44px + 12px * var(--k)) * var(--s)); }
-.sf-floor { z-index: -1; --w: calc((24px + 10px * var(--k)) * var(--s)); left: calc(-1 * var(--w)); top: calc(-6px * var(--s)); width: calc(2 * var(--w)); height: calc(12px * var(--s)); border-radius: 50%; background: rgba(var(--c), calc(.6 + .3 * var(--k))); }
-.sf-ring { z-index: -1; left: calc(-46px * var(--s)); top: calc(-13px * var(--s)); width: calc(92px * var(--s)); height: calc(26px * var(--s)); border-radius: 50%; border: calc(3px * var(--s)) solid rgb(var(--c)); box-sizing: border-box; animation: sf-ring 2.2s linear infinite; }
-.sf-ring.late { animation-delay: -1.1s; }
+/* 발밑 마법진: 72×34 12장 띠를 12fps로 */
+.sf-ground { z-index: -1; left: calc(-36px * var(--s)); top: calc(-17px * var(--s)); width: calc(72px * var(--s)); height: calc(34px * var(--s)); background-size: calc(864px * var(--s)) 100%; background-repeat: no-repeat; image-rendering: pixelated; animation: sf-ground 1s steps(12) infinite; }
+@keyframes sf-ground { to { background-position: calc(-864px * var(--s)) 0; } }
 .sf-spark { z-index: 1; left: calc(var(--x) * 26px * var(--s)); top: 0; width: 3px; height: 3px; background: rgb(var(--c)); animation: sf-rise 1.5s linear infinite; }
 .sf-spark.big { width: 4px; height: 4px; box-shadow: 4px 0 0 -1px rgb(var(--c)), -4px 0 0 -1px rgb(var(--c)), 0 4px 0 -1px rgb(var(--c)), 0 -4px 0 -1px rgb(var(--c)); }
 @keyframes sf-pulse { 50% { opacity: .65; } }
-@keyframes sf-ring { from { transform: scale(.35); opacity: 1; } to { transform: scale(1); opacity: 0; } }
 @keyframes sf-rise { 0% { transform: translateY(calc(-4px * var(--s))); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(calc(-70px * var(--s))); opacity: 0; } }
 .star-o-silver .sprite { filter: drop-shadow(0 0 2px rgba(200, 225, 255, .9)) drop-shadow(0 0 4px rgba(200, 225, 255, .6)); }
 .star-o-gold .sprite { filter: drop-shadow(0 0 2px #ffd34d) drop-shadow(0 0 6px #ffd34dcc); }

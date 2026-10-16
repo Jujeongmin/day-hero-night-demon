@@ -20,6 +20,19 @@ export function fxWithin(n: number | undefined): number {
   return Math.max(0, (k - 1) / 4);
 }
 
+/**
+ * 발밑 마법진 그림(2026-10-16 사용자: 코드로 만든 타원이 짜친다 → PixelLab vfx_workbench로 만든 픽셀 그림).
+ * 72×34 12장 가로 띠, 12fps. 동 = 고리 두 줄, 은 = + 룬 문자, 금 = + 반짝임. 원본·설정: art/fx/star_ground
+ */
+export const GROUND_FX = { w: 72, h: 34, frames: 12, frameMs: 83 };
+const groundImages: Partial<Record<FxTier, HTMLImageElement>> = {};
+function groundImage(t: FxTier): HTMLImageElement | null {
+  if (typeof Image === 'undefined') return null;
+  let img = groundImages[t];
+  if (!img) { img = new Image(); img.src = `fx/star_ground_${t}.png`; groundImages[t] = img; }
+  return img.complete && img.naturalWidth > 0 ? img : null;
+}
+
 const COLOR: Record<FxTier, [number, number, number]> = { bronze: [232, 150, 80], silver: [200, 225, 255], gold: [255, 211, 77] };
 const rgba = (c: [number, number, number], a: number) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
 
@@ -48,19 +61,18 @@ export function drawStarBack(ctx: CanvasRenderingContext2D, x: number, footY: nu
   ctx.beginPath();
   ctx.arc(x, cy, r, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = rgba(c, 0.6 + 0.3 * k);
-  ctx.beginPath();
-  ctx.ellipse(x, footY, (24 + 10 * k) * s, 6 * s, 0, 0, Math.PI * 2);
-  ctx.fill();
-  if (tier === 'gold') {
-    for (const off of [0, 0.5]) {
-      const p = (now / 1100 + off) % 1;
-      ctx.strokeStyle = rgba(c, 1 - p);
-      ctx.lineWidth = 3 * s;
-      ctx.beginPath();
-      ctx.ellipse(x, footY, (16 + p * 30) * s, (5 + p * 8) * s, 0, 0, Math.PI * 2);
-      ctx.stroke();
-    }
+  // 발밑 마법진: 단계 안에서 별이 늘수록 진하게
+  const img = groundImage(tier);
+  if (img) {
+    const G = GROUND_FX;
+    const f = Math.floor(now / G.frameMs) % G.frames;
+    const prev = ctx.globalAlpha;
+    const smooth = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalAlpha = prev * (0.7 + 0.3 * k);
+    ctx.drawImage(img, f * G.w, 0, G.w, G.h, Math.round(x - (G.w * s) / 2), Math.round(footY - (G.h * s) / 2), G.w * s, G.h * s);
+    ctx.globalAlpha = prev;
+    ctx.imageSmoothingEnabled = smooth;
   }
 }
 

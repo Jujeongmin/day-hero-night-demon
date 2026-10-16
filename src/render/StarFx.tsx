@@ -14,8 +14,8 @@ export function StarFx(props: { n: number | undefined; scale: number }) {
   return (
     <span className={`star-fx ${tier}`} style={style} aria-hidden>
       <span className="sf-glow" />
-      <span className="sf-floor" />
-      {tier === 'gold' && <><span className="sf-ring" /><span className="sf-ring late" /></>}
+      {/* 발밑 마법진 그림(2026-10-16, render/starFxDraw.ts GROUND_FX) */}
+      <span className="sf-ground" style={{ backgroundImage: `url(fx/star_ground_${tier}.png)`, opacity: 0.7 + 0.3 * k }} />
       {Array.from({ length: sparks }, (_, i) => (
         <span key={i} className={`sf-spark ${i % 3 === 0 ? 'big' : ''}`} style={{ '--x': Math.sin(i * 2.4), animationDelay: `${(-1.5 * i) / sparks}s` } as CSSProperties} />
       ))}
