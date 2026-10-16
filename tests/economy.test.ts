@@ -72,6 +72,8 @@ describe('economy', () => {
     expect(castleUpgradeCost(1)).toBe(Math.round(sum));
     expect(castleUpgradeCost(BALANCE.maxCastleLevel)).toBeNull();
     expect(castleUpgradeCost(10)).toBeGreaterThan(castleUpgradeCost(9)!);
+    // 성 10 다음부터 레벨마다 ×1.5 더(2026-10-16)
+    expect(castleUpgradeCost(11)! / castleUpgradeCost(10)!).toBeCloseTo(Math.pow(1.3, 10) * 1.5, 1);
   });
 
   it('floors: 1 at lv1, 2 at lv2, 3 at lv4', () => {

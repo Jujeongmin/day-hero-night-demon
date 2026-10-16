@@ -86,7 +86,8 @@ export function castleUpgradeCost(level: number): number | null {
   // 마왕 레벨과 따로 예전 10레벨치 그대로(2026-10-14: 마왕 레벨을 5로 줄여도 성 비용은 같게)
   const from = G.castleCostLevels * (Math.max(1, level) - 1) + 1;
   for (let l = from; l < from + G.castleCostLevels; l++) sum += G.unitCostBase * Math.pow(G.costGrowth, l - 1);
-  return Math.round(sum * G.castleCostFactor);
+  // 성 castleLateFrom 레벨부터 한 레벨마다 비용 ×castleLateMult 더(2026-10-16: 성 30이 너무 빨리 온다)
+  return Math.round(sum * G.castleCostFactor * Math.pow(G.castleLateMult, Math.max(0, level - G.castleLateFrom)));
 }
 
 /** 방치 수입(시간당) = 공성 최고 단계의 파도 골드 × idleWavesPerHour */
