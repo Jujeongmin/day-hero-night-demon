@@ -13,6 +13,7 @@ import { chooseLordSkin, passTier, planPassClaim } from '../../server/src/pass';
 import { lordSpriteId, monsterSpriteId } from '../render/skins';
 import { StarRow } from '../render/stars';
 import { StarFx, starOutlineClass } from '../render/StarFx';
+import { TowerFxBack, TowerFxFront, towerFxTier } from '../render/TowerFx';
 import { type Speed } from '../render/speed';
 import { errorText, type Api, type HomeData, type SiegeWave } from '../services/api';
 import { buy } from '../services/shop';
@@ -178,8 +179,11 @@ const TowerView = memo(function TowerView(props: {
 }) {
   const { towerRef, s, unitScale, open, replay, throneFight, rubyAura, lordSkin, replaying, lordHp, defending, selected, onTier, replayWave, speed, perKill, floorsCount, onPhase } = props;
   return (
-        <div className="tower" ref={towerRef}>
+        <div className={`tower tfx-t${towerFxTier(s.castle.level)}`} ref={towerRef}>
+          {/* 성 레벨 이펙트(2026-10-16): 5레벨마다 한 단계 */}
+          <TowerFxBack tier={towerFxTier(s.castle.level)} />
           <img src="sprites/tower.png" alt="" draggable={false} />
+          <TowerFxFront tier={towerFxTier(s.castle.level)} />
 
           {/* 공성 재생 중에는 재생 층이 마왕·몬스터를 그린다 */}
           {!replay.active && (

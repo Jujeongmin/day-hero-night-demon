@@ -946,3 +946,34 @@ span.up-pt { cursor: default; }
 /* 웨이브 사이 카운트다운(2026-10-14 사용자): 웨이브 표시 안에 남은 초, 바뀔 때마다 톡 */
 .siege-next { display: inline-block; margin-left: 4px; font-weight: 400; color: var(--gold); animation: siege-tick .35s ease-out; }
 @keyframes siege-tick { from { transform: scale(1.4); } }
+
+/* 성 레벨 이펙트(2026-10-16 사용자 승인 C안: 5레벨마다 단계, 색도 단계별 성5~14 보라 → 15~24 붉은빛 → 25~ 금빛). render/TowerFx.tsx
+   탑이 보라라서 빛은 밝게, 마법진은 마왕 발밑(꼭대기), 혼불은 탑 중간에서 — 아래쪽은 웨이브 표시·버튼에 가린다 */
+.tower { --tc: 225, 170, 255; --tc2: 255, 211, 77; }
+.tower.tfx-t3, .tower.tfx-t4 { --tc: 255, 90, 60; }
+.tower.tfx-t5, .tower.tfx-t6 { --tc: 255, 210, 80; }
+.tower.tfx-t1 > img { filter: drop-shadow(0 0 3px rgb(var(--tc))) drop-shadow(0 0 16px rgba(var(--tc), .8)); }
+.tower.tfx-t2 > img { filter: drop-shadow(0 0 4px rgb(var(--tc))) drop-shadow(0 0 20px rgba(var(--tc), .85)); }
+.tower.tfx-t3 > img, .tower.tfx-t4 > img { filter: drop-shadow(0 0 4px rgb(var(--tc))) drop-shadow(0 0 20px rgba(var(--tc), .7)); animation: tfx-breathe 3s ease-in-out infinite; }
+.tower.tfx-t5 > img, .tower.tfx-t6 > img { filter: drop-shadow(0 0 5px rgb(var(--tc))) drop-shadow(0 0 28px rgba(var(--tc), .85)); animation: tfx-breathe 2.4s ease-in-out infinite; }
+@keyframes tfx-breathe { 50% { filter: drop-shadow(0 0 2px rgba(var(--tc), .8)) drop-shadow(0 0 12px rgba(var(--tc), .4)); } }
+.tfx { position: absolute; inset: 0; pointer-events: none; }
+.tfx-back { z-index: -1; }
+.tfx-front { z-index: 1; }
+/* 마법진: 꼭대기 마왕 발밑에 납작하게 눕힌 점선 원이 돈다 */
+.tfx-circle { position: absolute; left: 8%; right: 8%; top: 4%; aspect-ratio: 1; transform: scaleY(.22); transform-origin: 50% 0; }
+.tfx-circle i { position: absolute; inset: 0; border-radius: 50%; border: 5px dashed rgb(var(--tc)); box-shadow: 0 0 18px rgb(var(--tc)), inset 0 0 18px rgba(var(--tc), .8); animation: tfx-spin 10s linear infinite; }
+@keyframes tfx-spin { to { transform: rotate(360deg); } }
+/* 하늘로 빛기둥: 가운데는 하얗게 */
+.tfx-beam { position: absolute; left: 34%; right: 34%; top: -70%; height: 78%; background: linear-gradient(to top, rgba(255, 255, 255, .85), rgba(var(--tc), .55) 35%, rgba(var(--tc), 0)); box-shadow: 0 0 30px rgba(var(--tc), .6); filter: blur(1px); animation: tfx-beam 2.4s ease-in-out infinite; }
+@keyframes tfx-beam { 50% { opacity: .55; transform: scaleX(.75); } }
+/* 꼭대기 불씨 */
+.tfx-ember { position: absolute; left: var(--x); top: 16%; width: 5px; height: 5px; background: rgb(var(--tc)); box-shadow: 0 0 6px rgb(var(--tc)), 0 0 2px #fff; animation: tfx-ember 2.6s linear infinite; }
+@keyframes tfx-ember { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--dx), -120px); opacity: 0; } }
+/* 양옆 혼불: 탑 중간에서 위로 */
+.tfx-wisp { position: absolute; left: var(--x); top: 62%; width: 9px; height: 14px; border-radius: 50% 50% 40% 40%; background: rgb(var(--tc)); box-shadow: 0 0 10px rgb(var(--tc)), 0 0 3px #fff; animation: tfx-wisp 3.2s ease-in infinite; }
+@keyframes tfx-wisp { 0% { transform: translateY(0) scale(.6); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-240px) scale(1); opacity: 0; } }
+/* 성 30: 마왕 머리 위 금빛 왕관 고리 */
+.tfx-halo { position: absolute; left: 28%; right: 28%; top: -6%; aspect-ratio: 1; transform: scaleY(.3); border-radius: 50%; border: 4px solid rgb(var(--tc2)); box-shadow: 0 0 14px rgb(var(--tc2)), inset 0 0 10px rgba(var(--tc2), .9); animation: tfx-halo 2s ease-in-out infinite; }
+@keyframes tfx-halo { 50% { box-shadow: 0 0 24px rgb(var(--tc2)), inset 0 0 14px rgb(var(--tc2)); } }
+@media (prefers-reduced-motion: reduce) { .tfx * , .tower > img { animation: none !important; } }
