@@ -334,7 +334,8 @@ canvas.battle {
 .siege-stage .btn { pointer-events: auto; font-size: 12px; min-height: 26px; }
 .invader.leaving { opacity: 0; transition: opacity 1.2s; }
 /* 공성 배속(--spd): 스프라이트 동작도 같은 배속으로 */
-.siege .sprite, .rp-layer .sprite { animation-duration: calc(var(--frames) * 140ms / var(--spd, 1)); }
+/* 배속이어도 한 장에 70ms는 보이게(2026-10-16 사용자: 너무 빨라 동작이 안 보인다) */
+.siege .sprite, .rp-layer .sprite { animation-duration: max(calc(var(--frames) * 70ms), calc(var(--frames) * 140ms / var(--spd, 1))); }
 .siege .sprite.walking { animation-duration: calc(var(--frames) * 90ms / var(--spd, 1)); }
 .invader.leaving { transition-duration: calc(1.2s / var(--spd, 1)); }
 .hud .pill.speed { min-width: 34px; font: inherit; color: var(--muted); }
@@ -657,7 +658,7 @@ button[lang='zh-Hans'] { font-family: 'Noto Sans SC', sans-serif; }
 .summon-cards:not(.n1) .card b { font-size: 10px; line-height: 1.05; word-break: keep-all; }
 .summon-cards:not(.n1) .card .portrait { width: 40px; height: 40px; }
 /* 마왕은 0.5초마다 치므로 공격 동작을 그 안에 끝까지(2026-10-07: 모션 없이 공격이 나가 보였다) */
-.rp-layer .sprite.swing-fast { animation-duration: calc(var(--frames) * 64ms / var(--spd, 1)); }
+.rp-layer .sprite.swing-fast { animation-duration: max(calc(var(--frames) * 50ms), calc(var(--frames) * 64ms / var(--spd, 1))); }
 .look-fx { display: block; margin-top: 4px; color: var(--gold); font-size: 14px; }
 .shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .shop-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 3px 6px; text-align: center; border: 10px solid transparent; border-image: url(/ui/frame_sq.png) 10 / 10px stretch; background: #1d0b14eb; background-clip: padding-box; image-rendering: pixelated; }

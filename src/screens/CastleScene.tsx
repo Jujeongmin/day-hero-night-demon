@@ -79,11 +79,11 @@ function TicketTimer(props: { at: number | null }) {
  * 박자는 바뀐 유닛만 새 객체로 만들므로 u가 그대로면 건너뛴다
  */
 const ReplayUnit = memo(function ReplayUnit(props: {
-  u: RUnit; x: number; y: number; back: boolean; crowd: boolean; scale: number; stars: number | undefined; lordSkin: LordSkin | undefined;
+  u: RUnit; x: number; y: number; back: boolean; crowd: boolean; scale: number; stars: number | undefined; lordSkin: LordSkin | undefined; aura: string;
 }) {
   const { u, back, crowd } = props;
   return (
-    <div className={`unit-at rp-unit ${u.side} ${u.dead ? 'dead' : ''} ${back ? 'back-row' : ''} ${crowd && u.kind !== 'captain' ? 'crowd' : ''} ${!u.dead && u.side === 'enemy' && !(u.kind === 'lord' && props.lordSkin) ? starOutlineClass(props.stars) : ''}`} style={at(props.x, props.y)}>
+    <div className={`unit-at rp-unit ${u.side} ${u.dead ? 'dead' : ''} ${back ? 'back-row' : ''} ${crowd && u.kind !== 'captain' ? 'crowd' : ''} ${!u.dead && u.side === 'enemy' && !(u.kind === 'lord' && props.lordSkin) ? starOutlineClass(props.stars) : ''} ${!u.dead ? props.aura : ''}`} style={at(props.x, props.y)}>
       {!u.dead && u.side === 'enemy' && <StarFx n={props.stars} scale={props.scale} />}
       {!u.dead && u.side === 'enemy' && <StarRow n={props.stars} className="unit-stars" />}
       {/* 침입자도 모두 체력바(2026-10-06 사용자). 무리(7명+)는 작게 */}
@@ -113,6 +113,8 @@ const ReplayUnit = memo(function ReplayUnit(props: {
 const ReplayLayer = memo(function ReplayLayer(props: {
   wave: SiegeWave | null; speed: Speed; perKill: number; paused: boolean;
   floorsCount: number; unitScale: number; lordSkin: LordSkin | undefined; stars: UserState['stars']; onPhase: (p: ReplayPhase) => void;
+  /** 마왕 외형 테두리 빛(평소 화면과 같게, 2026-10-16 사용자: 웨이브 때 외형이 벗겨지는 것 같다) */
+  lordAura: string;
 }) {
   const { speed, floorsCount, unitScale, lordSkin, onPhase } = props;
   const replay = useSiegeReplay(props.wave, speed, props.perKill, props.paused, lordSpriteId(lordSkin));
@@ -151,6 +153,7 @@ const ReplayLayer = memo(function ReplayLayer(props: {
           <ReplayUnit
             key={u.id} u={u} x={p.x} y={p.y} back={p.back} crowd={p.crowd} scale={scaleOf(u, p.crowd)}
             stars={u.side === 'enemy' ? props.stars?.[u.kind as keyof NonNullable<UserState['stars']>] : undefined} lordSkin={lordSkin}
+            aura={u.kind === 'lord' ? props.lordAura : ''}
           />
         );
       })}
@@ -227,6 +230,7 @@ const TowerView = memo(function TowerView(props: {
           <ReplayLayer
             wave={replayWave} speed={speed} perKill={perKill} paused={!!s.run}
             floorsCount={floorsCount} unitScale={unitScale} lordSkin={lordSkin} stars={s.stars} onPhase={onPhase}
+            lordAura={rubyAura ? 'aura ruby' : lordSkin ? 'aura' : ''}
           />
         </div>
   );

@@ -94,8 +94,13 @@ function calm(s: ReplayState): ReplayState {
  */
 export const IMPACT_LEAD_MS = 350;
 
-/** 휘두르기 시작: 공격 동작을 처음부터 다시 틀고 잠시 유지한다 */
-const swing = (t: number) => (u: RUnit): Partial<RUnit> => ({ attacking: true, attackUntil: t + ATTACK_HOLD_MS, swings: u.swings + 1 });
+/**
+ * 휘두르기 시작: 공격 동작을 처음부터 다시 틀고 잠시 유지한다.
+ * 이미 휘두르는 중이면 처음부터 다시 틀지 않고 이어서 돌린다(2026-10-16 사용자: 빠르게 연달아 치면 첫 장만 보여 좌우로 흔드는 것 같다)
+ */
+const swing = (t: number) => (u: RUnit): Partial<RUnit> => (u.attacking
+  ? { attackUntil: t + ATTACK_HOLD_MS }
+  : { attacking: true, attackUntil: t + ATTACK_HOLD_MS, swings: u.swings + 1 });
 
 /** 사건 하나를 상태에 적용한다(층이 붙은 공성 사건) */
 function applyEvent(s: ReplayState, e: SiegeEvent, coinText: string | null): ReplayState {
