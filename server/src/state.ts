@@ -179,6 +179,11 @@ export interface UserState {
   summon?: { pulls: number; sinceHigh: number; sinceLegend?: number };
   /** 의뢰(2026-10-02): 성장 의뢰 번호·누적, 일일 의뢰 진행. server/src/quests.ts */
   quests?: import('./quests').QuestState;
+  /**
+   * 골드(2026-10-19 사용자 승인): Verse8 Asset 대신 여기에 일반 숫자로 둔다. Asset 수량의 정수 한계(약 9.2e18)를
+   * 큰 숫자 성장(성 13+, 웨이브 200+ 보상)이 넘어서 지급·차감이 실패했다. 없으면 아직 Asset에서 옮기기 전(server.ts goldOf)
+   */
+  gold?: number;
   /** 몬스터 장비 외형(소환 영웅): 가진 것, 몬스터마다 입힌 것. 표시용, 초기화해도 남는다 */
   gear?: { owned: string[]; worn: Partial<Record<MonsterId, string>> };
   /** 성장 곡선 판. 2 = 레벨 50 + 각성 순환(2026-10-02). 옛 판은 불러올 때 한 번 바꾼다(server.ts migrateGrowth) */
@@ -212,6 +217,7 @@ function introLog(now: number): RaidLogEntry[] {
 export function defaultState(account: string, now: number, seasonId: string): UserState {
   return {
     v: 1,
+    gold: BALANCE.startGold,
     profile: { nickname: nicknameFor(account), createdAt: now, nicknameChanges: 0 },
     castle: { level: 1, floors: [{ monsters: ['slime', 'skeleton', null] }] },
     roster: { slime: { level: 1 }, skeleton: { level: 1 } },

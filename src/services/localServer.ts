@@ -197,7 +197,11 @@ const tools = {
     notifyMine();
     return r;
   },
-  async gold(amount: number) { return $asset.mint('gold', amount); },
+  // 골드는 2026-10-19부터 계정 상태(gold)에 있다
+  async gold(amount: number) {
+    const st = (await $global.getUserState(account)) as { gold?: number } | null;
+    return $global.updateUserState(account, { gold: Math.floor((st?.gold ?? 0) + amount) });
+  },
   async soul(amount: number) { return $asset.mint('soul', amount); },
   /** 계정 바꾸기: 주소의 acct를 바꿔 다시 불러온다 */
   as(acct: string) {

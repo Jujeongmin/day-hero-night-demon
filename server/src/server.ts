@@ -58,13 +58,48 @@ async function loadState(account: string, now: number): Promise<UserState> {
   }
   const s = defaultState(account, now, seasonIdAt(now));
   await $global.updateUserState(account, s);
-  await $asset.mint('gold', BALANCE.startGold, account);
   await syncCastle(account, s);
   return s;
 }
 
 async function save(account: string, patch: Partial<UserState>): Promise<void> {
   await $global.updateUserState(account, patch);
+}
+
+/**
+ * 골드(2026-10-19 사용자 승인): Asset 대신 계정 상태(UserState.gold)의 일반 숫자. Asset 수량은 정수 한계(약 9.2e18)가 있어
+ * 큰 숫자 성장에서 지급·차감이 실패했다(성장 의뢰 보상 4.3e19). 지급·차감은 아래 함수만 쓰고, 그 계정의 락 안에서만 부른다.
+ * 처음 부르는 계정은 Asset에 남은 골드를 상태로 옮기고 Asset을 비운다
+ */
+async function goldOf(account: string): Promise<number> {
+  const raw = (await $global.getUserState(account)) as Partial<UserState> | null;
+  if (raw && typeof raw.gold === 'number' && Number.isFinite(raw.gold)) return raw.gold;
+  const old = await $asset.get('gold', account).catch(() => 0);
+  if (old > 0) await $asset.burn('gold', old, account).catch(() => undefined);
+  const gold = old > 0 ? old : 0;
+  await $global.updateUserState(account, { gold });
+  return gold;
+}
+
+/** 락 없이 남의 골드를 읽기만(예상 약탈량 표시). 옮기기 전 계정은 Asset 값 */
+async function peekGold(account: string): Promise<number> {
+  const raw = (await $global.getUserState(account)) as Partial<UserState> | null;
+  if (raw && typeof raw.gold === 'number' && Number.isFinite(raw.gold)) return raw.gold;
+  return $asset.get('gold', account).catch(() => 0);
+}
+
+async function goldAdd(account: string, n: number): Promise<void> {
+  if (!(n > 0) || !Number.isFinite(n)) return;
+  const gold = await goldOf(account);
+  await $global.updateUserState(account, { gold: Math.floor(gold + n) });
+}
+
+/** 골드 쓰기. 모자라면 '골드가 부족하다' */
+async function goldSpend(account: string, n: number): Promise<void> {
+  if (!(n > 0)) return;
+  const gold = await goldOf(account);
+  if (gold < n) throw new Error('골드가 부족하다');
+  await $global.updateUserState(account, { gold: Math.max(0, Math.floor(gold - n)) });
 }
 
 /** 마왕 각성 별 */
@@ -97,8 +132,7 @@ async function syncCastle(account: string, s: UserState): Promise<void> {
 }
 
 async function balances(account: string): Promise<{ gold: number; soul: number }> {
-  const b = await $asset.getMany(['gold', 'soul'], account);
-  return { gold: b.gold ?? 0, soul: b.soul ?? 0 };
+  return { gold: await goldOf(account), soul: (await $asset.get('soul', account)) ?? 0 };
 }
 
 /** "npc:<등급>:<키>"에서 등급(튜토리얼·입문 성은 0 → 1로 친다) */
@@ -124,7 +158,7 @@ async function settleBounty(me: string, s: UserState, run: Run, now: number) {
   const dmg = bountyDamage(run);
   const today = bountyToday(s, now);
   const rw = bountyReward(frac, today, s.siege.best);
-  if (rw.gold > 0) await $asset.mint('gold', rw.gold);
+  if (rw.gold > 0) await goldAdd(me, rw.gold);
   if (rw.soul > 0) await $asset.mint('soul', rw.soul);
   const bounty = { ...today, best: Math.max(today.best, frac), tier: rw.tier, dmg: Math.max(today.dmg, dmg) };
   await save(me, { run: null, bounty });
@@ -140,7 +174,7 @@ async function settleCampaign(me: string, s: UserState, run: Run, won: boolean, 
   const n = Number(run.target.slice('camp:'.length));
   const cleared = won && n === c.stage;
   const rw = cleared ? campaignReward(n, s.siege.best) : { gold: 0, soul: 0 };
-  if (rw.gold > 0) await $asset.mint('gold', rw.gold);
+  if (rw.gold > 0) await goldAdd(me, rw.gold);
   if (rw.soul > 0) await $asset.mint('soul', rw.soul);
   await save(me, { run: null, campaign: cleared ? { ...c, stage: c.stage + 1 } : c });
   return { won, loot: rw.gold, soul: rw.soul, lordDefeated: false, offerStarter: false, campaign: { stage: n, cleared } };
@@ -301,7 +335,7 @@ async function realTargets(me: string, s: UserState, now: number): Promise<Targe
   const picked: any[] = pickRealTargets(rows, me, power, now, seedFrom(me, now));
   const out: Target[] = [];
   for (const r of picked) {
-    const gold = await $asset.get('gold', r.account);
+    const gold = await peekGold(r.account);
     out.push({
       id: r.account, nickname: r.nickname, power: r.power, castleLevel: r.castleLevel,
       estLoot: lootAmount(gold, pvpLootCap(r.floors ?? [])), npc: false, vip: r.vip ?? 0,
@@ -319,18 +353,18 @@ async function settleDefender(me: string, s: UserState, run: Run, won: boolean, 
   const d = raw as UserState;
   let loot = 0;
   if (won) {
-    const defGold = await $asset.get('gold', def);
+    const defGold = await goldOf(def);
     loot = lootAmount(defGold, pvpLootCap(run.snapshot.floors));
     if (run.isRevenge) {
       const mine = s.raidLog.find((e) => e.id === run.revengeLogId);
       if (mine) loot = Math.min(defGold, Math.max(loot, mine.goldLost));
     }
     if (loot > 0) {
-      await $asset.burn('gold', loot, def);
-      await $asset.mint('gold', loot);
+      await goldSpend(def, loot);
+      await goldAdd(me, loot);
     }
   } else {
-    await $asset.mint('gold', waveGold(withDefaults(d).siege.best) * BALANCE.growth.defenseRewardWaves, def);
+    await goldAdd(def, waveGold(withDefaults(d).siege.best) * BALANCE.growth.defenseRewardWaves);
     await addHonor(def, d, DEFENSE_HONOR, now);
   }
   const entry: RaidLogEntry = {
@@ -362,8 +396,8 @@ async function settleSpend(account: string, s: UserState, now: number): Promise<
 async function scaleGold(me: string, s: UserState): Promise<UserState> {
   if ((s.goldScale ?? 1) >= GOLD_SCALE) return s;
   const k = GOLD_SCALE / (s.goldScale ?? 1);
-  const gold = await $asset.get('gold');
-  if (gold > 0) await $asset.mint('gold', Math.floor(gold * (k - 1)));
+  const gold = await goldOf(me);
+  if (gold > 0) await goldAdd(me, Math.floor(gold * (k - 1)));
   const siege = { ...s.siege, pendingGold: Math.floor(s.siege.pendingGold * k) };
   await save(me, { goldScale: GOLD_SCALE, siege });
   return { ...s, goldScale: GOLD_SCALE, siege };
@@ -553,7 +587,7 @@ async function applyNpcRaids(me: string, s: UserState, now: number): Promise<Use
     floors: resolveFloors(s),
   });
   if (raids.length === 0 && lastRaidAt === s.idle.lastRaidAt) return s;
-  let gold = await $asset.get('gold');
+  let gold = await goldOf(me);
   let delta = 0;
   const log: RaidLogEntry[] = [];
   for (const r of raids) {
@@ -570,8 +604,8 @@ async function applyNpcRaids(me: string, s: UserState, now: number): Promise<Use
       log.push({ ...base, attackerWon: false, goldLost: 0 });
     }
   }
-  if (delta > 0) await $asset.mint('gold', delta);
-  if (delta < 0) await $asset.burn('gold', -delta);
+  if (delta > 0) await goldAdd(me, delta);
+  if (delta < 0) await goldSpend(me, Math.min(-delta, await goldOf(me)));
   const patch: Partial<UserState> = {
     idle: { ...s.idle, lastRaidAt },
     raidLog: [...log.reverse(), ...s.raidLog].slice(0, 20),
@@ -614,7 +648,7 @@ export class Server {
       const plan = planAdReward(s, placementId, now);
       if (!plan.ok) throw new Error(plan.code);
       if (id) await $global.addCollectionItem(AD_CLAIMS, { account: me, placementId, at: now }, { id });
-      if (plan.gold) await $asset.mint('gold', plan.gold);
+      if (plan.gold) await goldAdd(me, plan.gold);
       if (plan.soul) await $asset.mint('soul', plan.soul);
       await save(me, plan.patch);
       return { gold: plan.gold, soul: plan.soul };
@@ -649,7 +683,7 @@ export class Server {
       // 오래 비웠다 돌아온 첫 파도면 그 몫은 방치 상자에 고정해 두고(받기 버튼으로), 켜 둔 동안 상자가 더 커지지 않게 시계를 지금으로
       const idle = splitOnlineIdle(idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult, vipOf(s)), s.idle.lastClaimAt, now);
       const direct = r.gold + idle.direct;
-      if (direct > 0) await $asset.mint('gold', direct);
+      if (direct > 0) await goldAdd(me, direct);
       await save(me, { idle: { ...s.idle, lastClaimAt: now } });
       // 이 파도의 재생이 끝나기 전에는 다음 파도를 부를 수 없다(배속이면 그만큼 일찍, 화면 시계 차이로 10% 여유)
       const nextAt = now + Math.round((siegeReplayMs(r.log) / sp) * 0.9);
@@ -668,7 +702,7 @@ export class Server {
       const now = Date.now();
       const s = await loadState(me, now);
       const plan = planClaimGuide(s, now);
-      if (plan.gold) await $asset.mint('gold', plan.gold);
+      if (plan.gold) await goldAdd(me, plan.gold);
       if (plan.soul) await $asset.mint('soul', plan.soul);
       await save(me, { quests: plan.quests });
       return { gold: plan.gold, soul: plan.soul };
@@ -715,7 +749,7 @@ export class Server {
         && plan.claimed.free === s.season.claimed.free && plan.claimed.pass === s.season.claimed.pass) {
         throw new Error('PASS_NOTHING');
       }
-      if (plan.gold) await $asset.mint('gold', plan.gold);
+      if (plan.gold) await goldAdd(me, plan.gold);
       if (plan.soul) await $asset.mint('soul', plan.soul);
       const skins = [...new Set([...s.skins, ...plan.skins])];
       await save(me, { season: { ...s.season, claimed: plan.claimed }, skins });
@@ -749,10 +783,9 @@ export class Server {
       if (s.run) throw new Error('RESET_IN_RAID');
       const next = resetState(s, now);
       const b = await balances(me);
-      if (b.gold > 0) await $asset.burn('gold', b.gold);
       // 2026-10-02 사용자: 전부 초기화(결제로 산 영혼석도). 경고 문구에 복구·환불 불가를 적는다
       if (b.soul > 0) await $asset.burn('soul', b.soul);
-      await $asset.mint('gold', BALANCE.startGold);
+      // 골드는 상태에 있다: next(기본 상태)의 gold = startGold로 저장된다
       try {
         await $global.deleteCollectionItem(SIEGE_BEST, me);
       } catch {
@@ -896,7 +929,7 @@ export class Server {
       const { s } = await advanceSiege(me, await loadState(me, now), now);
       const siegeGold = s.siege.pendingGold;
       const gold = idleIncome(s.siege.best, s.idle.lastClaimAt, now, s.idle.mult, vipOf(s)) + siegeGold;
-      if (gold > 0) await $asset.mint('gold', gold);
+      if (gold > 0) await goldAdd(me, gold);
       await save(me, { idle: { ...s.idle, lastClaimAt: now }, siege: { ...s.siege, pendingGold: 0 }, quests: bumpQuests(s, now, { daily: 'idle', idle: true }) });
       return { gold, siegeGold };
     });
@@ -908,8 +941,7 @@ export class Server {
       const now = Date.now();
       const s = await loadState(me, now);
       const { cost, patch: up } = planUpgrade(s, kind, id);
-      if (!(await $asset.has('gold', cost))) throw new Error('골드가 부족하다');
-      await $asset.burn('gold', cost);
+      await goldSpend(me, cost);
       const patch: Partial<UserState> = { ...up, quests: bumpQuests(s, now, { daily: 'upgrade' }) };
       await save(me, patch);
       await syncCastle(me, { ...s, ...patch });
@@ -928,7 +960,7 @@ export class Server {
       const { gold } = await balances(me);
       const { cost, times, patch: up } = planUpgradeMany(s, kind, String(id), count, gold);
       if (times === 0) throw new Error('골드가 부족하다');
-      await $asset.burn('gold', cost);
+      await goldSpend(me, cost);
       const patch: Partial<UserState> = { ...up, quests: bumpQuests(s, now, { daily: 'upgrade', n: times }) };
       await save(me, patch);
       await syncCastle(me, { ...s, ...patch });
@@ -993,7 +1025,7 @@ export class Server {
       if (!(await $asset.has('soul', soul))) throw new Error('NO_SOUL');
       const gold = goldPackAmount(id, s.siege.best, avgMonsterLevel(s.roster, s.stars));
       await $asset.burn('soul', soul);
-      await $asset.mint('gold', gold);
+      await goldAdd(me, gold);
       return { soul, gold };
     });
   }
@@ -1023,7 +1055,7 @@ export class Server {
       const s = await loadState(me, now);
       const { gold, soul, patch } = planResetMonster(s, monster);
       await save(me, patch);
-      if (gold > 0) await $asset.mint('gold', gold);
+      if (gold > 0) await goldAdd(me, gold);
       if (soul > 0) await $asset.mint('soul', soul);
       await syncCastle(me, { ...s, ...patch });
       return { gold, soul };
@@ -1099,8 +1131,7 @@ export class Server {
       const r = rerollOf(s, now);
       const cost = r.n < BALANCE.rerollFree ? 0 : rerollCost(s);
       if (cost > 0) {
-        if (!(await $asset.has('gold', cost))) throw new Error('골드가 부족하다');
-        await $asset.burn('gold', cost);
+        await goldSpend(me, cost);
       }
       const reroll = { day: r.day, n: r.n + 1 };
       const targets = [...(await realTargets(me, s, now)), ...npcTargets(s, now, reroll.n)].slice(0, 3);
@@ -1262,13 +1293,13 @@ export class Server {
       if (run.target.startsWith('npc:')) {
         // NPC 전리품은 그 성의 등급(목록의 예상 약탈과 같은 값). 전에는 층 수(castleLevel)로 계산해서 1~10단이 늘 같았다(2026-10-02 수정)
         loot = won ? npcLoot(npcTierOf(run.target)) : 0;
-        if (loot) await $asset.mint('gold', loot);
+        if (loot) await goldAdd(me, loot);
       } else {
         loot = await settleDefender(me, s, run, won, now);
       }
       // 용사 레벨 보너스: 상대가 잃는 양과 별개로 서버가 새로 준다
       const bonus = won ? heroLootBonus(loot, heroGrowth(s)) : 0;
-      if (bonus) await $asset.mint('gold', bonus);
+      if (bonus) await goldAdd(me, bonus);
       loot += bonus;
       const result = await finishRun(me, s, run, won, loot, now);
       // 의뢰: 튜토리얼 공략 말고 이긴 공략을 센다
@@ -1312,7 +1343,7 @@ export class Server {
       } catch {
         return { success: false };
       }
-      if (g.gold) await $asset.mint('gold', g.gold, p.account);
+      if (g.gold) await goldAdd(p.account, g.gold);
       if (g.soul) await $asset.mint('soul', g.soul, p.account);
       // VIP 누적: 웹훅에 가격이 없어 서버 가격표(BALANCE.productVx)로 더한다
       const paid = spendFor(p.productId, p.quantity);
