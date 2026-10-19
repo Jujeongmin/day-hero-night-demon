@@ -7,9 +7,23 @@
 type Sentinel = { released: boolean; release: () => Promise<void> };
 type WakeLockApi = { request: (type: 'screen') => Promise<Sentinel> };
 
+/**
+ * 감싼 페이지(Verse8는 게임을 iframe으로 띄운다)가 screen-wake-lock을 허락하는가.
+ * 허락하지 않으면 요청할 때마다 콘솔에 Permissions policy violation이 찍히므로 아예 요청하지 않는다(2026-10-19)
+ */
+function wakeLockAllowed(): boolean {
+  const d = document as Document & { permissionsPolicy?: { allowsFeature: (f: string) => boolean }; featurePolicy?: { allowsFeature: (f: string) => boolean } };
+  const policy = d.permissionsPolicy ?? d.featurePolicy;
+  try {
+    return policy ? policy.allowsFeature('screen-wake-lock') : true;
+  } catch {
+    return true;
+  }
+}
+
 export function keepScreenOn(): () => void {
   const api = (navigator as Navigator & { wakeLock?: WakeLockApi }).wakeLock;
-  if (!api) return () => {};
+  if (!api || !wakeLockAllowed()) return () => {};
   let lock: Sentinel | null = null;
   let asking = false;
   let off = false;
@@ -21,7 +35,10 @@ export function keepScreenOn(): () => void {
         if (off) void l.release();
         else lock = l;
       })
-      .catch(() => { /* 허락되지 않음: 화면은 기기 설정대로 꺼진다 */ })
+      .catch((e: unknown) => {
+        // 정책으로 막혔으면 다시 묻지 않는다(누를 때마다 경고가 찍힌다). 그 밖의 거절은 다음 터치에 다시
+        if (e instanceof DOMException && e.name === 'NotAllowedError' && !wakeLockAllowed()) off = true;
+      })
       .finally(() => { asking = false; });
   };
   const onVisible = () => { if (!document.hidden) grab(); };
