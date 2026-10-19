@@ -61,11 +61,13 @@ describe('quests (2026-10-02)', () => {
     expect(guideStep(n + 3).target).toBeGreaterThan(guideStep(n).target);
   });
 
-  it('the badge counts what can be claimed now', () => {
+  it('the badge counts only daily quests that can be claimed now (the guide quest has its own card, 2026-10-19)', () => {
     const s = defaultState('a', 0, 's1');
     expect(claimableQuests(s, DAY)).toBe(0);
     s.castle.floors[0].monsters = ['slime', 'skeleton', 'werewolf'];
+    // 성장 의뢰(3칸 채우기)는 다 했지만 배지에는 세지 않는다
+    expect(claimableQuests(s, DAY)).toBe(0);
     s.quests = bumpQuests(s, DAY, { daily: 'idle', idle: true });
-    expect(claimableQuests(s, DAY)).toBe(2);
+    expect(claimableQuests(s, DAY)).toBe(1);
   });
 });

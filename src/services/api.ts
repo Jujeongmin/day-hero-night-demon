@@ -139,5 +139,8 @@ export function errorText(e: unknown): string {
   for (const code of Object.keys(T.errors)) if (msg.includes(code)) return T.errors[code];
   if (msg in T.serverMsg) return T.serverMsg[msg];
   // 서버의 다른 한국어 문장: 한국어 화면이면 그대로, 다른 언어면 일반 문구
-  return /[가-힣]/.test(msg) && currentLang() === 'ko' ? msg : T.errors.generic;
+  if (/[가-힣]/.test(msg) && currentLang() === 'ko') return msg;
+  // 일반 문구로 바꿀 때 원래 문구는 콘솔에 남긴다(2026-10-19: 무엇이 실패했는지 알 수 있게)
+  console.warn('[server error]', msg);
+  return T.errors.generic;
 }

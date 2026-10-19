@@ -108,11 +108,13 @@ export function planClaimDaily(s: Pick<UserState, 'quests'>, now: number, id: st
   return { soul, quests: { ...q, daily: { ...q.daily, claimed: [...q.daily.claimed, id] } } };
 }
 
-/** 받을 수 있는 의뢰 수(아이콘 빨간 배지) */
+/**
+ * 받을 수 있는 의뢰 수(의뢰 아이콘 빨간 배지). 의뢰 창에는 일일 의뢰만 있으므로 일일 의뢰만 센다
+ * (2026-10-19 사용자: 받을 게 없는데 1이 떠 있다 — 성장 의뢰는 "다음 할 일" 카드에서 따로 받는다)
+ */
 export function claimableQuests(s: UserState, now: number): number {
   const q = questsOf(s, now);
-  const step = guideStep(q.guide);
-  let n = guideValue(s, q, step) >= step.target ? 1 : 0;
+  let n = 0;
   for (const d of DAILY_IDS) if (dailyDone(q, d) && !q.daily.claimed.includes(d)) n++;
   if (DAILY_IDS.every((d) => dailyDone(q, d)) && !q.daily.claimed.includes('all')) n++;
   return n;
