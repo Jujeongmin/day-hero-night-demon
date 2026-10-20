@@ -147,12 +147,12 @@ export const ko = {
   bracketTitle: '같은 조 순위 (최대 30명)',
   seasonReward: (a: number, b: number, c: number, d: number) => `보상: 1위 영혼석 ${a} · 2~3위 ${b} · 4~10위 ${c} · 참가 ${d} · 10위까지 칭호`,
   honorHow: '명예: 출정 승리·마왕 처치·복수·방어 성공',
-  topTitle: '전체 순위',
+  topTitle: (n: string) => `시즌 ${n} 순위`,
   myRank: (rank: number) => `내 순위 ${rank}위`,
   globalReward: '전체 순위 보상: 1위 칭호 「패왕」·명예의 전당 · 2~3위 칭호·명예의 전당 · 4~10위 칭호 (다음 시즌 동안)',
   hallTitle: '명예의 전당',
   hallSeason: (id: string) => `시즌 ${id.slice(1)}`,
-  titles: { champion: '패왕', top3: '3강', top10: '10강' } as Record<string, string>,
+  titles: { champion: '지난 시즌 1위', top3: '지난 시즌 3위권', top10: '지난 시즌 10위권' } as Record<string, string>,
   noBracket: '첫 출정에서 이기면 순위에 오른다',
   matchIntro: '출정: 다른 성을 털어 금화를 가져옵니다. 상대 전투력과 난이도를 보고 고르세요.',
   reroll: (free: number, cost: number) => (free > 0 ? `상대 다시 찾기 (무료 ${free}번)` : `상대 다시 찾기 (${F(cost)} 골드)`),
@@ -449,7 +449,7 @@ export const ko = {
   news: {
     vip10: (name: string) => `${name}님이 VIP 10에 올랐다!`,
     star20: (name: string) => `${name}님이 금별 5개 각성을 해냈다!`,
-    champion: (name: string) => `${name}님이 지난 시즌 전체 1위 「패왕」이 되었다!`,
+    champion: (name: string) => `${name}님이 지난 시즌 전체 1위가 되었다!`,
   } as Record<string, (name: string) => string>,
   summon: {
     open: '소환',

@@ -93,7 +93,8 @@ function Ranking(props: { api: Api; onError: (m: string) => void }) {
         </>
       )}
       {/* 전체 순위만(2026-10-14 사용자: 조 없이 전체 상위 + 내 정보). 내가 20위 밖이면 맨 아래 내 줄 */}
-      <h4>{T.topTitle}</h4>
+      {/* 2026-10-20 사용자: "전체 순위"가 이번 시즌 순위인지 몰랐다 */}
+      <h4>{T.topTitle(data.seasonId.slice(1))}</h4>
       {data.top.length === 0 && <span>{T.noBracket}</span>}
       {data.top.map((r, i) => (
         <div className="line" key={i} style={r.me ? { fontWeight: 700, color: 'var(--gold)' } : undefined}>

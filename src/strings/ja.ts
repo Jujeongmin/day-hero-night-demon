@@ -145,12 +145,12 @@ export const ja: Strings = {
   bracketTitle: '同じグループの順位 (最大30人)',
   seasonReward: (a: number, b: number, c: number, d: number) => `報酬: 1位 魂石${a} · 2〜3位 ${b} · 4〜10位 ${c} · 参加 ${d} · 10位まで称号`,
   honorHow: '名誉: 攻略勝利・魔王撃破・復讐・防衛成功',
-  topTitle: '全体順位',
+  topTitle: (n: string) => `シーズン${n} 順位`,
   myRank: (rank: number) => `自分の順位 ${rank}位`,
   globalReward: '全体順位報酬: 1位 称号「覇王」・殿堂入り · 2〜3位 称号・殿堂入り · 4〜10位 称号（次のシーズンの間）',
   hallTitle: '殿堂',
   hallSeason: (id: string) => `シーズン${id.slice(1)}`,
-  titles: { champion: '覇王', top3: 'トップ3', top10: 'トップ10' } as Record<string, string>,
+  titles: { champion: '前シーズン1位', top3: '前シーズン3位以内', top10: '前シーズン10位以内' } as Record<string, string>,
   noBracket: '初めての攻略に勝つと順位に載る',
   matchIntro: '出撃: 他の城を襲って金貨を持ち帰ります。戦闘力と難易度を見て選びましょう。',
   reroll: (free: number, cost: number) => (free > 0 ? `相手を探し直す（無料 ${free}回）` : `相手を探し直す（${F(cost)} ゴールド）`),
@@ -438,7 +438,7 @@ export const ja: Strings = {
   news: {
     vip10: (name: string) => `${name}さんがVIP 10になった！`,
     star20: (name: string) => `${name}さんが金の星5つに覚醒した！`,
-    champion: (name: string) => `${name}さんが前シーズン全体1位の「覇王」になった！`,
+    champion: (name: string) => `${name}さんが前シーズン全体1位になった！`,
   } as Record<string, (name: string) => string>,
   summon: {
     open: '召喚',

@@ -463,7 +463,7 @@ button[lang='zh-Hans'] { font-family: 'Noto Sans SC', sans-serif; }
 .star-count { display: inline-flex; align-items: center; gap: 1px; color: var(--gold); font-size: 12px; vertical-align: middle; }
 .star-count img { width: 14px; height: 14px; image-rendering: pixelated; }
 /* 지난 시즌 전체 순위 칭호 */
-.title-tag { font-size: 11px; color: var(--gold); vertical-align: middle; }
+.title-tag { font-size: 11px; color: var(--gold); vertical-align: middle; white-space: nowrap; }
 .title-tag.champion { color: var(--ruby); text-shadow: 0 0 4px #ff3b3b88; }
 .title-tag::before { content: '「'; }
 .title-tag::after { content: '」'; }

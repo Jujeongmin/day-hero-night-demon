@@ -145,12 +145,12 @@ export const en: Strings = {
   bracketTitle: 'Your group (up to 30 players)',
   seasonReward: (a: number, b: number, c: number, d: number) => `Rewards: 1st ${a} soulstones · 2nd–3rd ${b} · 4th–10th ${c} · everyone ${d} · titles to 10th`,
   honorHow: 'Honor: raid wins, Demon Lord kills, revenge, defenses',
-  topTitle: 'Global ranking',
+  topTitle: (n: string) => `Season ${n} ranking`,
   myRank: (rank: number) => `My rank #${rank}`,
   globalReward: 'Global rank rewards: 1st the “Overlord” title and the Hall of Fame · 2nd–3rd a title and the Hall of Fame · 4th–10th a title (shown all next season)',
   hallTitle: 'Hall of Fame',
   hallSeason: (id: string) => `Season ${id.slice(1)}`,
-  titles: { champion: 'Overlord', top3: 'Top 3', top10: 'Top 10' } as Record<string, string>,
+  titles: { champion: 'Last season #1', top3: 'Last season top 3', top10: 'Last season top 10' } as Record<string, string>,
   noBracket: 'Win your first raid to join the ranking',
   matchIntro: 'Sortie: rob another castle and bring back its gold. Choose by power and difficulty.',
   reroll: (free: number, cost: number) => (free > 0 ? `Find new targets (${free} free)` : `Find new targets (${F(cost)} gold)`),
@@ -438,7 +438,7 @@ export const en: Strings = {
   news: {
     vip10: (name: string) => `${name} reached VIP 10!`,
     star20: (name: string) => `${name} reached five gold stars!`,
-    champion: (name: string) => `${name} finished last season 1st overall and became the Overlord!`,
+    champion: (name: string) => `${name} finished last season 1st overall!`,
   } as Record<string, (name: string) => string>,
   summon: {
     open: 'Summon',

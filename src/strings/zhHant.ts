@@ -145,12 +145,12 @@ export const zhHant: Strings = {
   bracketTitle: '同組排名 (最多30人)',
   seasonReward: (a: number, b: number, c: number, d: number) => `獎勵: 第1名 魂石${a} · 第2~3名 ${b} · 第4~10名 ${c} · 參與 ${d} · 前10名稱號`,
   honorHow: '榮譽: 攻略勝利・擊敗魔王・復仇・防守成功',
-  topTitle: '全服排名',
+  topTitle: (n: string) => `第${n}賽季排名`,
   myRank: (rank: number) => `我的排名 第${rank}名`,
   globalReward: '全服排名獎勵：第1名 稱號「霸王」・名人堂 · 第2~3名 稱號・名人堂 · 第4~10名 稱號（下個賽季期間）',
   hallTitle: '名人堂',
   hallSeason: (id: string) => `賽季 ${id.slice(1)}`,
-  titles: { champion: '霸王', top3: '前3強', top10: '前10強' } as Record<string, string>,
+  titles: { champion: '上賽季第1', top3: '上賽季前3', top10: '上賽季前10' } as Record<string, string>,
   noBracket: '贏得第一次攻略就會上榜',
   matchIntro: '出征：搶奪其他城堡帶回金幣。根據戰力和難度選擇。',
   reroll: (free: number, cost: number) => (free > 0 ? `重新尋找對手（免費 ${free}次）` : `重新尋找對手（${F(cost)} 金幣）`),
@@ -438,7 +438,7 @@ export const zhHant: Strings = {
   news: {
     vip10: (name: string) => `${name} 達到 VIP 10！`,
     star20: (name: string) => `${name}覺醒到五顆金星！`,
-    champion: (name: string) => `${name} 拿下上賽季全服第1名，成為「霸王」！`,
+    champion: (name: string) => `${name} 拿下上賽季全服第1名！`,
   } as Record<string, (name: string) => string>,
   summon: {
     open: '召喚',
